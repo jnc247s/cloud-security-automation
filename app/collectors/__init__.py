@@ -1,1 +1,1 @@
-"""Future AWS resource collector package."""
+"""Fact-only AWS resource collectors."""
