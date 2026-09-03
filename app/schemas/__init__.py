@@ -1,1 +1,1 @@
-"""API and service schema package."""
+"""API and in-memory service schemas."""

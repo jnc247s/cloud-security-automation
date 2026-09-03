@@ -38,6 +38,16 @@ class Settings(BaseSettings):
             raise ValueError(message)
         return normalized_value
 
+    @field_validator("aws_profile", mode="before")
+    @classmethod
+    def normalize_aws_profile(cls, value: object) -> object:
+        """Treat an empty AWS profile as an instruction to use the default credential chain."""
+
+        if isinstance(value, str):
+            normalized_value = value.strip()
+            return normalized_value or None
+        return value
+
     @property
     def required_tag_names(self) -> tuple[str, ...]:
         """Return the configured comma-separated tag names as normalized values."""

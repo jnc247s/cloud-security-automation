@@ -1,1 +1,1 @@
-"""Future application service package."""
+"""Application orchestration services."""
