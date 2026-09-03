@@ -1,11 +1,11 @@
 # Cloud Security Control Plane
 
-A production-style Python service for discovering AWS resources and, in later sprints,
-evaluating security controls and managing evidence-based findings.
+A production-style Python service for discovering AWS resources and evaluating them with
+evidence-based security controls. Later sprints will persist and expose the resulting findings.
 
 ## Project status
 
-**Sprint 1 — AWS Resource Inventory**
+**Sprint 2 — Security Rule Engine**
 
 Available now:
 
@@ -20,27 +20,49 @@ Available now:
   - CloudTrail trails, tags, home regions, and logging status
 - A normalized, JSON-serializable in-memory inventory model
 - An inventory orchestration service and command-line summary
+- A side-effect-free rule engine, duplicate-safe rule registry, and validated finding candidates
+- Exactly five deterministic controls:
+  - `NET-001` — public SSH exposure
+  - `NET-002` — public RDP exposure
+  - `S3-002` — missing bucket encryption configuration
+  - `IAM-001` — IAM user without MFA
+  - `LOG-001` — no suitable active CloudTrail
 - Offline unit tests, Ruff configuration, and GitHub Actions CI
 
-Security-rule evaluation, findings, inventory persistence, scan API endpoints, Terraform,
-remediation, authentication, a frontend, and AI functionality are **not implemented**.
-Running Sprint 1 does not change AWS resources.
+Inventory and finding persistence, finding lifecycle management, scan API endpoints, Terraform,
+remediation, authentication, a frontend, and AI functionality are **not implemented**. Running
+Sprint 2 only reads AWS configuration and evaluates an in-memory snapshot; it does not change AWS
+resources or write findings to PostgreSQL.
 
 ## How it is used
 
 In a real environment, an administrator grants a user or role the documented read-only
-permissions. An operator obtains short-lived AWS credentials, selects a region, and runs:
+permissions. An operator obtains short-lived AWS credentials and selects a region. Application
+code then collects a snapshot and evaluates it:
+
+```python
+snapshot = InventoryService(provider).collect()
+engine = RuleEngine(build_default_registry())
+findings = engine.evaluate(snapshot)
+```
+
+The default registry contains exactly the five controls listed above. Evaluation is deterministic:
+the same normalized snapshot and registry produce the same ordered finding candidates.
+
+The existing inventory command remains useful for checking collection independently:
 
 ```powershell
 python scripts/run_inventory.py
 ```
 
 The application resolves the caller with STS, runs the four collectors, normalizes and sorts
-the results, and prints only an aggregate summary. It does not evaluate whether a resource is
-secure and does not write inventory to PostgreSQL in this sprint.
+the results, and prints only an aggregate summary. This command does not run the rule engine or
+write inventory to PostgreSQL.
 
 See [AWS inventory operations](docs/aws-inventory.md) for the complete setup, least-privilege
-policy baseline, call flow, scope, and troubleshooting guidance.
+policy baseline, call flow, scope, and troubleshooting guidance. See
+[Security controls](docs/security-controls.md) for control semantics, evidence, limitations, and
+programmatic evaluation.
 
 ## Technology stack
 
@@ -64,12 +86,14 @@ policy baseline, call flow, scope, and troubleshooting guidance.
 │   ├── logging/             # Application logging configuration
 │   ├── models/              # Reserved for future persistence models
 │   ├── remediation/         # Reserved for future approved remediation
-│   ├── rules/               # Reserved for future security controls
-│   ├── schemas/             # HTTP and normalized inventory schemas
+│   ├── rules/               # Rule contracts, engine, registry, and five controls
+│   ├── schemas/             # HTTP, inventory, resource, and finding contracts
 │   ├── services/            # Inventory orchestration
 │   ├── config.py
 │   └── main.py
-├── docs/aws-inventory.md
+├── docs/
+│   ├── aws-inventory.md
+│   └── security-controls.md
 ├── scripts/run_inventory.py
 ├── tests/                   # API and offline unit tests
 ├── terraform/               # Placeholder only; no infrastructure exists yet
@@ -140,6 +164,26 @@ Example output:
 Raw configurations are intentionally omitted from console output because they can contain
 sensitive infrastructure metadata.
 
+## Evaluate security controls
+
+The rule engine consumes an `InventorySnapshot`; it never calls AWS or writes to the database.
+After constructing an AWS client provider, use the public evaluation flow:
+
+```python
+from app.aws.client import Boto3ClientProvider
+from app.rules.engine import RuleEngine
+from app.rules.registry import build_default_registry
+from app.services.inventory_service import InventoryService
+
+provider = Boto3ClientProvider.from_settings()
+snapshot = InventoryService(provider).collect()
+findings = RuleEngine(build_default_registry()).evaluate(snapshot)
+```
+
+Each `FindingCandidate` identifies its control and target, assigns a severity, and carries
+structured evidence, impact, and remediation guidance. The candidates are in-memory values for
+now; Sprint 2 does not create finding records or resolve prior findings.
+
 ## Docker Compose
 
 ```powershell
@@ -181,5 +225,5 @@ Configuration comes from environment variables and an optional local `.env` file
 - `STALE_ACCESS_KEY_DAYS`
 - `REQUIRED_TAGS` as a comma-separated list
 
-`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` are retained for future controls; Sprint 1 only
-collects facts. Never commit `.env`, credentials, credential exports, or scan output.
+`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` are retained for future controls and are not used by
+the five Sprint 2 controls. Never commit `.env`, credentials, credential exports, or scan output.
