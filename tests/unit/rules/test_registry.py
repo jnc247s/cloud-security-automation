@@ -68,5 +68,5 @@ def test_default_registry_explicitly_contains_all_sprint_two_controls() -> None:
         "LOG-001",
         "NET-001",
         "NET-002",
-        "S3-002",
+        "S3-900",
     )

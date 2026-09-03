@@ -23,14 +23,14 @@ def _bucket(default_encryption: object, *, bucket_name: str = "example-bucket"):
     )
 
 
-def test_s3_002_reports_explicitly_missing_default_encryption() -> None:
+def test_s3_900_reports_explicitly_missing_default_encryption() -> None:
     bucket = _bucket(None)
 
     findings = MissingBucketEncryptionRule().evaluate(snapshot(bucket))
 
     assert len(findings) == 1
     finding = findings[0]
-    assert finding.control_id == "S3-002"
+    assert finding.control_id == "S3-900"
     assert finding.title == "Missing Bucket Encryption"
     assert finding.category is ControlCategory.STORAGE
     assert finding.severity is Severity.MEDIUM
@@ -61,13 +61,13 @@ def test_s3_002_reports_explicitly_missing_default_encryption() -> None:
         },
     ],
 )
-def test_s3_002_passes_for_a_nonempty_default_encryption_rule_set(
+def test_s3_900_passes_for_a_nonempty_default_encryption_rule_set(
     encryption: dict[str, object],
 ) -> None:
     assert MissingBucketEncryptionRule().evaluate(snapshot(_bucket(encryption))) == ()
 
 
-def test_s3_002_ignores_unrelated_resource_types() -> None:
+def test_s3_900_ignores_unrelated_resource_types() -> None:
     unrelated = resource(
         service="ec2",
         resource_type="security_group",
@@ -85,9 +85,15 @@ def test_s3_002_ignores_unrelated_resource_types() -> None:
         {"default_encryption": "unknown"},
         {"default_encryption": {}},
         {"default_encryption": {"Rules": []}},
+        {"default_encryption": {"Rules": [{}]}},
+        {
+            "default_encryption": {
+                "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "unsupported"}}]
+            }
+        },
     ],
 )
-def test_s3_002_rejects_unknown_or_malformed_encryption_facts(
+def test_s3_900_rejects_unknown_or_malformed_encryption_facts(
     configuration: dict[str, object],
 ) -> None:
     bucket = resource(
@@ -101,7 +107,7 @@ def test_s3_002_rejects_unknown_or_malformed_encryption_facts(
         MissingBucketEncryptionRule().evaluate(snapshot(bucket))
 
     error = error_info.value
-    assert error.control_id == "S3-002"
+    assert error.control_id == "S3-900"
     assert error.aws_resource_id == "malformed-bucket"
     assert "default_encryption" in error.fact_path
     assert "unknown" not in str(error)

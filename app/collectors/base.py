@@ -24,6 +24,15 @@ class ResourceCollector(ABC):
         """Collect and normalize resources without making security decisions."""
 
 
+class CollectorEvidenceError(RuntimeError):
+    """Raised when an AWS response omits or malforms a required collection fact."""
+
+    def __init__(self, operation_name: str, fact_path: str) -> None:
+        self.operation_name = operation_name
+        self.fact_path = fact_path
+        super().__init__(f"collector evidence is incomplete at {operation_name}.{fact_path}")
+
+
 def iter_paginated_items(
     client: Any,
     operation_name: str,
@@ -33,8 +42,17 @@ def iter_paginated_items(
     """Yield dictionary items from every page of a boto3 paginator."""
 
     paginator = client.get_paginator(operation_name)
-    for page in paginator.paginate(**paginate_options):
-        yield from page.get(result_key, [])
+    for page_index, page in enumerate(paginator.paginate(**paginate_options)):
+        items = page.get(result_key)
+        if not isinstance(items, list):
+            raise CollectorEvidenceError(operation_name, f"pages[{page_index}].{result_key}")
+        for item_index, item in enumerate(items):
+            if not isinstance(item, Mapping):
+                raise CollectorEvidenceError(
+                    operation_name,
+                    f"pages[{page_index}].{result_key}[{item_index}]",
+                )
+            yield dict(item)
 
 
 def tags_to_dict(tags: Iterable[Mapping[str, Any]]) -> dict[str, str]:

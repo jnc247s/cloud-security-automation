@@ -9,7 +9,7 @@ import pytest
 from app.rules.base import RuleEvaluationError, SecurityRule
 from app.rules.network import PublicRDPRule, PublicSSHRule
 from app.schemas.finding import ControlCategory, Severity
-from app.schemas.inventory import InventorySnapshot
+from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
 
 ACCOUNT_ID = "123456789012"
@@ -55,6 +55,12 @@ def _snapshot(*resources: NormalizedResource) -> InventorySnapshot:
         account_id=ACCOUNT_ID,
         requested_region=REGION,
         collected_at=COLLECTED_AT,
+        collector_outcomes=(
+            CollectorOutcome(
+                collector_name="security_groups",
+                status=CollectionStatus.SUCCEEDED,
+            ),
+        ),
         resources=resources,
     )
 

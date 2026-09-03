@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 import pytest
 from botocore.exceptions import ClientError
 
+from app.collectors.base import CollectorEvidenceError
 from app.collectors.iam import IAMUserCollector
 from app.schemas.resource import ResourceScope
 from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, client_error
@@ -167,3 +168,28 @@ def test_propagates_iam_enrichment_errors() -> None:
         IAMUserCollector(provider).collect()
 
     assert exc_info.value.response["Error"]["Code"] == "AccessDenied"
+
+
+def test_rejects_mfa_page_that_omits_required_result_list() -> None:
+    client = FakeAWSClient(
+        paginators={
+            "list_users": FakePaginator(
+                [
+                    {
+                        "Users": [
+                            {
+                                "UserName": "alice",
+                                "UserId": "AIDAALICE",
+                                "Arn": "arn:aws:iam::123456789012:user/alice",
+                            }
+                        ]
+                    }
+                ]
+            ),
+            "list_user_tags": FakePaginator([{"Tags": []}]),
+            "list_mfa_devices": FakePaginator([{}]),
+        }
+    )
+
+    with pytest.raises(CollectorEvidenceError, match="MFADevices"):
+        IAMUserCollector(FakeClientProvider({("iam", "us-east-1"): client})).collect()

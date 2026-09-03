@@ -81,6 +81,8 @@ def test_iam_001_ignores_unrelated_resource_types() -> None:
         {"mfa_devices": None},
         {"mfa_devices": "definitely-secret-looking-value"},
         {"mfa_devices": {}},
+        {"mfa_devices": [{}]},
+        {"mfa_devices": [{"SerialNumber": ""}]},
     ],
 )
 def test_iam_001_rejects_unknown_or_malformed_mfa_facts(

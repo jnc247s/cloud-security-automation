@@ -132,3 +132,35 @@ def test_propagates_security_group_listing_errors() -> None:
         SecurityGroupCollector(provider).collect()
 
     assert exc_info.value.response["Error"]["Code"] == "UnauthorizedOperation"
+
+
+def test_preserves_missing_ingress_or_cidr_lists_as_unknown_evidence() -> None:
+    paginator = FakePaginator(
+        [
+            {
+                "SecurityGroups": [
+                    {
+                        "GroupId": "sg-missing-ingress",
+                        "IpPermissionsEgress": [],
+                    },
+                    {
+                        "GroupId": "sg-missing-ranges",
+                        "IpPermissions": [
+                            {
+                                "IpProtocol": "tcp",
+                                "FromPort": 22,
+                                "ToPort": 22,
+                                "Ipv6Ranges": [],
+                            }
+                        ],
+                        "IpPermissionsEgress": [],
+                    },
+                ]
+            }
+        ]
+    )
+    client = FakeAWSClient(paginators={"describe_security_groups": paginator})
+    resources = SecurityGroupCollector(FakeClientProvider({("ec2", "us-east-1"): client})).collect()
+
+    assert resources[0].configuration["ingress_rules"] is None
+    assert resources[1].configuration["ingress_rules"][0]["ipv4_ranges"] is None

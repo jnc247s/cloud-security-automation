@@ -6,21 +6,13 @@ from datetime import UTC, datetime
 from botocore.exceptions import BotoCoreError, ClientError
 
 from app.aws.client import AWSClientProvider
-from app.collectors.base import ResourceCollector
+from app.collectors.base import CollectorEvidenceError, ResourceCollector
 from app.collectors.cloudtrail import CloudTrailCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
-from app.schemas.inventory import InventorySnapshot
+from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource
-
-
-class InventoryCollectionError(RuntimeError):
-    """Raised when an AWS collector cannot complete its inventory operation."""
-
-    def __init__(self, collector_name: str) -> None:
-        self.collector_name = collector_name
-        super().__init__(f"AWS inventory collector failed: {collector_name}")
 
 
 def build_default_collectors(
@@ -50,25 +42,38 @@ class InventoryService:
         )
 
     def collect(self) -> InventorySnapshot:
-        """Collect inventory facts, surfacing AWS failures without partial success."""
+        """Collect independent facts and record sanitized per-collector completeness."""
 
         account_id = self.client_provider.account_id
         resources: list[NormalizedResource] = []
+        outcomes: list[CollectorOutcome] = []
 
         for collector in self.collectors:
-            resources.extend(self._collect_from(collector))
+            collected, status = self._collect_from(collector)
+            resources.extend(collected)
+            outcomes.append(
+                CollectorOutcome(
+                    collector_name=collector.collector_name,
+                    status=status,
+                )
+            )
 
         resources.sort(key=lambda resource: resource.identity)
         return InventorySnapshot(
             account_id=account_id,
             requested_region=self.client_provider.region_name,
             collected_at=datetime.now(UTC),
+            collector_outcomes=tuple(outcomes),
             resources=tuple(resources),
         )
 
     @staticmethod
-    def _collect_from(collector: ResourceCollector) -> Iterable[NormalizedResource]:
+    def _collect_from(
+        collector: ResourceCollector,
+    ) -> tuple[Iterable[NormalizedResource], CollectionStatus]:
         try:
-            return collector.collect()
-        except (BotoCoreError, ClientError) as error:
-            raise InventoryCollectionError(collector.collector_name) from error
+            return collector.collect(), CollectionStatus.SUCCEEDED
+        except (BotoCoreError, ClientError):
+            return (), CollectionStatus.FAILED
+        except CollectorEvidenceError:
+            return (), CollectionStatus.PARTIAL

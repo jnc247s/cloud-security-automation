@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 import pytest
 from botocore.exceptions import ClientError
 
+from app.collectors.base import CollectorEvidenceError
 from app.collectors.s3 import S3BucketCollector
 from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, RecordedCall, client_error
 
@@ -187,3 +188,20 @@ def test_propagates_unexpected_s3_configuration_errors() -> None:
         S3BucketCollector(provider).collect()
 
     assert exc_info.value.response["Error"]["Code"] == "AccessDenied"
+
+
+def test_rejects_successful_s3_response_missing_required_configuration() -> None:
+    paginator = FakePaginator(
+        [{"Buckets": [{"Name": "ambiguous-bucket", "BucketRegion": "us-east-1"}]}]
+    )
+    client = FakeAWSClient(
+        paginators={"list_buckets": paginator},
+        responses={
+            "get_bucket_tagging": [{"TagSet": []}],
+            "get_bucket_encryption": [{}],
+        },
+    )
+    provider = FakeClientProvider({("s3", "us-east-1"): client})
+
+    with pytest.raises(CollectorEvidenceError, match="ServerSideEncryptionConfiguration"):
+        S3BucketCollector(provider).collect()

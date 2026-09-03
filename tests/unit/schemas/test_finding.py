@@ -11,7 +11,7 @@ from app.schemas.resource import ResourceScope
 
 def _candidate(**overrides: object) -> FindingCandidate:
     values: dict[str, object] = {
-        "control_id": "S3-002",
+        "control_id": "S3-900",
         "title": "Missing Bucket Encryption",
         "category": ControlCategory.STORAGE,
         "severity": Severity.MEDIUM,
