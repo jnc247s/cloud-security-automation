@@ -9,7 +9,8 @@ from botocore.exceptions import BotoCoreError, ClientError
 from app.aws.client import Boto3ClientProvider
 from app.config import get_settings
 from app.logging.config import configure_logging
-from app.services.inventory_service import InventoryCollectionError, InventoryService
+from app.schemas.inventory import CollectionStatus
+from app.services.inventory_service import InventoryService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,9 +24,6 @@ def main() -> int:
     try:
         provider = Boto3ClientProvider.from_settings(settings)
         snapshot = InventoryService(provider).collect()
-    except InventoryCollectionError as error:
-        LOGGER.error("Inventory collection failed in collector '%s'.", error.collector_name)
-        return 1
     except (BotoCoreError, ClientError):
         LOGGER.error("Unable to resolve the configured AWS identity.")
         return 1
@@ -37,8 +35,16 @@ def main() -> int:
         "collected_at": snapshot.collected_at.isoformat(),
         "resource_count": snapshot.resource_count,
         "resources_by_service": dict(sorted(resources_by_service.items())),
+        "collector_outcomes": {
+            outcome.collector_name: outcome.status.value for outcome in snapshot.collector_outcomes
+        },
     }
     print(json.dumps(summary, indent=2))
+    if any(
+        outcome.status is not CollectionStatus.SUCCEEDED for outcome in snapshot.collector_outcomes
+    ):
+        LOGGER.error("Inventory collection is incomplete; see collector_outcomes.")
+        return 1
     return 0
 
 

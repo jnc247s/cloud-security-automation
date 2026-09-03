@@ -80,7 +80,7 @@ def test_default_rule_engine_produces_exact_deterministic_fixture_findings() -> 
         "LOG-001",
         "NET-001",
         "NET-002",
-        "S3-002",
+        "S3-900",
     )
     assert tuple(finding.severity for finding in findings) == (
         Severity.MEDIUM,
@@ -106,4 +106,4 @@ def test_default_rule_engine_produces_exact_deterministic_fixture_findings() -> 
     assert findings_by_control["LOG-001"].evidence["active_trail_count"] == 0
     assert findings_by_control["NET-001"].evidence["target_port"] == 22
     assert findings_by_control["NET-002"].evidence["target_port"] == 3389
-    assert findings_by_control["S3-002"].evidence["default_encryption"] is None
+    assert findings_by_control["S3-900"].evidence["default_encryption"] is None

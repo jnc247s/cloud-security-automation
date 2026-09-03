@@ -3,7 +3,10 @@
 import json
 from datetime import UTC, datetime
 
-from app.schemas.inventory import InventorySnapshot
+import pytest
+from pydantic import ValidationError
+
+from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
 
 
@@ -27,6 +30,12 @@ def test_inventory_snapshot_counts_and_serializes_resources() -> None:
         account_id="123456789012",
         requested_region="us-east-1",
         collected_at=datetime(2026, 9, 2, 15, 0, tzinfo=UTC),
+        collector_outcomes=(
+            CollectorOutcome(
+                collector_name="s3_buckets",
+                status=CollectionStatus.SUCCEEDED,
+            ),
+        ),
         resources=(resource,),
     )
 
@@ -36,4 +45,34 @@ def test_inventory_snapshot_counts_and_serializes_resources() -> None:
     assert payload["account_id"] == "123456789012"
     assert payload["requested_region"] == "us-east-1"
     assert payload["collected_at"] == "2026-09-02T15:00:00Z"
+    assert payload["collector_outcomes"] == [
+        {"collector_name": "s3_buckets", "status": "SUCCEEDED"}
+    ]
     assert payload["resources"][0]["aws_resource_id"] == "cloud-security-fixture"
+    assert snapshot.collector_succeeded("s3_buckets")
+    assert snapshot.collection_status("iam_users") is None
+
+
+def test_inventory_snapshot_requires_unique_explicit_collection_coverage() -> None:
+    outcome = CollectorOutcome(
+        collector_name="s3_buckets",
+        status=CollectionStatus.SUCCEEDED,
+    )
+
+    with pytest.raises(ValidationError, match="collector outcomes must be unique"):
+        InventorySnapshot(
+            account_id="123456789012",
+            requested_region="us-east-1",
+            collected_at=datetime(2026, 9, 2, 15, 0, tzinfo=UTC),
+            collector_outcomes=(outcome, outcome),
+            resources=(),
+        )
+
+    with pytest.raises(ValidationError, match="timezone-aware"):
+        InventorySnapshot(
+            account_id="123456789012",
+            requested_region="us-east-1",
+            collected_at=datetime(2026, 9, 2, 15, 0),
+            collector_outcomes=(outcome,),
+            resources=(),
+        )

@@ -5,6 +5,7 @@ from typing import Any
 from botocore.exceptions import ClientError
 
 from app.collectors.base import (
+    CollectorEvidenceError,
     ResourceCollector,
     iter_paginated_items,
     tags_to_dict,
@@ -147,7 +148,9 @@ class S3BucketCollector(ResourceCollector):
             raise
 
         result = response.get(result_key)
-        return result if isinstance(result, dict) else None
+        if not isinstance(result, dict):
+            raise CollectorEvidenceError(operation_name, result_key)
+        return result
 
 
 def _error_code(error: ClientError) -> str:

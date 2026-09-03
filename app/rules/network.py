@@ -4,6 +4,8 @@ from collections.abc import Mapping
 from ipaddress import IPv4Network, IPv6Network, ip_network
 from typing import Any, ClassVar
 
+from app.assessment.models import AssessmentCandidate, AssessmentResult
+from app.assessment.profiles import AssessmentProfile
 from app.rules.base import RuleEvaluationError, SecurityRule
 from app.schemas.finding import ControlCategory, FindingCandidate, Severity
 from app.schemas.inventory import InventorySnapshot
@@ -15,7 +17,98 @@ class _PublicIngressPortRule(SecurityRule):
 
     target_port: ClassVar[int]
 
+    def assess(
+        self,
+        snapshot: InventorySnapshot,
+        profile: AssessmentProfile,
+    ) -> tuple[AssessmentCandidate, ...]:
+        """Return an explicit result for every applicable security group."""
+
+        if not snapshot.collector_succeeded("security_groups"):
+            return (
+                self.assessment_for_unavailable_collector(
+                    snapshot,
+                    profile,
+                    collector="security_groups",
+                    service="ec2",
+                    source_api="ec2:DescribeSecurityGroups",
+                ),
+            )
+
+        resources = sorted(
+            (
+                resource
+                for resource in snapshot.resources
+                if resource.service == "ec2" and resource.resource_type == "security_group"
+            ),
+            key=lambda resource: resource.identity,
+        )
+        if not resources:
+            return (
+                self.assessment_for_account(
+                    snapshot,
+                    profile,
+                    result=AssessmentResult.NOT_APPLICABLE,
+                    service="ec2",
+                    evidence=None,
+                    reason="The snapshot contains no EC2 security groups.",
+                    collector="security_groups",
+                    source_api="ec2:DescribeSecurityGroups",
+                ),
+            )
+
+        assessments: list[AssessmentCandidate] = []
+        for resource in resources:
+            try:
+                matches = self._matching_ingress(resource)
+            except RuleEvaluationError as error:
+                assessments.append(
+                    self.assessment_for_resource(
+                        snapshot,
+                        profile,
+                        resource,
+                        result=AssessmentResult.INSUFFICIENT_EVIDENCE,
+                        evidence=None,
+                        missing_evidence=(error.fact_path,),
+                        reason=(
+                            "Required security-group ingress evidence is unavailable or invalid."
+                        ),
+                        collector="security_groups",
+                        source_api="ec2:DescribeSecurityGroups",
+                    )
+                )
+                continue
+
+            evidence = {
+                "group_id": resource.aws_resource_id,
+                "vpc_id": resource.configuration.get("vpc_id"),
+                "region": resource.region,
+                "target_port": self.target_port,
+                "matched_ingress": matches,
+            }
+            result = AssessmentResult.FAIL if matches else AssessmentResult.PASS
+            reason = (
+                f"Public ingress exposes TCP port {self.target_port}."
+                if matches
+                else f"No public ingress exposes TCP port {self.target_port}."
+            )
+            assessments.append(
+                self.assessment_for_resource(
+                    snapshot,
+                    profile,
+                    resource,
+                    result=result,
+                    evidence=evidence,
+                    reason=reason,
+                    collector="security_groups",
+                    source_api="ec2:DescribeSecurityGroups",
+                )
+            )
+
+        return tuple(assessments)
+
     def evaluate(self, snapshot: InventorySnapshot) -> tuple[FindingCandidate, ...]:
+        self.require_collector_success(snapshot, "security_groups")
         findings: list[FindingCandidate] = []
 
         resources = sorted(

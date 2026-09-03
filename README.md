@@ -1,11 +1,12 @@
 # Cloud Security Control Plane
 
 A production-style Python service for discovering AWS resources and evaluating them with
-evidence-based security controls. Later sprints will persist and expose the resulting findings.
+evidence-based, framework-aligned security controls. Later sprints will persist and expose the
+resulting assessments and findings.
 
 ## Project status
 
-**Sprint 2 — Security Rule Engine**
+**Sprint 2.1 — Assessment Framework and Control Contracts**
 
 Available now:
 
@@ -20,19 +21,26 @@ Available now:
   - CloudTrail trails, tags, home regions, and logging status
 - A normalized, JSON-serializable in-memory inventory model
 - An inventory orchestration service and command-line summary
-- A side-effect-free rule engine, duplicate-safe rule registry, and validated finding candidates
-- Exactly five deterministic controls:
+- A side-effect-free rule engine with explicit `PASS`, `FAIL`, `INSUFFICIENT_EVIDENCE`, and
+  `NOT_APPLICABLE` results
+- Deeply immutable `EvidenceArtifact` values with payload digests and content-bound scan,
+  snapshot, collector, API, resource, and time provenance
+- A versioned, checksummed organization assessment profile
+- Versioned technical control contracts and an independently validated NIST CSF 2.0 mapping
+  catalog
+- Five deterministic controls:
   - `NET-001` — public SSH exposure
   - `NET-002` — public RDP exposure
-  - `S3-002` — missing bucket encryption configuration
+  - `S3-900` — missing explicit bucket encryption configuration (legacy prototype behavior)
   - `IAM-001` — IAM user without MFA
   - `LOG-001` — no suitable active CloudTrail
 - Offline unit tests, Ruff configuration, and GitHub Actions CI
 
-Inventory and finding persistence, finding lifecycle management, scan API endpoints, Terraform,
-remediation, authentication, a frontend, and AI functionality are **not implemented**. Running
-Sprint 2 only reads AWS configuration and evaluates an in-memory snapshot; it does not change AWS
-resources or write findings to PostgreSQL.
+Assessment and finding persistence, finding lifecycle management, scan API endpoints,
+authentication, Terraform, remediation, a frontend, and AI functionality are **not implemented**.
+Sprint 2.1 does not expand the AWS resource or API-permission scope and does not add security
+controls. It only reads AWS configuration and evaluates an in-memory snapshot; it does not
+change AWS resources or write assessments to PostgreSQL.
 
 ## How it is used
 
@@ -41,13 +49,22 @@ permissions. An operator obtains short-lived AWS credentials and selects a regio
 code then collects a snapshot and evaluates it:
 
 ```python
+from app.assessment.profiles import create_default_assessment_profile
+from app.rules.engine import RuleEngine
+from app.rules.registry import build_default_registry
+from app.services.inventory_service import InventoryService
+
 snapshot = InventoryService(provider).collect()
 engine = RuleEngine(build_default_registry())
-findings = engine.evaluate(snapshot)
+profile = create_default_assessment_profile()
+assessments = engine.assess(snapshot, profile)
 ```
 
-The default registry contains exactly the five controls listed above. Evaluation is deterministic:
-the same normalized snapshot and registry produce the same ordered finding candidates.
+The default registry contains the five controls listed above. Evaluation is deterministic: the
+same normalized snapshot, registry, and profile produce the same ordered assessment candidates.
+The older `engine.evaluate(snapshot)` interface remains available for compatibility; it emits only
+failure `FindingCandidate` values and raises `RuleEvaluationError` when required facts are missing
+or malformed.
 
 The existing inventory command remains useful for checking collection independently:
 
@@ -55,14 +72,16 @@ The existing inventory command remains useful for checking collection independen
 python scripts/run_inventory.py
 ```
 
-The application resolves the caller with STS, runs the four collectors, normalizes and sorts
-the results, and prints only an aggregate summary. This command does not run the rule engine or
-write inventory to PostgreSQL.
+The application resolves the caller with STS, runs the four collectors, records each collector
+as `SUCCEEDED`, `FAILED`, or `PARTIAL`, normalizes and sorts available results, and prints only an
+aggregate summary. An incomplete run exits unsuccessfully without hiding results from independent
+collectors. This command does not run the rule engine or write inventory to PostgreSQL.
 
 See [AWS inventory operations](docs/aws-inventory.md) for the complete setup, least-privilege
 policy baseline, call flow, scope, and troubleshooting guidance. See
-[Security controls](docs/security-controls.md) for control semantics, evidence, limitations, and
-programmatic evaluation.
+[Security controls](docs/security-controls.md) for control semantics and limitations, and
+[Assessment framework](docs/assessment-framework.md) for result states, profiles, evidence
+provenance, framework mappings, and programmatic evaluation.
 
 ## Technology stack
 
@@ -79,19 +98,21 @@ programmatic evaluation.
 ```text
 .
 ├── app/
-│   ├── api/                 # API routing and health/readiness endpoints
-│   ├── aws/                 # Lazy AWS sessions, clients, and caller identity
-│   ├── collectors/          # Fact-only AWS resource collectors
-│   ├── database/            # SQLAlchemy engine, sessions, and model base
-│   ├── logging/             # Application logging configuration
-│   ├── models/              # Reserved for future persistence models
-│   ├── remediation/         # Reserved for future approved remediation
-│   ├── rules/               # Rule contracts, engine, registry, and five controls
-│   ├── schemas/             # HTTP, inventory, resource, and finding contracts
-│   ├── services/            # Inventory orchestration
+│   ├── assessment/         # Profiles, evidence, control contracts, and frameworks
+│   ├── api/                # API routing and health/readiness endpoints
+│   ├── aws/                # Lazy AWS sessions, clients, and caller identity
+│   ├── collectors/         # Fact-only AWS resource collectors
+│   ├── database/           # SQLAlchemy engine, sessions, and model base
+│   ├── logging/            # Application logging configuration
+│   ├── models/             # Reserved for future persistence models
+│   ├── remediation/        # Reserved for future approved remediation
+│   ├── rules/              # Rule contracts, engine, registry, and five controls
+│   ├── schemas/            # HTTP, inventory, resource, and finding contracts
+│   ├── services/           # Inventory orchestration
 │   ├── config.py
 │   └── main.py
 ├── docs/
+│   ├── assessment-framework.md
 │   ├── aws-inventory.md
 │   └── security-controls.md
 ├── scripts/run_inventory.py
@@ -151,6 +172,12 @@ Example output:
   "account_id": "123456789012",
   "requested_region": "us-east-1",
   "collected_at": "2026-09-02T18:30:00+00:00",
+  "collector_outcomes": {
+    "cloudtrail_trails": "SUCCEEDED",
+    "iam_users": "SUCCEEDED",
+    "s3_buckets": "SUCCEEDED",
+    "security_groups": "SUCCEEDED"
+  },
   "resource_count": 27,
   "resources_by_service": {
     "cloudtrail": 2,
@@ -167,9 +194,10 @@ sensitive infrastructure metadata.
 ## Evaluate security controls
 
 The rule engine consumes an `InventorySnapshot`; it never calls AWS or writes to the database.
-After constructing an AWS client provider, use the public evaluation flow:
+After constructing an AWS client provider, use the canonical assessment flow:
 
 ```python
+from app.assessment.profiles import create_default_assessment_profile
 from app.aws.client import Boto3ClientProvider
 from app.rules.engine import RuleEngine
 from app.rules.registry import build_default_registry
@@ -177,12 +205,21 @@ from app.services.inventory_service import InventoryService
 
 provider = Boto3ClientProvider.from_settings()
 snapshot = InventoryService(provider).collect()
-findings = RuleEngine(build_default_registry()).evaluate(snapshot)
+profile = create_default_assessment_profile()
+assessments = RuleEngine(build_default_registry()).assess(snapshot, profile)
 ```
 
-Each `FindingCandidate` identifies its control and target, assigns a severity, and carries
-structured evidence, impact, and remediation guidance. The candidates are in-memory values for
-now; Sprint 2 does not create finding records or resolve prior findings.
+Each `AssessmentCandidate` identifies its control, target, exact profile version and checksum,
+and one explicit technical result. `PASS` and `FAIL` include a structured `EvidenceArtifact` with
+provenance and a verified payload digest. Missing or malformed required facts, or a required
+collector that was unrequested, failed, or partial, produce `INSUFFICIENT_EVIDENCE`, never
+`PASS`. Resource controls return `NOT_APPLICABLE` only when their collector succeeded and no
+target resources exist.
+
+The compatibility method `RuleEngine.evaluate(snapshot)` still returns failure-only
+`FindingCandidate` values and raises `RuleEvaluationError` for insufficient evidence or incomplete
+required collection. New code should use `assess`. Both result types remain in memory; Sprint 2.1
+creates no database records.
 
 ## Docker Compose
 
@@ -225,5 +262,7 @@ Configuration comes from environment variables and an optional local `.env` file
 - `STALE_ACCESS_KEY_DAYS`
 - `REQUIRED_TAGS` as a comma-separated list
 
-`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` are retained for future controls and are not used by
-the five Sprint 2 controls. Never commit `.env`, credentials, credential exports, or scan output.
+`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` remain available as configuration inputs for later
+profile-aware orchestration but are not consumed by the current five technical decisions.
+Assessment profile thresholds are organization or project policy, not universal NIST CSF
+requirements. Never commit `.env`, credentials, credential exports, or scan output.

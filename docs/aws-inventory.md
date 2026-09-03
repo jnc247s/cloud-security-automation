@@ -20,9 +20,11 @@ to PostgreSQL, or modify AWS.
    - account CloudTrail trails, enriched through each trail's home region.
 8. Each AWS response is transformed into the common `NormalizedResource` contract. AWS
    timestamps and other SDK values are converted to JSON-safe values.
-9. The inventory service sorts resources by stable account/service/scope/region/resource
-   identity and returns one `InventorySnapshot`.
-10. The command prints counts by service. Raw resource data is kept out of console logs.
+9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
+   then sorts available resources by stable account/service/scope/region/resource identity and
+   returns one `InventorySnapshot`.
+10. The command prints collection outcomes and counts by service. Raw resource data is kept out
+    of console logs.
 
 Later sprints can consume the same snapshot to evaluate controls, store findings, and expose a
 scan API without coupling those responsibilities to boto3 collectors.
@@ -120,6 +122,12 @@ The command emits a deliberately small JSON document:
   "account_id": "123456789012",
   "requested_region": "us-east-1",
   "collected_at": "2026-09-02T18:30:00+00:00",
+  "collector_outcomes": {
+    "cloudtrail_trails": "SUCCEEDED",
+    "iam_users": "SUCCEEDED",
+    "s3_buckets": "SUCCEEDED",
+    "security_groups": "SUCCEEDED"
+  },
   "resource_count": 27,
   "resources_by_service": {
     "cloudtrail": 2,
@@ -135,10 +143,11 @@ different from a failed collection.
 
 ## Failure behavior
 
-An expired login, missing permission, throttling after retries, unreachable endpoint, or other
-unexpected AWS failure stops the run and returns exit code `1`. The console identifies the
-failed collector but does not dump AWS responses or resource configuration. No partial result
-is presented as a complete inventory.
+An expired login, missing permission, throttling after retries, unreachable endpoint, or malformed
+required response marks the affected collector `FAILED` or `PARTIAL`. Independent collectors keep
+running, and the command returns exit code `1` whenever any requested collector is incomplete.
+The sanitized summary identifies collection coverage without dumping exception text, AWS
+responses, or resource configuration. No partial result is presented as complete.
 
 Expected S3 absence responses are facts, not failures:
 
@@ -175,4 +184,6 @@ buckets are common.
   permission boundary or organization SCP.
 - Endpoint or region errors: verify `AWS_REGION` is enabled for the account and partition.
 - One inaccessible S3 bucket: confirm both the identity policy and bucket policy permit the
-  documented reads. Sprint 1 fails closed instead of silently omitting its facts.
+  documented reads. The S3 collector is marked incomplete, its uncertain results are discarded,
+  and independent collectors continue; assessment therefore fails closed with insufficient
+  evidence instead of silently omitting the bucket.

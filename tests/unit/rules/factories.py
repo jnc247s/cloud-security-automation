@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from app.schemas.inventory import InventorySnapshot
+from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
 
 ACCOUNT_ID = "123456789012"
@@ -43,5 +43,9 @@ def snapshot(*resources: NormalizedResource) -> InventorySnapshot:
         account_id=ACCOUNT_ID,
         requested_region=REGION,
         collected_at=datetime(2026, 9, 2, 12, tzinfo=UTC),
+        collector_outcomes=tuple(
+            CollectorOutcome(collector_name=name, status=CollectionStatus.SUCCEEDED)
+            for name in ("security_groups", "s3_buckets", "iam_users", "cloudtrail_trails")
+        ),
         resources=resources,
     )

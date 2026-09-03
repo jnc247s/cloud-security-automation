@@ -5,14 +5,14 @@ from typing import Any
 import pytest
 from botocore.exceptions import ClientError
 
-from app.collectors.base import ResourceCollector
+from app.collectors.base import CollectorEvidenceError, ResourceCollector
 from app.collectors.cloudtrail import CloudTrailCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
+from app.schemas.inventory import CollectionStatus
 from app.schemas.resource import NormalizedResource, ResourceScope
 from app.services.inventory_service import (
-    InventoryCollectionError,
     InventoryService,
     build_default_collectors,
 )
@@ -47,6 +47,13 @@ class FailingCollector(ResourceCollector):
 
     def collect(self) -> list[NormalizedResource]:
         raise self.error
+
+
+class PartialCollector(ResourceCollector):
+    collector_name = "partial"
+
+    def collect(self) -> list[NormalizedResource]:
+        raise CollectorEvidenceError("ListThings", "pages[0].Things")
 
 
 def _resource(resource_id: str, service: str) -> NormalizedResource:
@@ -89,6 +96,7 @@ def test_collect_returns_deterministically_sorted_snapshot() -> None:
     assert snapshot.requested_region == "us-west-2"
     assert snapshot.collected_at.tzinfo is not None
     assert snapshot.resource_count == 3
+    assert snapshot.collection_status("static") is CollectionStatus.SUCCEEDED
     assert [(item.service, item.aws_resource_id) for item in snapshot.resources] == [
         ("ec2", "sg-a"),
         ("s3", "bucket-a"),
@@ -101,9 +109,10 @@ def test_explicit_empty_collector_set_returns_successful_empty_snapshot() -> Non
 
     assert snapshot.resource_count == 0
     assert snapshot.resources == ()
+    assert snapshot.collector_outcomes == ()
 
 
-def test_aws_failure_identifies_collector_without_exposing_response() -> None:
+def test_aws_failure_becomes_sanitized_failed_collection_coverage() -> None:
     client_error = ClientError(
         {
             "Error": {
@@ -115,12 +124,40 @@ def test_aws_failure_identifies_collector_without_exposing_response() -> None:
     )
     collector = FailingCollector(client_error)
 
-    with pytest.raises(InventoryCollectionError, match="failing") as error_info:
-        InventoryService(FakeClientProvider(), collectors=(collector,)).collect()
+    snapshot = InventoryService(FakeClientProvider(), collectors=(collector,)).collect()
 
-    assert error_info.value.collector_name == "failing"
-    assert "sensitive upstream detail" not in str(error_info.value)
-    assert error_info.value.__cause__ is client_error
+    assert snapshot.resources == ()
+    assert snapshot.collection_status("failing") is CollectionStatus.FAILED
+    assert "sensitive upstream detail" not in snapshot.model_dump_json()
+
+
+def test_collection_continues_after_one_collector_fails() -> None:
+    error = ClientError(
+        {"Error": {"Code": "AccessDenied", "Message": "sensitive detail"}},
+        "ListThings",
+    )
+    succeeding = StaticCollector([_resource("resource-after-failure", "s3")])
+
+    snapshot = InventoryService(
+        FakeClientProvider(),
+        collectors=(FailingCollector(error), succeeding),
+    ).collect()
+
+    assert snapshot.collection_status("failing") is CollectionStatus.FAILED
+    assert snapshot.collection_status("static") is CollectionStatus.SUCCEEDED
+    assert [resource.aws_resource_id for resource in snapshot.resources] == [
+        "resource-after-failure"
+    ]
+
+
+def test_malformed_aws_response_becomes_partial_collection_coverage() -> None:
+    snapshot = InventoryService(
+        FakeClientProvider(),
+        collectors=(PartialCollector(FakeClientProvider()),),
+    ).collect()
+
+    assert snapshot.resources == ()
+    assert snapshot.collection_status("partial") is CollectionStatus.PARTIAL
 
 
 def test_programming_error_is_not_mislabeled_as_aws_failure() -> None:

@@ -1,0 +1,91 @@
+{
+  "framework": {
+    "framework_id": "nist-csf",
+    "name": "NIST Cybersecurity Framework",
+    "version": "2.0",
+    "source": "https://doi.org/10.6028/NIST.CSWP.29"
+  },
+  "references": [
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR",
+      "level": "function",
+      "title": "Protect",
+      "description": "Safeguards to manage the organization’s cybersecurity risks are used",
+      "parent_reference_id": null
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.AA",
+      "level": "category",
+      "title": "Identity Management, Authentication, and Access Control",
+      "description": "Access to physical and logical assets is limited to authorized users, services, and hardware and managed commensurate with the assessed risk of unauthorized access",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.DS",
+      "level": "category",
+      "title": "Data Security",
+      "description": "Data are managed consistent with the organization’s risk strategy to protect the confidentiality, integrity, and availability of information",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.PS",
+      "level": "category",
+      "title": "Platform Security",
+      "description": "The hardware, software (e.g., firmware, operating systems, applications), and services of physical and virtual platforms are managed consistent with the organization’s risk strategy to protect their confidentiality, integrity, and availability",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.IR",
+      "level": "category",
+      "title": "Technology Infrastructure Resilience",
+      "description": "Security architectures are managed with the organization’s risk strategy to protect asset confidentiality, integrity, and availability, and organizational resilience",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.AA-03",
+      "level": "subcategory",
+      "title": "Users, services, and hardware are authenticated",
+      "description": "Users, services, and hardware are authenticated",
+      "parent_reference_id": "PR.AA"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.DS-01",
+      "level": "subcategory",
+      "title": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "description": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "parent_reference_id": "PR.DS"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.PS-04",
+      "level": "subcategory",
+      "title": "Log records are generated and made available for continuous monitoring",
+      "description": "Log records are generated and made available for continuous monitoring",
+      "parent_reference_id": "PR.PS"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0",
+      "reference_id": "PR.IR-01",
+      "level": "subcategory",
+      "title": "Networks and environments are protected from unauthorized logical access and usage",
+      "description": "Networks and environments are protected from unauthorized logical access and usage",
+      "parent_reference_id": "PR.IR"
+    }
+  ]
+}
