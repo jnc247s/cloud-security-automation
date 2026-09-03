@@ -134,8 +134,8 @@ an organization, or prove destination health. Those are distinct controls or fut
 
 Given the same validated snapshot and registry, evaluation returns value-equal candidates in the
 same order. Evidence lists are normalized before output, and one control/resource pair yields at
-most one candidate. This supports future persistence deduplication without implementing that
-lifecycle in Sprint 2.
+most one candidate. Sprint 3 consumes that stable identity to reconcile a single durable finding
+for each control/resource pair.
 
 Malformed applicable facts stop evaluation with an error that identifies the control, resource,
 and fact path without dumping the resource's raw AWS response. This fail-closed behavior prevents

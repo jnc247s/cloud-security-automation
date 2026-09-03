@@ -28,7 +28,7 @@ class ControlCategory(StrEnum):
 
 
 class FindingCandidate(BaseModel):
-    """Deterministic rule output awaiting persistence in a later sprint."""
+    """Deterministic rule output awaiting reconciliation for the current scan."""
 
     model_config = ConfigDict(frozen=True)
 

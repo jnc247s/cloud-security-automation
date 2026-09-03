@@ -1,11 +1,11 @@
 # Cloud Security Control Plane
 
 A production-style Python service for discovering AWS resources and evaluating them with
-evidence-based security controls. Later sprints will persist and expose the resulting findings.
+evidence-based security controls, with durable scan and finding lifecycle state in PostgreSQL.
 
 ## Project status
 
-**Sprint 2 — Security Rule Engine**
+**Sprint 3 — Persistence and Scan Lifecycle**
 
 Available now:
 
@@ -27,12 +27,16 @@ Available now:
   - `S3-002` — missing bucket encryption configuration
   - `IAM-001` — IAM user without MFA
   - `LOG-001` — no suitable active CloudTrail
+- SQLAlchemy models and Alembic migrations for scans, resources, and findings
+- Transactional resource upserts and database-enforced finding deduplication
+- Successful-scan verification that resolves missing findings and reopens recurring findings
+- Durable `QUEUED`, `RUNNING`, `COMPLETED`, and `FAILED` scan state
+- A persisted scan runner that leaves findings unchanged when collection or evaluation fails
 - Offline unit tests, Ruff configuration, and GitHub Actions CI
 
-Inventory and finding persistence, finding lifecycle management, scan API endpoints, Terraform,
-remediation, authentication, a frontend, and AI functionality are **not implemented**. Running
-Sprint 2 only reads AWS configuration and evaluates an in-memory snapshot; it does not change AWS
-resources or write findings to PostgreSQL.
+Scan, finding, resource, and control REST endpoints, Terraform, remediation, authentication, a
+frontend, and AI functionality are **not implemented**. Scanning remains read-only in AWS. Sprint
+3 writes scan results only to the configured application database and never changes AWS resources.
 
 ## How it is used
 
@@ -47,7 +51,13 @@ findings = engine.evaluate(snapshot)
 ```
 
 The default registry contains exactly the five controls listed above. Evaluation is deterministic:
-the same normalized snapshot and registry produce the same ordered finding candidates.
+the same normalized snapshot and registry produce the same ordered finding candidates. The
+persisted workflow reconciles those candidates against existing findings in one transaction:
+
+```powershell
+alembic upgrade head
+python scripts/run_scan.py
+```
 
 The existing inventory command remains useful for checking collection independently:
 
@@ -62,7 +72,8 @@ write inventory to PostgreSQL.
 See [AWS inventory operations](docs/aws-inventory.md) for the complete setup, least-privilege
 policy baseline, call flow, scope, and troubleshooting guidance. See
 [Security controls](docs/security-controls.md) for control semantics, evidence, limitations, and
-programmatic evaluation.
+programmatic evaluation. See [Persistence and scan lifecycle](docs/persistence.md) for schema,
+transaction, deduplication, and resolution semantics.
 
 ## Technology stack
 
@@ -70,7 +81,7 @@ programmatic evaluation.
 - FastAPI and Uvicorn
 - boto3 and botocore
 - Pydantic Settings
-- SQLAlchemy 2.x and PostgreSQL with psycopg 3
+- SQLAlchemy 2.x, Alembic, and PostgreSQL with psycopg 3
 - Docker and Docker Compose
 - pytest, httpx, Ruff, and GitHub Actions
 
@@ -84,18 +95,20 @@ programmatic evaluation.
 │   ├── collectors/          # Fact-only AWS resource collectors
 │   ├── database/            # SQLAlchemy engine, sessions, and model base
 │   ├── logging/             # Application logging configuration
-│   ├── models/              # Reserved for future persistence models
+│   ├── models/              # Scan, resource, finding, and lifecycle models
 │   ├── remediation/         # Reserved for future approved remediation
 │   ├── rules/               # Rule contracts, engine, registry, and five controls
 │   ├── schemas/             # HTTP, inventory, resource, and finding contracts
-│   ├── services/            # Inventory orchestration
+│   ├── services/            # Inventory, persistence, and scan orchestration
 │   ├── config.py
 │   └── main.py
 ├── docs/
 │   ├── aws-inventory.md
+│   ├── persistence.md
 │   └── security-controls.md
-├── scripts/run_inventory.py
-├── tests/                   # API and offline unit tests
+├── alembic/                 # Versioned database migrations
+├── scripts/                 # Inventory-only and persisted scan commands
+├── tests/                   # API, unit, persistence, and migration tests
 ├── terraform/               # Placeholder only; no infrastructure exists yet
 ├── .github/workflows/ci.yml
 ├── docker-compose.yml
@@ -116,10 +129,11 @@ Copy-Item .env.example .env
 On macOS or Linux, activate with `source .venv/bin/activate` and copy the example with
 `cp .env.example .env`.
 
-Start PostgreSQL if you want the readiness endpoint to report ready, then start the API:
+Start PostgreSQL, apply migrations, then start the API:
 
 ```powershell
 docker compose up -d db
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
@@ -181,8 +195,21 @@ findings = RuleEngine(build_default_registry()).evaluate(snapshot)
 ```
 
 Each `FindingCandidate` identifies its control and target, assigns a severity, and carries
-structured evidence, impact, and remediation guidance. The candidates are in-memory values for
-now; Sprint 2 does not create finding records or resolve prior findings.
+structured evidence, impact, and remediation guidance. The rule engine remains side-effect-free;
+`ScanPersistenceService` is the separate transactional boundary that reconciles candidates.
+
+## Run a persisted scan
+
+Apply migrations, configure read-only AWS credentials as above, and run:
+
+```powershell
+python scripts/run_scan.py
+```
+
+The command records scan state, stores normalized resources, creates or updates findings, and
+resolves prior findings only after a successful verification scan. It prints aggregate metadata
+only. A collection or rule-evaluation failure marks the scan `FAILED` without persisting a partial
+snapshot or resolving existing findings.
 
 ## Docker Compose
 
@@ -194,6 +221,9 @@ docker compose up --build
 For macOS or Linux, use `cp .env.example .env`. The example values are local placeholders and
 must not be reused as production credentials.
 
+Compose waits for PostgreSQL, runs `alembic upgrade head` in a one-shot `migrate` service, and then
+starts the API.
+
 Compose does not mount host AWS credentials, and the API has no inventory endpoint yet. Run
 inventory from the configured host environment. In deployments, prefer a workload role over
 mounted credential files.
@@ -203,7 +233,8 @@ Stop services with `docker compose down`. The PostgreSQL volume is retained; use
 
 ## Tests and code quality
 
-Tests use injected fake AWS clients and require neither AWS credentials nor network access.
+Tests use injected fake AWS clients and an isolated SQLite database. They require neither AWS
+credentials, a running PostgreSQL server, nor network access.
 
 ```powershell
 python -m pytest

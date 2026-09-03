@@ -24,8 +24,9 @@ to PostgreSQL, or modify AWS.
    identity and returns one `InventorySnapshot`.
 10. The command prints counts by service. Raw resource data is kept out of console logs.
 
-Later sprints can consume the same snapshot to evaluate controls, store findings, and expose a
-scan API without coupling those responsibilities to boto3 collectors.
+The Sprint 3 `ScanService` can consume the same snapshot, evaluate controls, and persist the scan,
+resources, and finding lifecycle without coupling those responsibilities to boto3 collectors. A
+scan API remains deferred to Sprint 4.
 
 ## Read-only policy baseline
 

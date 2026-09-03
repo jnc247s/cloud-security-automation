@@ -14,7 +14,7 @@ class ResourceScope(StrEnum):
 
 
 class NormalizedResource(BaseModel):
-    """Collector output that is independent of boto3 and future persistence models."""
+    """Collector output independent of boto3 and database persistence models."""
 
     model_config = ConfigDict(frozen=True)
 
