@@ -1,1 +1,1 @@
-"""Future security control package."""
+"""Side-effect-free security control evaluation."""
