@@ -77,10 +77,13 @@ def _insert_if_absent(
         statement = sqlite_insert(model.__table__)
     else:
         raise ScanPersistenceError("persistence supports PostgreSQL and SQLite tests only")
+    primary_key = next(iter(model.__table__.primary_key.columns))
     result = session.execute(
-        statement.values(**values).on_conflict_do_nothing(index_elements=conflict_columns)
+        statement.values(**values)
+        .on_conflict_do_nothing(index_elements=conflict_columns)
+        .returning(primary_key)
     )
-    return result.rowcount == 1
+    return result.first() is not None
 
 
 def _state_document(resource: NormalizedResource) -> dict[str, Any]:
