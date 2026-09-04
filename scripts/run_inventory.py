@@ -30,6 +30,7 @@ def main() -> int:
 
     resources_by_service = Counter(resource.service for resource in snapshot.resources)
     summary = {
+        "scan_id": str(snapshot.scan_id),
         "account_id": snapshot.account_id,
         "requested_region": snapshot.requested_region,
         "collected_at": snapshot.collected_at.isoformat(),

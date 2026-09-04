@@ -1,0 +1,4 @@
+This directory contains the reviewed database migrations for durable assessment history.
+
+Create schema changes with Alembic and commit the generated revision. Do not call
+SQLAlchemy metadata.create_all() in application startup.

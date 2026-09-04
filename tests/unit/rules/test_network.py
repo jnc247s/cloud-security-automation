@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 import pytest
 
@@ -52,6 +53,7 @@ def _security_group(
 
 def _snapshot(*resources: NormalizedResource) -> InventorySnapshot:
     return InventorySnapshot(
+        scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
         account_id=ACCOUNT_ID,
         requested_region=REGION,
         collected_at=COLLECTED_AT,

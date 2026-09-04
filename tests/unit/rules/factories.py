@@ -2,12 +2,14 @@
 
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
 
 ACCOUNT_ID = "123456789012"
 REGION = "us-east-1"
+SCAN_ID = UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32")
 
 
 def resource(
@@ -40,6 +42,7 @@ def snapshot(*resources: NormalizedResource) -> InventorySnapshot:
     """Build a deterministic inventory snapshot around supplied resources."""
 
     return InventorySnapshot(
+        scan_id=SCAN_ID,
         account_id=ACCOUNT_ID,
         requested_region=REGION,
         collected_at=datetime(2026, 9, 2, 12, tzinfo=UTC),

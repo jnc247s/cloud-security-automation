@@ -2,15 +2,16 @@
 
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
 import pytest
 
 from app.assessment.controls import build_default_control_catalog
+from app.assessment.identities import inventory_sha256
 from app.assessment.models import AssessmentResult
 from app.assessment.profiles import DEFAULT_ASSESSMENT_PROFILE, AssessmentProfile
+from app.assessment.provenance import control_catalog_sha256
 from app.rules.audit_logging import MissingCloudTrailRule
 from app.rules.base import RuleEvaluationError, assessment_scan_id
 from app.rules.engine import RuleContractError, RuleEngine
@@ -330,6 +331,10 @@ def test_engine_returns_one_explicit_result_per_enabled_control_in_stable_order(
     )
     assert first == second
     assert tuple(item.identity for item in first) == tuple(sorted(item.identity for item in first))
+    assert {item.inventory_sha256 for item in first} == {inventory_sha256(inventory)}
+    assert {item.control_catalog_sha256 for item in first} == {
+        control_catalog_sha256(build_default_control_catalog())
+    }
 
 
 def test_profile_enabled_controls_are_applied_without_changing_rule_logic() -> None:
@@ -371,6 +376,22 @@ def test_engine_validates_every_assessment_contract_guard(monkeypatch) -> None:
             (valid.model_copy(update={"scan_id": UUID("00000000-0000-0000-0000-000000000001")}),),
             "different inventory snapshot",
         ),
+        (
+            (valid.model_copy(update={"inventory_sha256": "0" * 64}),),
+            "different inventory facts",
+        ),
+        (
+            (valid.model_copy(update={"control_catalog_sha256": "0" * 64}),),
+            "different control catalog",
+        ),
+        (
+            (
+                valid.model_copy(
+                    update={"resource_snapshot_id": UUID("00000000-0000-0000-0000-000000000002")}
+                ),
+            ),
+            "different resource snapshot",
+        ),
         ((valid, valid), "duplicate assessment identity"),
     )
 
@@ -380,7 +401,7 @@ def test_engine_validates_every_assessment_contract_guard(monkeypatch) -> None:
             engine.assess(inventory, profile)
 
 
-def test_scan_surrogate_changes_when_collection_coverage_changes() -> None:
+def test_scan_identity_is_allocated_before_assessment_and_survives_coverage_updates() -> None:
     complete = snapshot(_security_group())
     partial = complete.model_copy(
         update={
@@ -393,16 +414,8 @@ def test_scan_surrogate_changes_when_collection_coverage_changes() -> None:
         }
     )
 
-    assert assessment_scan_id(complete) != assessment_scan_id(partial)
-
-
-def test_scan_surrogate_normalizes_equivalent_timestamp_offsets() -> None:
-    utc_snapshot = snapshot(_security_group())
-    central_snapshot = utc_snapshot.model_copy(
-        update={"collected_at": datetime.fromisoformat("2026-09-02T07:00:00-05:00")}
-    )
-
-    assert assessment_scan_id(utc_snapshot) == assessment_scan_id(central_snapshot)
+    assert assessment_scan_id(complete) == complete.scan_id
+    assert assessment_scan_id(partial) == complete.scan_id
 
 
 def test_registry_and_versioned_control_catalog_have_exactly_the_same_ids() -> None:

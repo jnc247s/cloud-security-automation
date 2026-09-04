@@ -277,6 +277,9 @@ class AssessmentCandidate(BaseModel):
     profile_version: NonEmptyString
     profile_checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
     scan_id: UUID
+    resource_snapshot_id: UUID
+    inventory_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    control_catalog_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     account_id: NonEmptyString
     service: NonEmptyString
@@ -314,6 +317,10 @@ class AssessmentCandidate(BaseModel):
                 raise ValueError("evidence control_id must match the assessment control_id")
             if artifact.scan_id != self.scan_id:
                 raise ValueError("evidence scan_id must match the assessment scan_id")
+            if artifact.resource_snapshot_id != self.resource_snapshot_id:
+                raise ValueError(
+                    "evidence resource_snapshot_id must match the assessment resource_snapshot_id"
+                )
             if artifact.account_id != self.account_id:
                 raise ValueError("evidence account_id must match the assessment account_id")
             if artifact.service != self.service:

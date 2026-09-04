@@ -3,6 +3,7 @@
 from datetime import datetime
 from enum import StrEnum
 from typing import Self
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -27,10 +28,11 @@ class CollectorOutcome(BaseModel):
 
 
 class InventorySnapshot(BaseModel):
-    """Resources collected during one non-persistent inventory run."""
+    """In-memory resource observations bound to one preallocated scan identity."""
 
     model_config = ConfigDict(frozen=True)
 
+    scan_id: UUID
     account_id: str = Field(min_length=1)
     requested_region: str = Field(min_length=1)
     collected_at: datetime

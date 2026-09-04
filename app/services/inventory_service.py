@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 from botocore.exceptions import BotoCoreError, ClientError
 
@@ -41,9 +42,12 @@ class InventoryService:
             collectors if collectors is not None else build_default_collectors(client_provider)
         )
 
-    def collect(self) -> InventorySnapshot:
-        """Collect independent facts and record sanitized per-collector completeness."""
+    def collect(self, *, scan_id: UUID | None = None) -> InventorySnapshot:
+        """Collect facts under an ID allocated before any identity or evidence API call."""
 
+        if scan_id is not None and not isinstance(scan_id, UUID):
+            raise TypeError("scan_id must be a UUID")
+        authoritative_scan_id = scan_id if scan_id is not None else uuid4()
         account_id = self.client_provider.account_id
         resources: list[NormalizedResource] = []
         outcomes: list[CollectorOutcome] = []
@@ -60,6 +64,7 @@ class InventoryService:
 
         resources.sort(key=lambda resource: resource.identity)
         return InventorySnapshot(
+            scan_id=authoritative_scan_id,
             account_id=account_id,
             requested_region=self.client_provider.region_name,
             collected_at=datetime.now(UTC),

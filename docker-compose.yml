@@ -17,6 +17,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
@@ -29,6 +31,17 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+
+  migrate:
+    build:
+      context: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-cloudsec}:${POSTGRES_PASSWORD:-cloudsec_dev_password}@db:5432/${POSTGRES_DB:-cloudsec}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   db:
     image: postgres:16-alpine
