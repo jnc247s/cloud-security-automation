@@ -1,21 +1,16 @@
 """Side-effect-free security rule contracts and shared helpers."""
 
-import hashlib
-import json
 from abc import ABC, abstractmethod
-from datetime import UTC
 from typing import ClassVar
-from uuid import UUID, uuid5
 
 from pydantic import JsonValue
 
+from app.assessment.identities import assessment_scan_id, resource_snapshot_id
 from app.assessment.models import AssessmentCandidate, AssessmentResult, EvidenceArtifact
 from app.assessment.profiles import AssessmentProfile
 from app.schemas.finding import ControlCategory, FindingCandidate, Severity
 from app.schemas.inventory import InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
-
-_ASSESSMENT_ID_NAMESPACE = UUID("e62d55d7-baea-57d6-82cd-b8ea6c1d23d6")
 
 
 class RuleEvaluationError(RuntimeError):
@@ -207,7 +202,7 @@ class SecurityRule(ABC):
         """Build one deterministic in-memory result without persistence or external calls."""
 
         scan_id = assessment_scan_id(snapshot)
-        resource_snapshot_id = _resource_snapshot_id(
+        target_snapshot_id = resource_snapshot_id(
             scan_id=scan_id,
             account_id=account_id,
             service=service,
@@ -220,7 +215,7 @@ class SecurityRule(ABC):
         if evidence is not None:
             artifacts = (
                 EvidenceArtifact.for_assessment(
-                    resource_snapshot_id=resource_snapshot_id,
+                    resource_snapshot_id=target_snapshot_id,
                     scan_id=scan_id,
                     control_id=self.control_id,
                     account_id=account_id,
@@ -247,6 +242,7 @@ class SecurityRule(ABC):
             profile_version=profile.version,
             profile_checksum=profile.calculate_content_checksum(),
             scan_id=scan_id,
+            resource_snapshot_id=target_snapshot_id,
             account_id=account_id,
             service=service,
             resource_type=resource_type,
@@ -309,61 +305,3 @@ class SecurityRule(ABC):
             impact=self.impact,
             recommendation=self.recommendation,
         )
-
-
-def assessment_scan_id(snapshot: InventorySnapshot) -> UUID:
-    """Derive a stable scan surrogate until Sprint 3 persists scan identifiers."""
-
-    snapshot_content = json.dumps(
-        {
-            "collector_outcomes": [
-                outcome.model_dump(mode="json")
-                for outcome in sorted(
-                    snapshot.collector_outcomes,
-                    key=lambda item: item.collector_name,
-                )
-            ],
-            "resources": [
-                resource.model_dump(mode="json")
-                for resource in sorted(snapshot.resources, key=lambda item: item.identity)
-            ],
-        },
-        ensure_ascii=True,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-    seed = "\x1f".join(
-        (
-            snapshot.account_id,
-            snapshot.requested_region,
-            snapshot.collected_at.astimezone(UTC).isoformat(),
-            hashlib.sha256(snapshot_content).hexdigest(),
-        )
-    )
-    return uuid5(_ASSESSMENT_ID_NAMESPACE, seed)
-
-
-def _resource_snapshot_id(
-    *,
-    scan_id: UUID,
-    account_id: str,
-    service: str,
-    resource_type: str,
-    scope: ResourceScope,
-    region: str | None,
-    aws_resource_id: str,
-) -> UUID:
-    """Derive a stable resource-snapshot surrogate for in-memory evidence."""
-
-    seed = "\x1f".join(
-        (
-            str(scan_id),
-            account_id,
-            service,
-            resource_type,
-            scope.value,
-            region or "global",
-            aws_resource_id,
-        )
-    )
-    return uuid5(_ASSESSMENT_ID_NAMESPACE, seed)

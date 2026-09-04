@@ -1,8 +1,10 @@
 """Deterministic orchestration for registered security controls."""
 
+from app.assessment.controls import build_default_control_catalog
+from app.assessment.identities import assessment_scan_id, inventory_sha256, resource_snapshot_id
 from app.assessment.models import AssessmentCandidate
 from app.assessment.profiles import AssessmentProfile
-from app.rules.base import assessment_scan_id
+from app.assessment.provenance import control_catalog_sha256
 from app.rules.registry import RuleRegistry
 from app.schemas.finding import FindingCandidate
 from app.schemas.inventory import InventorySnapshot
@@ -64,6 +66,13 @@ class RuleEngine:
         assessments: list[AssessmentCandidate] = []
         seen_identities: set[tuple[str, str, str, str, str, str, str]] = set()
         expected_scan_id = assessment_scan_id(snapshot)
+        expected_inventory_sha256 = inventory_sha256(snapshot)
+        catalog = build_default_control_catalog()
+        expected_catalog_sha256 = control_catalog_sha256(catalog)
+        if set(profile.enabled_controls) - {control.control_id for control in catalog.controls}:
+            raise RuleContractError(
+                "enabled controls require a versioned technical catalog contract"
+            )
 
         for rule in self.registry.rules:
             if rule.control_id not in profile.enabled_controls:
@@ -93,6 +102,27 @@ class RuleEngine:
                     raise RuleContractError(
                         f"{rule.control_id} returned assessment for a different inventory snapshot"
                     )
+                if candidate.inventory_sha256 not in (None, expected_inventory_sha256):
+                    raise RuleContractError(
+                        f"{rule.control_id} returned assessment for different inventory facts"
+                    )
+                if candidate.control_catalog_sha256 not in (None, expected_catalog_sha256):
+                    raise RuleContractError(
+                        f"{rule.control_id} returned assessment for a different control catalog"
+                    )
+                expected_resource_snapshot_id = resource_snapshot_id(
+                    scan_id=expected_scan_id,
+                    account_id=candidate.account_id,
+                    service=candidate.service,
+                    resource_type=candidate.resource_type,
+                    scope=candidate.scope,
+                    region=candidate.region,
+                    aws_resource_id=candidate.aws_resource_id,
+                )
+                if candidate.resource_snapshot_id != expected_resource_snapshot_id:
+                    raise RuleContractError(
+                        f"{rule.control_id} returned assessment for a different resource snapshot"
+                    )
                 if (
                     candidate.profile_id != profile.profile_id
                     or candidate.profile_version != profile.version
@@ -108,7 +138,14 @@ class RuleEngine:
                     )
 
                 seen_identities.add(candidate.identity)
-                assessments.append(candidate)
+                assessments.append(
+                    candidate.model_copy(
+                        update={
+                            "inventory_sha256": expected_inventory_sha256,
+                            "control_catalog_sha256": expected_catalog_sha256,
+                        }
+                    )
+                )
 
         assessments.sort(key=lambda assessment: assessment.identity)
         return tuple(assessments)

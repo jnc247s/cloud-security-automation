@@ -9,6 +9,7 @@ description = "A production-style foundation for an AWS cloud security control p
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.14,<2.0",
     "boto3>=1.40,<2.0",
     "fastapi>=0.115,<1.0",
     "psycopg[binary]>=3.2,<4.0",
@@ -33,6 +34,7 @@ include = ["app*"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
 testpaths = ["tests"]
+markers = ["integration: requires an explicitly configured PostgreSQL test database"]
 
 [tool.ruff]
 line-length = 100
@@ -40,6 +42,9 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["B", "E", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -4,6 +4,7 @@ import json
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import Mock
+from uuid import UUID
 
 from botocore.exceptions import ProfileNotFound
 
@@ -16,6 +17,7 @@ def test_main_prints_only_inventory_summary(monkeypatch, capsys) -> None:
     settings = SimpleNamespace(log_level="INFO")
     provider = object()
     snapshot = InventorySnapshot(
+        scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
         account_id="123456789012",
         requested_region="us-east-1",
         collected_at=datetime(2026, 9, 2, 18, 30, tzinfo=UTC),
@@ -51,6 +53,7 @@ def test_main_prints_only_inventory_summary(monkeypatch, capsys) -> None:
     payload = json.loads(output)
     assert exit_code == 0
     assert payload == {
+        "scan_id": "0b8bf2d2-cd63-5dca-af97-59f68aa27b32",
         "account_id": "123456789012",
         "requested_region": "us-east-1",
         "collected_at": "2026-09-02T18:30:00+00:00",
@@ -82,6 +85,7 @@ def test_main_handles_invalid_profile_without_traceback(monkeypatch, caplog) -> 
 def test_main_labels_incomplete_collection_and_returns_failure(monkeypatch, capsys, caplog) -> None:
     settings = SimpleNamespace(log_level="INFO")
     incomplete = InventorySnapshot(
+        scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
         account_id="123456789012",
         requested_region="us-east-1",
         collected_at=datetime(2026, 9, 3, tzinfo=UTC),

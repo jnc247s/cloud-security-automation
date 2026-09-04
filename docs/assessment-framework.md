@@ -1,8 +1,9 @@
 # Assessment framework
 
-Sprint 2.1 establishes the versioned assessment contracts used by later persistence, API,
-reporting, and governance work. It separates technical AWS evaluation from organization policy
-and external cybersecurity-framework metadata.
+Sprint 2.1 established the versioned assessment contracts used by the Sprint 3 persistence layer
+and later API/reporting work. It separates technical AWS evaluation from organization policy and
+external cybersecurity-framework metadata. See [Persistence and history](persistence.md) for the
+durable data model; technical evaluation remains side-effect-free.
 
 ## Architectural boundary
 
@@ -32,14 +33,15 @@ the technical control contracts valid.
 | `NOT_APPLICABLE` | A resource-scoped control has no target resources in the snapshot. |
 
 `AssessmentCandidate` binds the result to a stable control ID, account/resource identity,
-deterministic scan surrogate, and exact profile ID, version, and content checksum. Result states
-are technical assessment states, not claims of framework compliance.
+authoritative scan UUID, normalized-inventory digest, complete control-catalog digest, and exact
+profile ID, version, and content checksum. Result states are technical assessment states, not
+claims of framework compliance.
 
 ## Evidence provenance
 
 Each `PASS` or `FAIL` result contains a structured `EvidenceArtifact`. Its provenance includes:
 
-- deterministic evidence, scan, and resource-snapshot identifiers;
+- an authoritative preallocated scan UUID and deterministic evidence/resource-snapshot identifiers;
 - control, account, service, resource type, AWS resource ID, ARN, scope, and region;
 - collector, normalized source, source AWS API, and collection timestamp;
 - evidence schema name and version;
@@ -48,16 +50,18 @@ Each `PASS` or `FAIL` result contains a structured `EvidenceArtifact`. Its prove
 
 Evidence retains collector-defined structure instead of being flattened into a generic
 entity-attribute-value table. Its identifier is bound to the canonical payload digest and complete
-provenance, so payload or provenance changes produce a different identifier. Persistence is
-deliberately deferred to Sprint 3. Until persistent scan records exist, scan and resource-snapshot
-UUIDs are deterministically derived from snapshot content, collection coverage, identity, and
-collection time.
+provenance, so payload or provenance changes produce a different identifier. Sprint 3 allocates
+the scan UUID before collection, carries it through evaluation, and persists that same identity.
+Resource-snapshot IDs are derived from the scan UUID and stable target identity, not from mutable
+configuration or collection coverage. A new scan receives a new UUID even when its facts match an
+earlier scan.
 
 `InventorySnapshot` records every requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`.
 The inventory service continues independent collectors after sanitized AWS or incomplete-response
 failures. If a control's required collector was unrequested, failed, or partial, assessment yields
 `INSUFFICIENT_EVIDENCE`; it never infers `PASS`, `FAIL`, or `NOT_APPLICABLE` from unknown coverage.
-Persisting scan-level collection provenance and lifecycle remains Sprint 3 work.
+Sprint 3 persists the exact scan scope and collection outcomes separately from technical results;
+incomplete coverage cannot silently resolve a finding.
 
 ## Assessment profiles
 
@@ -143,5 +147,7 @@ incomplete required collection.
 `RuleEngine.assess(snapshot, profile)` is the canonical interface for new work because it retains
 all four result states and evidence provenance.
 
-Sprint 2.1 adds no persistence schema, API or authentication, AWS resource/API scope expansion,
-Terraform, remediation, additional control library, dashboard, or AI functionality.
+Sprint 2.1 added no persistence schema or AWS/control expansion. Sprint 3 now records these
+contracts, assessments, evidence, findings, and governance history through an explicit
+caller-owned transaction. It still adds no scan API, authentication, AWS resource/API scope
+expansion, Terraform, remediation, additional control library, dashboard, or AI functionality.

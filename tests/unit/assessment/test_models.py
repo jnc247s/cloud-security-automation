@@ -52,7 +52,9 @@ def _candidate(**overrides: object) -> AssessmentCandidate:
         "profile_id": "default",
         "profile_version": "1.0.0",
         "profile_checksum": "a" * 64,
+        "inventory_sha256": "b" * 64,
         "scan_id": SCAN_ID,
+        "resource_snapshot_id": SNAPSHOT_ID,
         "account_id": "123456789012",
         "service": "ec2",
         "resource_type": "ec2_security_group",
@@ -213,6 +215,15 @@ def test_candidate_rejects_evidence_from_a_different_scan() -> None:
 
     with pytest.raises(ValidationError, match="evidence scan_id must match"):
         _candidate(evidence_artifacts=(other_scan_artifact,))
+
+
+def test_candidate_rejects_evidence_from_a_different_resource_snapshot() -> None:
+    other_snapshot_artifact = _artifact(
+        resource_snapshot_id=UUID("fe7ba31c-f2cf-521b-8919-c8a5e6c7055d")
+    )
+
+    with pytest.raises(ValidationError, match="evidence resource_snapshot_id must match"):
+        _candidate(evidence_artifacts=(other_snapshot_artifact,))
 
 
 def test_candidate_rejects_evidence_for_a_different_target() -> None:

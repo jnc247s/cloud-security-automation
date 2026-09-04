@@ -1,12 +1,12 @@
 # Cloud Security Control Plane
 
 A production-style Python service for discovering AWS resources and evaluating them with
-evidence-based, framework-aligned security controls. Later sprints will persist and expose the
-resulting assessments and findings.
+evidence-based, framework-aligned security controls. It preserves assessment history and findings
+in PostgreSQL; later sprints will expose secure scan and investigation workflows.
 
 ## Project status
 
-**Sprint 2.1 — Assessment Framework and Control Contracts**
+**Sprint 3 — Persistence, History, Findings, Exceptions and Audit**
 
 Available now:
 
@@ -28,19 +28,26 @@ Available now:
 - A versioned, checksummed organization assessment profile
 - Versioned technical control contracts and an independently validated NIST CSF 2.0 mapping
   catalog
+- Preallocated scan UUIDs, exact scope manifests, and explicit complete/partial/failed coverage
+- Stable resource identities separated from immutable per-scan resource observations
+- PostgreSQL persistence for versioned profiles, catalogs, assessments, structured evidence,
+  deduplicated findings, and finding occurrences
+- Time-bounded exceptions and audited finding dispositions that never rewrite technical results
+- Alembic migrations, database-enforced history guards, and transactional audit records
 - Five deterministic controls:
   - `NET-001` — public SSH exposure
   - `NET-002` — public RDP exposure
   - `S3-900` — missing explicit bucket encryption configuration (legacy prototype behavior)
   - `IAM-001` — IAM user without MFA
   - `LOG-001` — no suitable active CloudTrail
-- Offline unit tests, Ruff configuration, and GitHub Actions CI
+- Offline unit tests, migrated-database tests, optional PostgreSQL integration tests, Ruff,
+  and GitHub Actions CI
 
-Assessment and finding persistence, finding lifecycle management, scan API endpoints,
-authentication, Terraform, remediation, a frontend, and AI functionality are **not implemented**.
-Sprint 2.1 does not expand the AWS resource or API-permission scope and does not add security
-controls. It only reads AWS configuration and evaluates an in-memory snapshot; it does not
-change AWS resources or write assessments to PostgreSQL.
+Sprint 4's secure APIs, authentication/authorization, and scan executor are **not implemented**.
+There are no scan or finding API endpoints yet. Sprint 3 adds no AWS resources or API permissions,
+new security controls, Terraform infrastructure, remediation, frontend, or AI functionality.
+`S3-900` remains the unchanged legacy encryption-configuration prototype; it is not a new
+production control. AWS resources are never modified.
 
 ## How it is used
 
@@ -59,6 +66,11 @@ engine = RuleEngine(build_default_registry())
 profile = create_default_assessment_profile()
 assessments = engine.assess(snapshot, profile)
 ```
+
+Each collection receives a scan UUID before AWS identity or evidence collection begins. A caller
+can supply its own UUID with `collect(scan_id=scan_id)`. Evaluation stays in memory; a separate
+`persist_scan_result(...)` call records the validated result bundle in a caller-owned database
+transaction. See [Persistence and history](docs/persistence.md) for the scope contract and example.
 
 The default registry contains the five controls listed above. Evaluation is deterministic: the
 same normalized snapshot, registry, and profile produce the same ordered assessment candidates.
@@ -81,7 +93,8 @@ See [AWS inventory operations](docs/aws-inventory.md) for the complete setup, le
 policy baseline, call flow, scope, and troubleshooting guidance. See
 [Security controls](docs/security-controls.md) for control semantics and limitations, and
 [Assessment framework](docs/assessment-framework.md) for result states, profiles, evidence
-provenance, framework mappings, and programmatic evaluation.
+provenance, framework mappings, and programmatic evaluation. The Sprint 3
+[persistence guide](docs/persistence.md) covers durable history and finding lifecycle safety.
 
 ## Technology stack
 
@@ -89,7 +102,7 @@ provenance, framework mappings, and programmatic evaluation.
 - FastAPI and Uvicorn
 - boto3 and botocore
 - Pydantic Settings
-- SQLAlchemy 2.x and PostgreSQL with psycopg 3
+- SQLAlchemy 2.x, Alembic, and PostgreSQL with psycopg 3
 - Docker and Docker Compose
 - pytest, httpx, Ruff, and GitHub Actions
 
@@ -102,21 +115,24 @@ provenance, framework mappings, and programmatic evaluation.
 │   ├── api/                # API routing and health/readiness endpoints
 │   ├── aws/                # Lazy AWS sessions, clients, and caller identity
 │   ├── collectors/         # Fact-only AWS resource collectors
-│   ├── database/           # SQLAlchemy engine, sessions, and model base
+│   ├── database/           # Sessions, catalog/result persistence, and governance
 │   ├── logging/            # Application logging configuration
-│   ├── models/             # Reserved for future persistence models
+│   ├── models/             # Historical records, findings, exceptions, and audit
 │   ├── remediation/        # Reserved for future approved remediation
 │   ├── rules/              # Rule contracts, engine, registry, and five controls
-│   ├── schemas/            # HTTP, inventory, resource, and finding contracts
+│   ├── schemas/            # HTTP, inventory, resource, finding, and scan-scope contracts
 │   ├── services/           # Inventory orchestration
 │   ├── config.py
 │   └── main.py
 ├── docs/
 │   ├── assessment-framework.md
 │   ├── aws-inventory.md
+│   ├── persistence.md
 │   └── security-controls.md
+├── alembic/                 # Reviewed, versioned schema migrations
+├── alembic.ini
 ├── scripts/run_inventory.py
-├── tests/                   # API and offline unit tests
+├── tests/                   # API, offline unit, and PostgreSQL integration tests
 ├── terraform/               # Placeholder only; no infrastructure exists yet
 ├── .github/workflows/ci.yml
 ├── docker-compose.yml
@@ -137,10 +153,11 @@ Copy-Item .env.example .env
 On macOS or Linux, activate with `source .venv/bin/activate` and copy the example with
 `cp .env.example .env`.
 
-Start PostgreSQL if you want the readiness endpoint to report ready, then start the API:
+Start PostgreSQL, apply the schema migrations, then start the API:
 
 ```powershell
 docker compose up -d db
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
@@ -149,7 +166,9 @@ uvicorn app.main:app --reload
 - OpenAPI UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 `/ready` executes `SELECT 1` against PostgreSQL and returns HTTP 503 when the database is
-unavailable. API startup and health checks do not contact AWS.
+unavailable. It is a connectivity check, not a migration-version check. API startup and health
+checks do not contact AWS. Apply migrations before using persistence; application startup does
+not create tables automatically.
 
 ## Run AWS inventory
 
@@ -169,6 +188,7 @@ Example output:
 
 ```json
 {
+  "scan_id": "77f0d7c3-d67e-4e65-9bbf-783414355fdb",
   "account_id": "123456789012",
   "requested_region": "us-east-1",
   "collected_at": "2026-09-02T18:30:00+00:00",
@@ -210,16 +230,31 @@ assessments = RuleEngine(build_default_registry()).assess(snapshot, profile)
 ```
 
 Each `AssessmentCandidate` identifies its control, target, exact profile version and checksum,
-and one explicit technical result. `PASS` and `FAIL` include a structured `EvidenceArtifact` with
-provenance and a verified payload digest. Missing or malformed required facts, or a required
-collector that was unrequested, failed, or partial, produce `INSUFFICIENT_EVIDENCE`, never
-`PASS`. Resource controls return `NOT_APPLICABLE` only when their collector succeeded and no
-target resources exist.
+the normalized-inventory and control-catalog digests used during evaluation, and one explicit
+technical result. `PASS` and `FAIL` include a structured `EvidenceArtifact` with provenance and a
+verified payload digest. Missing or malformed required facts, or a required collector that was
+unrequested, failed, or partial, produce `INSUFFICIENT_EVIDENCE`, never `PASS`. Resource controls
+return `NOT_APPLICABLE` only when their collector succeeded and no target resources exist.
 
 The compatibility method `RuleEngine.evaluate(snapshot)` still returns failure-only
 `FindingCandidate` values and raises `RuleEvaluationError` for insufficient evidence or incomplete
-required collection. New code should use `assess`. Both result types remain in memory; Sprint 2.1
-creates no database records.
+required collection. New code should use `assess`. Neither evaluation method writes to the
+database; persistence is a separate explicit operation.
+
+## Persistence and finding history
+
+`persist_scan_result` stores an already-collected, already-assessed result bundle atomically in
+the caller's transaction. It does not execute a scan. Each scan retains its scope, exact
+profile/catalog versions, resource snapshots, four-state assessments, and evidence.
+
+Repeated failures reuse one stable finding and append occurrence history. Only an explicit
+`PASS` from a complete scan can resolve it, according to observation-time ordering. Missing
+resources, partial scans, `NOT_APPLICABLE`, and `INSUFFICIENT_EVIDENCE` never resolve a finding.
+Exceptions and accepted-risk decisions change
+operational handling, never `FAIL` into `PASS`.
+
+See [Persistence and history](docs/persistence.md) for the data model, transaction example,
+governance operations, migration commands, and PostgreSQL test setup.
 
 ## Docker Compose
 
@@ -231,6 +266,10 @@ docker compose up --build
 For macOS or Linux, use `cp .env.example .env`. The example values are local placeholders and
 must not be reused as production credentials.
 
+Compose waits for PostgreSQL to become healthy, runs the one-shot `migrate` service with
+`alembic upgrade head`, and starts the API only after migration succeeds. If migration fails,
+inspect `docker compose logs migrate`; do not bypass it or delete the database to hide the error.
+
 Compose does not mount host AWS credentials, and the API has no inventory endpoint yet. Run
 inventory from the configured host environment. In deployments, prefer a workload role over
 mounted credential files.
@@ -240,7 +279,9 @@ Stop services with `docker compose down`. The PostgreSQL volume is retained; use
 
 ## Tests and code quality
 
-Tests use injected fake AWS clients and require neither AWS credentials nor network access.
+The default tests use injected fake AWS clients and migrated SQLite databases; they require
+neither AWS credentials nor a running PostgreSQL server. PostgreSQL integration tests are skipped
+unless `TEST_DATABASE_URL` is set. CI supplies a PostgreSQL test service and runs them as well.
 
 ```powershell
 python -m pytest
@@ -249,6 +290,17 @@ ruff format --check .
 ```
 
 Apply formatting locally with `ruff format .`.
+
+To run the PostgreSQL integration tests against a dedicated local test database:
+
+```powershell
+$env:TEST_DATABASE_URL = "postgresql+psycopg://cloudsec:change-me@localhost:5432/cloudsec_test"
+python -m pytest tests/integration
+```
+
+The test role must be able to create and drop schemas. The tests use an isolated generated schema;
+never point this setting at a production database. See the
+[test details](docs/persistence.md#tests) before running them.
 
 ## Configuration
 

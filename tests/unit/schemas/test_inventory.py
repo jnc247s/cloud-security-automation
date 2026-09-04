@@ -2,6 +2,7 @@
 
 import json
 from datetime import UTC, datetime
+from uuid import UUID
 
 import pytest
 from pydantic import ValidationError
@@ -27,6 +28,7 @@ def test_inventory_snapshot_counts_and_serializes_resources() -> None:
         raw_configuration={"Name": "cloud-security-fixture"},
     )
     snapshot = InventorySnapshot(
+        scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
         account_id="123456789012",
         requested_region="us-east-1",
         collected_at=datetime(2026, 9, 2, 15, 0, tzinfo=UTC),
@@ -53,6 +55,28 @@ def test_inventory_snapshot_counts_and_serializes_resources() -> None:
     assert snapshot.collection_status("iam_users") is None
 
 
+def test_inventory_snapshot_requires_an_authoritative_scan_uuid() -> None:
+    values = {
+        "account_id": "123456789012",
+        "requested_region": "us-east-1",
+        "collected_at": datetime(2026, 9, 2, 15, 0, tzinfo=UTC),
+        "collector_outcomes": (),
+        "resources": (),
+    }
+
+    with pytest.raises(ValidationError, match="scan_id"):
+        InventorySnapshot.model_validate(values)
+
+    with pytest.raises(ValidationError, match="scan_id"):
+        InventorySnapshot.model_validate({**values, "scan_id": "not-a-scan-uuid"})
+
+    scan_id = UUID("77f0d7c3-d67e-4e65-9bbf-783414355fdb")
+    snapshot = InventorySnapshot.model_validate({**values, "scan_id": scan_id})
+
+    assert snapshot.scan_id == scan_id
+    assert json.loads(snapshot.model_dump_json())["scan_id"] == str(scan_id)
+
+
 def test_inventory_snapshot_requires_unique_explicit_collection_coverage() -> None:
     outcome = CollectorOutcome(
         collector_name="s3_buckets",
@@ -61,6 +85,7 @@ def test_inventory_snapshot_requires_unique_explicit_collection_coverage() -> No
 
     with pytest.raises(ValidationError, match="collector outcomes must be unique"):
         InventorySnapshot(
+            scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
             account_id="123456789012",
             requested_region="us-east-1",
             collected_at=datetime(2026, 9, 2, 15, 0, tzinfo=UTC),
@@ -70,6 +95,7 @@ def test_inventory_snapshot_requires_unique_explicit_collection_coverage() -> No
 
     with pytest.raises(ValidationError, match="timezone-aware"):
         InventorySnapshot(
+            scan_id=UUID("0b8bf2d2-cd63-5dca-af97-59f68aa27b32"),
             account_id="123456789012",
             requested_region="us-east-1",
             collected_at=datetime(2026, 9, 2, 15, 0),
