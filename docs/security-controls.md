@@ -1,8 +1,9 @@
 # Security controls
 
-Sprint 2.1 keeps the five deterministic technical checks introduced in Sprint 2 and gives each
-one a versioned control contract. It does not add controls, AWS calls, persistence, API endpoints,
-or remediation execution.
+Sprint 2.1 kept the five deterministic technical checks introduced in Sprint 2 and gave each one
+a versioned control contract. It did not add controls, AWS calls, persistence, API endpoints, or
+remediation execution. Sprint 3 subsequently persisted those results, and Sprint 4 now exposes
+them through authorized read APIs without changing the control logic.
 
 The default control catalog is `aws-cloud-security-controls` version `0.2.1`:
 
@@ -130,6 +131,7 @@ required collector was not requested or did not succeed returns `INSUFFICIENT_EV
 turn unknown coverage into `PASS`, `FAIL`, or `NOT_APPLICABLE`. The legacy failure-only interface
 raises instead. Persisted scan-level collection status and provenance belong to Sprint 3.
 
-Sprint 2.1 intentionally excludes assessment persistence, lifecycle management, scan/control API
-endpoints, authentication, AWS resource/API scope expansion, additional controls, Terraform, remediation,
-frontend work, and AI functionality.
+Sprint 2.1 intentionally excluded assessment persistence, lifecycle management, scan/control API
+endpoints, and authentication; Sprints 3 and 4 now supply those foundations. AWS resource/API
+scope expansion, additional controls, Terraform, remediation, frontend work, and AI functionality
+remain deferred.
