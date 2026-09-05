@@ -3,7 +3,7 @@
 Sprint 2.1 established the versioned assessment contracts used by the Sprint 3 persistence layer
 and Sprint 4 service API. It separates technical AWS evaluation from organization policy and
 external cybersecurity-framework metadata. See [Persistence and history](persistence.md) for the
-durable data model and [Secure service API](secure-api.md) for authorized access; technical
+durable data model and [Service API](api.md) for authorized access; technical
 evaluation remains side-effect-free.
 
 ## Architectural boundary
@@ -107,38 +107,16 @@ catalogs.
 
 The Sprint 2 encryption prototype was deliberately moved from `S3-002` to non-core `S3-900`
 before persistence. Its behavior is preserved, while canonical `S3-002` remains reserved for the
-roadmap's future unapproved public/external bucket-exposure control.
+roadmap's future unapproved public/external bucket-exposure control. See the
+[control catalog](controls/catalog.md) for all permanent S3 identifier meanings.
 
-## NIST CSF 2.0 catalog and mappings
+## Framework catalog
 
-The bundled NIST subset represents the correct Function -> Category -> Subcategory hierarchy.
-Controls map to version-bound Subcategories:
-
-| Control | NIST CSF 2.0 Subcategory | Relationship |
-| --- | --- | --- |
-| `IAM-001` | `PR.AA-03` | MFA evidence contributes to the user-authentication outcome. |
-| `LOG-001` | `PR.PS-04` | Active CloudTrail evidence contributes to log-generation and availability. |
-| `NET-001` | `PR.IR-01` | Public SSH testing contributes to protection from unauthorized network access. |
-| `NET-002` | `PR.IR-01` | Public RDP testing contributes to protection from unauthorized network access. |
-| `S3-900` | `PR.DS-01` | Explicit default-encryption evidence contributes to data-at-rest protection. |
-
-Each `ControlFrameworkMapping` records the internal control, framework and version, reference ID,
-`mapping_rationale`, mapping source and source version, and verification timestamp. The source is
-the official NIST CSF 2.0 publication.
-
-These are scoped, many-to-one evidence relationships. A mapping is not proof that a control is
-equivalent to an entire NIST outcome, and a passing control is not proof of CSF compliance. NIST
-metadata does not set technical severity or profile thresholds.
-
-## Source integrity and updates
-
-The local CSF 2.0 subset is accompanied by a source manifest containing its official source,
-framework version, retrieval timestamp, and SHA-256 checksum. The loader verifies the artifact
-against that checksum before accepting it and validates all hierarchy and mapping references.
-
-Upstream framework changes must be reviewed and introduced as an explicit versioned artifact and
-manifest update. The application never silently refreshes or rewrites mappings from an external
-source.
+The bundled catalog, current control mappings, authoritative source provenance, integrity checks,
+and update protocol are documented in
+[NIST CSF 2.0 framework mapping](frameworks/nist-csf-2.0.md). Framework metadata remains a scoped
+reporting relationship: it never sets technical severity, changes a control result, or proves an
+entire CSF outcome.
 
 ## Compatibility and scope
 

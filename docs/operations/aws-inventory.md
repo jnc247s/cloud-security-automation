@@ -26,8 +26,9 @@ to PostgreSQL, or modify AWS.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
     of console logs.
 
-Later sprints can consume the same snapshot to evaluate controls, store findings, and expose a
-scan API without coupling those responsibilities to boto3 collectors.
+The Sprint 4 executor consumes the same snapshot through the rule and persistence layers without
+coupling those responsibilities to boto3 collectors. The standalone command remains an
+inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
@@ -119,6 +120,7 @@ The command emits a deliberately small JSON document:
 
 ```json
 {
+  "scan_id": "77f0d7c3-d67e-4e65-9bbf-783414355fdb",
   "account_id": "123456789012",
   "requested_region": "us-east-1",
   "collected_at": "2026-09-02T18:30:00+00:00",
@@ -143,11 +145,16 @@ different from a failed collection.
 
 ## Failure behavior
 
-An expired login, missing permission, throttling after retries, unreachable endpoint, or malformed
-required response marks the affected collector `FAILED` or `PARTIAL`. Independent collectors keep
-running, and the command returns exit code `1` whenever any requested collector is incomplete.
-The sanitized summary identifies collection coverage without dumping exception text, AWS
-responses, or resource configuration. No partial result is presented as complete.
+An expired login, missing permission, throttling after retries, or a declared incomplete collector
+response marks that collector `FAILED` or `PARTIAL`. Independent collectors keep running, and the
+command returns exit code `1` whenever any requested collector is incomplete. The sanitized
+summary identifies collection coverage without dumping exception text, AWS responses, or resource
+configuration. No partial result is presented as complete.
+
+The accepted error-isolation contract catches botocore `ClientError`/`BotoCoreError` and explicit
+`CollectorEvidenceError`. An unexpected malformed response that escapes those boundaries can
+abort the entire scan or CLI process. Expanding and normalizing that failure contract is a known
+pre-Sprint 5 concern; do not describe every malformed payload as safely isolated today.
 
 Expected S3 absence responses are facts, not failures:
 
