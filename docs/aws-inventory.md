@@ -172,7 +172,8 @@ buckets are common.
   explicitly assumed account role.
 - Directory buckets, S3 access points, IAM roles/groups/policies, VPCs, instances, and other AWS
   resource types are outside Sprint 1.
-- No inventory API route exists yet. `/health` and `/ready` never trigger AWS calls.
+- `POST /api/v1/scans` invokes this inventory through the authorized background executor;
+  resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host
   credentials to a container; use host execution or an explicitly configured workload role.
 

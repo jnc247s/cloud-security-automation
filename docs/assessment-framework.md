@@ -1,9 +1,10 @@
 # Assessment framework
 
 Sprint 2.1 established the versioned assessment contracts used by the Sprint 3 persistence layer
-and later API/reporting work. It separates technical AWS evaluation from organization policy and
+and Sprint 4 service API. It separates technical AWS evaluation from organization policy and
 external cybersecurity-framework metadata. See [Persistence and history](persistence.md) for the
-durable data model; technical evaluation remains side-effect-free.
+durable data model and [Secure service API](secure-api.md) for authorized access; technical
+evaluation remains side-effect-free.
 
 ## Architectural boundary
 
@@ -147,7 +148,8 @@ incomplete required collection.
 `RuleEngine.assess(snapshot, profile)` is the canonical interface for new work because it retains
 all four result states and evidence provenance.
 
-Sprint 2.1 added no persistence schema or AWS/control expansion. Sprint 3 now records these
-contracts, assessments, evidence, findings, and governance history through an explicit
-caller-owned transaction. It still adds no scan API, authentication, AWS resource/API scope
-expansion, Terraform, remediation, additional control library, dashboard, or AI functionality.
+Sprint 2.1 added no persistence schema or AWS/control expansion. Sprint 3 records these contracts,
+assessments, evidence, findings, and governance history through an explicit caller-owned
+transaction. Sprint 4 exposes that history through authorized service/API interfaces and can run
+the existing collectors and controls asynchronously. It adds no AWS evidence scope, Terraform,
+remediation, additional control library, dashboard, or AI functionality.

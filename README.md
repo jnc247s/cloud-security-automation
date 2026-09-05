@@ -2,11 +2,11 @@
 
 A production-style Python service for discovering AWS resources and evaluating them with
 evidence-based, framework-aligned security controls. It preserves assessment history and findings
-in PostgreSQL; later sprints will expose secure scan and investigation workflows.
+in PostgreSQL and exposes them through an authenticated, versioned service API.
 
 ## Project status
 
-**Sprint 3 — Persistence, History, Findings, Exceptions and Audit**
+**Sprint 4 — Service Layer, Secure API and Scan Execution**
 
 Available now:
 
@@ -34,6 +34,14 @@ Available now:
   deduplicated findings, and finding occurrences
 - Time-bounded exceptions and audited finding dispositions that never rewrite technical results
 - Alembic migrations, database-enforced history guards, and transactional audit records
+- OIDC/JWT authentication with JWKS signature, issuer, audience, expiry, and subject validation
+- Explicit `VIEWER`, `ANALYST`, `APPROVER`, and `ADMIN` roles mapped to `READ`, `PROPOSE`,
+  `APPROVE`, and `EXECUTE` capabilities
+- A local-only development identity that is rejected outside explicit development/test modes
+- Versioned, authorized APIs for scans, resources and history, assessments and evidence, findings,
+  controls and framework mappings, and exceptions
+- Separate scan, resource, assessment, finding, control, framework, exception, and audit services
+- A bounded, recoverable `ScanExecutor` that persists a scan before asynchronous AWS work begins
 - Five deterministic controls:
   - `NET-001` — public SSH exposure
   - `NET-002` — public RDP exposure
@@ -43,17 +51,32 @@ Available now:
 - Offline unit tests, migrated-database tests, optional PostgreSQL integration tests, Ruff,
   and GitHub Actions CI
 
-Sprint 4's secure APIs, authentication/authorization, and scan executor are **not implemented**.
-There are no scan or finding API endpoints yet. Sprint 3 adds no AWS resources or API permissions,
-new security controls, Terraform infrastructure, remediation, frontend, or AI functionality.
+Sprint 4 adds no AWS resources or API permissions, new collectors, new security controls,
+Terraform infrastructure, remediation, frontend, password database, or AI functionality.
 `S3-900` remains the unchanged legacy encryption-configuration prototype; it is not a new
 production control. AWS resources are never modified.
 
 ## How it is used
 
-In a real environment, an administrator grants a user or role the documented read-only
-permissions. An operator obtains short-lived AWS credentials and selects a region. Application
-code then collects a snapshot and evaluates it:
+In a real environment, an administrator grants the API workload the documented read-only AWS
+permissions and configures an external OIDC provider. An authorized caller submits a scan and
+receives its durable identity immediately:
+
+```powershell
+$headers = @{ Authorization = "Bearer local-development" } # local development only
+$scan = Invoke-RestMethod -Method Post `
+  -Uri http://localhost:8000/api/v1/scans `
+  -Headers $headers -ContentType application/json `
+  -Body '{"region":"us-east-1"}'
+Invoke-RestMethod -Uri "http://localhost:8000/api/v1/scans/$($scan.scan_id)" -Headers $headers
+```
+
+The POST returns HTTP 202 while the bounded executor collects and evaluates in the background.
+The account identity is resolved from STS, never accepted from the request. A CLI, dashboard,
+integration, or future agent can then query the stable machine-readable IDs, results, evidence,
+and framework mappings. See [Secure service API](docs/secure-api.md) for the complete contract.
+
+Application code can also compose the underlying deterministic services directly:
 
 ```python
 from app.assessment.profiles import create_default_assessment_profile
@@ -95,11 +118,14 @@ policy baseline, call flow, scope, and troubleshooting guidance. See
 [Assessment framework](docs/assessment-framework.md) for result states, profiles, evidence
 provenance, framework mappings, and programmatic evaluation. The Sprint 3
 [persistence guide](docs/persistence.md) covers durable history and finding lifecycle safety.
+The [secure API guide](docs/secure-api.md) covers authentication, authorization, endpoints, scan
+execution, and deployment limitations.
 
 ## Technology stack
 
 - Python 3.12+
 - FastAPI and Uvicorn
+- PyJWT and cryptography-backed OIDC signature verification
 - boto3 and botocore
 - Pydantic Settings
 - SQLAlchemy 2.x, Alembic, and PostgreSQL with psycopg 3
@@ -112,7 +138,7 @@ provenance, framework mappings, and programmatic evaluation. The Sprint 3
 .
 ├── app/
 │   ├── assessment/         # Profiles, evidence, control contracts, and frameworks
-│   ├── api/                # API routing and health/readiness endpoints
+│   ├── api/                # Versioned secure routes and health/readiness endpoints
 │   ├── aws/                # Lazy AWS sessions, clients, and caller identity
 │   ├── collectors/         # Fact-only AWS resource collectors
 │   ├── database/           # Sessions, catalog/result persistence, and governance
@@ -120,14 +146,16 @@ provenance, framework mappings, and programmatic evaluation. The Sprint 3
 │   ├── models/             # Historical records, findings, exceptions, and audit
 │   ├── remediation/        # Reserved for future approved remediation
 │   ├── rules/              # Rule contracts, engine, registry, and five controls
-│   ├── schemas/            # HTTP, inventory, resource, finding, and scan-scope contracts
-│   ├── services/           # Inventory orchestration
+│   ├── schemas/            # HTTP views, inventory, evidence, finding, and scan contracts
+│   ├── security/           # OIDC/development authentication and capability policy
+│   ├── services/           # Query services, inventory orchestration, and scan executor
 │   ├── config.py
 │   └── main.py
 ├── docs/
 │   ├── assessment-framework.md
 │   ├── aws-inventory.md
 │   ├── persistence.md
+│   ├── secure-api.md
 │   └── security-controls.md
 ├── alembic/                 # Reviewed, versioned schema migrations
 ├── alembic.ini
@@ -165,10 +193,15 @@ uvicorn app.main:app --reload
 - Readiness: [http://localhost:8000/ready](http://localhost:8000/ready)
 - OpenAPI UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
+Every `/api/v1` request needs a bearer token. With the example local configuration, choose
+**Authorize** in OpenAPI and enter `local-development`. Production must set `AUTH_MODE=oidc` and
+the OIDC variables described below.
+
 `/ready` executes `SELECT 1` against PostgreSQL and returns HTTP 503 when the database is
-unavailable. It is a connectivity check, not a migration-version check. API startup and health
-checks do not contact AWS. Apply migrations before using persistence; application startup does
-not create tables automatically.
+unavailable. It is a connectivity check, not a migration-version check. Health requests do not
+contact AWS. Application startup resubmits durable `RUNNING` scans, so it contacts AWS only when
+unfinished work exists. Apply migrations before using persistence; application startup does not
+create tables automatically.
 
 ## Run AWS inventory
 
@@ -270,9 +303,11 @@ Compose waits for PostgreSQL to become healthy, runs the one-shot `migrate` serv
 `alembic upgrade head`, and starts the API only after migration succeeds. If migration fails,
 inspect `docker compose logs migrate`; do not bypass it or delete the database to hide the error.
 
-Compose does not mount host AWS credentials, and the API has no inventory endpoint yet. Run
-inventory from the configured host environment. In deployments, prefer a workload role over
-mounted credential files.
+Compose does not mount host AWS credentials. A scan request therefore needs credentials supplied
+to the API through an appropriate workload environment; for simple host-side inventory checks,
+continue to use the inventory command. In deployments, prefer a workload role over mounted
+credential files. Compose binds the API to `127.0.0.1` by default because its development bearer
+marker is intentionally not a secret.
 
 Stop services with `docker compose down`. The PostgreSQL volume is retained; use
 `docker compose down --volumes` only when you intentionally want to delete local database data.
@@ -313,8 +348,13 @@ Configuration comes from environment variables and an optional local `.env` file
 - `AWS_PROFILE` (optional; blank means standard credential chain)
 - `STALE_ACCESS_KEY_DAYS`
 - `REQUIRED_TAGS` as a comma-separated list
+- `AUTH_MODE` (`development` locally or `oidc` for production)
+- `DEV_IDENTITY_SUBJECT` and `DEV_IDENTITY_ROLES` (local development only)
+- `OIDC_ISSUER`, `OIDC_AUDIENCE`, and `OIDC_JWKS_URL`
+- `OIDC_ALGORITHMS` (asymmetric allowlist; defaults to `RS256`)
+- `OIDC_ROLES_CLAIM` (defaults to `roles`)
+- `OIDC_ALLOW_INSECURE_HTTP` (localhost development providers only; defaults to `false`)
 
-`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` remain available as configuration inputs for later
-profile-aware orchestration but are not consumed by the current five technical decisions.
-Assessment profile thresholds are organization or project policy, not universal NIST CSF
-requirements. Never commit `.env`, credentials, credential exports, or scan output.
+`STALE_ACCESS_KEY_DAYS` and `REQUIRED_TAGS` populate the versioned default assessment profile used
+by asynchronous scans. These thresholds are organization or project policy, not universal NIST
+CSF requirements. Never commit `.env`, credentials, credential exports, or scan output.

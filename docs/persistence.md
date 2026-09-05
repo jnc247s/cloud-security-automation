@@ -70,9 +70,11 @@ Coverage determines the stored terminal status:
 | `PARTIAL` | Coverage is incomplete, but not every requested collector failed. |
 | `FAILED` | Every requested collector is explicitly `FAILED`. |
 
-The model also reserves `RUNNING` for the later execution workflow. The current persistence
-function records a finished result bundle, including its start/completion audit timestamps, in
-one transaction; it does not provide a live scan executor or checkpoint a running AWS scan.
+Sprint 4 uses `RUNNING` as a durable handoff to the scan executor. `ScanService` commits the scan
+identity and authenticated start audit before submitting AWS work. Collection and assessment run
+without an open database transaction; `persist_scan_result` then locks and verifies that exact
+pending row, records all immutable children, and terminalizes it atomically. Direct callers can
+still persist an already finished bundle in one transaction as before.
 
 Scope is an explicit caller claim, not something inferred from the absence of findings. A single
 inventory invocation region does not prove account-wide or multi-region coverage. Existing S3 and
@@ -151,9 +153,9 @@ The exception's validity and the finding's operational status are separate recor
 importantly, no exception or disposition changes an assessment from `FAIL` to `PASS`, removes
 evidence, or rewrites a prior assessment.
 
-Approver and actor IDs are audit provenance supplied by the programmatic caller, not an
-authentication or authorization implementation. The secure application boundary belongs to
-Sprint 4.
+Approver and actor IDs on the internal governance functions remain explicit programmatic inputs.
+Sprint 4 authenticates API callers and records the verified subject that starts a scan, but it
+does not expose governance mutation endpoints yet.
 
 ## Transactions and programmatic use
 
@@ -292,13 +294,13 @@ port. On macOS/Linux, use `export TEST_DATABASE_URL='postgresql+psycopg://...'`.
 production database or credentials here.
 
 The test role needs permission to create and drop its own schemas. Each test creates a unique
-`sprint3_test_<uuid>` schema, applies migrations there, and drops only that generated schema during
+`sprint4_test_<uuid>` schema, applies migrations there, and drops only that generated schema during
 cleanup; existing schemas are not targeted. CI provides a PostgreSQL test service and sets
 `TEST_DATABASE_URL`, so these checks run alongside the offline suite.
 
-## Explicitly deferred
+## Current boundary and deferred work
 
-Sprint 4 will provide the service/API boundary, authentication, authorization, and scan execution
-workflow. Sprint 3 does not add those endpoints or a background executor. AWS evidence expansion,
-additional production controls, Terraform infrastructure, remediation, dashboards/frontend, and
-AI functionality remain outside this sprint.
+Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
+recoverable in-process scan executor. AWS evidence expansion, additional production controls,
+Terraform infrastructure, governance mutation APIs, remediation, dashboards/frontend, and AI
+functionality remain outside this sprint.

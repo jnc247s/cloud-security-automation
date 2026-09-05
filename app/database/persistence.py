@@ -226,6 +226,45 @@ def _validate_bundle(
     return targets
 
 
+def _validate_pending_scan(
+    scan: Scan,
+    *,
+    snapshot: InventorySnapshot,
+    scope: ScanScopeManifestInput,
+    profile: AssessmentProfile,
+    catalog: CatalogInput,
+    started_at: datetime,
+    scanner_version: str,
+) -> None:
+    """Prove that a pre-created RUNNING row describes this exact execution."""
+
+    expected = {
+        "requested_regions": sorted(scope.requested_regions),
+        "requested_services": sorted(scope.requested_services),
+        "scanner_version": scanner_version,
+        "control_catalog_id": catalog.catalog_id,
+        "control_catalog_version": catalog.version,
+        "assessment_profile_id": profile.profile_id,
+        "assessment_profile_version": profile.version,
+        "assessment_profile_checksum": profile.calculate_content_checksum(),
+    }
+    if any(getattr(scan, key) != value for key, value in expected.items()):
+        raise ScanPersistenceError("pending scan intent differs from the result bundle")
+    if _utc(scan.started_at) != started_at:
+        raise ScanPersistenceError("pending scan start time differs from the result bundle")
+    if (
+        scan.aws_account_id is not None
+        or scan.completed_at is not None
+        or scan.result_checksum is not None
+        or scan.inventory_sha256 is not None
+        or scan.successful_regions
+        or scan.successful_collectors
+    ):
+        raise ScanPersistenceError("pending scan contains result data before completion")
+    if scan.scope_manifest is not None:
+        raise ScanPersistenceError("pending scan already contains an immutable scope manifest")
+
+
 def persist_scan_result(
     session: Session,
     *,
@@ -281,57 +320,82 @@ def persist_scan_result(
             "assessments": assessment_documents,
         }
     )
-    existing = session.get(Scan, snapshot.scan_id)
+    existing = session.scalar(
+        select(Scan).where(Scan.scan_id == snapshot.scan_id).with_for_update()
+    )
     if existing is not None:
-        if existing.result_checksum != result_checksum:
+        if existing.status is not ScanStatus.RUNNING:
+            if existing.result_checksum == result_checksum:
+                return existing
             raise ScanPersistenceError("scan ID already exists with different content")
-        return existing
+        _validate_pending_scan(
+            existing,
+            snapshot=snapshot,
+            scope=scope,
+            profile=profile,
+            catalog=catalog,
+            started_at=started_at,
+            scanner_version=scanner_version,
+        )
 
     profile_record = ensure_assessment_profile(session, profile)
     _, control_versions = ensure_control_catalog(session, catalog)
     status = ScanStatus.COMPLETED if scope.is_complete else ScanStatus.PARTIAL
     if all(item.status is CollectionStatus.FAILED for item in scope.collector_outcomes):
         status = ScanStatus.FAILED
-    inserted = _insert_if_absent(
-        session,
-        Scan,
-        {
-            "scan_id": snapshot.scan_id,
-            "aws_account_id": snapshot.account_id,
-            "requested_regions": sorted(scope.requested_regions),
-            "successful_regions": sorted(scope.successful_regions),
-            "requested_services": sorted(scope.requested_services),
-            "successful_collectors": list(scope.successful_collectors),
-            "started_at": started_at,
-            "completed_at": None,
-            "status": ScanStatus.RUNNING,
-            "scanner_version": scanner_version,
-            "control_catalog_id": catalog.catalog_id,
-            "control_catalog_version": catalog.version,
-            "assessment_profile_id": profile.profile_id,
-            "assessment_profile_version": profile.version,
-            "assessment_profile_checksum": profile.calculate_content_checksum(),
-            "inventory_sha256": input_inventory_sha256,
-            "result_checksum": None,
-        },
-        ["scan_id"],
-    )
-    scan = session.get(Scan, snapshot.scan_id)
-    assert scan is not None
-    if not inserted:
-        if scan.result_checksum != result_checksum:
-            raise ScanPersistenceError("scan ID already exists with different content")
-        return scan
+    inserted = False
+    if existing is None:
+        inserted = _insert_if_absent(
+            session,
+            Scan,
+            {
+                "scan_id": snapshot.scan_id,
+                "aws_account_id": snapshot.account_id,
+                "requested_regions": sorted(scope.requested_regions),
+                "successful_regions": sorted(scope.successful_regions),
+                "requested_services": sorted(scope.requested_services),
+                "successful_collectors": list(scope.successful_collectors),
+                "started_at": started_at,
+                "completed_at": None,
+                "status": ScanStatus.RUNNING,
+                "scanner_version": scanner_version,
+                "control_catalog_id": catalog.catalog_id,
+                "control_catalog_version": catalog.version,
+                "assessment_profile_id": profile.profile_id,
+                "assessment_profile_version": profile.version,
+                "assessment_profile_checksum": profile.calculate_content_checksum(),
+                "inventory_sha256": input_inventory_sha256,
+                "result_checksum": None,
+            },
+            ["scan_id"],
+        )
+        scan = session.get(Scan, snapshot.scan_id)
+        assert scan is not None
+        if not inserted:
+            if scan.result_checksum != result_checksum:
+                raise ScanPersistenceError("scan ID already exists with different content")
+            return scan
+    else:
+        scan = existing
 
-    append_audit_event(
-        session,
-        AuditEventType.SCAN_STARTED,
-        "scan",
-        scan.scan_id,
-        started_at,
-        actor_type=actor_type,
-        actor_id=actor_id,
-    )
+    if inserted:
+        append_audit_event(
+            session,
+            AuditEventType.SCAN_STARTED,
+            "scan",
+            scan.scan_id,
+            started_at,
+            actor_type=actor_type,
+            actor_id=actor_id,
+        )
+    # PostgreSQL insert guards validate every child against its parent scan. Populate
+    # verified execution facts while the row is still mutable/RUNNING, then record
+    # all immutable children and terminalize in this same transaction.
+    scan.aws_account_id = snapshot.account_id
+    scan.successful_regions = sorted(scope.successful_regions)
+    scan.successful_collectors = list(scope.successful_collectors)
+    scan.inventory_sha256 = input_inventory_sha256
+    session.flush()
     scope_values = canonical_scope_document(scope)
     scope_values.pop("collector_outcomes", None)
     session.add(
@@ -406,6 +470,15 @@ def persist_scan_result(
             actor_id=actor_id,
             complete_scope=scope.is_complete,
         )
+    completion_metadata: dict[str, Any] = {
+        "status": status.value,
+        "assessment_count": len(assessments),
+    }
+    if status is ScanStatus.FAILED:
+        completion_metadata.update(
+            failure_code="COLLECTION_FAILED",
+            failure_message="All requested collectors failed.",
+        )
     append_audit_event(
         session,
         AuditEventType.SCAN_FAILED
@@ -416,12 +489,72 @@ def persist_scan_result(
         completed_at,
         actor_type=actor_type,
         actor_id=actor_id,
-        metadata={"status": status.value, "assessment_count": len(assessments)},
+        metadata=completion_metadata,
     )
     session.flush()
     scan.status = status
     scan.completed_at = completed_at
     scan.result_checksum = result_checksum
+    session.flush()
+    return scan
+
+
+def fail_pending_scan(
+    session: Session,
+    *,
+    scan_id: UUID,
+    completed_at: datetime,
+    failure_code: str,
+    failure_message: str,
+    actor_type: str = "system",
+    actor_id: str = "scan-executor",
+) -> Scan:
+    """Atomically terminalize a RUNNING scan when execution cannot produce evidence."""
+
+    completed_at = _require_aware(completed_at, "completed_at")
+    if (
+        not failure_code.strip()
+        or not failure_message.strip()
+        or not actor_type.strip()
+        or not actor_id.strip()
+    ):
+        raise ScanPersistenceError("failure details and audit actor must not be blank")
+    if len(failure_code) > 64 or len(failure_message) > 256:
+        raise ScanPersistenceError("failure details exceed their safe response bounds")
+    scan = session.scalar(select(Scan).where(Scan.scan_id == scan_id).with_for_update())
+    if scan is None:
+        raise ScanPersistenceError("pending scan does not exist")
+    if scan.status is not ScanStatus.RUNNING:
+        return scan
+    if completed_at < _utc(scan.started_at):
+        raise ScanPersistenceError("scan completion cannot precede its start")
+
+    checksum = canonical_json_sha256(
+        {
+            "scan_id": str(scan.scan_id),
+            "started_at": _utc(scan.started_at).isoformat(),
+            "completed_at": completed_at.isoformat(),
+            "status": ScanStatus.FAILED.value,
+            "failure_code": failure_code,
+        }
+    )
+    append_audit_event(
+        session,
+        AuditEventType.SCAN_FAILED,
+        "scan",
+        scan.scan_id,
+        completed_at,
+        actor_type=actor_type,
+        actor_id=actor_id,
+        metadata={
+            "status": ScanStatus.FAILED.value,
+            "failure_code": failure_code,
+            "failure_message": failure_message,
+        },
+    )
+    scan.status = ScanStatus.FAILED
+    scan.completed_at = completed_at
+    scan.result_checksum = checksum
     session.flush()
     return scan
 

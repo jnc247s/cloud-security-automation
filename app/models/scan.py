@@ -65,6 +65,11 @@ class Scan(Base):
             "(status IN ('COMPLETED', 'PARTIAL', 'FAILED') AND result_checksum IS NOT NULL)",
             name="lifecycle_checksum_consistent",
         ),
+        CheckConstraint(
+            "status NOT IN ('COMPLETED', 'PARTIAL') OR "
+            "(aws_account_id IS NOT NULL AND inventory_sha256 IS NOT NULL)",
+            name="completed_evidence_identity_present",
+        ),
         ForeignKeyConstraint(
             ["assessment_profile_id", "assessment_profile_version"],
             ["assessment_profiles.profile_id", "assessment_profiles.version"],
@@ -82,7 +87,8 @@ class Scan(Base):
     )
 
     scan_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
-    aws_account_id: Mapped[str] = mapped_column(String(32), nullable=False)
+    # Identity comes from STS inside the executor, never from an API claim.
+    aws_account_id: Mapped[str | None] = mapped_column(String(32))
     requested_regions: Mapped[JsonArray] = mapped_column(json_document_type(), nullable=False)
     successful_regions: Mapped[JsonArray] = mapped_column(json_document_type(), nullable=False)
     requested_services: Mapped[JsonArray] = mapped_column(json_document_type(), nullable=False)
@@ -99,7 +105,10 @@ class Scan(Base):
     assessment_profile_id: Mapped[str] = mapped_column(String(128), nullable=False)
     assessment_profile_version: Mapped[str] = mapped_column(String(64), nullable=False)
     assessment_profile_checksum: Mapped[str] = mapped_column(String(64), nullable=False)
-    inventory_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    # The inventory digest is unknown until collection finishes. A RUNNING row is
+    # deliberately durable before any AWS work begins, then receives the digest
+    # in the same transaction that records its immutable historical graph.
+    inventory_sha256: Mapped[str | None] = mapped_column(String(64))
     result_checksum: Mapped[str | None] = mapped_column(String(64))
 
     scope_manifest: Mapped[ScanScopeManifest] = relationship(
