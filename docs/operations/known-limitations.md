@@ -97,13 +97,20 @@ assume-role and full multi-region orchestration are not implemented.
 
 ## Verification and reproducibility
 
-### Fragmented acceptance coverage — MEDIUM
+### Sprint 0–4 HTTP acceptance coverage
 
-API, service, executor, collectors, rules, persistence, authentication, authorization, migrations,
-and PostgreSQL behavior have focused tests. There is no single acceptance test that starts with an
-authenticated HTTP `POST /api/v1/scans`, runs the executor with fake AWS, persists the result, and
-queries scans/resources/assessments/findings. Add that acceptance boundary without using a real AWS
-account before completing Sprint 5.
+The PostgreSQL integration suite contains one authoritative acceptance test that starts with real
+development bearer authentication and authorization, drives `POST /api/v1/scans` through the real
+service and executor boundaries with only AWS replaced by deterministic fakes, and verifies the
+persisted graph through the public read API. Run it against a dedicated disposable PostgreSQL
+database with:
+
+```text
+python -m pytest tests/integration/test_persistence_postgres.py::test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph
+```
+
+`TEST_DATABASE_URL` must be set as described in the repository test instructions; CI supplies
+PostgreSQL 16. This coverage remains an integration regression test, not live-AWS validation.
 
 ### Build provenance and dependency reproducibility — LOW
 

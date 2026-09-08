@@ -50,9 +50,9 @@ approved Sprint 5 plan:
   `STALE_ACCESS_KEY_DAYS` changes the immutable content of profile `default` version `1.0.0`.
   Against a database that already stores that version, a later scan can fail with a version-content
   conflict. A version-selection/roll-forward policy is not implemented.
-- **MEDIUM — acceptance coverage:** tests cover the components, but no single acceptance test
-  drives authenticated HTTP scan creation through fake AWS collection, execution, persistence,
-  and all principal read APIs.
+- **RESOLVED — acceptance coverage:** the PostgreSQL integration suite now drives authenticated
+  HTTP scan creation through deterministic fake AWS collection, real execution and persistence,
+  and the principal read APIs. Sprint 5 remains `NEXT` and has not begun.
 - **MEDIUM — collector failure contract:** expected AWS and declared collector-evidence failures
   are isolated, but some unexpected malformed response shapes can abort the whole scan or CLI run.
 - **MEDIUM — audit principal context:** scan-start audit records retain the authenticated subject,
