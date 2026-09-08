@@ -261,10 +261,14 @@ The PostgreSQL volume survives `docker compose down`. Downgrading to `base` drop
 schema, and `docker compose down --volumes` deletes local database data; neither is a routine
 upgrade or troubleshooting step. Back up important data before schema changes.
 
-Do not downgrade a populated Sprint 4 database until the known `20260904_0002` early-failure issue
-has a reviewed rollback plan. A legitimate `FAILED` scan may have null AWS identity/inventory,
-while that downgrade restores `NOT NULL` columns without transforming those rows. See
-[Known limitations](operations/known-limitations.md#populated-downgrade-from-20260904_0002--high).
+The accepted `20260904_0002` migration remains unchanged. Before Alembic executes its downgrade,
+the migration environment now rejects retained rows with a null `aws_account_id` or
+`inventory_sha256`, because the older `NOT NULL` schema cannot represent them safely. The check
+runs before any migration step; PostgreSQL excludes concurrent scan writers until the compatible
+downgrade transaction completes. Offline SQL generation across this boundary is rejected because
+it cannot inspect retained rows. See the
+[downgrade recovery runbook](operations/known-limitations.md#guarded-populated-downgrade-from-20260904_0002--resolved)
+for the read-only compatibility query, backup expectations, and safe choices after a block.
 
 ## Tests
 
@@ -284,8 +288,9 @@ is required.
 PostgreSQL-specific integration tests are in `tests/integration/test_persistence_postgres.py`.
 They are skipped unless `TEST_DATABASE_URL` is supplied. Against a dedicated disposable database
 they verify empty-database migration upgrade/downgrade and metadata parity, JSONB, timezone-aware
-timestamps, append-only audit enforcement, committed pending-scan finalization, early failure
-before AWS identity, and concurrent finding/scan deduplication.
+timestamps, append-only audit enforcement, compatible populated downgrade, blocked incompatible
+downgrade integrity, committed pending-scan finalization, early failure before AWS identity, and
+concurrent finding/scan deduplication.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 
