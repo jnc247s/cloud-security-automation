@@ -1,4 +1,4 @@
-# Security controls
+# Control catalog
 
 Sprint 2.1 kept the five deterministic technical checks introduced in Sprint 2 and gave each one
 a versioned control contract. It did not add controls, AWS calls, persistence, API endpoints, or
@@ -14,6 +14,22 @@ The default control catalog is `aws-cloud-security-controls` version `0.2.1`:
 | `NET-001` | EC2 security group | Public ingress effectively exposes TCP port 22 | `HIGH` |
 | `NET-002` | EC2 security group | Public ingress effectively exposes TCP port 3389 | `HIGH` |
 | `S3-900` | S3 bucket | The explicit default-encryption configuration is `null` | `MEDIUM` |
+
+## Permanent S3 identifier safety
+
+Only `S3-900` is implemented today. The canonical Sprint 6 identifiers below are reserved now so
+historical findings and integrations cannot acquire conflicting meanings:
+
+| Control ID | Permanent semantic meaning | Current state |
+| --- | --- | --- |
+| `S3-001` | Required Block Public Access configuration missing | Reserved; not implemented |
+| `S3-002` | Unapproved public/external bucket exposure | Reserved; not implemented |
+| `S3-003` | Secure transport not enforced | Reserved; not implemented |
+| `S3-004` | Sensitive-data KMS requirement not met | Reserved; not implemented |
+| `S3-900` | Legacy explicit default-encryption configuration prototype | Implemented, non-core |
+
+Never reuse a reserved ID for another meaning. In particular, the obsolete prototype meaning
+`S3-002 = missing default encryption` must not return.
 
 Every contract defines a stable control ID, title, resource type, assessment type, required
 evidence, `PASS` logic, `FAIL` logic, insufficient-evidence behavior, non-applicability logic,

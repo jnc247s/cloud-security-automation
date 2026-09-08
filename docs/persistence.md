@@ -1,12 +1,12 @@
 # Persistence and assessment history
 
-Sprint 3 adds durable history for already-collected and already-assessed results. The persistence
+Sprint 3 established durable history for already-collected and already-assessed results. The persistence
 boundary does not call AWS, run controls, schedule scans, or commit transactions on behalf of its
 caller. The inventory command still prints a summary only; it does not persist anything.
 
 The five existing controls and their AWS permissions are unchanged. `S3-900` remains the legacy
 explicit-encryption-configuration prototype, not a new production encryption or public-exposure
-control. The technical meanings documented in [Security controls](security-controls.md) and
+control. The technical meanings documented in the [control catalog](controls/catalog.md) and
 [Assessment framework](assessment-framework.md) still apply.
 
 ## Stable identity and historical state
@@ -254,11 +254,17 @@ migrations are current.
 `docker compose up --build` starts PostgreSQL, waits for its health check, runs the one-shot
 `migrate` service, and starts the API only after `alembic upgrade head` succeeds. Inspect
 `docker compose logs migrate` if startup is blocked by migration failure. The API container does
-not receive host AWS credentials and has no scan endpoint.
+not receive host AWS credentials by default. `POST /api/v1/scans` exists, but it can collect only
+when an appropriate read-only workload credential chain is supplied explicitly.
 
 The PostgreSQL volume survives `docker compose down`. Downgrading to `base` drops the assessment
 schema, and `docker compose down --volumes` deletes local database data; neither is a routine
 upgrade or troubleshooting step. Back up important data before schema changes.
+
+Do not downgrade a populated Sprint 4 database until the known `20260904_0002` early-failure issue
+has a reviewed rollback plan. A legitimate `FAILED` scan may have null AWS identity/inventory,
+while that downgrade restores `NOT NULL` columns without transforming those rows. See
+[Known limitations](operations/known-limitations.md#populated-downgrade-from-20260904_0002--high).
 
 ## Tests
 
@@ -277,8 +283,9 @@ is required.
 
 PostgreSQL-specific integration tests are in `tests/integration/test_persistence_postgres.py`.
 They are skipped unless `TEST_DATABASE_URL` is supplied. Against a dedicated disposable database
-they verify migration upgrade/downgrade and metadata parity, JSONB, timezone-aware timestamps,
-append-only audit enforcement, and concurrent finding/scan deduplication.
+they verify empty-database migration upgrade/downgrade and metadata parity, JSONB, timezone-aware
+timestamps, append-only audit enforcement, committed pending-scan finalization, early failure
+before AWS identity, and concurrent finding/scan deduplication.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 
