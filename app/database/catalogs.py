@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -71,6 +72,48 @@ def ensure_assessment_profile(
             label=label,
         )
     return record
+
+
+def load_assessment_profile(
+    session: Session,
+    *,
+    profile_id: str,
+    version: str,
+    expected_checksum: str,
+) -> AssessmentProfile:
+    """Load and validate the exact immutable profile referenced by a scan."""
+
+    with session.no_autoflush:
+        record = session.scalar(
+            select(PersistedAssessmentProfile).where(
+                PersistedAssessmentProfile.profile_id == profile_id,
+                PersistedAssessmentProfile.version == version,
+            )
+        )
+    if record is None:
+        raise CatalogPersistenceError("persisted assessment profile could not be loaded")
+    if not isinstance(record.content_checksum, str):
+        raise CatalogPersistenceError("persisted assessment profile content is invalid")
+
+    try:
+        profile = AssessmentProfile(
+            profile_id=record.profile_id,
+            version=record.version,
+            enabled_controls=_stored_profile_values(record.enabled_controls),
+            required_tags=_stored_profile_values(record.required_tags),
+            stale_key_days=record.stale_key_days,
+            approved_management_cidrs=_stored_profile_values(record.approved_management_cidrs),
+            public_ec2_exceptions=_stored_profile_values(record.public_ec2_exceptions),
+            restricted_data_requires_kms=record.restricted_data_requires_kms,
+            content_checksum=record.content_checksum,
+        )
+    except (TypeError, ValidationError) as error:
+        raise CatalogPersistenceError("persisted assessment profile content is invalid") from error
+    if profile.content_checksum != expected_checksum:
+        raise VersionContentConflictError(
+            "persisted assessment profile does not match scan provenance"
+        )
+    return profile
 
 
 def ensure_control_catalog(
@@ -309,6 +352,14 @@ def _profile_content(profile: AssessmentProfile) -> dict[str, Any]:
     ):
         content[key] = sorted(content[key])
     return content
+
+
+def _stored_profile_values(value: Any) -> tuple[Any, ...]:
+    """Restore JSON arrays without coercing invalid stored scalar content."""
+
+    if not isinstance(value, list | tuple):
+        raise TypeError("stored profile policy collection is not an array")
+    return tuple(value)
 
 
 def _technical_content(control: TechnicalControlContract) -> dict[str, Any]:

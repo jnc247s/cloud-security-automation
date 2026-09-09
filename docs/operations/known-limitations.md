@@ -56,17 +56,35 @@ Never fabricate AWS identity or inventory digests, rewrite a terminal scan, dele
 audit history, disable the guard, or stamp around the revision merely to force rollback. No
 destructive data-conversion procedure is currently approved or documented.
 
-### Fixed profile version with configurable content — HIGH
+### Explicit profile roll-forward and pending-scan provenance — RESOLVED
 
-Asynchronous scans always construct assessment profile `default` version `1.0.0`.
-`REQUIRED_TAGS` and `STALE_ACCESS_KEY_DAYS` alter that profile's checksummed immutable content.
-After one version is stored, changing either value against the same database causes the next scan
-to conflict with the stored version. There is no runtime profile-version selector or automatic
-roll-forward.
+`ASSESSMENT_PROFILE_VERSION` now selects the immutable `default` profile definition for new scans
+and accepts only numeric `X.Y.Z` values. Existing installations with the original
+`REQUIRED_TAGS=Owner,Environment` and `STALE_ACCESS_KEY_DAYS=90` policy can explicitly retain
+version `1.0.0`.
 
-For the current baseline, keep those values stable for a persistent database. Before policy
-changes, implement and review an explicit new-version/selection workflow; never overwrite the
-stored version.
+Treat a policy-content and version change as one reviewed deployment operation:
+
+1. Identify every policy input being changed. The current environment-controlled inputs are
+   `REQUIRED_TAGS` and `STALE_ACCESS_KEY_DAYS`.
+2. Choose a new numeric profile version, such as `1.1.0`; do not reuse an identity that has
+   already represented different content.
+3. Deploy the new policy inputs and `ASSESSMENT_PROFILE_VERSION` together, then create a scan.
+4. Verify the new scan reports the intended profile version. Prior scans and assessments continue
+   to reference the retained old definition.
+
+Identical content under the same version remains idempotent. Changed content under a stored
+version is rejected before scan creation with sanitized HTTP 409 code
+`assessment_profile_version_conflict`; the stored profile remains unchanged. Do not edit profile
+rows, rewrite historical scan references, generate a version from wall-clock time, or delete
+history to force the change.
+
+Pending work is insulated from deployment configuration changes. On normal execution and startup
+recovery, the executor loads and checksum-verifies the complete profile referenced by each scan;
+it does not reconstruct policy from current settings or choose the latest version. No migration
+or destructive recovery is required because the established schema already retains both versions
+and their scan/assessment references. Version selection and policy approval remain operator-owned;
+the application intentionally does not auto-increment or compare semantic precedence.
 
 ### Stable resource ARN can be first-seen data — LOW
 

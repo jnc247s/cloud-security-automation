@@ -14,7 +14,11 @@ from app import __version__
 from app.assessment.controls import build_default_control_catalog
 from app.assessment.profiles import create_default_assessment_profile
 from app.config import Settings, get_settings
-from app.database.catalogs import ensure_assessment_profile, ensure_control_catalog
+from app.database.catalogs import (
+    VersionContentConflictError,
+    ensure_assessment_profile,
+    ensure_control_catalog,
+)
 from app.database.persistence import append_audit_event, fail_pending_scan
 from app.models import AuditEvent, Scan
 from app.models.enums import AuditEventType, ScanStatus
@@ -26,7 +30,7 @@ from app.schemas.scan import (
     ScanScope,
     ScanSummary,
 )
-from app.services.errors import EntityNotFoundError
+from app.services.errors import AssessmentProfileConflictError, EntityNotFoundError
 
 if TYPE_CHECKING:
     from app.services.scan_executor import ScanExecutor
@@ -92,11 +96,15 @@ class ScanService:
             raise ValueError("audit actor must not be blank")
         region = request.region or self.settings.aws_region
         profile = create_default_assessment_profile(
+            version=self.settings.assessment_profile_version,
             required_tags=self.settings.required_tag_names,
             stale_key_days=self.settings.stale_access_key_days,
         )
         catalog = build_default_control_catalog()
-        ensure_assessment_profile(self.session, profile)
+        try:
+            ensure_assessment_profile(self.session, profile)
+        except VersionContentConflictError as error:
+            raise AssessmentProfileConflictError from error
         ensure_control_catalog(self.session, catalog)
         started_at = datetime.now(UTC)
         scan = Scan(

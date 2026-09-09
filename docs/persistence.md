@@ -71,10 +71,12 @@ Coverage determines the stored terminal status:
 | `FAILED` | Every requested collector is explicitly `FAILED`. |
 
 Sprint 4 uses `RUNNING` as a durable handoff to the scan executor. `ScanService` commits the scan
-identity and authenticated start audit before submitting AWS work. Collection and assessment run
-without an open database transaction; `persist_scan_result` then locks and verifies that exact
-pending row, records all immutable children, and terminalizes it atomically. Direct callers can
-still persist an already finished bundle in one transaction as before.
+identity, exact persisted assessment-profile reference, and authenticated start audit before
+submitting AWS work. The executor reloads and checksum-verifies that stored profile rather than
+reconstructing it from its current environment. Collection and assessment run without an open
+database transaction; `persist_scan_result` then locks and verifies that exact pending row,
+records all immutable children, and terminalizes it atomically. Direct callers can still persist
+an already finished bundle in one transaction as before.
 
 Scope is an explicit caller claim, not something inferred from the absence of findings. A single
 inventory invocation region does not prove account-wide or multi-region coverage. Existing S3 and
@@ -99,6 +101,16 @@ conflict. Introduce a reviewed new version instead of editing historical inputs.
 and assessments therefore remain explainable after policy or mapping changes. The scan also
 stores the normalized-inventory digest used by evaluation, while each candidate is bound to that
 digest and the canonical full-catalog digest before persistence accepts it.
+
+For the default API profile, `ASSESSMENT_PROFILE_VERSION` is an explicit, validated numeric
+`X.Y.Z` selector with a backward-compatible default of `1.0.0`. The same content and version can
+be ensured repeatedly. When policy content
+changes, the operator must roll forward to a new version; both definitions coexist and new scans
+reference the new one while earlier scans and assessments retain their old references. A pending
+scan always loads its own persisted definition—even after a configuration change and executor
+restart—and never uses a query for the latest profile. No schema migration is needed for this
+workflow because the existing model already stores complete profile content, unique identity,
+checksums, and scan/assessment relationships.
 
 Evidence remains structured JSONB in PostgreSQL, with a portable JSON representation in SQLite
 tests. Every artifact retains its payload digest, collector, source API, schema/version,
@@ -289,8 +301,9 @@ PostgreSQL-specific integration tests are in `tests/integration/test_persistence
 They are skipped unless `TEST_DATABASE_URL` is supplied. Against a dedicated disposable database
 they verify empty-database migration upgrade/downgrade and metadata parity, JSONB, timezone-aware
 timestamps, append-only audit enforcement, compatible populated downgrade, blocked incompatible
-downgrade integrity, committed pending-scan finalization, early failure before AWS identity, and
-concurrent finding/scan deduplication.
+downgrade integrity, immutable assessment-profile roll-forward and conflict behavior, persisted
+profile use after executor restart, committed pending-scan finalization, early failure before AWS
+identity, and concurrent finding/scan deduplication.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 

@@ -2,7 +2,7 @@
 
 Status: living model for the accepted Sprint 4 baseline
 Baseline: `main` commit `1e190720c5c33a4edfc1cebe44c652e2ee17424f`
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-09
 
 ## Scope and security objectives
 
@@ -54,7 +54,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, history guards, fail-closed populated-downgrade preflight | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
 | T12 | Malicious or malformed AWS metadata | Medium | Pydantic schemas, structured normalization, deterministic rules, sanitized known AWS errors | Some unexpected response shapes can abort a scan; validate all decision-relevant inputs and bound metadata/log output |
-| T13 | Profile or mapping substitution | High | Content checksums, version-content conflicts, source manifest digest, mapping/reference validation | Runtime policy settings can change fixed profile `1.0.0` content and block scans; explicit roll-forward is required |
+| T13 | Profile or mapping substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, source manifest digest, mapping/reference validation | Operators must deploy a reviewed new profile version whenever policy content changes; no automatic semantic ordering or policy approval workflow exists |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
 

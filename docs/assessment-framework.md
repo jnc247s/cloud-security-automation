@@ -80,6 +80,19 @@ Profiles reject duplicate entries and invalid or non-canonical CIDRs. A caller-s
 must match the policy content, preventing a version from being silently reused with different
 settings.
 
+For API-created scans, `ASSESSMENT_PROFILE_VERSION` explicitly selects the `default` profile
+version and must use numeric `X.Y.Z` form. The pair `(profile_id, version)` is permanent identity
+for exactly one policy definition. Reusing it with identical content is idempotent; changing
+policy content under the same identity is rejected. Operators must choose a reviewed new version
+whenever `REQUIRED_TAGS`, `STALE_ACCESS_KEY_DAYS`, or another policy-affecting field changes.
+There is no automatic version generation, wall-clock versioning, or implicit "latest" selection.
+
+Scan creation stores the complete profile before committing the pending scan reference. Execution
+and startup recovery load and checksum-verify that exact stored definition. Consequently, an old
+pending scan continues to use its original policy after the process is redeployed with a newer
+configured version, and historical assessments continue resolving to their original definition.
+This behavior uses the existing versioned persistence schema and requires no migration.
+
 These thresholds and exceptions are organization or project policy. NIST CSF 2.0 does not
 universally mandate the default tag names, a 90-day stale-key threshold, particular management
 CIDRs, project-specific EC2 exceptions, or this project's KMS rule. Current controls use only the

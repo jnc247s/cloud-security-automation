@@ -9,11 +9,31 @@ from app.config import Settings
 def test_settings_normalize_foundation_values() -> None:
     settings = Settings(
         log_level="debug",
+        assessment_profile_version=" 1.1.0 ",
         required_tags="Owner, Environment, Application",
     )
 
     assert settings.log_level == "DEBUG"
+    assert settings.assessment_profile_version == "1.1.0"
     assert settings.required_tag_names == ("Owner", "Environment", "Application")
+
+
+@pytest.mark.parametrize(
+    "version",
+    (
+        "",
+        "1",
+        "1.0",
+        "v1.0.0",
+        "1.0.0-alpha",
+        "1.0.0+build",
+        "١.٠.٠",
+        "１.０.０",
+    ),
+)
+def test_settings_reject_non_numeric_three_part_profile_versions(version: str) -> None:
+    with pytest.raises(ValidationError, match="assessment_profile_version"):
+        Settings(assessment_profile_version=version)
 
 
 def test_settings_reject_unknown_log_level() -> None:

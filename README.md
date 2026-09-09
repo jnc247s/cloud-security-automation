@@ -203,6 +203,14 @@ Configuration comes from environment variables and optional local `.env`; the ex
 all fields. Never put AWS keys, bearer tokens, OIDC secrets, database production passwords, or
 other credentials in `.env` or Git.
 
-The accepted baseline constructs immutable profile `default` version `1.0.0` from
-`REQUIRED_TAGS` and `STALE_ACCESS_KEY_DAYS`. Keep those values stable for an existing database
-until an explicit profile roll-forward workflow is implemented.
+`ASSESSMENT_PROFILE_VERSION` selects the immutable `default` policy definition used by new scans
+and must be a numeric `X.Y.Z` value. An existing deployment with unchanged `REQUIRED_TAGS` and
+`STALE_ACCESS_KEY_DAYS` can retain version `1.0.0`. Whenever either policy setting changes, choose
+and deploy a new reviewed profile version at the same time—for example, move from `1.0.0` to
+`1.1.0`. Reusing an existing version with different policy content is rejected with a sanitized
+HTTP 409 response; stored profiles and historical scans are never overwritten.
+
+Pending scans retain the exact profile selected when they were created. A restarted executor
+loads that persisted definition instead of rebuilding it from the deployment's current
+environment. This roll-forward requires no database migration because the existing schema already
+stores complete versioned profile content and scan provenance.

@@ -35,6 +35,7 @@ from app.models import (
     EvidenceArtifact,
     Finding,
     FindingOccurrence,
+    PersistedAssessmentProfile,
     Resource,
     ResourceSnapshot,
     Scan,
@@ -45,6 +46,7 @@ from app.rules.registry import build_default_registry
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.scan import ScanCreateRequest
 from app.security.authentication import DEVELOPMENT_BEARER_MARKER
+from app.services.errors import AssessmentProfileConflictError
 from app.services.scan_executor import InProcessScanExecutor, _scope_for
 from app.services.scan_service import ScanService
 from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator
@@ -87,13 +89,37 @@ class _CollectionGatePaginator(FakePaginator):
         yield from self.pages
 
 
-def _scan_settings(postgres_engine: Engine) -> Settings:
+def _scan_settings(postgres_engine: Engine, **overrides: object) -> Settings:
+    values: dict[str, object] = {
+        "app_env": "test",
+        "auth_mode": "development",
+        "database_url": str(postgres_engine.url),
+        "aws_region": "us-east-1",
+    }
+    values.update(overrides)
     return Settings(
         _env_file=None,
-        app_env="test",
-        auth_mode="development",
-        database_url=str(postgres_engine.url),
-        aws_region="us-east-1",
+        **values,
+    )
+
+
+def _empty_provider(region: str = "us-east-1") -> FakeClientProvider:
+    return FakeClientProvider(
+        {
+            ("ec2", region): FakeAWSClient(
+                paginators={"describe_security_groups": FakePaginator([{"SecurityGroups": []}])}
+            ),
+            ("s3", region): FakeAWSClient(
+                paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
+            ),
+            ("iam", region): FakeAWSClient(
+                paginators={"list_users": FakePaginator([{"Users": []}])}
+            ),
+            ("cloudtrail", region): FakeAWSClient(
+                paginators={"list_trails": FakePaginator([{"Trails": []}])}
+            ),
+        },
+        region_name=region,
     )
 
 
@@ -330,6 +356,7 @@ def test_postgres_finalizes_a_committed_pending_scan(postgres_engine: Engine) ->
         resources=(),
     )
     profile = create_default_assessment_profile(
+        version=settings.assessment_profile_version,
         required_tags=settings.required_tag_names,
         stale_key_days=settings.stale_access_key_days,
     )
@@ -370,6 +397,137 @@ def test_postgres_finalizes_a_committed_pending_scan(postgres_engine: Engine) ->
             )
         )
         assert event_types == (AuditEventType.SCAN_STARTED, AuditEventType.SCAN_COMPLETED)
+
+
+def test_postgres_profile_roll_forward_and_restart_preserve_exact_provenance(
+    postgres_engine: Engine,
+) -> None:
+    original_settings = _scan_settings(
+        postgres_engine,
+        assessment_profile_version="1.0.0",
+        required_tags="Owner",
+        stale_access_key_days=45,
+    )
+    recorder = _RecordingExecutor()
+    with Session(postgres_engine, expire_on_commit=False) as session:
+        original = ScanService(session, original_settings).start_scan(
+            ScanCreateRequest(), recorder, actor_id="integration-admin"
+        )
+        repeated = ScanService(session, original_settings).start_scan(
+            ScanCreateRequest(), recorder, actor_id="integration-admin"
+        )
+    assert recorder.scan_ids == [original.scan_id, repeated.scan_id]
+    assert original.assessment_profile_checksum == repeated.assessment_profile_checksum
+
+    restarted_settings = _scan_settings(
+        postgres_engine,
+        assessment_profile_version="1.1.0",
+        required_tags="DataClassification",
+        stale_access_key_days=120,
+    )
+    session_factory = sessionmaker(bind=postgres_engine, expire_on_commit=False)
+    restarted_executor = InProcessScanExecutor(
+        session_factory=session_factory,
+        settings=restarted_settings,
+        provider_factory=lambda region: _empty_provider(region),
+        max_workers=1,
+        max_outstanding=2,
+    )
+    try:
+        assert restarted_executor.resume_pending() == 2
+    finally:
+        restarted_executor.shutdown(wait=True)
+
+    with Session(postgres_engine) as session:
+        stored_profiles = tuple(session.scalars(select(PersistedAssessmentProfile)))
+        assert len(stored_profiles) == 1
+        original_profile = stored_profiles[0]
+        assert original_profile.version == "1.0.0"
+        assert original_profile.required_tags == ["Owner"]
+        assert original_profile.stale_key_days == 45
+        for scan_id in (original.scan_id, repeated.scan_id):
+            scan = session.get(Scan, scan_id)
+            assert scan is not None
+            assert scan.status is ScanStatus.COMPLETED
+            assert scan.assessment_profile_version == "1.0.0"
+            assert scan.assessment_profile_checksum == original_profile.content_checksum
+            assert scan.scope_manifest is not None
+            assert scan.scope_manifest.assessment_profile_version == "1.0.0"
+            profile_ids = set(
+                session.scalars(
+                    select(ControlAssessment.assessment_profile_version_id).where(
+                        ControlAssessment.scan_id == scan_id
+                    )
+                )
+            )
+            assert profile_ids == {original_profile.profile_version_id}
+
+    conflicting_settings = _scan_settings(
+        postgres_engine,
+        assessment_profile_version="1.0.0",
+        required_tags="DataClassification",
+        stale_access_key_days=120,
+    )
+    with Session(postgres_engine) as session:
+        with pytest.raises(AssessmentProfileConflictError):
+            ScanService(session, conflicting_settings).start_scan(
+                ScanCreateRequest(), _RecordingExecutor(), actor_id="integration-admin"
+            )
+        assert session.scalar(select(func.count()).select_from(Scan)) == 2
+        assert session.scalar(select(func.count()).select_from(PersistedAssessmentProfile)) == 1
+
+    with Session(postgres_engine, expire_on_commit=False) as session:
+        replacement = ScanService(session, restarted_settings).start_scan(
+            ScanCreateRequest(), _RecordingExecutor(), actor_id="integration-admin"
+        )
+    replacement_executor = InProcessScanExecutor(
+        session_factory=session_factory,
+        settings=restarted_settings,
+        provider_factory=lambda region: _empty_provider(region),
+        max_workers=1,
+        max_outstanding=1,
+    )
+    try:
+        replacement_executor._execute(replacement.scan_id)
+    finally:
+        replacement_executor.shutdown(wait=True)
+
+    with Session(postgres_engine) as session:
+        profiles = {
+            profile.version: profile
+            for profile in session.scalars(
+                select(PersistedAssessmentProfile).order_by(PersistedAssessmentProfile.version)
+            )
+        }
+        assert set(profiles) == {"1.0.0", "1.1.0"}
+        assert profiles["1.0.0"].required_tags == ["Owner"]
+        assert profiles["1.1.0"].required_tags == ["DataClassification"]
+        assert profiles["1.0.0"].content_checksum != profiles["1.1.0"].content_checksum
+        for original_scan_id in (original.scan_id, repeated.scan_id):
+            historical_scan = session.get(Scan, original_scan_id)
+            assert historical_scan is not None
+            assert historical_scan.assessment_profile_version == "1.0.0"
+            historical_profile_ids = set(
+                session.scalars(
+                    select(ControlAssessment.assessment_profile_version_id).where(
+                        ControlAssessment.scan_id == original_scan_id
+                    )
+                )
+            )
+            assert historical_profile_ids == {profiles["1.0.0"].profile_version_id}
+        new_scan = session.get(Scan, replacement.scan_id)
+        assert new_scan is not None
+        assert new_scan.status is ScanStatus.COMPLETED
+        assert new_scan.assessment_profile_version == "1.1.0"
+        assert new_scan.assessment_profile_checksum == profiles["1.1.0"].content_checksum
+        new_assessment_profile_ids = set(
+            session.scalars(
+                select(ControlAssessment.assessment_profile_version_id).where(
+                    ControlAssessment.scan_id == replacement.scan_id
+                )
+            )
+        )
+        assert new_assessment_profile_ids == {profiles["1.1.0"].profile_version_id}
 
 
 def test_postgres_allows_bounded_failure_before_aws_identity(postgres_engine: Engine) -> None:

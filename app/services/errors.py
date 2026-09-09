@@ -1,6 +1,10 @@
 """Errors raised by the application service boundary."""
 
 
+class AssessmentProfileConflictError(RuntimeError):
+    """Configured policy content conflicts with an existing immutable version."""
+
+
 class EntityNotFoundError(LookupError):
     """Raised when a caller requests a persisted entity that does not exist."""
 

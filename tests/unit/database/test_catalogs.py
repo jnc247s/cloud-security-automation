@@ -18,9 +18,11 @@ from app.assessment.profiles import DEFAULT_ASSESSMENT_PROFILE, AssessmentProfil
 from app.assessment.provenance import control_catalog_sha256
 from app.database.base import Base
 from app.database.catalogs import (
+    CatalogPersistenceError,
     VersionContentConflictError,
     ensure_assessment_profile,
     ensure_control_catalog,
+    load_assessment_profile,
 )
 from app.models.control import (
     Control,
@@ -115,6 +117,58 @@ def test_new_profile_versions_coexist(catalog_sessions) -> None:
         assert first.stale_key_days == 90
         assert second.stale_key_days == 30
         assert _count(session, PersistedAssessmentProfile) == 2
+
+
+def test_profile_loader_restores_and_verifies_exact_persisted_content(catalog_sessions) -> None:
+    profile = _profile(
+        version="1.1.0",
+        required_tags=("DataClassification",),
+        stale_key_days=120,
+    )
+    with catalog_sessions.begin() as session:
+        ensure_assessment_profile(session, profile)
+    with catalog_sessions() as session:
+        loaded = load_assessment_profile(
+            session,
+            profile_id=profile.profile_id,
+            version=profile.version,
+            expected_checksum=profile.calculate_content_checksum(),
+        )
+
+    assert loaded == profile
+
+
+def test_profile_loader_rejects_scan_checksum_mismatch(catalog_sessions) -> None:
+    with catalog_sessions.begin() as session:
+        ensure_assessment_profile(session, DEFAULT_ASSESSMENT_PROFILE)
+    with catalog_sessions() as session:
+        with pytest.raises(VersionContentConflictError, match="scan provenance"):
+            load_assessment_profile(
+                session,
+                profile_id=DEFAULT_ASSESSMENT_PROFILE.profile_id,
+                version=DEFAULT_ASSESSMENT_PROFILE.version,
+                expected_checksum="0" * 64,
+            )
+
+
+def test_profile_loader_rejects_corrupt_stored_content(catalog_sessions) -> None:
+    with catalog_sessions.begin() as session:
+        record = ensure_assessment_profile(session, DEFAULT_ASSESSMENT_PROFILE)
+        profile_version_id = record.profile_version_id
+    with catalog_sessions.begin() as session:
+        session.execute(
+            update(PersistedAssessmentProfile)
+            .where(PersistedAssessmentProfile.profile_version_id == profile_version_id)
+            .values(stale_key_days=12)
+        )
+    with catalog_sessions() as session:
+        with pytest.raises(CatalogPersistenceError, match="content is invalid"):
+            load_assessment_profile(
+                session,
+                profile_id=DEFAULT_ASSESSMENT_PROFILE.profile_id,
+                version=DEFAULT_ASSESSMENT_PROFILE.version,
+                expected_checksum=DEFAULT_ASSESSMENT_PROFILE.calculate_content_checksum(),
+            )
 
 
 def test_catalog_persists_technical_contracts_frameworks_and_provenance(catalog_sessions) -> None:
