@@ -3,8 +3,29 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-from app.services.errors import EntityNotFoundError
+from app.services.errors import AssessmentProfileConflictError, EntityNotFoundError
 from app.services.scan_service import ScanSubmissionError
+
+
+async def assessment_profile_conflict_handler(
+    _request: Request,
+    _error: AssessmentProfileConflictError,
+) -> JSONResponse:
+    """Return a fixed response when immutable profile identity is reused."""
+
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={
+            "detail": {
+                "code": "assessment_profile_version_conflict",
+                "message": (
+                    "The configured assessment profile version already exists with "
+                    "different policy content. Increase ASSESSMENT_PROFILE_VERSION "
+                    "before retrying."
+                ),
+            }
+        },
+    )
 
 
 async def entity_not_found_handler(

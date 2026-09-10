@@ -78,6 +78,9 @@ Grant database and backup access on least privilege.
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine
 logs. A successful or failed authentication decision must not reveal token-validation detail.
+Reusing an assessment-profile version with different policy content returns the fixed
+`assessment_profile_version_conflict` response; it must not reveal either checksum, stored policy
+content, database detail, or a traceback.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -98,6 +101,12 @@ locks the scan table before checking so concurrent writes cannot create a time-o
 offline SQL generation across the boundary fails closed. This guard does not authorize a
 production rollback: quiesce writers, verify a restorable backup, and follow the documented
 recovery runbook. Never fabricate or delete history to satisfy an older constraint.
+
+Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
+operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content
+changes, and never edit a stored version or rewrite scan references. Pending scans load and verify
+their persisted profile rather than current environment policy, so a restart cannot silently
+change an accepted assessment definition.
 
 ## Production authorization
 

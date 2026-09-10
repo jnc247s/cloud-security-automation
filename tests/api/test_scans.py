@@ -12,11 +12,12 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.api.errors import scan_submission_error_handler
-from app.api.routes.scans import get_scan_executor, router
+import app.services.scan_service as scan_service_module
+from app.api.routes.scans import router
+from app.config import Settings
 from app.database.session import get_db
+from app.main import create_app
 from app.security.authentication import Principal, get_current_principal
-from app.services.scan_service import ScanSubmissionError
 
 
 class RecordingExecutor:
@@ -53,16 +54,13 @@ def scan_api() -> Iterator[tuple[TestClient, RecordingExecutor]]:
 
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     executor = RecordingExecutor()
-    application = FastAPI()
-    application.include_router(router, prefix="/api/v1")
-    application.add_exception_handler(ScanSubmissionError, scan_submission_error_handler)
+    application = create_app(executor_factory=lambda: executor)
 
     def database_override() -> Iterator[Session]:
         with factory() as session:
             yield session
 
     application.dependency_overrides[get_db] = database_override
-    application.dependency_overrides[get_scan_executor] = lambda: executor
     application.dependency_overrides[get_current_principal] = lambda: Principal(
         subject="api-admin",
         role_names=frozenset({"ADMIN"}),
@@ -119,6 +117,48 @@ def test_rejected_submission_returns_durable_failed_scan_id(scan_api) -> None:
     assert stored.status_code == 200
     assert stored.json()["status"] == "FAILED"
     assert "non-public executor detail" not in response.text
+
+
+def test_profile_version_conflict_returns_sanitized_409(
+    scan_api,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, executor = scan_api
+    original_settings = Settings(
+        _env_file=None,
+        assessment_profile_version="1.0.0",
+        required_tags="Owner",
+        stale_access_key_days=90,
+    )
+    monkeypatch.setattr(scan_service_module, "get_settings", lambda: original_settings)
+    original = client.post("/api/v1/scans", json={"region": "us-west-2"})
+    assert original.status_code == 202
+
+    conflicting_settings = Settings(
+        _env_file=None,
+        assessment_profile_version="1.0.0",
+        required_tags="DataClassification",
+        stale_access_key_days=120,
+    )
+    monkeypatch.setattr(scan_service_module, "get_settings", lambda: conflicting_settings)
+    response = client.post("/api/v1/scans", json={"region": "us-west-2"})
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": {
+            "code": "assessment_profile_version_conflict",
+            "message": (
+                "The configured assessment profile version already exists with different "
+                "policy content. Increase ASSESSMENT_PROFILE_VERSION before retrying."
+            ),
+        }
+    }
+    assert len(executor.scan_ids) == 1
+    assert client.get("/api/v1/scans").json()["total"] == 1
+    public_error = response.text.lower()
+    assert "checksum" not in public_error
+    assert "sql" not in public_error
+    assert "traceback" not in public_error
 
 
 def test_unauthenticated_post_is_rejected_before_executor_lookup() -> None:

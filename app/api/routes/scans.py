@@ -41,7 +41,10 @@ ExecutorDependency = Annotated[ScanExecutor, Depends(get_scan_executor)]
     "",
     response_model=ScanDetail,
     status_code=status.HTTP_202_ACCEPTED,
-    responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Executor unavailable"}},
+    responses={
+        status.HTTP_409_CONFLICT: {"description": "Assessment profile version conflict"},
+        status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Executor unavailable"},
+    },
 )
 def create_scan(
     body: ScanCreateRequest,

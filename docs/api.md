@@ -141,10 +141,11 @@ Invoke-RestMethod `
 The request body permits only optional `region`; omission uses `AWS_REGION`. Extra fields are
 rejected. The API never accepts an AWS account ID from the caller.
 
-The POST operation writes a `RUNNING` scan and authenticated `SCAN_STARTED` audit event before
-submitting work, then returns HTTP `202 Accepted`. STS resolves the account in the background;
-collection, deterministic assessment, and transactional persistence follow. Poll the scan detail
-until `COMPLETED`, `PARTIAL`, or `FAILED`:
+The POST operation validates and persists the configured assessment-profile definition, then
+writes a `RUNNING` scan and authenticated `SCAN_STARTED` audit event referencing that exact
+profile before submitting work and returning HTTP `202 Accepted`. STS resolves the account in the
+background; collection, deterministic assessment, and transactional persistence follow. Poll the
+scan detail until `COMPLETED`, `PARTIAL`, or `FAILED`:
 
 - `RUNNING`: durable identity exists; account, inventory digest, and scope may not exist yet.
 - `COMPLETED`: all requested collectors and the requested Region succeeded.
@@ -157,6 +158,11 @@ The accepted executor uses a bounded in-process thread pool, startup resubmissio
 shutdown. It is not a distributed queue. Run one API process; a horizontally scaled deployment
 must provide a claim/lease-capable executor behind the same interface.
 
+`ASSESSMENT_PROFILE_VERSION` must be numeric `X.Y.Z`. A policy-content change, including a change
+to `REQUIRED_TAGS` or `STALE_ACCESS_KEY_DAYS`, must be deployed with a reviewed new version. An
+existing `RUNNING` scan is unaffected by later configuration: the executor loads the exact profile
+stored for that scan instead of selecting current or latest policy.
+
 ## Error behavior
 
 The API does not currently use one universal error envelope:
@@ -166,6 +172,7 @@ The API does not currently use one universal error envelope:
 | `401` | Missing/invalid bearer token: `detail.code=authentication_required`; token-validation detail is not exposed |
 | `403` | Valid principal without capability: `detail.code=insufficient_capability` |
 | `404` | Missing service entity: `detail.code=entity_not_found` with entity and identifier |
+| `409` | Configured assessment-profile version exists with different content: `detail.code=assessment_profile_version_conflict` |
 | `422` | FastAPI request/path/query validation response |
 | `503` | Scan executor unavailable/capacity/submission failure, or database readiness failure |
 | `500` | Unexpected domain, catalog, database, or server failure; no stable application envelope is promised |
@@ -174,6 +181,11 @@ If submission fails after the scan row is committed, the 503 response uses
 `detail.code=scan_submission_failed` and returns the durable `scan_id`. The service makes a
 best-effort transition to `FAILED`. If the executor is absent from application state, the code is
 `scan_executor_unavailable`.
+
+A 409 profile-version conflict occurs before a scan is created. Its fixed message instructs the
+operator to increase `ASSESSMENT_PROFILE_VERSION`; it does not expose either checksum, stored
+policy fields, SQL, or internal exception details. Correct the deployment configuration by using
+a new reviewed version for the changed content, then retry the request.
 
 Failure messages are sanitized; raw AWS responses and stack traces stay server-side. OIDC/JWKS
 lookup or verification failure fails closed as 401.
