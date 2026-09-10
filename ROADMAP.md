@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-05
+Last verified: 2026-09-08
 Accepted baseline: `main` at `1e190720c5c33a4edfc1cebe44c652e2ee17424f` (Sprint 4 merge)
 
 ## Current state
@@ -43,9 +43,10 @@ These accepted-baseline limitations were discovered during the governance audit.
 silently repaired by this documentation task and must be triaged before or explicitly within an
 approved Sprint 5 plan:
 
-- **HIGH — populated downgrade safety:** revision `20260904_0002` makes pending-scan identity
-  columns nullable, but its downgrade restores `NOT NULL` without handling legitimate early
-  `FAILED` scans whose AWS identity and inventory digest are absent.
+- **RESOLVED — populated downgrade safety:** the accepted `20260904_0002` migration remains
+  unchanged. Alembic now preflights any downgrade across it, blocks before DDL when retained scans
+  cannot satisfy the older `NOT NULL` contract, and excludes concurrent PostgreSQL writers while
+  checking and transitioning compatible data.
 - **HIGH — assessment-profile versioning:** changing `REQUIRED_TAGS` or
   `STALE_ACCESS_KEY_DAYS` changes the immutable content of profile `default` version `1.0.0`.
   Against a database that already stores that version, a later scan can fail with a version-content

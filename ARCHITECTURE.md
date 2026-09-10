@@ -90,7 +90,11 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20260904_0002  pending scan before AWS identity/inventory
 ```
 
-See `docs/persistence.md` for the complete model and current downgrade limitation.
+The established revisions remain unchanged. The Alembic execution environment preflights any
+downgrade path that crosses `20260904_0002` before running a migration step. It blocks when
+retained scan history cannot satisfy the older identity/digest `NOT NULL` contract; PostgreSQL
+holds an exclusive table lock from that decision through the DDL. See `docs/persistence.md` for
+the complete model and operator runbook.
 
 ## Authentication and authorization
 
@@ -139,9 +143,7 @@ workload-role configuration remain deployment responsibilities.
 - Startup-only pending-scan recovery and no multi-process claim/lease protocol.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - The default profile ID/version is fixed while two settings can change its immutable content.
-- Revision `20260904_0002` cannot safely downgrade populated early-failure rows without a plan.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
-- No single HTTP-to-fake-AWS-to-persistence Sprint 4 acceptance test.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in
