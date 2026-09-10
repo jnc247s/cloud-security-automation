@@ -54,6 +54,9 @@ security control.
   remediation gets narrowly scoped write actions for explicit handlers only.
 - Never create root credentials, remove root MFA, or disable important account-wide safeguards to
   test the scanner. Use fakes, botocore Stubber, or safe isolated resources.
+- Treat every AWS response as untrusted input. Validate required identities and decision-relevant
+  nested facts before normalization; do not coerce null or wrong-type values into plausible
+  strings.
 
 ## Secrets
 
@@ -78,6 +81,14 @@ Grant database and backup access on least privilege.
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine
 logs. A successful or failed authentication decision must not reveal token-validation detail.
+Reusing an assessment-profile version with different policy content returns the fixed
+`assessment_profile_version_conflict` response; it must not reveal either checksum, stored policy
+content, database detail, or a traceback.
+
+Collector evidence failures expose only an operation name and structural fact path. They never
+include the rejected AWS value or raw response. Operational botocore failures, malformed evidence,
+and programming defects remain separate categories: do not add a broad exception handler that
+hides an application defect as incomplete AWS evidence.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -98,6 +109,12 @@ locks the scan table before checking so concurrent writes cannot create a time-o
 offline SQL generation across the boundary fails closed. This guard does not authorize a
 production rollback: quiesce writers, verify a restorable backup, and follow the documented
 recovery runbook. Never fabricate or delete history to satisfy an older constraint.
+
+Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
+operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content
+changes, and never edit a stored version or rewrite scan references. Pending scans load and verify
+their persisted profile rather than current environment policy, so a restart cannot silently
+change an accepted assessment definition.
 
 ## Production authorization
 

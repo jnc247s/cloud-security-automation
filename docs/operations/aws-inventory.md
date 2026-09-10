@@ -18,8 +18,9 @@ to PostgreSQL, or modify AWS.
    - all account S3 buckets and selected bucket configuration;
    - global IAM users and authentication metadata;
    - account CloudTrail trails, enriched through each trail's home region.
-8. Each AWS response is transformed into the common `NormalizedResource` contract. AWS
-   timestamps and other SDK values are converted to JSON-safe values.
+8. Each AWS response crosses explicit structural and typed validation before it is transformed
+   into the common `NormalizedResource` contract. AWS timestamps and other SDK values are then
+   converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
    returns one `InventorySnapshot`.
@@ -151,10 +152,23 @@ command returns exit code `1` whenever any requested collector is incomplete. Th
 summary identifies collection coverage without dumping exception text, AWS responses, or resource
 configuration. No partial result is presented as complete.
 
-The accepted error-isolation contract catches botocore `ClientError`/`BotoCoreError` and explicit
-`CollectorEvidenceError`. An unexpected malformed response that escapes those boundaries can
-abort the entire scan or CLI process. Expanding and normalizing that failure contract is a known
-pre-Sprint 5 concern; do not describe every malformed payload as safely isolated today.
+The accepted response boundary separates three cases. Botocore `ClientError`/`BotoCoreError`
+means an AWS operational failure and marks the collector `FAILED`. Missing, null, wrong-type, or
+otherwise unusable required evidence raises a sanitized `CollectorEvidenceError` and marks that
+collector `PARTIAL`. Genuine application defects are not broadly caught or mislabeled and remain
+visible to tests and executor observability. A malformed STS caller-identity response prevents
+safe account attribution and therefore fails the overall run with a sanitized identity message.
+
+Validation errors contain only the AWS operation and a structural fact path; they do not echo the
+rejected value, response, resource identifier, or credentials. The current result contract is
+collector-granular: one malformed item discards results from that collector, independent
+collectors continue, and controls that require its evidence receive incomplete coverage rather
+than an unsupported clean result.
+
+Paginator token handling and retry behavior remain boto3/botocore responsibilities. Each yielded
+page and item is validated. Exact repeated resource entries across pages are collected once;
+conflicting entries for the same stable identity make the collector `PARTIAL`. An explicit empty
+result list remains a successful zero-resource inventory.
 
 Expected S3 absence responses are facts, not failures:
 
@@ -175,6 +189,8 @@ buckets are common.
   use global scope.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
   region.
+- Collectors validate facts only; response validation does not assign severity or decide a
+  technical assessment result.
 - Cross-account and AWS Organizations role orchestration are not implemented. Run once per
   explicitly assumed account role.
 - Directory buckets, S3 access points, IAM roles/groups/policies, VPCs, instances, and other AWS

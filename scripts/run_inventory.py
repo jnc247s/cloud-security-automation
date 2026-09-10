@@ -6,7 +6,7 @@ from collections import Counter
 
 from botocore.exceptions import BotoCoreError, ClientError
 
-from app.aws.client import Boto3ClientProvider
+from app.aws.client import AWSIdentityEvidenceError, Boto3ClientProvider
 from app.config import get_settings
 from app.logging.config import configure_logging
 from app.schemas.inventory import CollectionStatus
@@ -24,7 +24,7 @@ def main() -> int:
     try:
         provider = Boto3ClientProvider.from_settings(settings)
         snapshot = InventoryService(provider).collect()
-    except (BotoCoreError, ClientError):
+    except (AWSIdentityEvidenceError, BotoCoreError, ClientError):
         LOGGER.error("Unable to resolve the configured AWS identity.")
         return 1
 

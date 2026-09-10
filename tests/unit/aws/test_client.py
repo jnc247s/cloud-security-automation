@@ -5,7 +5,7 @@ from unittest.mock import Mock, call
 import pytest
 
 from app.aws import client as client_module
-from app.aws.client import Boto3ClientProvider
+from app.aws.client import AWSIdentityEvidenceError, Boto3ClientProvider
 from app.config import Settings
 
 
@@ -81,10 +81,9 @@ def test_identity_and_sts_client_are_resolved_once() -> None:
     [
         ("arn:aws-us-gov:iam::123456789012:user/scanner", "aws-us-gov"),
         ("arn:aws-cn:iam::123456789012:user/scanner", "aws-cn"),
-        ("malformed-caller-arn", "aws"),
     ],
 )
-def test_identity_derives_partition_with_safe_fallback(
+def test_identity_derives_partition_from_valid_caller_arn(
     caller_arn: str,
     expected_partition: str,
 ) -> None:
@@ -101,6 +100,40 @@ def test_identity_derives_partition_with_safe_fallback(
     provider = Boto3ClientProvider(session=session, region_name="us-gov-west-1")
 
     assert provider.partition == expected_partition
+
+
+@pytest.mark.parametrize(
+    "response",
+    (
+        None,
+        [],
+        {},
+        {"Account": None, "Arn": "arn:aws:iam::123456789012:user/scanner", "UserId": "id"},
+        {"Account": 123456789012, "Arn": "arn:aws:iam::123456789012:user/scanner", "UserId": "id"},
+        {"Account": "", "Arn": "arn:aws:iam::123456789012:user/scanner", "UserId": "id"},
+        {"Account": "123456789012", "Arn": None, "UserId": "id"},
+        {"Account": "123456789012", "Arn": "malformed-sensitive-arn", "UserId": "id"},
+        {
+            "Account": "123456789012",
+            "Arn": "arn:aws:iam::123456789012:user/scanner",
+            "UserId": None,
+        },
+    ),
+)
+def test_rejects_malformed_sts_identity_without_coercion_or_sensitive_values(
+    response: object,
+) -> None:
+    sts_client = Mock()
+    sts_client.get_caller_identity.return_value = response
+    session = Mock()
+    session.client.return_value = sts_client
+    provider = Boto3ClientProvider(session=session, region_name="us-east-1")
+
+    with pytest.raises(AWSIdentityEvidenceError) as error_info:
+        _ = provider.identity
+
+    assert error_info.value.operation_name == "get_caller_identity"
+    assert "malformed-sensitive-arn" not in str(error_info.value)
 
 
 def test_clients_for_distinct_services_have_distinct_cache_entries() -> None:

@@ -6,6 +6,7 @@ services:
       context: .
     environment:
       APP_ENV: "${APP_ENV:-development}"
+      ASSESSMENT_PROFILE_VERSION: "${ASSESSMENT_PROFILE_VERSION:-1.0.0}"
       AUTH_MODE: "${AUTH_MODE:-development}"
       AWS_PROFILE: "${AWS_PROFILE:-}"
       AWS_REGION: "${AWS_REGION:-us-east-1}"

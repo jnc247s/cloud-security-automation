@@ -16,9 +16,14 @@ from sqlalchemy.orm import Session
 
 from app import __version__
 from app.assessment.controls import ControlCatalog, build_default_control_catalog
-from app.assessment.profiles import AssessmentProfile, create_default_assessment_profile
-from app.aws.client import AWSClientProvider, Boto3ClientProvider
+from app.assessment.profiles import AssessmentProfile
+from app.aws.client import AWSClientProvider, AWSIdentityEvidenceError, Boto3ClientProvider
 from app.config import Settings, get_settings
+from app.database.catalogs import (
+    CatalogPersistenceError,
+    VersionContentConflictError,
+    load_assessment_profile,
+)
 from app.database.persistence import ScanPersistenceError, fail_pending_scan, persist_scan_result
 from app.database.session import SessionLocal
 from app.models import Scan
@@ -224,25 +229,23 @@ class InProcessScanExecutor:
                 raise ScanPersistenceError("current executor requires exactly one region")
             region = str(scan.requested_regions[0])
             started_at = _as_utc(scan.started_at)
-            expected_profile = (
-                scan.assessment_profile_id,
-                scan.assessment_profile_version,
-                scan.assessment_profile_checksum,
-            )
+            try:
+                profile = load_assessment_profile(
+                    session,
+                    profile_id=scan.assessment_profile_id,
+                    version=scan.assessment_profile_version,
+                    expected_checksum=scan.assessment_profile_checksum,
+                )
+            except (CatalogPersistenceError, VersionContentConflictError) as error:
+                raise ScanPersistenceError(
+                    "pending scan assessment profile provenance is invalid"
+                ) from error
             expected_catalog = (scan.control_catalog_id, scan.control_catalog_version)
 
         provider = self._provider_factory(region)
         snapshot = InventoryService(provider).collect(scan_id=scan_id)
-        profile = create_default_assessment_profile(
-            required_tags=self._settings.required_tag_names,
-            stale_key_days=self._settings.stale_access_key_days,
-        )
         catalog = build_default_control_catalog()
-        if expected_profile != (
-            profile.profile_id,
-            profile.version,
-            profile.calculate_content_checksum(),
-        ) or expected_catalog != (catalog.catalog_id, catalog.version):
+        if expected_catalog != (catalog.catalog_id, catalog.version):
             raise ScanPersistenceError("executor policy differs from pending scan provenance")
         assessments = RuleEngine(build_default_registry()).assess(snapshot, profile)
         scope = _scope_for(snapshot, profile, catalog)
@@ -263,7 +266,7 @@ class InProcessScanExecutor:
 
     @staticmethod
     def _failure_code(error: Exception) -> str:
-        if isinstance(error, ClientError | BotoCoreError):
+        if isinstance(error, ClientError | BotoCoreError | AWSIdentityEvidenceError):
             return "AWS_COLLECTION_FAILED"
         if isinstance(error, ScanPersistenceError):
             return "SCAN_PERSISTENCE_FAILED"

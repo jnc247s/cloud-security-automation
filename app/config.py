@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.assessment.profiles import DEFAULT_PROFILE_VERSION
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables or a local .env file."""
@@ -24,6 +26,11 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     aws_region: str = "us-east-1"
     aws_profile: str | None = None
+    assessment_profile_version: str = Field(
+        default=DEFAULT_PROFILE_VERSION,
+        max_length=64,
+        pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$",
+    )
     stale_access_key_days: int = Field(default=90, ge=1)
     required_tags: str = "Owner,Environment"
     auth_mode: str = "development"
@@ -65,6 +72,15 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             normalized_value = value.strip()
             return normalized_value or None
+        return value
+
+    @field_validator("assessment_profile_version", mode="before")
+    @classmethod
+    def normalize_assessment_profile_version(cls, value: object) -> object:
+        """Normalize the operator-selected semantic profile version."""
+
+        if isinstance(value, str):
+            return value.strip()
         return value
 
     @field_validator(

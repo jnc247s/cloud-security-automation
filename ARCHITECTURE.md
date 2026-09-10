@@ -9,6 +9,7 @@ reality; later roadmap components are not presented as implemented.
 AWS environment
     -> standard AWS credential chain and STS identity
     -> fact-only boto3 collectors
+    -> explicit AWS response-boundary validation
     -> normalized InventorySnapshot
     -> deterministic rules + versioned AssessmentProfile
     -> ControlAssessment candidates + structured EvidenceArtifacts
@@ -41,17 +42,41 @@ assessment; it does not certify organization-wide NIST compliance.
 | `app/security/` | Normalize a verified `Principal` and enforce capability policy | Issue tokens or store passwords |
 | `app/api/` | Validate HTTP input and delegate to services | Contain core scanning or persistence logic |
 
+Collector validation is deliberately small and explicit. Shared helpers validate response
+mappings, lists, required non-empty strings, booleans, integers, timestamps, and tags; each
+collector validates its own promoted and decision-relevant nested facts before constructing a
+`NormalizedResource`. Required identities are never coerced with `str(...)`. Exact repeated
+resource records from pagination are collected once, while conflicting records for one stable
+identity are treated as ambiguous evidence.
+
+The failure boundary preserves three distinct categories:
+
+- botocore and AWS service failures are operational collection failures (`FAILED`);
+- malformed required AWS evidence raises a sanitized `CollectorEvidenceError` and marks only that
+  collector `PARTIAL`; and
+- application defects are not caught as evidence errors and remain visible to executor
+  observability and tests.
+
+The collector result boundary is intentionally all-or-nothing per collector. A malformed item
+discards that collector's in-memory results, independent collectors continue, and deterministic
+assessment receives incomplete coverage and produces `INSUFFICIENT_EVIDENCE` where the control
+requires that collector. This repair does not add per-resource collection outcomes or new AWS
+facts. Malformed STS caller identity has its own sanitized identity-evidence failure because a
+snapshot cannot be attributed safely without an account identity.
+
 ## Scan execution
 
 ```text
 POST /api/v1/scans (EXECUTE)
-    -> ScanService creates RUNNING scan + SCAN_STARTED audit event
+    -> ScanService validates and persists the configured immutable profile version
+    -> creates RUNNING scan referencing that exact profile + SCAN_STARTED audit event
     -> transaction commits durable scan ID
     -> ScanExecutor.submit(scan_id)
     -> HTTP 202 response
 
 InProcessScanExecutor worker
     -> reload RUNNING scan
+    -> load and checksum-verify the exact persisted profile referenced by that scan
     -> build region-bound AWS provider
     -> InventoryService.collect(scan_id)
     -> RuleEngine.assess(snapshot, profile)
@@ -69,6 +94,13 @@ thread pool. The production application resubmits persisted `RUNNING` scans once
 drains a bounded backlog. It waits for accepted work during graceful shutdown. It is not a
 distributed queue: run one API process, and replace the adapter before horizontal or multi-process
 execution.
+
+Configuration selects the profile used only when a new scan is created. The executor never
+reconstructs policy for a pending scan from current environment settings and never selects a
+"latest" profile. Startup recovery therefore evaluates a retained `RUNNING` scan with the exact
+policy accepted at creation, even when a deployment has since rolled forward to another profile
+version. Missing, malformed, or checksum-inconsistent stored provenance fails closed before AWS
+collection.
 
 The executor currently scans one requested Region while collecting regional and global-style
 services through the Sprint 1 collectors. Formal multi-region/global execution is Sprint 5 scope.
@@ -95,6 +127,11 @@ downgrade path that crosses `20260904_0002` before running a migration step. It 
 retained scan history cannot satisfy the older identity/digest `NOT NULL` contract; PostgreSQL
 holds an exclusive table lock from that decision through the DDL. See `docs/persistence.md` for
 the complete model and operator runbook.
+
+Assessment-profile roll-forward uses the existing immutable profile table and scan foreign-key
+contract; it requires no new migration. A `(profile_id, version)` pair names exactly one policy
+definition. New content requires an operator-selected new numeric version, while old profiles,
+scans, and assessments remain unchanged.
 
 ## Authentication and authorization
 
@@ -142,7 +179,6 @@ workload-role configuration remain deployment responsibilities.
   caller idempotency key.
 - Startup-only pending-scan recovery and no multi-process claim/lease protocol.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
-- The default profile ID/version is fixed while two settings can change its immutable content.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 

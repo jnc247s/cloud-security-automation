@@ -114,6 +114,7 @@ class AssessmentProfile(BaseModel):
 
 def create_default_assessment_profile(
     *,
+    version: str = DEFAULT_PROFILE_VERSION,
     required_tags: tuple[str, ...] = ("Owner", "Environment"),
     stale_key_days: int = 90,
 ) -> AssessmentProfile:
@@ -121,7 +122,7 @@ def create_default_assessment_profile(
 
     return AssessmentProfile(
         profile_id=DEFAULT_PROFILE_ID,
-        version=DEFAULT_PROFILE_VERSION,
+        version=version,
         enabled_controls=DEFAULT_ENABLED_CONTROLS,
         required_tags=required_tags,
         stale_key_days=stale_key_days,

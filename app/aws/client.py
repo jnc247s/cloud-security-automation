@@ -1,5 +1,6 @@
 """Centralized boto3 client creation and caller identity lookup."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Protocol
@@ -19,6 +20,17 @@ class AWSIdentity:
     caller_arn: str
     user_id: str
     partition: str
+
+
+class AWSIdentityEvidenceError(RuntimeError):
+    """Raised when STS returns an unusable caller-identity response."""
+
+    def __init__(self, fact_path: str) -> None:
+        self.operation_name = "get_caller_identity"
+        self.fact_path = fact_path
+        super().__init__(
+            f"AWS identity evidence is incomplete at {self.operation_name}.{fact_path}"
+        )
 
 
 class AWSClientProvider(Protocol):
@@ -79,15 +91,20 @@ class Boto3ClientProvider:
         """Resolve and cache the active caller identity exactly once."""
 
         response = self.client("sts").get_caller_identity()
-        caller_arn = str(response["Arn"])
-        arn_parts = caller_arn.split(":", maxsplit=2)
-        partition = arn_parts[1] if len(arn_parts) == 3 else "aws"
+        if not isinstance(response, Mapping):
+            raise AWSIdentityEvidenceError("response")
+        account_id = _required_identity_string(response, "Account")
+        caller_arn = _required_identity_string(response, "Arn")
+        user_id = _required_identity_string(response, "UserId")
+        arn_parts = caller_arn.split(":", maxsplit=5)
+        if len(arn_parts) != 6 or arn_parts[0] != "arn" or not arn_parts[1]:
+            raise AWSIdentityEvidenceError("Arn")
 
         return AWSIdentity(
-            account_id=str(response["Account"]),
+            account_id=account_id,
             caller_arn=caller_arn,
-            user_id=str(response["UserId"]),
-            partition=partition,
+            user_id=user_id,
+            partition=arn_parts[1],
         )
 
     @property
@@ -101,3 +118,14 @@ class Boto3ClientProvider:
         """Return the AWS partition derived from the caller ARN."""
 
         return self.identity.partition
+
+
+def _required_identity_string(response: Mapping[str, Any], key: str) -> str:
+    """Validate one required STS identity field without echoing its value."""
+
+    if key not in response:
+        raise AWSIdentityEvidenceError(key)
+    value = response[key]
+    if not isinstance(value, str) or not value.strip():
+        raise AWSIdentityEvidenceError(key)
+    return value

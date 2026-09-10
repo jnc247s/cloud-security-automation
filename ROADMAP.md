@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-08
+Last verified: 2026-09-10
 Accepted baseline: `main` at `1e190720c5c33a4edfc1cebe44c652e2ee17424f` (Sprint 4 merge)
 
 ## Current state
@@ -39,23 +39,26 @@ Only then change Sprint 5 from `NEXT` to `IN PROGRESS`.
 
 ## Pre-Sprint 5 attention
 
-These accepted-baseline limitations were discovered during the governance audit. They are not
-silently repaired by this documentation task and must be triaged before or explicitly within an
-approved Sprint 5 plan:
+These accepted-baseline limitations were discovered during the governance audit. This register
+records both reviewed repairs and remaining items that must be triaged before or explicitly within
+an approved Sprint 5 plan:
 
 - **RESOLVED — populated downgrade safety:** the accepted `20260904_0002` migration remains
   unchanged. Alembic now preflights any downgrade across it, blocks before DDL when retained scans
   cannot satisfy the older `NOT NULL` contract, and excludes concurrent PostgreSQL writers while
   checking and transitioning compatible data.
-- **HIGH — assessment-profile versioning:** changing `REQUIRED_TAGS` or
-  `STALE_ACCESS_KEY_DAYS` changes the immutable content of profile `default` version `1.0.0`.
-  Against a database that already stores that version, a later scan can fail with a version-content
-  conflict. A version-selection/roll-forward policy is not implemented.
+- **RESOLVED — assessment-profile versioning:** `ASSESSMENT_PROFILE_VERSION` explicitly selects a
+  numeric immutable profile version for new scans. Changed content under an existing version is
+  rejected with a sanitized conflict; a reviewed new version coexists with historical versions.
+  Pending and recovered scans load their exact persisted profile instead of current deployment
+  policy. The established schema already supports this roll-forward, so no migration was added.
 - **RESOLVED — acceptance coverage:** the PostgreSQL integration suite now drives authenticated
   HTTP scan creation through deterministic fake AWS collection, real execution and persistence,
   and the principal read APIs. Sprint 5 remains `NEXT` and has not begun.
-- **MEDIUM — collector failure contract:** expected AWS and declared collector-evidence failures
-  are isolated, but some unexpected malformed response shapes can abort the whole scan or CLI run.
+- **RESOLVED — collector failure contract:** existing Sprint 1 collectors now validate required
+  identities, promoted nested evidence, pages, tags, permissions, and duplicate stable resources.
+  Operational AWS failures remain `FAILED`, malformed evidence becomes sanitized `PARTIAL`, and
+  programming defects remain visible. Sprint 5 remains `NEXT` and adds no evidence in this repair.
 - **MEDIUM — audit principal context:** scan-start audit records retain the authenticated subject,
   but not issuer, roles, or the authorizing capability.
 - **MEDIUM — authorization scope:** authenticated readers can query every account in this

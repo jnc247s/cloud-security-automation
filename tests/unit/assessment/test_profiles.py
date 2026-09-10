@@ -103,9 +103,11 @@ def test_profile_is_strict_frozen_and_forbids_unknown_policy() -> None:
 
 def test_default_profile_factory_can_bind_foundation_settings() -> None:
     profile = create_default_assessment_profile(
+        version="1.1.0",
         required_tags=("DataClassification",),
         stale_key_days=120,
     )
 
+    assert profile.version == "1.1.0"
     assert profile.required_tags == ("DataClassification",)
     assert profile.stale_key_days == 120
