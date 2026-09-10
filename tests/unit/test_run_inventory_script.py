@@ -8,6 +8,7 @@ from uuid import UUID
 
 from botocore.exceptions import ProfileNotFound
 
+from app.aws.client import AWSIdentityEvidenceError
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
 from scripts import run_inventory
@@ -80,6 +81,26 @@ def test_main_handles_invalid_profile_without_traceback(monkeypatch, caplog) -> 
     assert exit_code == 1
     assert "Unable to resolve the configured AWS identity" in caplog.text
     assert "missing-profile" not in caplog.text
+
+
+def test_main_handles_malformed_sts_identity_without_traceback(monkeypatch, caplog) -> None:
+    settings = SimpleNamespace(log_level="INFO")
+    service = Mock()
+    service.collect.side_effect = AWSIdentityEvidenceError("Arn")
+    monkeypatch.setattr(run_inventory, "get_settings", lambda: settings)
+    monkeypatch.setattr(run_inventory, "configure_logging", Mock())
+    monkeypatch.setattr(
+        run_inventory.Boto3ClientProvider,
+        "from_settings",
+        Mock(return_value=object()),
+    )
+    monkeypatch.setattr(run_inventory, "InventoryService", Mock(return_value=service))
+
+    exit_code = run_inventory.main()
+
+    assert exit_code == 1
+    assert "Unable to resolve the configured AWS identity" in caplog.text
+    assert "get_caller_identity" not in caplog.text
 
 
 def test_main_labels_incomplete_collection_and_returns_failure(monkeypatch, capsys, caplog) -> None:

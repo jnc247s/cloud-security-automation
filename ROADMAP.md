@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-09
+Last verified: 2026-09-10
 Accepted baseline: `main` at `1e190720c5c33a4edfc1cebe44c652e2ee17424f` (Sprint 4 merge)
 
 ## Current state
@@ -55,8 +55,10 @@ an approved Sprint 5 plan:
 - **RESOLVED — acceptance coverage:** the PostgreSQL integration suite now drives authenticated
   HTTP scan creation through deterministic fake AWS collection, real execution and persistence,
   and the principal read APIs. Sprint 5 remains `NEXT` and has not begun.
-- **MEDIUM — collector failure contract:** expected AWS and declared collector-evidence failures
-  are isolated, but some unexpected malformed response shapes can abort the whole scan or CLI run.
+- **RESOLVED — collector failure contract:** existing Sprint 1 collectors now validate required
+  identities, promoted nested evidence, pages, tags, permissions, and duplicate stable resources.
+  Operational AWS failures remain `FAILED`, malformed evidence becomes sanitized `PARTIAL`, and
+  programming defects remain visible. Sprint 5 remains `NEXT` and adds no evidence in this repair.
 - **MEDIUM — audit principal context:** scan-start audit records retain the authenticated subject,
   but not issuer, roles, or the authorizing capability.
 - **MEDIUM — authorization scope:** authenticated readers can query every account in this

@@ -3,7 +3,7 @@
 from typing import Any
 
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, PaginationError
 
 from app.collectors.base import CollectorEvidenceError, ResourceCollector
 from app.collectors.cloudtrail import CloudTrailCollector
@@ -165,3 +165,12 @@ def test_programming_error_is_not_mislabeled_as_aws_failure() -> None:
 
     with pytest.raises(ValueError, match="invalid normalized data"):
         InventoryService(FakeClientProvider(), collectors=(collector,)).collect()
+
+
+def test_botocore_pagination_failure_is_sanitized_as_operational_failure() -> None:
+    collector = FailingCollector(PaginationError(message="sensitive malformed continuation token"))
+
+    snapshot = InventoryService(FakeClientProvider(), collectors=(collector,)).collect()
+
+    assert snapshot.collection_status("failing") is CollectionStatus.FAILED
+    assert "sensitive malformed continuation token" not in snapshot.model_dump_json()

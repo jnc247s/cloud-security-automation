@@ -9,6 +9,7 @@ reality; later roadmap components are not presented as implemented.
 AWS environment
     -> standard AWS credential chain and STS identity
     -> fact-only boto3 collectors
+    -> explicit AWS response-boundary validation
     -> normalized InventorySnapshot
     -> deterministic rules + versioned AssessmentProfile
     -> ControlAssessment candidates + structured EvidenceArtifacts
@@ -40,6 +41,28 @@ assessment; it does not certify organization-wide NIST compliance.
 | `app/services/` | Own query projections and scan transaction/orchestration boundaries | Put HTTP concerns into domain logic |
 | `app/security/` | Normalize a verified `Principal` and enforce capability policy | Issue tokens or store passwords |
 | `app/api/` | Validate HTTP input and delegate to services | Contain core scanning or persistence logic |
+
+Collector validation is deliberately small and explicit. Shared helpers validate response
+mappings, lists, required non-empty strings, booleans, integers, timestamps, and tags; each
+collector validates its own promoted and decision-relevant nested facts before constructing a
+`NormalizedResource`. Required identities are never coerced with `str(...)`. Exact repeated
+resource records from pagination are collected once, while conflicting records for one stable
+identity are treated as ambiguous evidence.
+
+The failure boundary preserves three distinct categories:
+
+- botocore and AWS service failures are operational collection failures (`FAILED`);
+- malformed required AWS evidence raises a sanitized `CollectorEvidenceError` and marks only that
+  collector `PARTIAL`; and
+- application defects are not caught as evidence errors and remain visible to executor
+  observability and tests.
+
+The collector result boundary is intentionally all-or-nothing per collector. A malformed item
+discards that collector's in-memory results, independent collectors continue, and deterministic
+assessment receives incomplete coverage and produces `INSUFFICIENT_EVIDENCE` where the control
+requires that collector. This repair does not add per-resource collection outcomes or new AWS
+facts. Malformed STS caller identity has its own sanitized identity-evidence failure because a
+snapshot cannot be attributed safely without an account identity.
 
 ## Scan execution
 

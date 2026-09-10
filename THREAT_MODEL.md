@@ -2,7 +2,7 @@
 
 Status: living model for the accepted Sprint 4 baseline
 Baseline: `main` commit `1e190720c5c33a4edfc1cebe44c652e2ee17424f`
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-10
 
 ## Scope and security objectives
 
@@ -53,7 +53,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, history guards, fail-closed populated-downgrade preflight | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
-| T12 | Malicious or malformed AWS metadata | Medium | Pydantic schemas, structured normalization, deterministic rules, sanitized known AWS errors | Some unexpected response shapes can abort a scan; validate all decision-relevant inputs and bound metadata/log output |
+| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, Pydantic normalization, deterministic rules | New evidence fields must add matching validation; malformed data makes the affected collector incomplete and currently discards that collector's otherwise valid items |
 | T13 | Profile or mapping substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, source manifest digest, mapping/reference validation | Operators must deploy a reviewed new profile version whenever policy content changes; no automatic semantic ordering or policy approval workflow exists |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |

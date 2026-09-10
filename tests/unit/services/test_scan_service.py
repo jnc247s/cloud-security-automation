@@ -16,6 +16,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.aws.client import AWSIdentityEvidenceError
 from app.config import Settings
 from app.database.persistence import fail_pending_scan
 from app.models import AuditEvent, ControlAssessment, PersistedAssessmentProfile, Scan
@@ -396,6 +397,39 @@ def test_executor_records_bounded_failure_without_verified_identity(
     assert result.failure is not None
     assert result.failure.code == "SCAN_EXECUTION_FAILED"
     assert "credential-shaped" not in result.model_dump_json()
+    assert result.aws_account_id is None
+
+
+def test_executor_classifies_malformed_sts_identity_as_aws_collection_failure(
+    db_session: Session,
+    migrated_engine,
+) -> None:
+    pending = ScanService(db_session, _settings()).start_scan(
+        ScanCreateRequest(),
+        RecordingExecutor(),
+        actor_id="operator",
+    )
+    factory = sessionmaker(bind=migrated_engine, expire_on_commit=False)
+
+    def fail_identity(_region: str):
+        raise AWSIdentityEvidenceError("Account")
+
+    executor = InProcessScanExecutor(
+        session_factory=factory,
+        settings=_settings(),
+        provider_factory=fail_identity,
+    )
+    try:
+        executor._run(pending.scan_id)
+    finally:
+        executor.shutdown()
+    db_session.expire_all()
+
+    result = ScanService(db_session, _settings()).get_scan(pending.scan_id)
+    assert result.status is ScanStatus.FAILED
+    assert result.failure is not None
+    assert result.failure.code == "AWS_COLLECTION_FAILED"
+    assert "Account" not in result.failure.message
     assert result.aws_account_id is None
 
 

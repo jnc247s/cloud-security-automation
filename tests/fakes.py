@@ -21,15 +21,15 @@ class FakePaginator:
 
     def __init__(
         self,
-        pages: Iterable[Mapping[str, Any]] = (),
+        pages: Iterable[object] = (),
         *,
         error: BaseException | None = None,
     ) -> None:
-        self.pages = [dict(page) for page in pages]
+        self.pages = [dict(page) if isinstance(page, Mapping) else page for page in pages]
         self.error = error
         self.calls: list[dict[str, Any]] = []
 
-    def paginate(self, **kwargs: Any) -> Iterator[dict[str, Any]]:
+    def paginate(self, **kwargs: Any) -> Iterator[object]:
         """Record paginator options and yield the configured pages."""
 
         self.calls.append(kwargs)
@@ -45,7 +45,7 @@ class FakeAWSClient:
         self,
         *,
         paginators: Mapping[str, FakePaginator | Iterable[FakePaginator]] | None = None,
-        responses: Mapping[str, Iterable[Mapping[str, Any] | BaseException]] | None = None,
+        responses: Mapping[str, Iterable[object | BaseException]] | None = None,
     ) -> None:
         self._paginators: dict[str, deque[FakePaginator]] = {}
         for operation_name, configured in (paginators or {}).items():
@@ -78,7 +78,7 @@ class FakeAWSClient:
         if operation_name.startswith("_") or operation_name not in self._responses:
             raise AttributeError(operation_name)
 
-        def invoke(**kwargs: Any) -> dict[str, Any]:
+        def invoke(**kwargs: Any) -> object:
             self.calls.append(RecordedCall(operation_name, kwargs))
             try:
                 outcome = self._responses[operation_name].popleft()
@@ -88,7 +88,7 @@ class FakeAWSClient:
 
             if isinstance(outcome, BaseException):
                 raise outcome
-            return dict(outcome)
+            return dict(outcome) if isinstance(outcome, Mapping) else outcome
 
         return invoke
 

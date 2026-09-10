@@ -137,12 +137,21 @@ capacity limits.
 Run one API process. Before horizontal scaling, implement a durable ownership/lease-capable
 executor behind the existing `ScanExecutor` protocol.
 
-### Unexpected collector response shapes — MEDIUM
+### Existing collector response boundaries — RESOLVED
 
-Known botocore errors become `FAILED`; declared evidence-shape failures become `PARTIAL` and leave
-other collectors running. Some unexpected `KeyError`, validation, or malformed-shape failures can
-escape a collector and fail the whole scan or print a CLI traceback. Sprint 5 collector expansion
-must define and test the error boundary for every new AWS response.
+The four accepted Sprint 1 collectors now validate required identities, promoted primitive facts,
+nested tags/configuration/permissions, paginator pages, and stable-resource duplicates before
+normalization. Known botocore errors become `FAILED`; malformed required evidence becomes a
+sanitized `PARTIAL`; and programming defects are not hidden as AWS evidence problems. Malformed
+STS identity also fails closed without coercing null fields or printing response material.
+
+### Collector-level partial granularity — LOW
+
+Collection remains all-or-nothing for each collector. One malformed or inaccessible item discards
+that collector's otherwise valid in-memory resources, marks its coverage incomplete, and leaves
+independent collectors running. This is conservative and prevents false `PASS`, but a future
+design may retain validated items alongside item-level coverage. Do not add that larger outcome
+model implicitly while expanding Sprint 5 evidence.
 
 ### Single-region request model — PLANNED LIMIT
 

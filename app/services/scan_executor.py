@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from app import __version__
 from app.assessment.controls import ControlCatalog, build_default_control_catalog
 from app.assessment.profiles import AssessmentProfile
-from app.aws.client import AWSClientProvider, Boto3ClientProvider
+from app.aws.client import AWSClientProvider, AWSIdentityEvidenceError, Boto3ClientProvider
 from app.config import Settings, get_settings
 from app.database.catalogs import (
     CatalogPersistenceError,
@@ -266,7 +266,7 @@ class InProcessScanExecutor:
 
     @staticmethod
     def _failure_code(error: Exception) -> str:
-        if isinstance(error, ClientError | BotoCoreError):
+        if isinstance(error, ClientError | BotoCoreError | AWSIdentityEvidenceError):
             return "AWS_COLLECTION_FAILED"
         if isinstance(error, ScanPersistenceError):
             return "SCAN_PERSISTENCE_FAILED"
