@@ -7,17 +7,54 @@ identifies the items that require pre-Sprint 5 triage; security consequences bel
 
 ## Data and migration integrity
 
-### Populated downgrade from `20260904_0002` — HIGH
+### Guarded populated downgrade from `20260904_0002` — RESOLVED
 
-Sprint 4 intentionally allows an early `FAILED` scan to retain null `aws_account_id` and
-`inventory_sha256` when AWS identity or inventory was never available. The `20260904_0002`
-downgrade restores those columns to `NOT NULL` without a backfill or rejection preflight. A
-database containing such a legitimate row can therefore fail to downgrade.
+Sprint 4 intentionally allows a `RUNNING` scan, and an early `FAILED` scan, to retain null
+`aws_account_id` or `inventory_sha256` when AWS identity or inventory was never available. The
+accepted `20260904_0002` downgrade restores those columns to `NOT NULL`; the older schema cannot
+represent such legitimate history.
 
-Do not run this downgrade against important or populated data until a reviewed rollback strategy
-defines whether to preserve, transform, archive, or explicitly block those rows. Existing
-round-trip tests exercise empty databases; the forward upgrade from populated Sprint 3 history is
-covered.
+The current Alembic environment now preflights every online downgrade path that would execute the
+`20260904_0002` downgrade. It checks all scan statuses and blocks before any migration step when
+either legacy-required value is null. The error is intentionally sanitized: it reports the
+incompatibility and this runbook, but no scan ID, account ID, digest, row contents, or connection
+details. The revision, schema, constraints, triggers, and retained rows remain unchanged. On
+PostgreSQL, Alembic takes an `ACCESS EXCLUSIVE` lock on `scans` before the check and holds it
+through the established `ALTER COLUMN` operations, so a concurrent writer cannot invalidate the
+decision. Offline SQL generation across this boundary is blocked because it cannot inspect data.
+
+Before any planned rollback:
+
+1. Stop or quiesce the API and scan workers, and use the current repository checkout so this
+   preflight is active.
+2. Take and verify a restorable database backup. Preserve that backup outside the database being
+   changed.
+3. In a non-production rehearsal or explicitly approved maintenance window, use this read-only
+   query to identify incompatible history without returning identity or digest values:
+
+   ```sql
+   SELECT
+       scan_id,
+       status,
+       started_at,
+       completed_at,
+       aws_account_id IS NULL AS missing_aws_account_id,
+       inventory_sha256 IS NULL AS missing_inventory_sha256
+   FROM scans
+   WHERE aws_account_id IS NULL OR inventory_sha256 IS NULL
+   ORDER BY started_at, scan_id;
+   ```
+
+4. If the query returns no rows, the online Alembic downgrade may use the established migration
+   path. The preflight repeats the check while PostgreSQL excludes writers.
+5. If rows are returned, keep the database at `20260904_0002`. A `RUNNING` scan may be allowed to
+   finish normally and then be rechecked. For permanent incompatible history, either retain the
+   current schema, restore a known-compatible backup into an isolated environment, or design a
+   separate reviewed history-preserving transition.
+
+Never fabricate AWS identity or inventory digests, rewrite a terminal scan, delete failed scan or
+audit history, disable the guard, or stamp around the revision merely to force rollback. No
+destructive data-conversion procedure is currently approved or documented.
 
 ### Fixed profile version with configurable content — HIGH
 

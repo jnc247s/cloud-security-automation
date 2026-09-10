@@ -2,7 +2,7 @@
 
 Status: living model for the accepted Sprint 4 baseline
 Baseline: `main` commit `1e190720c5c33a4edfc1cebe44c652e2ee17424f`
-Last reviewed: 2026-09-05
+Last reviewed: 2026-09-08
 
 ## Scope and security objectives
 
@@ -51,7 +51,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T07 | Sensitive evidence exposure | High | Authentication, read capability, structured projections, sanitized failures | Every reader can see all stored accounts and detailed configuration; add field/object policy before broader tenancy |
 | T08 | Audit tampering or ambiguous attribution | High | Transactional append-only audit guards and explicit actor subject on scan start | Guards reject audit UPDATE/DELETE but cannot prevent a privileged direct INSERT or require direct finding/exception writes to have a paired audit event; issuer, roles, and capability are not retained. Restrict database roles to service-only writes and protect operator access. |
 | T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
-| T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, history guards | Backups/operator access remain privileged; populated downgrade edge requires a plan |
+| T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, history guards, fail-closed populated-downgrade preflight | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
 | T12 | Malicious or malformed AWS metadata | Medium | Pydantic schemas, structured normalization, deterministic rules, sanitized known AWS errors | Some unexpected response shapes can abort a scan; validate all decision-relevant inputs and bound metadata/log output |
 | T13 | Profile or mapping substitution | High | Content checksums, version-content conflicts, source manifest digest, mapping/reference validation | Runtime policy settings can change fixed profile `1.0.0` content and block scans; explicit roll-forward is required |

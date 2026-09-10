@@ -12,6 +12,7 @@ from uuid import UUID, uuid4
 import pytest
 from alembic import command
 from alembic.config import Config
+from alembic.util import CommandError
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, func, inspect, select, text, update
 from sqlalchemy.dialects.postgresql import JSONB
@@ -50,6 +51,10 @@ from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator
 from tests.unit.database.factories import scan_bundle
 
 pytestmark = pytest.mark.integration
+
+_CURRENT_REVISION = "20260904_0002"
+_PREVIOUS_REVISION = "20260903_0001"
+_COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"
 
 
 class _RecordingExecutor:
@@ -99,6 +104,46 @@ def migration_config(connection) -> Config:
     return config
 
 
+def _postgres_migration_state(engine: Engine) -> dict:
+    with engine.connect() as connection:
+        inspector = inspect(connection)
+        table_names = inspector.get_table_names()
+        return {
+            "revision": connection.scalar(text("SELECT version_num FROM alembic_version")),
+            "scan_columns": {
+                column["name"]: column["nullable"] for column in inspector.get_columns("scans")
+            },
+            "scan_constraints": tuple(
+                sorted(
+                    (constraint["name"], constraint["sqltext"])
+                    for constraint in inspector.get_check_constraints("scans")
+                )
+            ),
+            "scan_rows": tuple(
+                dict(row)
+                for row in connection.execute(
+                    text("SELECT * FROM scans ORDER BY scan_id")
+                ).mappings()
+            ),
+            "table_counts": {
+                table_name: connection.scalar(text(f'SELECT COUNT(*) FROM "{table_name}"'))
+                for table_name in table_names
+                if table_name != "alembic_version"
+            },
+            "scan_triggers": tuple(
+                tuple(row)
+                for row in connection.execute(
+                    text(
+                        "SELECT tgname, pg_get_triggerdef(oid) "
+                        "FROM pg_trigger "
+                        "WHERE tgrelid = CAST('scans' AS regclass) AND NOT tgisinternal "
+                        "ORDER BY tgname"
+                    )
+                )
+            ),
+        }
+
+
 @pytest.fixture
 def postgres_engine() -> Iterator[Engine]:
     database_url = os.environ.get("TEST_DATABASE_URL")
@@ -141,6 +186,102 @@ def test_postgres_migration_round_trip_and_jsonb(postgres_engine: Engine) -> Non
         assert inspect(connection).get_table_names() == ["alembic_version"]
         command.upgrade(config, "head")
         command.check(config)
+
+
+def test_postgres_pending_scan_downgrade_preserves_compatible_populated_history(
+    postgres_engine: Engine,
+) -> None:
+    bundle = scan_bundle()
+    with Session(postgres_engine) as session, session.begin():
+        persisted = persist_scan_result(session, **bundle)
+        scan_id = persisted.scan_id
+
+    before = _postgres_migration_state(postgres_engine)
+    assert before["scan_rows"][0]["aws_account_id"] is not None
+    assert before["scan_rows"][0]["inventory_sha256"] is not None
+    with postgres_engine.begin() as connection:
+        command.downgrade(migration_config(connection), _PREVIOUS_REVISION)
+    after = _postgres_migration_state(postgres_engine)
+
+    assert before["revision"] == _CURRENT_REVISION
+    assert after["revision"] == _PREVIOUS_REVISION
+    assert after["scan_columns"]["aws_account_id"] is False
+    assert after["scan_columns"]["inventory_sha256"] is False
+    assert _COMPLETED_IDENTITY_CONSTRAINT not in {name for name, _ in after["scan_constraints"]}
+    assert after["scan_rows"] == before["scan_rows"]
+    assert after["table_counts"] == before["table_counts"]
+    assert after["scan_triggers"] == before["scan_triggers"]
+    assert len(after["scan_rows"]) == 1
+    assert after["scan_rows"][0]["scan_id"] == scan_id
+
+
+@pytest.mark.parametrize(
+    ("status", "aws_account_id", "inventory_sha256", "target_revision"),
+    (
+        (ScanStatus.RUNNING, None, None, "base"),
+        (ScanStatus.FAILED, None, None, _PREVIOUS_REVISION),
+        (ScanStatus.RUNNING, "123456789012", None, _PREVIOUS_REVISION),
+        (ScanStatus.RUNNING, None, "f" * 64, _PREVIOUS_REVISION),
+    ),
+    ids=(
+        "running-both-missing",
+        "failed-both-missing",
+        "running-digest-missing",
+        "running-account-missing",
+    ),
+)
+def test_postgres_pending_scan_downgrade_blocks_incompatible_history_without_changes(
+    postgres_engine: Engine,
+    status: ScanStatus,
+    aws_account_id: str | None,
+    inventory_sha256: str | None,
+    target_revision: str,
+) -> None:
+    settings = _scan_settings(postgres_engine)
+    with Session(postgres_engine, expire_on_commit=False) as session:
+        pending = ScanService(session, settings).start_scan(
+            ScanCreateRequest(),
+            _RecordingExecutor(),
+            actor_id="migration-test-admin",
+        )
+        if aws_account_id is not None or inventory_sha256 is not None:
+            scan = session.get(Scan, pending.scan_id)
+            assert scan is not None
+            scan.aws_account_id = aws_account_id
+            scan.inventory_sha256 = inventory_sha256
+            session.commit()
+        if status is ScanStatus.FAILED:
+            fail_pending_scan(
+                session,
+                scan_id=pending.scan_id,
+                completed_at=datetime.now(UTC),
+                failure_code="AWS_IDENTITY_UNAVAILABLE",
+                failure_message="AWS identity could not be verified.",
+            )
+            session.commit()
+
+    before = _postgres_migration_state(postgres_engine)
+    assert before["scan_rows"][0]["aws_account_id"] == aws_account_id
+    assert before["scan_rows"][0]["inventory_sha256"] == inventory_sha256
+    with pytest.raises(CommandError, match="Downgrade blocked before revision") as error:
+        with postgres_engine.begin() as connection:
+            command.downgrade(migration_config(connection), target_revision)
+
+    after = _postgres_migration_state(postgres_engine)
+    assert after == before
+    assert after["revision"] == _CURRENT_REVISION
+    assert after["scan_columns"]["aws_account_id"] is True
+    assert after["scan_columns"]["inventory_sha256"] is True
+    assert _COMPLETED_IDENTITY_CONSTRAINT in {name for name, _ in after["scan_constraints"]}
+    assert after["scan_rows"][0]["status"] == status.value
+    error_message = str(error.value)
+    assert "No schema or data changes were applied" in error_message
+    assert "docs/operations/known-limitations.md" in error_message
+    assert str(pending.scan_id) not in error_message
+    assert pending.scan_id.hex not in error_message
+
+    with postgres_engine.begin() as connection:
+        command.check(migration_config(connection))
 
 
 def test_postgres_history_and_append_only_audit(postgres_engine: Engine) -> None:

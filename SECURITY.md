@@ -92,8 +92,12 @@ issuer/role/capability attribution is a known gap tracked in `ROADMAP.md`.
 - Never run tests, migration experiments, or downgrade commands against production.
 - Preserve append-only audit and immutable historical evidence guards.
 
-Revision `20260904_0002` has a known populated-downgrade limitation for legitimate early failed
-scans. Do not attempt that downgrade on important data until a reviewed plan exists.
+The current Alembic environment blocks downgrade across `20260904_0002` when any retained scan
+has a null AWS identity or inventory digest that the older schema cannot represent. PostgreSQL
+locks the scan table before checking so concurrent writes cannot create a time-of-check race, and
+offline SQL generation across the boundary fails closed. This guard does not authorize a
+production rollback: quiesce writers, verify a restorable backup, and follow the documented
+recovery runbook. Never fabricate or delete history to satisfy an older constraint.
 
 ## Production authorization
 
