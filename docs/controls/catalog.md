@@ -9,9 +9,9 @@ Sprint 2.1 kept the five deterministic technical checks introduced in Sprint 2 a
 a versioned executable contract. It did not add controls, AWS calls, persistence, API endpoints,
 or remediation execution. Sprint 3 subsequently persisted those results, and Sprint 4 now exposes
 them through authorized read APIs without changing the control logic. The pre-Sprint-5 contracts
-below are documentation-only and do not change catalog version `0.2.1` or application behavior.
+and standalone validation schemas do not change catalog version `0.2.1` or application behavior.
 
-The default control catalog is `aws-cloud-security-controls` version `0.2.1`:
+The default executable control catalog is `aws-cloud-security-controls` version `0.2.1`:
 
 | Control | Target | Failure condition | Severity |
 | --- | --- | --- | --- |
@@ -37,13 +37,20 @@ historical findings and integrations cannot acquire conflicting meanings:
 Never reuse a reserved ID for another meaning. In particular, the obsolete prototype meaning
 `S3-002 = missing default encryption` must not return.
 
-The accepted catalog does not yet define how `S3-002` aggregates policy status, ACLs, Block Public
-Access, conditions, external-principal approvals, or Access Analyzer facts. It also lacks a
-versioned classification selector that determines which buckets are sensitive for `S3-004`;
-`restricted_data_requires_kms` defines the consequence after classification, not classification
-itself. This task is not authorized to redefine existing S3 controls, so those details remain
-separately owned contract dependencies for Sprint 5 and `LOG-004`; none of the permanent S3
-meanings above changes here.
+The permanent meanings are unchanged, and their previously missing pre-implementation details are
+now approved in two focused contracts:
+
+- [S3-002 public and external exposure aggregation](s3-002-exposure-aggregation.md) owns the
+  deterministic policy/ACL/BPA aggregation, bucket-scoped approval schema, provenance, and
+  uncertainty behavior used by `S3-002` and composed by `LOG-004`.
+- [S3-004 sensitive-bucket classifier](s3-004-sensitive-bucket-classifier.md) owns classifier
+  schema `1.0.0`, typed applicability results, immutable policy identity, and historical
+  reconstruction requirements.
+
+These are approved planned contracts, not executable controls. They do not change catalog version
+`0.2.1`, enable a reserved ID, add an AWS call, or alter the five accepted Sprint 0--4 controls.
+`restricted_data_requires_kms` still defines a consequence after classification and never
+classifies a bucket by itself.
 
 ## Planned-contract interpretation
 
@@ -59,6 +66,11 @@ explicit global scope, stable resource identity, collector and AWS API source, c
 schema/version, and collector-completeness outcome. The companion
 [Sprint 5 evidence-readiness matrix](sprint-5-evidence-readiness.md) owns API, permission, field,
 relationship, and sub-sprint planning detail.
+
+Normalized resource edges use the approved
+[canonical generic relationship contract](../design-decisions/0001-generic-resource-relationships.md).
+That contract fixes direction, stable and per-scan identity, Region, resolution, and provenance;
+its collector and persistence integration remains Sprint 5 work.
 
 New contracts deliberately have no severity or NIST mapping yet. Severity is project policy and
 must not be inferred from NIST. A future mapping requires separate authoritative provenance and
@@ -468,9 +480,9 @@ enumeration is complete and every relevant trail is deterministically non-qualif
   CloudTrail and S3 collector outcomes.
 - **Relationships:** CloudTrail trail -> S3 bucket. The relationship must resolve by stable bucket
   identity rather than copying a contradictory exposure interpretation into CloudTrail facts.
-- **Assessment Profile:** `enabled_controls` plus only the versioned inputs eventually authorized
-  by the separate canonical `S3-002` contract. This task does not invent that policy. A Finding
-  Exception remains separate.
+- **Assessment Profile:** `enabled_controls` plus the immutable, bucket-scoped
+  `s3_exposure_approvals` artifact defined by the canonical `S3-002` contract. A Finding Exception
+  remains separate and cannot act as an approval.
 - **PASS:** the relationship is complete and the canonical technical `S3-002` assessment for that
   exact persisted destination bucket snapshot is `PASS`.
 - **FAIL:** the relationship is complete and that exact canonical `S3-002` assessment is `FAIL`.
@@ -479,10 +491,9 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 - **INSUFFICIENT_EVIDENCE:** destination identity or relationship resolution is unavailable, or
   the corresponding canonical S3-002 assessment is unavailable or `INSUFFICIENT_EVIDENCE`.
 - **Limitations:** the rule composes the S3-002 result and does not independently evaluate or
-  duplicate S3 exposure, log delivery, object ownership, retention, or KMS protection. The
-  repository currently reserves S3-002's immutable meaning without a detailed approval and source
-  aggregation contract. That pre-existing gap must be resolved in a separately authorized S3
-  contract review before LOG-004 or its decisive Sprint 5 evidence set can be implemented.
+  duplicate S3 exposure, log delivery, object ownership, retention, or KMS protection. S3-002's
+  v1 access-point, object-ACL, and IAM-effective-permission limits also apply; those boundaries are
+  explicit in its detailed contract and cannot be broadened silently.
 - **AWS references:** [GetTrail](https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_GetTrail.html)
   and [Amazon S3 Block Public Access](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html).
 
@@ -599,7 +610,8 @@ Amazon S3 already provides SSE-S3 baseline encryption for new uploads, so the ab
 explicit bucket default does not prove that objects are unencrypted. This prototype also does not
 assess algorithm, KMS key ownership, bucket-policy enforcement, sensitive-data classification, or
 existing object history. A future KMS requirement must use the assessment profile's organization
-policy and its own canonical control semantics.
+policy and the versioned
+[S3-004 sensitive-bucket classifier](s3-004-sensitive-bucket-classifier.md).
 
 ## `IAM-001` — IAM user without MFA
 

@@ -133,6 +133,30 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
+## Approved Sprint 5 preflight contracts
+
+Three pre-implementation contracts are approved for later roadmap work while the accepted runtime
+remains Sprint 4:
+
+- [Generic resource relationships](docs/design-decisions/0001-generic-resource-relationships.md)
+  are immutable, directional observations with stable logical IDs, per-scan IDs, explicit endpoint
+  scope and Region, typed resolution, and evidence provenance. Sprint 5 slice 5G will add the one
+  generic Alembic-backed persistence path and integrate it end to end; no relationship table,
+  producer, service projection, or route exists yet.
+- [S3-002 exposure aggregation](docs/controls/s3-002-exposure-aggregation.md) defines the future
+  rule's deterministic policy/ACL/Block Public Access combination and its immutable,
+  bucket-scoped approval artifact. It performs no AWS calls and is not in the executable catalog.
+- [S3-004 sensitive-bucket classification](docs/controls/s3-004-sensitive-bucket-classifier.md)
+  defines a pure versioned classifier over exact bucket ARNs, restricted name patterns, and exact
+  tags. It assigns applicability only—not compliance, severity, or framework status—and is not
+  registered with the current profile or database.
+
+These contracts preserve the collector/rule boundary: Sprint 5 collectors will collect only the
+versioned facts and provenance named by the evidence-readiness matrix. Later deterministic rules
+will apply the selected policy artifacts. Missing required facts and unresolved required edges
+remain `INSUFFICIENT_EVIDENCE`; neither policy artifact nor a relationship authorizes a fabricated
+resource, inferred AWS state, or historical rewrite.
+
 ## Authentication and authorization
 
 All `/api/v1` routes use HTTP bearer authentication. Production mode verifies a signed OIDC JWT

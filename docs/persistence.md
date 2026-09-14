@@ -122,6 +122,28 @@ missing evidence never becomes `PASS`.
 NIST mappings remain reporting metadata parallel to technical evaluation. Persisting a mapping
 does not make a passing technical check proof of organization-wide CSF compliance.
 
+### Approved future persistence contracts
+
+The pre-Sprint-5 review approved a first-class generic
+[resource-relationship contract](design-decisions/0001-generic-resource-relationships.md). Sprint 5
+slice 5G must introduce one new append-only Alembic-backed observation table and integrate its
+writer, validation, service, and API projection atomically. The table must preserve stable and
+per-scan relationship IDs, direction, endpoint identity/scope/Region, typed resolution, schema
+version, collection time, and evidence provenance. Its target is a checked union of either a
+canonical stable resource reference or a deterministic partial reference; it must never create a
+placeholder `Resource`. The current schema has no relationship table and this preflight adds no
+migration.
+
+The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
+[S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
+ID, schema version, policy version, and content checksum. Before either future rule is enabled,
+profile/persistence integration must bind a scan and assessment to the complete selected artifact,
+reject changed content under an existing logical version, and retain older artifacts for replay.
+That integration requires a reviewed profile/schema transition; it does not mutate the existing
+default profile `1.0.0` or the accepted persisted rows. The standalone contracts are sufficient
+for Sprint 5 fact collection because classification and exposure evaluation remain later,
+deterministic rule work.
+
 ## Finding deduplication and resolution
 
 A deterministic fingerprint combines the account, stable resource identity, control ID, and

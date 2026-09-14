@@ -16,16 +16,20 @@ the pre-Sprint 5 attention items, and turn these requirements into reviewable im
 slices. Record material design decisions and obtain implementation approval before changing the
 status to `IN PROGRESS`.
 
-The requested missing Sprint 6 technical meanings are now canonical in the
+The requested missing Sprint 6 technical meanings are canonical in the
 [control catalog](../../controls/catalog.md), with their planned collection sources, permissions,
 scope, normalized facts, relationships, and failure behavior in the
-[Sprint 5 evidence-readiness matrix](../../controls/sprint-5-evidence-readiness.md). Review also
-found that the accepted catalog reserves `S3-002` and `S3-004` by immutable title but does not
-define S3-002's detailed approval/evidence aggregation or S3-004's sensitive-bucket classifier.
-Because this task prohibits redefining existing S3 controls, those dependencies—and therefore
-decisive `LOG-004` evidence—remain blocked pending a separately authorized S3 contract review.
-These documentation contracts do not implement or enable a control and do not yet unblock the
-complete Sprint 5 preflight.
+[Sprint 5 evidence-readiness matrix](../../controls/sprint-5-evidence-readiness.md). The dedicated
+preflight review has now approved three previously missing design inputs without enabling them:
+
+- the [generic relationship contract](../../design-decisions/0001-generic-resource-relationships.md);
+- the [S3-002 exposure aggregation](../../controls/s3-002-exposure-aggregation.md); and
+- the [S3-004 sensitive-bucket classifier](../../controls/s3-004-sensitive-bucket-classifier.md).
+
+Their standalone schemas and contract tests do not implement an AWS collector, executable rule,
+profile registration, database table, API route, or remediation behavior. Sprint 5 remains
+`NEXT`; starting slice 5A still requires the roadmap start protocol and explicit implementation
+authorization.
 
 The reviewed implementation order for a later Sprint 5 execution request is:
 
@@ -37,9 +41,8 @@ The reviewed implementation order for a later Sprint 5 execution request is:
 6. 5F — CloudTrail evidence expansion; and
 7. 5G — typed relationships and Sprint-wide integration validation.
 
-Sprint 5 remains `NEXT` until the remaining implementation preflight—including the generic typed
-relationship representation—is reviewed and the roadmap start protocol is followed. This plan
-alone does not authorize collectors, permissions, executable Sprint 6 rules, or a status change.
+Sprint 5 remains `NEXT` until the roadmap start protocol is followed. This plan alone does not
+authorize collectors, permissions, executable Sprint 6 rules, or a status change.
 
 ## Objective and boundary
 

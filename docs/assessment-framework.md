@@ -99,6 +99,14 @@ CIDRs, project-specific EC2 exceptions, or this project's KMS rule. Current cont
 `enabled_controls` profile field; the other fields establish versioned inputs for roadmap controls
 that will explicitly depend on them.
 
+The pre-Sprint-5 contracts also define two standalone future policy artifacts:
+[bucket-scoped S3 exposure approvals](controls/s3-002-exposure-aggregation.md) and the
+[sensitive-bucket classifier](controls/s3-004-sensitive-bucket-classifier.md). They are not fields
+in the current `AssessmentProfile`, are not persisted or selected by current scans, and do not
+enable `S3-002` or `S3-004`. Future integration must introduce a reviewed profile/schema version,
+retain each artifact's complete versioned content and checksum, and keep old profile definitions
+loadable rather than applying current policy to historical scans.
+
 ## Control contracts
 
 The control catalog is `aws-cloud-security-controls` version `0.2.1`. Each automated control has a

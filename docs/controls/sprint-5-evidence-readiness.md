@@ -93,24 +93,24 @@ and not a global resource.
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `S3-001` | `ListBuckets`; bucket-client `GetPublicAccessBlock`; account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:ListAllMyBuckets`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock` | Account discovery once; account BPA once; bucket follow-up in bucket Region | all four account and bucket BPA booleans plus explicit absent configuration; account -> bucket context | Expected `NoSuchPublicAccessBlockConfiguration` is a complete all-false factual state, not a collection failure; denied, partial, malformed, or unexpected failures -> `INSUFFICIENT_EVIDENCE` | 5E / `EXPAND` account BPA |
-| `S3-002` | Candidate direct sources: `GetBucketPolicy`, `GetBucketPolicyStatus`, `GetBucketAcl`, and both BPA calls; `s3:GetBucketPolicy`, `s3:GetBucketPolicyStatus`, `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock`; Analyzer facts where available | Bucket-home-Region facts plus account BPA and Regional analyzer context | decoded policy/principals/actions/resources/conditions; `IsPublic`; ACL owner/grants; account+bucket BPA; analyzer finding edge | Operational/malformed sources remain incomplete. The accepted catalog does not yet define exact approval or source-aggregation semantics, so the minimum decisive evidence set cannot be declared here | Separate S3 contract review required before 5D/5E acceptance / `BLOCKED` |
+| `S3-002` | `GetBucketPolicy`, `GetBucketPolicyStatus`, `GetBucketAcl`, bucket `GetPublicAccessBlock`, and account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:GetBucketPolicy`, `s3:GetBucketPolicyStatus`, `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock`; Analyzer facts remain supplementary | Bucket-home-Region direct facts; account BPA once; Regional analyzer context is non-decisive | complete decoded policy/principals/actions/resources/conditions and digest; `IsPublic`; ACL owner/grants; four account+bucket BPA flags; exact versioned `s3_exposure_approvals`; stable policy/ACL evidence references | Expected no-policy/no-BPA responses are explicit absence/all-false facts. One coherent unapproved channel can `FAIL`; otherwise any denied, malformed, contradictory, unsupported, or required-missing channel -> `INSUFFICIENT_EVIDENCE` under the canonical table | 5E direct collection; 5D supplementary context / `CONTRACT_READY` |
 | `S3-003` | `GetBucketPolicy`; `s3:GetBucketPolicy` | Bucket-home Region | `policy_present`; complete decoded statements preserving effect, principal, actions, bucket/object resources, and `aws:SecureTransport` conditions | Expected `NoSuchBucketPolicy` is complete `policy_present = false`, not a collection failure; denied, undecodable, malformed, or partial evidence -> `INSUFFICIENT_EVIDENCE` | 5E / `EXPAND` |
-| `S3-004` | Candidate sources: `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | explicit encryption-present state, `SSEAlgorithm`, bucket-key flag, KMS key ID/ARN and `KeyManager`, complete tags; S3 bucket -> KMS key | Expected no-encryption/no-tag responses and SSE-S3/AWS-managed-KMS states are explicit facts; operational/malformed evidence is incomplete. The repository lacks a versioned sensitive-bucket classification selector, so decisive evidence cannot be finalized | Separate S3 contract review required before 5E acceptance / `BLOCKED` |
+| `S3-004` | `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | exact bucket ARN and complete tags consumed by classifier schema `1.0.0`; explicit encryption-present state, `SSEAlgorithm`, bucket-key flag, KMS key ID/ARN and `KeyManager`; S3 bucket -> KMS key | Expected no-encryption/no-tag responses and SSE-S3/AWS-managed-KMS states are explicit facts. Missing configured classification metadata -> classifier `INSUFFICIENT_EVIDENCE`; operational/malformed encryption or KMS evidence remains incomplete | 5E / `CONTRACT_READY` |
 
 Supporting S3 context uses `GetBucketLocation` (`s3:GetBucketLocation`), `GetBucketVersioning`
 (`s3:GetBucketVersioning`), and `GetBucketOwnershipControls`
 (`s3:GetBucketOwnershipControls`). These facts support investigation and future refinements even
 when they are not the minimum input to one of the four canonical results. The exposure evidence
-must preserve raw normalized principals and policy structure so a later separately approved
-`S3-002` contract does not require recollection. An operational Finding Exception never turns an
-exposed bucket into `PASS`. A successful expected-absence response is a normalized fact, while
+must preserve normalized principals and complete policy structure required by the canonical
+[S3-002 aggregation contract](s3-002-exposure-aggregation.md). An operational Finding Exception
+never turns an exposed bucket into `PASS`. A successful expected-absence response is a normalized
+fact, while
 AccessDenied, throttling, transport failure, unexpected service errors, or malformed content are
 collection failures. KMS key descriptions are cached by Region and key reference so shared keys
-are not queried once per bucket. This matrix deliberately does not invent S3-002 approval,
-condition, Block Public Access aggregation, or Access Analyzer decision semantics, and it does not
-invent a sensitive-bucket classifier for S3-004. Because the accepted catalog has only those
-immutable one-line meanings, S3-002, S3-004, and therefore LOG-004 still need a separately
-authorized canonical-contract review before Sprint 5 evidence readiness is complete.
+are not queried once per bucket. The approved
+[S3-004 classifier contract](s3-004-sensitive-bucket-classifier.md) limits classification inputs
+to exact bucket ARNs, restricted full-name patterns, and exact tags; Sprint 5 collects those facts
+without classifying the bucket. Neither contract enables a rule or changes an existing control.
 
 ## Logging controls
 
@@ -119,7 +119,7 @@ authorized canonical-contract review before Sprint 5 evidence readiness is compl
 | `LOG-001` | `ListTrails`, `GetTrail`, `GetTrailStatus`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus` | Account discovery with per-trail home-Region enrichment | trail ARN/home Region and explicit `is_logging`; account -> trail | Incomplete enumeration/status -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
 | `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; account -> trails | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` selectors |
 | `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` validated contract |
-| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the eventual canonical S3-002 evidence set | Cross-service join: trail home Region -> global S3 bucket identity | trail `s3_bucket_name`; resolved bucket stable ID; shared S3-002 evidence; trail -> S3 bucket | Missing destination or unresolved edge -> `INSUFFICIENT_EVIDENCE`; decisive S3 completeness cannot be finalized before the separate S3-002 contract review | 5E + 5F + 5G / `BLOCKED` by S3-002 contract detail |
+| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E + 5F + 5G / `CONTRACT_READY` |
 
 CloudTrail-to-KMS evidence uses trail `KmsKeyId` and, where inspected, cached
 `kms:DescribeKey` evidence;
@@ -158,8 +158,8 @@ trimmed or case-folded.
 
 ## IAM Access Analyzer supporting evidence
 
-5D is a fact source and is not, by itself, a complete S3 exposure decision engine. The separately
-authorized S3-002 contract must decide whether Analyzer evidence is required or supplemental.
+5D is a fact source and is not, by itself, a complete S3 exposure decision engine. The canonical
+S3-002 contract makes Analyzer evidence supplementary and non-decisive for v1.
 `ListAnalyzers` (`access-analyzer:ListAnalyzers`) records analyzer ARN, name, type, status, and
 Region; the type captures its zone-of-trust scope. `ListFindingsV2` uses
 `access-analyzer:ListFindings` for discovery and records finding ID, type, status, resource
@@ -176,8 +176,9 @@ bucket-home Region. Results are deduplicated by analyzer/finding identity and re
 stable resources. An absent analyzer after complete Regional enumeration is an explicit fact, not
 proof that a resource lacks external access. AccessDenied, incomplete detail, or malformed
 pagination—including a repeated, non-progressing, or unconsumed token from any of the three
-operations—makes Analyzer evidence incomplete and can never be interpreted as `PASS`; its exact
-effect on S3-002 completeness remains part of the blocked S3 contract decision.
+operations—makes Analyzer evidence incomplete and can never itself be interpreted as `PASS` or an
+approval. Direct S3 policy, ACL, and BPA evidence remains the v1 decision surface; Analyzer facts
+are retained for investigation and a future separately versioned expansion.
 
 ## Assessment Profile planning
 
@@ -196,7 +197,8 @@ with a reviewed schema/version transition and a new profile version.
 | Public EC2 allowlist | `public_ec2_exceptions` | Existing policy field; not a Finding Exception | `EC2-002` |
 | Required tag keys | `required_tags` | Existing | `GOV-001` |
 | Resource types governed by required tags | `governed_resource_types` | Planned non-empty tuple restricted to the catalog's exact tag-source vocabulary | `GOV-001` |
-| Sensitive-bucket classification | not defined in the accepted profile | `BLOCKED`; requires separately approved typed/versioned policy rather than an invented tag/value convention | `S3-004` |
+| Approved public/external S3 exposure | `s3_exposure_approvals` | Approved strict versioned artifact; exact bucket ARN plus separate public flag and principal tokens | `S3-002`, `LOG-004` |
+| Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact ARNs, restricted name patterns, and exact tag pairs only | `S3-004` |
 | Restricted-data KMS consequence | `restricted_data_requires_kms` | Existing boolean; does not itself classify a bucket | `S3-004` |
 
 No new severity is assigned here. New controls also have no NIST mapping until a separate review
@@ -211,7 +213,7 @@ facts Sprint 5 must preserve.
 - Run EC2 instances, EBS, VPCs, subnets, security groups, one paginated Flow Log inventory, and
   Regional EBS defaults once per explicitly requested Region.
 - Run IAM Access Analyzer once per explicitly requested Region and each additional unique S3
-  bucket-home Region; its eventual decision role remains owned by the blocked S3-002 contract.
+  bucket-home Region; retain it as supplementary investigation evidence for S3-002 v1.
 - Discover CloudTrail account trails without duplicating shadow/home records; enrich each stable
   trail ARN in its home Region.
 - The current Sprint 4 API remains single-Region. Formal scope prevents global duplication now and
@@ -232,11 +234,13 @@ Sprint 5 must preserve these stable typed edges with scan/snapshot provenance:
 - S3 bucket -> KMS key;
 - CloudTrail trail -> S3 bucket and KMS key.
 
-The accepted database has no first-class resource-edge table. Sprint 5 preflight must choose a
-single generic representation—versioned typed edges in normalized snapshot configuration or a
-justified generic Alembic-backed relationship model—and update persistence/API documentation and
-tests atomically. It must not create service-specific tables or a graph database. Joined controls
-must resolve stable identities and treat a missing/unresolved edge as insufficient evidence.
+The accepted [generic relationship decision](../design-decisions/0001-generic-resource-relationships.md)
+uses first-class, versioned, directional observations with stable logical IDs, per-scan IDs,
+explicit endpoint account/scope/Region, typed unresolved references, and normalized-evidence
+provenance. Sprint 5 slice 5G will add one generic Alembic-backed representation and its
+persistence/service/API integration atomically; this preflight adds no table or route. It must not
+create service-specific tables or a graph database. Joined controls must resolve stable identities
+and treat a missing, incomplete, or unresolved required edge as `INSUFFICIENT_EVIDENCE`.
 
 ## Read-only permission inventory
 
@@ -323,11 +327,14 @@ kms:DescribeKey
 
 ## Preflight conclusion
 
-The requested IAM, network, EC2/EBS, logging, and governance meanings are now canonical, except
-that LOG-004 intentionally composes the separately owned S3-002 result. Repository review found no
-detailed S3-002 approval/source-aggregation contract or S3-004 sensitive-bucket classifier beyond
-their immutable reserved meanings. This task was not authorized to redefine existing S3 controls,
-so S3-002, S3-004, and decisive LOG-004 evidence remain `BLOCKED`. Sprint 5 preflight is therefore
-not fully unblocked. It also still must approve the generic relationship representation before
-implementation. Sprint 5 remains `NEXT`, Sprint 6 remains `PLANNED`, and this matrix introduces no
-collector, permission, executable rule, or runtime behavior.
+The requested IAM, network, EC2/EBS, S3, logging, and governance evidence meanings are canonical.
+`LOG-004` composes the separately owned S3-002 result rather than duplicating exposure logic. The
+detailed S3-002 aggregation, S3-004 classifier, and generic relationship representation are now
+approved and linked above. Their production integration remains in the named Sprint 5/Sprint 6
+slices; this preflight does not add a collector, permission, executable rule, profile
+registration, database table, API route, or runtime behavior.
+
+Sprint 5 remains `NEXT` and Sprint 6 remains `PLANNED`. Until the complete preflight validation
+and independent-review gates have passed, the repository readiness marker remains:
+
+`SPRINT_5_CONTROL_CONTRACTS_NOT_READY`
