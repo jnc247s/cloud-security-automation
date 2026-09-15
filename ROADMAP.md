@@ -37,6 +37,12 @@ The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`.
 implementation, complete its analysis-only preflight and approve a reviewable execution sequence.
 Only then change Sprint 5 from `NEXT` to `IN PROGRESS`.
 
+Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
+`feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
+implementation slice is the 5G relationship/source-outcome persistence foundation documented in
+the active plan, followed by 5A through 5F and the 5G closure. This gate makes Sprint 5 ready to
+start; the sprint remains `NEXT` until an implementation branch begins.
+
 ## Pre-Sprint 5 attention
 
 These accepted-baseline limitations were discovered during the governance audit. This register

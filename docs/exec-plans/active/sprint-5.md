@@ -4,6 +4,23 @@ Status: **NEXT**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
+## Phase 0 gate
+
+Result: `SPRINT_5_GO`
+
+Verified: 2026-09-15
+
+Baseline: `main` commit `feb0b5c2b517f51dd6c7b48eb38513cf92306164`
+
+Starting migration head: `20260904_0002`
+
+The gate confirms that Sprints 0--4 are accepted, the 25-control evidence-readiness matrix is
+complete, `SPRINT_5_CONTROL_CONTRACTS_READY` is canonical, the pre-Sprint-5 repairs are merged,
+and the baseline CI is green. No unresolved `CRITICAL` or `HIGH` finding blocks implementation.
+The dependency-approved first implementation slice is the 5G foundation described below. This
+gate does not itself start Sprint 5, change its `NEXT` status, add a collector, or authorize any
+production action.
+
 ## Planning state
 
 The requirements below are approved roadmap scope. They are recorded here so implementation does
