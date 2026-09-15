@@ -17,12 +17,11 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.assessment.s3_identity import S3BucketIdentity
+
 SENSITIVE_BUCKET_CLASSIFIER_ID = "sensitive-bucket"
 SENSITIVE_BUCKET_CLASSIFIER_SCHEMA_VERSION = "1.0.0"
 
-_S3_BUCKET_ARN = re.compile(
-    r"^arn:(?:aws|aws-[a-z0-9-]+):s3:::(?P<bucket>[a-z0-9][a-z0-9.-]{1,61}[a-z0-9])$"
-)
 _NAME_PATTERN = re.compile(r"^[a-z0-9*][a-z0-9.*-]{1,61}[a-z0-9*]$")
 
 
@@ -90,16 +89,8 @@ class SensitiveBucketEvidence(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
-    bucket_arn: str
+    bucket_identity: S3BucketIdentity
     tags: tuple[BucketTag, ...] | None = None
-
-    @field_validator("bucket_arn")
-    @classmethod
-    def require_bucket_arn(cls, value: str) -> str:
-        """Accept bucket ARNs only, excluding object and access-point ARNs."""
-
-        _bucket_name(value)
-        return value
 
     @field_validator("tags")
     @classmethod
@@ -122,22 +113,16 @@ class BucketSensitivityResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
-    bucket_arn: str
+    bucket_identity: S3BucketIdentity
     sensitivity: BucketSensitivity
     reason: BucketSensitivityReason
     classifier_id: Literal["sensitive-bucket"]
-    classifier_version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
+    classifier_version: str = Field(
+        pattern=r"^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$"
+    )
     classifier_checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
     matched_name_patterns: tuple[str, ...] = ()
     matched_tag_rules: tuple[SensitiveBucketTagRule, ...] = ()
-
-    @field_validator("bucket_arn")
-    @classmethod
-    def require_bucket_arn(cls, value: str) -> str:
-        """Keep reconstructed results bound to one exact bucket identity."""
-
-        _bucket_name(value)
-        return value
 
     @model_validator(mode="after")
     def validate_reason_matches_result(self) -> Self:
@@ -164,6 +149,13 @@ class BucketSensitivityResult(BaseModel):
             raise ValueError("name-pattern result requires a matched pattern")
         if self.reason is BucketSensitivityReason.SENSITIVE_TAG and not self.matched_tag_rules:
             raise ValueError("tag result requires a matched tag rule")
+        if self.reason is BucketSensitivityReason.SENSITIVE_TAG and self.matched_name_patterns:
+            raise ValueError("tag result cannot include a higher-precedence matched name pattern")
+        if self.reason in {
+            BucketSensitivityReason.NO_SENSITIVE_SIGNAL,
+            BucketSensitivityReason.REQUIRED_TAGS_UNAVAILABLE,
+        } and (self.matched_name_patterns or self.matched_tag_rules):
+            raise ValueError("non-match result cannot include matched classifier rules")
         return self
 
 
@@ -178,23 +170,25 @@ class SensitiveBucketClassifier(BaseModel):
 
     classifier_id: Literal["sensitive-bucket"] = SENSITIVE_BUCKET_CLASSIFIER_ID
     schema_version: Literal["1.0.0"] = SENSITIVE_BUCKET_CLASSIFIER_SCHEMA_VERSION
-    version: str = Field(pattern=r"^\d+\.\d+\.\d+$")
-    sensitive_bucket_arns: tuple[str, ...] = ()
-    non_sensitive_bucket_arns: tuple[str, ...] = ()
+    version: str = Field(pattern=r"^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$")
+    sensitive_buckets: tuple[S3BucketIdentity, ...] = ()
+    non_sensitive_buckets: tuple[S3BucketIdentity, ...] = ()
     sensitive_name_patterns: tuple[str, ...] = ()
     sensitive_tag_rules: tuple[SensitiveBucketTagRule, ...] = ()
-    content_checksum: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    content_checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
 
-    @field_validator("sensitive_bucket_arns", "non_sensitive_bucket_arns")
+    @field_validator("sensitive_buckets", "non_sensitive_buckets")
     @classmethod
-    def validate_bucket_arns(cls, values: tuple[str, ...]) -> tuple[str, ...]:
-        """Require exact, unique bucket ARNs and canonicalize policy ordering."""
+    def validate_bucket_identities(
+        cls,
+        values: tuple[S3BucketIdentity, ...],
+    ) -> tuple[S3BucketIdentity, ...]:
+        """Require unique stable identities and canonicalize policy ordering."""
 
-        for value in values:
-            _bucket_name(value)
-        if len(values) != len(set(values)):
-            raise ValueError("classifier bucket ARNs must be unique")
-        return tuple(sorted(values))
+        stable_resource_ids = [value.stable_resource_id for value in values]
+        if len(stable_resource_ids) != len(set(stable_resource_ids)):
+            raise ValueError("classifier bucket identities must be unique")
+        return tuple(sorted(values, key=lambda value: str(value.stable_resource_id)))
 
     @field_validator("sensitive_name_patterns")
     @classmethod
@@ -207,6 +201,8 @@ class SensitiveBucketClassifier(BaseModel):
                 or "*" not in value
                 or "**" in value
                 or ".." in value
+                or ".-" in value
+                or "-." in value
             ):
                 raise ValueError(
                     "sensitive bucket name patterns must be 3-63 lowercase bucket-name "
@@ -231,53 +227,78 @@ class SensitiveBucketClassifier(BaseModel):
 
     @model_validator(mode="after")
     def validate_policy_and_checksum(self) -> Self:
-        """Reject contradictory/vacuous policy and bind the artifact to its content."""
+        """Reject contradictory/vacuous policy and verify its required content digest."""
 
-        overlap = set(self.sensitive_bucket_arns) & set(self.non_sensitive_bucket_arns)
+        overlap = {bucket.stable_resource_id for bucket in self.sensitive_buckets} & {
+            bucket.stable_resource_id for bucket in self.non_sensitive_buckets
+        }
         if overlap:
             raise ValueError(
-                "a bucket ARN cannot be both sensitive and an explicit non-sensitive override"
+                "a bucket identity cannot be both sensitive and an explicit non-sensitive override"
             )
-        if not (
-            self.sensitive_bucket_arns or self.sensitive_name_patterns or self.sensitive_tag_rules
-        ):
+        if not (self.sensitive_buckets or self.sensitive_name_patterns or self.sensitive_tag_rules):
             raise ValueError("classifier requires at least one sensitive classification rule")
 
         expected_checksum = self.calculate_content_checksum()
-        if self.content_checksum is None:
-            object.__setattr__(self, "content_checksum", expected_checksum)
-        elif not hmac.compare_digest(self.content_checksum, expected_checksum):
+        if not hmac.compare_digest(self.content_checksum, expected_checksum):
             raise ValueError("content_checksum does not match sensitive bucket classifier content")
         return self
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        version: str,
+        sensitive_buckets: tuple[S3BucketIdentity, ...] = (),
+        non_sensitive_buckets: tuple[S3BucketIdentity, ...] = (),
+        sensitive_name_patterns: tuple[str, ...] = (),
+        sensitive_tag_rules: tuple[SensitiveBucketTagRule, ...] = (),
+    ) -> Self:
+        """Create new classifier content with a calculated digest; reconstruction requires one."""
+
+        canonical_sensitive = tuple(
+            sorted(sensitive_buckets, key=lambda value: str(value.stable_resource_id))
+        )
+        canonical_non_sensitive = tuple(
+            sorted(non_sensitive_buckets, key=lambda value: str(value.stable_resource_id))
+        )
+        canonical_patterns = tuple(sorted(sensitive_name_patterns))
+        canonical_tags = tuple(sorted(sensitive_tag_rules, key=lambda rule: (rule.key, rule.value)))
+        checksum = _calculate_classifier_checksum(
+            classifier_id=SENSITIVE_BUCKET_CLASSIFIER_ID,
+            schema_version=SENSITIVE_BUCKET_CLASSIFIER_SCHEMA_VERSION,
+            version=version,
+            sensitive_buckets=canonical_sensitive,
+            non_sensitive_buckets=canonical_non_sensitive,
+            sensitive_name_patterns=canonical_patterns,
+            sensitive_tag_rules=canonical_tags,
+        )
+        return cls(
+            version=version,
+            sensitive_buckets=canonical_sensitive,
+            non_sensitive_buckets=canonical_non_sensitive,
+            sensitive_name_patterns=canonical_patterns,
+            sensitive_tag_rules=canonical_tags,
+            content_checksum=checksum,
+        )
 
     def calculate_content_checksum(self) -> str:
         """Return an order-independent SHA-256 identity including both versions."""
 
-        content = {
-            "classifier_id": self.classifier_id,
-            "non_sensitive_bucket_arns": sorted(self.non_sensitive_bucket_arns),
-            "schema_version": self.schema_version,
-            "sensitive_bucket_arns": sorted(self.sensitive_bucket_arns),
-            "sensitive_name_patterns": sorted(self.sensitive_name_patterns),
-            "sensitive_tag_rules": sorted(
-                ({"key": rule.key, "value": rule.value} for rule in self.sensitive_tag_rules),
-                key=lambda rule: (rule["key"], rule["value"]),
-            ),
-            "version": self.version,
-        }
-        encoded = json.dumps(
-            content,
-            allow_nan=False,
-            ensure_ascii=True,
-            separators=(",", ":"),
-            sort_keys=True,
-        ).encode("utf-8")
-        return hashlib.sha256(encoded).hexdigest()
+        return _calculate_classifier_checksum(
+            classifier_id=self.classifier_id,
+            schema_version=self.schema_version,
+            version=self.version,
+            sensitive_buckets=self.sensitive_buckets,
+            non_sensitive_buckets=self.non_sensitive_buckets,
+            sensitive_name_patterns=self.sensitive_name_patterns,
+            sensitive_tag_rules=self.sensitive_tag_rules,
+        )
 
     def classify(self, evidence: SensitiveBucketEvidence) -> BucketSensitivityResult:
         """Classify one bucket with deterministic precedence and fail-closed evidence handling."""
 
-        bucket_name = _bucket_name(evidence.bucket_arn)
+        bucket_name = evidence.bucket_identity.bucket_name
         matched_patterns = tuple(
             pattern for pattern in self.sensitive_name_patterns if fnmatchcase(bucket_name, pattern)
         )
@@ -294,10 +315,10 @@ class SensitiveBucketClassifier(BaseModel):
             else ()
         )
 
-        if evidence.bucket_arn in self.sensitive_bucket_arns:
+        if evidence.bucket_identity in self.sensitive_buckets:
             sensitivity = BucketSensitivity.SENSITIVE
             reason = BucketSensitivityReason.EXPLICIT_SENSITIVE_BUCKET
-        elif evidence.bucket_arn in self.non_sensitive_bucket_arns:
+        elif evidence.bucket_identity in self.non_sensitive_buckets:
             sensitivity = BucketSensitivity.NOT_SENSITIVE
             reason = BucketSensitivityReason.EXPLICIT_NON_SENSITIVE_OVERRIDE
         elif matched_patterns:
@@ -314,7 +335,7 @@ class SensitiveBucketClassifier(BaseModel):
             reason = BucketSensitivityReason.NO_SENSITIVE_SIGNAL
 
         return BucketSensitivityResult(
-            bucket_arn=evidence.bucket_arn,
+            bucket_identity=evidence.bucket_identity,
             sensitivity=sensitivity,
             reason=reason,
             classifier_id=self.classifier_id,
@@ -325,8 +346,47 @@ class SensitiveBucketClassifier(BaseModel):
         )
 
 
-def _bucket_name(bucket_arn: str) -> str:
-    match = _S3_BUCKET_ARN.fullmatch(bucket_arn)
-    if match is None or ".." in match.group("bucket"):
-        raise ValueError("classifier inputs must use an exact S3 bucket ARN")
-    return match.group("bucket")
+def _calculate_classifier_checksum(
+    *,
+    classifier_id: str,
+    schema_version: str,
+    version: str,
+    sensitive_buckets: tuple[S3BucketIdentity, ...],
+    non_sensitive_buckets: tuple[S3BucketIdentity, ...],
+    sensitive_name_patterns: tuple[str, ...],
+    sensitive_tag_rules: tuple[SensitiveBucketTagRule, ...],
+) -> str:
+    """Calculate the canonical digest used by both creation and reconstruction validation."""
+
+    content = {
+        "classifier_id": classifier_id,
+        "non_sensitive_buckets": [
+            bucket.model_dump(mode="json")
+            for bucket in sorted(
+                non_sensitive_buckets,
+                key=lambda value: str(value.stable_resource_id),
+            )
+        ],
+        "schema_version": schema_version,
+        "sensitive_buckets": [
+            bucket.model_dump(mode="json")
+            for bucket in sorted(
+                sensitive_buckets,
+                key=lambda value: str(value.stable_resource_id),
+            )
+        ],
+        "sensitive_name_patterns": sorted(sensitive_name_patterns),
+        "sensitive_tag_rules": sorted(
+            ({"key": rule.key, "value": rule.value} for rule in sensitive_tag_rules),
+            key=lambda rule: (rule["key"], rule["value"]),
+        ),
+        "version": version,
+    }
+    encoded = json.dumps(
+        content,
+        allow_nan=False,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()

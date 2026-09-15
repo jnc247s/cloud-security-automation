@@ -5,6 +5,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
+from app.assessment.s3_identity import S3BucketIdentity
 from app.assessment.sensitive_buckets import (
     BucketSensitivity,
     BucketSensitivityReason,
@@ -19,11 +20,24 @@ NON_SENSITIVE_ARN = "arn:aws:s3:::prod-public-assets"
 OTHER_ARN = "arn:aws:s3:::team-build-artifacts"
 
 
+def _identity(
+    bucket_arn: str,
+    *,
+    account_id: str = "111122223333",
+    region: str = "us-east-1",
+) -> S3BucketIdentity:
+    return S3BucketIdentity.for_bucket(
+        aws_account_id=account_id,
+        bucket_region=region,
+        bucket_arn=bucket_arn,
+    )
+
+
 def _classifier(**overrides: object) -> SensitiveBucketClassifier:
     values: dict[str, object] = {
         "version": "1.0.0",
-        "sensitive_bucket_arns": (SENSITIVE_ARN,),
-        "non_sensitive_bucket_arns": (NON_SENSITIVE_ARN,),
+        "sensitive_buckets": (_identity(SENSITIVE_ARN),),
+        "non_sensitive_buckets": (_identity(NON_SENSITIVE_ARN),),
         "sensitive_name_patterns": ("*-customer-records", "regulated-*-archive"),
         "sensitive_tag_rules": (
             SensitiveBucketTagRule(key="DataClassification", value="Restricted"),
@@ -31,15 +45,33 @@ def _classifier(**overrides: object) -> SensitiveBucketClassifier:
         ),
     }
     values.update(overrides)
+    if "content_checksum" not in values:
+        generated = SensitiveBucketClassifier.create(
+            version=str(values["version"]),
+            sensitive_buckets=values["sensitive_buckets"],  # type: ignore[arg-type]
+            non_sensitive_buckets=values["non_sensitive_buckets"],  # type: ignore[arg-type]
+            sensitive_name_patterns=values["sensitive_name_patterns"],  # type: ignore[arg-type]
+            sensitive_tag_rules=values["sensitive_tag_rules"],  # type: ignore[arg-type]
+        )
+        values["content_checksum"] = generated.content_checksum
     return SensitiveBucketClassifier.model_validate(values)
 
 
 def _evidence(
     bucket_arn: str,
     *,
+    account_id: str = "111122223333",
+    region: str = "us-east-1",
     tags: tuple[BucketTag, ...] | None = (),
 ) -> SensitiveBucketEvidence:
-    return SensitiveBucketEvidence(bucket_arn=bucket_arn, tags=tags)
+    return SensitiveBucketEvidence(
+        bucket_identity=_identity(
+            bucket_arn,
+            account_id=account_id,
+            region=region,
+        ),
+        tags=tags,
+    )
 
 
 def test_explicit_sensitive_bucket_is_sensitive_without_tag_evidence() -> None:
@@ -105,7 +137,11 @@ def test_non_matching_or_case_different_complete_tag_evidence_is_not_sensitive(
 
 def test_restricted_wildcard_matches_the_complete_bucket_name() -> None:
     result = _classifier().classify(
-        _evidence("arn:aws-us-gov:s3:::regulated-legal-archive", tags=())
+        _evidence(
+            "arn:aws-us-gov:s3:::regulated-legal-archive",
+            region="us-gov-west-1",
+            tags=(),
+        )
     )
 
     assert result.sensitivity is BucketSensitivity.SENSITIVE
@@ -136,20 +172,53 @@ def test_empty_tags_are_complete_evidence_not_missing_metadata() -> None:
 
 def test_conflicting_exact_overrides_are_rejected() -> None:
     with pytest.raises(ValidationError, match="cannot be both sensitive"):
-        _classifier(non_sensitive_bucket_arns=(SENSITIVE_ARN,))
+        _classifier(non_sensitive_buckets=(_identity(SENSITIVE_ARN),))
 
 
 def test_checksum_is_stable_and_order_independent() -> None:
     first = _classifier()
     second = _classifier(
-        sensitive_bucket_arns=tuple(reversed(first.sensitive_bucket_arns)),
-        non_sensitive_bucket_arns=tuple(reversed(first.non_sensitive_bucket_arns)),
+        sensitive_buckets=tuple(reversed(first.sensitive_buckets)),
+        non_sensitive_buckets=tuple(reversed(first.non_sensitive_buckets)),
         sensitive_name_patterns=tuple(reversed(first.sensitive_name_patterns)),
         sensitive_tag_rules=tuple(reversed(first.sensitive_tag_rules)),
     )
 
     assert first.content_checksum == second.content_checksum
     assert first.model_dump(mode="json") == second.model_dump(mode="json")
+
+
+@pytest.mark.parametrize(
+    "different_identity",
+    [
+        _identity(SENSITIVE_ARN, account_id="999900001111"),
+        _identity(SENSITIVE_ARN, region="us-west-2"),
+    ],
+)
+def test_exact_classification_does_not_carry_across_account_or_region(
+    different_identity: S3BucketIdentity,
+) -> None:
+    exact_only = _classifier(
+        sensitive_buckets=(_identity(SENSITIVE_ARN),),
+        non_sensitive_buckets=(),
+        sensitive_name_patterns=(),
+        sensitive_tag_rules=(),
+    )
+    changed = _classifier(
+        sensitive_buckets=(different_identity,),
+        non_sensitive_buckets=(),
+        sensitive_name_patterns=(),
+        sensitive_tag_rules=(),
+    )
+
+    result = exact_only.classify(
+        SensitiveBucketEvidence(bucket_identity=different_identity, tags=())
+    )
+
+    assert different_identity.stable_resource_id != _identity(SENSITIVE_ARN).stable_resource_id
+    assert result.sensitivity is BucketSensitivity.NOT_SENSITIVE
+    assert result.reason is BucketSensitivityReason.NO_SENSITIVE_SIGNAL
+    assert exact_only.content_checksum != changed.content_checksum
 
 
 def test_classifier_version_and_content_changes_produce_new_identity() -> None:
@@ -165,6 +234,10 @@ def test_classifier_version_and_content_changes_produce_new_identity() -> None:
             sensitive_name_patterns=("regulated-*",),
             content_checksum=original.content_checksum,
         )
+    with pytest.raises(ValidationError, match="version"):
+        _classifier(version="١.٠.٠")
+    with pytest.raises(ValidationError, match="version"):
+        _classifier(version="01.0.0")
 
 
 def test_historical_classifier_reconstructs_strictly_with_same_result() -> None:
@@ -185,6 +258,11 @@ def test_historical_classifier_reconstructs_strictly_with_same_result() -> None:
     with pytest.raises(ValidationError, match="content_checksum does not match"):
         SensitiveBucketClassifier.model_validate_json(json.dumps(tampered))
 
+    missing_checksum = json.loads(serialized)
+    missing_checksum.pop("content_checksum")
+    with pytest.raises(ValidationError, match="content_checksum"):
+        SensitiveBucketClassifier.model_validate_json(json.dumps(missing_checksum))
+
 
 def test_reconstructed_result_rejects_a_reason_that_contradicts_sensitivity() -> None:
     result = _classifier().classify(_evidence(SENSITIVE_ARN, tags=()))
@@ -196,20 +274,72 @@ def test_reconstructed_result_rejects_a_reason_that_contradicts_sensitivity() ->
 
 
 @pytest.mark.parametrize(
+    ("reason", "matched_name_patterns", "matched_tag_rules", "message"),
+    [
+        (
+            BucketSensitivityReason.SENSITIVE_TAG,
+            ("*-customer-records",),
+            (SensitiveBucketTagRule(key="Environment", value="Production"),),
+            "higher-precedence matched name pattern",
+        ),
+        (
+            BucketSensitivityReason.NO_SENSITIVE_SIGNAL,
+            ("*-customer-records",),
+            (),
+            "non-match result cannot include matched classifier rules",
+        ),
+        (
+            BucketSensitivityReason.REQUIRED_TAGS_UNAVAILABLE,
+            (),
+            (SensitiveBucketTagRule(key="Environment", value="Production"),),
+            "non-match result cannot include matched classifier rules",
+        ),
+    ],
+)
+def test_reconstructed_result_rejects_spurious_matched_rules(
+    reason: BucketSensitivityReason,
+    matched_name_patterns: tuple[str, ...],
+    matched_tag_rules: tuple[SensitiveBucketTagRule, ...],
+    message: str,
+) -> None:
+    result = _classifier().classify(_evidence(OTHER_ARN, tags=()))
+    values = result.model_dump(mode="python")
+    values.update(
+        {
+            "reason": reason,
+            "sensitivity": {
+                BucketSensitivityReason.SENSITIVE_TAG: BucketSensitivity.SENSITIVE,
+                BucketSensitivityReason.NO_SENSITIVE_SIGNAL: BucketSensitivity.NOT_SENSITIVE,
+                BucketSensitivityReason.REQUIRED_TAGS_UNAVAILABLE: (
+                    BucketSensitivity.INSUFFICIENT_EVIDENCE
+                ),
+            }[reason],
+            "matched_name_patterns": matched_name_patterns,
+            "matched_tag_rules": matched_tag_rules,
+        }
+    )
+
+    with pytest.raises(ValidationError, match=message):
+        type(result).model_validate(values)
+
+
+@pytest.mark.parametrize(
     "overrides, message",
     [
         (
-            {"sensitive_bucket_arns": ("arn:aws:s3:::bucket/object",)},
-            "exact S3 bucket ARN",
+            {
+                "sensitive_buckets": (
+                    _identity(SENSITIVE_ARN),
+                    _identity(SENSITIVE_ARN),
+                )
+            },
+            "must be unique",
         ),
-        (
-            {"sensitive_bucket_arns": ("arn:aws:s3:us-east-1:123456789012:accesspoint/test",)},
-            "exact S3 bucket ARN",
-        ),
-        ({"sensitive_bucket_arns": (SENSITIVE_ARN, SENSITIVE_ARN)}, "must be unique"),
         ({"sensitive_name_patterns": ("prod-?-data",)}, "only wildcard"),
         ({"sensitive_name_patterns": ("prod-[ab]-data",)}, "only wildcard"),
         ({"sensitive_name_patterns": ("exact-name",)}, "only wildcard"),
+        ({"sensitive_name_patterns": ("foo.-*",)}, "only wildcard"),
+        ({"sensitive_name_patterns": ("foo-.*",)}, "only wildcard"),
         (
             {
                 "sensitive_tag_rules": (
@@ -221,7 +351,7 @@ def test_reconstructed_result_rejects_a_reason_that_contradicts_sensitivity() ->
         ),
         (
             {
-                "sensitive_bucket_arns": (),
+                "sensitive_buckets": (),
                 "sensitive_name_patterns": (),
                 "sensitive_tag_rules": (),
             },
@@ -252,12 +382,12 @@ def test_classifier_and_evidence_are_strict_frozen_and_forbid_unknown_fields() -
         SensitiveBucketClassifier.model_validate(
             {
                 "version": "1.0.0",
-                "sensitive_bucket_arns": [SENSITIVE_ARN],
+                "sensitive_buckets": [_identity(SENSITIVE_ARN)],
             }
         )
 
 
-def test_evidence_rejects_ambiguous_tags_and_non_bucket_arns() -> None:
+def test_evidence_rejects_ambiguous_tags() -> None:
     with pytest.raises(ValidationError, match="tag keys must be unique"):
         _evidence(
             OTHER_ARN,
@@ -266,6 +396,3 @@ def test_evidence_rejects_ambiguous_tags_and_non_bucket_arns() -> None:
                 BucketTag(key="Class", value="Two"),
             ),
         )
-
-    with pytest.raises(ValidationError, match="exact S3 bucket ARN"):
-        _evidence("arn:aws:s3:::team-build-artifacts/object", tags=())

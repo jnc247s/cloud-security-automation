@@ -48,10 +48,15 @@ policy_id: fixed string s3-exposure-approvals
 schema_version: fixed string 1.0.0
 version: semantic policy version
 bucket_approvals: sorted unique tuple of records
-  bucket_arn: exact canonical ARN arn:<partition>:s3:::<bucket-name>
+  bucket_identity:
+    provider: fixed string aws
+    aws_account_id: exact 12-digit owner account
+    bucket_region: authoritative bucket home Region
+    bucket_arn: exact canonical ARN arn:<partition>:s3:::<bucket-name>
+    stable_resource_id: canonical UUID derived from account, Region, and bucket name
   allow_public: boolean
   approved_external_principals: sorted unique tuple of canonical principal tokens
-content_checksum: SHA-256 over identity, both versions, and canonical complete content
+content_checksum: required SHA-256 over identity, both versions, and canonical complete content
 ```
 
 Only these principal-token forms are allowed:
@@ -67,7 +72,11 @@ an invented token.
 
 Approvals are deliberately narrow:
 
-- The bucket ARN cannot contain a wildcard. At most one record can exist for a bucket.
+- A bucket identity is the validated `S3BucketIdentity` tuple, not an ARN alone. S3 bucket ARNs
+  omit owner account and home Region, and a deleted name can later identify a bucket in another
+  account. Exact approval therefore binds the owner account, authoritative home Region, exact ARN
+  and name, and the repository-derived stable resource ID. The ARN cannot contain a wildcard. At
+  most one record can exist for one stable bucket identity.
 - A record that sets `allow_public = false` and has no external principals is vacuous and invalid;
   omit it instead.
 - No record for a bucket is a complete policy decision equivalent to `allow_public = false` and
@@ -81,10 +90,16 @@ Approvals are deliberately narrow:
   `INSUFFICIENT_EVIDENCE` before channel aggregation.
 
 The standalone artifact binds its policy ID, schema version, policy version, and every record to
-its content checksum. Changing a bucket, `allow_public`, or any principal requires a new immutable
-policy version and checksum. When registered with an Assessment Profile, that exact artifact
-identity/version/checksum also participates in the profile's immutable content. The scan and
-assessment must retain both identities so old results reconstruct the policy that produced them.
+its content checksum. The `create` factory calculates the checksum for new content; every direct,
+JSON, or historical reconstruction requires the stored checksum and rejects a missing or
+mismatched value rather than silently re-signing content. Changing any bucket identity component,
+`allow_public`, or any principal requires a new immutable policy version and checksum.
+`S3ExposureApprovalPolicyHistory` rejects
+duplicate versions and rejects different content under an existing `(policy_id, version)` while
+preserving exact older artifacts for reconstruction. When registered with an Assessment Profile,
+that exact artifact identity/version/checksum also participates in the profile's immutable
+content. The scan and assessment must retain both identities so old results reconstruct the
+policy that produced them.
 
 ## Required normalized evidence and provenance
 
@@ -108,6 +123,12 @@ bucket ARN and name, bucket Region, collector ID and version, AWS service and AP
 normalized-evidence schema version, completeness/outcome, and an evidence-artifact or content-
 digest reference. The assessment cites every decisive and unknown record, the two effective BPA
 values, the approval profile version/checksum, and the normalization/evaluator versions.
+
+The normalized completeness/outcome record uses the accepted
+[result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md).
+This is why one valid channel can remain assessable when another API fails without pretending the
+whole collector succeeded; the current Sprint 0--4 runtime is not changed by this planned
+contract.
 
 The minimum evidence is result-sensitive. A `PASS` requires both channels to be complete and safe
 or approved. A `FAIL` may be returned when one channel proves `CONFIRMED_UNAPPROVED` even if the
@@ -133,7 +154,7 @@ The four settings do not have interchangeable meanings:
 | Setting | S3-002 current-exposure treatment |
 | --- | --- |
 | `BlockPublicAcls` | Prevents specified future public ACL writes. It does not neutralize an existing ACL and cannot turn current exposure into `PASS`. |
-| `IgnorePublicAcls` | Neutralizes bucket-ACL grants to `AllUsers` and `AuthenticatedUsers`. It does not neutralize a grant to a specific external canonical user. |
+| `IgnorePublicAcls` | Neutralizes bucket-ACL grants to `AllUsers` and `AuthenticatedUsers`; `GetBucketAcl` consequently reports the effective ACL rather than those ignored configured grants. It does not neutralize a grant to a specific external canonical user. |
 | `BlockPublicPolicy` | Prevents future public bucket-policy writes. It does not neutralize an existing public policy and cannot turn current exposure into `PASS`. |
 | `RestrictPublicBuckets` | When the whole bucket policy is public, neutralizes public and cross-account access derived from that policy except recognized AWS service principals and authorized identities in the owner's account. It has no effect on fixed external delegation in a policy that S3 classifies as non-public. |
 
@@ -166,10 +187,10 @@ approved:
 | Policy fact | Effective `RestrictPublicBuckets` | Approval/evidence fact | Policy channel |
 | --- | --- | --- | --- |
 | Policy is coherently absent | any | No policy grants exist | `NO_EXPOSURE` |
-| `IsPublic = true` | `true` | Any policy-derived public/fixed external grants are neutralized | `NO_EXPOSURE` |
+| Complete coherent policy and `IsPublic = true` | `true` | Any policy-derived public/fixed external grants are neutralized | `NO_EXPOSURE` |
 | `IsPublic = true` | `false` | `allow_public = false` | `CONFIRMED_UNAPPROVED` |
-| `IsPublic = true` | `false` | Public is approved and all fixed external grants are approved | `APPROVED_EXPOSURE` |
-| `IsPublic = true` | `false` | Public is approved but a fixed external grant is unapproved | `CONFIRMED_UNAPPROVED` |
+| Complete coherent policy and `IsPublic = true` | `false` | Public is approved and all fixed external grants are approved | `APPROVED_EXPOSURE` |
+| Complete coherent policy and `IsPublic = true` | `false` | Public is approved but a fixed external grant is unapproved | `CONFIRMED_UNAPPROVED` |
 | `IsPublic = true` | `UNKNOWN` | Exposure might be neutralized | `UNKNOWN` |
 | `IsPublic = false` | any | No supported external grant and no unresolved potentially external statement | `NO_EXPOSURE` |
 | `IsPublic = false` | any | Every supported external principal is approved | `APPROVED_EXPOSURE` |
@@ -195,19 +216,21 @@ the contract does not silently ignore metadata or write permissions.
 
 | ACL fact | Effective `IgnorePublicAcls` | Approval fact | ACL channel |
 | --- | --- | --- | --- |
-| Complete owner-only/service-only ACL | any | No public or external grant | `NO_EXPOSURE` |
-| Public-group grant | `true` | Public ACL is neutralized | `NO_EXPOSURE` |
-| Public-group grant | `false` | `allow_public = false` | `CONFIRMED_UNAPPROVED` |
-| Public-group grant | `false` | `allow_public = true` and no unapproved external grant | `APPROVED_EXPOSURE` |
-| Public-group grant | `UNKNOWN` | Exposure might be neutralized | `UNKNOWN` |
+| Complete effective owner-only/service-only ACL | any | No returned public or external grant | `NO_EXPOSURE` |
+| Effective public-group grant | `false` or `UNKNOWN` | `allow_public = false` | `CONFIRMED_UNAPPROVED` |
+| Effective public-group grant | `false` or `UNKNOWN` | `allow_public = true` and no unapproved external grant | `APPROVED_EXPOSURE` |
+| Effective public-group grant | `true` | The effective ACL contradicts the effective flag | `UNKNOWN` |
 | External canonical-user grant | any | Principal token is approved | `APPROVED_EXPOSURE` |
 | External canonical-user grant | any | Principal token is not approved | `CONFIRMED_UNAPPROVED` |
-| Public grant plus unapproved external canonical-user grant | `true` | Public grant is neutralized; external grant is not | `CONFIRMED_UNAPPROVED` |
+| Returned public grant plus unapproved external canonical-user grant | `true` | Public grant conflicts with the flag; the separate effective external grant is still decisive | `CONFIRMED_UNAPPROVED` |
 | Unknown grantee, legacy email grantee, malformed grant, denied/incomplete call, or ownership mismatch | any | No separate confirmed violation | `UNKNOWN` |
 
-`GetBucketAcl` reports effective permissions when `IgnorePublicAcls` is enabled; nevertheless the
-normalized flag and grants are retained so the assessment explains why a public-group grant was
-treated as neutralized. `RestrictPublicBuckets` does not neutralize ACL grants.
+`GetBucketAcl` reports effective permissions when `IgnorePublicAcls` is enabled. The collector
+retains exactly those returned effective grants and the effective flag; it does not claim to
+reconstruct an ignored configured public ACL or claim that removing BPA would remain safe. Thus
+an effective owner-only ACL can be safe even when a configured public grant is hidden, while a
+returned public-group grant plus effective `IgnorePublicAcls = true` is contradictory evidence and
+is `UNKNOWN`. `RestrictPublicBuckets` does not neutralize ACL grants.
 
 ## Final aggregation
 
@@ -253,8 +276,8 @@ the other channel is complete and `NO_EXPOSURE` unless the row says otherwise.
 | `private-policy-and-acl` | Policy coherently absent; ACL owner-only | `PASS` |
 | `public-policy-unapproved` | `IsPublic=true`; effective restrict=false; public not approved; ACL safe | `FAIL` |
 | `public-acl-unapproved` | Public group ACL; effective ignore=false; public not approved; policy safe | `FAIL` |
-| `public-policy-neutralized` | `IsPublic=true`; bucket restrict=true; account restrict missing; ACL safe | `PASS` |
-| `public-acl-neutralized` | Public group ACL; account ignore=true; bucket ignore missing; policy safe | `PASS` |
+| `public-policy-neutralized` | Complete coherent policy; `IsPublic=true`; bucket restrict=true; account restrict missing; ACL safe | `PASS` |
+| `public-acl-neutralized` | `GetBucketAcl` returns an effective owner-only ACL under account ignore=true; bucket ignore missing; policy safe | `PASS` |
 | `block-public-policy-only` | `IsPublic=true`; only BlockPublicPolicy=true; public not approved; ACL safe | `FAIL` |
 | `block-public-acls-only` | Public group ACL; only BlockPublicAcls=true; public not approved; policy safe | `FAIL` |
 | `missing-policy-evidence` | Policy body/status incomplete with no confirmed violation; ACL safe | `INSUFFICIENT_EVIDENCE` |
@@ -263,6 +286,7 @@ the other channel is complete and `NO_EXPOSURE` unless the row says otherwise.
 | `status-proves-public-despite-body-denied` | Body AccessDenied; status public; effective restrict=false; public not approved; ACL safe | `FAIL` |
 | `bucket-deleted-during-scan` | NoSuchBucket after discovery | `INSUFFICIENT_EVIDENCE` |
 | `conflicting-policy-evidence` | Declared absent body but successful public status | `INSUFFICIENT_EVIDENCE` |
+| `conflicting-acl-evidence` | Effective public-group ACL grant together with effective ignore=true | `INSUFFICIENT_EVIDENCE` |
 | `malformed-acl-evidence` | ACL contains malformed grantee; policy safe | `INSUFFICIENT_EVIDENCE` |
 | `approved-public-policy` | Public policy; effective restrict=false; public approved; no external grant; ACL safe | `PASS` |
 | `approved-external-policy` | Non-public policy grants account:111122223333; exact token approved; ACL safe | `PASS` |

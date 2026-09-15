@@ -9,6 +9,7 @@ from app.assessment.s3_exposure import (
     S3BucketExposureApproval,
     S3ExposureApprovalPolicy,
 )
+from app.assessment.s3_identity import S3BucketIdentity
 
 FIRST_BUCKET = "arn:aws:s3:::first-security-evidence"
 SECOND_BUCKET = "arn:aws-us-gov:s3:::second-security-evidence"
@@ -18,9 +19,22 @@ ROLE_ARN = "arn:aws-us-gov:iam::777788889999:role/security/reader"
 CANONICAL_USER_TOKEN = f"canonical-user:{'a' * 64}"
 
 
+def _identity(
+    bucket_arn: str = FIRST_BUCKET,
+    *,
+    account_id: str = "999900001111",
+    region: str = "us-east-1",
+) -> S3BucketIdentity:
+    return S3BucketIdentity.for_bucket(
+        aws_account_id=account_id,
+        bucket_region=region,
+        bucket_arn=bucket_arn,
+    )
+
+
 def _approval(**overrides: object) -> S3BucketExposureApproval:
     values: dict[str, object] = {
-        "bucket_arn": FIRST_BUCKET,
+        "bucket_identity": _identity(),
         "allow_public": False,
         "approved_external_principals": (ACCOUNT_TOKEN,),
     }
@@ -36,21 +50,23 @@ def _policy(**overrides: object) -> S3ExposureApprovalPolicy:
         "bucket_approvals": (_approval(),),
     }
     values.update(overrides)
+    if "content_checksum" not in values:
+        generated = S3ExposureApprovalPolicy.create(
+            version=str(values["version"]),
+            bucket_approvals=values["bucket_approvals"],  # type: ignore[arg-type]
+        )
+        values["content_checksum"] = generated.content_checksum
     return S3ExposureApprovalPolicy.model_validate(values)
 
 
 def test_empty_policy_is_valid_and_exact_lookup_denies_by_default() -> None:
-    policy = S3ExposureApprovalPolicy(
-        policy_id=S3_EXPOSURE_APPROVAL_POLICY_ID,
-        schema_version=S3_EXPOSURE_APPROVAL_SCHEMA_VERSION,
-        version="1.0.0",
-    )
+    policy = S3ExposureApprovalPolicy.create(version="1.0.0")
 
     assert policy.policy_id == S3_EXPOSURE_APPROVAL_POLICY_ID
     assert policy.schema_version == S3_EXPOSURE_APPROVAL_SCHEMA_VERSION
     assert policy.bucket_approvals == ()
     assert policy.content_checksum is not None
-    assert policy.get_bucket_approval(FIRST_BUCKET) is None
+    assert policy.get_bucket_approval(_identity()) is None
 
 
 def test_exact_bucket_lookup_returns_only_canonicalized_policy_data() -> None:
@@ -60,8 +76,8 @@ def test_exact_bucket_lookup_returns_only_canonicalized_policy_data() -> None:
     )
     policy = _policy(bucket_approvals=(approval,))
 
-    assert policy.get_bucket_approval(FIRST_BUCKET) == approval
-    assert policy.get_bucket_approval(SECOND_BUCKET) is None
+    assert policy.get_bucket_approval(_identity()) == approval
+    assert policy.get_bucket_approval(_identity(SECOND_BUCKET)) is None
     assert approval.approved_external_principals == tuple(
         sorted((ACCOUNT_TOKEN, ROLE_ARN, USER_ARN))
     )
@@ -113,6 +129,23 @@ def test_semantically_duplicate_principal_tokens_are_rejected() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "token",
+    [
+        "account:111122223333",
+        "arn:aws:iam::111122223333:root",
+        "arn:aws:iam::111122223333:user/security/auditor",
+        "arn:aws:iam::111122223333:role/security/reader",
+    ],
+)
+def test_same_owner_principals_are_rejected_as_non_external(token: str) -> None:
+    with pytest.raises(ValidationError, match="same-owner principals are not external"):
+        _approval(
+            bucket_identity=_identity(account_id="111122223333"),
+            approved_external_principals=(token,),
+        )
+
+
 def test_duplicate_or_conflicting_bucket_records_are_rejected() -> None:
     first = _approval()
     conflicting = _approval(
@@ -140,13 +173,11 @@ def test_vacuous_per_bucket_record_is_rejected() -> None:
         "arn:aws:s3:::first..security-evidence",
     ],
 )
-def test_bucket_records_and_lookup_require_exact_canonical_bucket_arns(
+def test_bucket_records_require_exact_canonical_bucket_identities(
     bucket_arn: str,
 ) -> None:
-    with pytest.raises((ValidationError, ValueError), match="exact canonical S3 bucket ARN"):
-        _approval(bucket_arn=bucket_arn)
-    with pytest.raises(ValueError, match="exact canonical S3 bucket ARN"):
-        _policy().get_bucket_approval(bucket_arn)
+    with pytest.raises((ValidationError, ValueError), match="S3 bucket"):
+        _identity(bucket_arn)
 
 
 def test_checksum_is_order_independent_for_records_and_principals() -> None:
@@ -154,7 +185,11 @@ def test_checksum_is_order_independent_for_records_and_principals() -> None:
         approved_external_principals=(ROLE_ARN, ACCOUNT_TOKEN, USER_ARN),
     )
     second = _approval(
-        bucket_arn=SECOND_BUCKET,
+        bucket_identity=_identity(
+            SECOND_BUCKET,
+            account_id="444455556666",
+            region="us-gov-west-1",
+        ),
         approved_external_principals=(CANONICAL_USER_TOKEN,),
     )
     forward = _policy(bucket_approvals=(first, second))
@@ -167,11 +202,35 @@ def test_checksum_is_order_independent_for_records_and_principals() -> None:
     assert forward.content_checksum == reverse.content_checksum
 
 
+@pytest.mark.parametrize(
+    "different_identity",
+    [
+        _identity(account_id="222233334444"),
+        _identity(region="us-west-2"),
+    ],
+)
+def test_exact_approval_does_not_carry_across_account_or_region(
+    different_identity: S3BucketIdentity,
+) -> None:
+    original = _policy()
+    changed = _policy(
+        bucket_approvals=(_approval(bucket_identity=different_identity),),
+    )
+
+    assert original.get_bucket_approval(different_identity) is None
+    assert changed.get_bucket_approval(different_identity) is not None
+    assert original.content_checksum != changed.content_checksum
+
+
 def test_policy_version_changes_content_identity_and_schema_is_fixed() -> None:
     assert _policy(version="1.0.0").content_checksum != _policy(version="1.0.1").content_checksum
 
     with pytest.raises(ValidationError, match="schema_version"):
         _policy(schema_version="2.0.0")
+    with pytest.raises(ValidationError, match="version"):
+        _policy(version="١.٠.٠")
+    with pytest.raises(ValidationError, match="version"):
+        _policy(version="01.0.0")
 
 
 def test_historical_json_reconstruction_and_checksum_tamper_rejection() -> None:
@@ -192,6 +251,11 @@ def test_historical_json_reconstruction_and_checksum_tamper_rejection() -> None:
     payload["bucket_approvals"][0]["allow_public"] = True
     with pytest.raises(ValidationError, match="content_checksum does not match"):
         S3ExposureApprovalPolicy.model_validate(payload)
+
+    missing_checksum = historical.model_dump(mode="python")
+    missing_checksum.pop("content_checksum")
+    with pytest.raises(ValidationError, match="content_checksum"):
+        S3ExposureApprovalPolicy.model_validate(missing_checksum)
 
 
 def test_policy_models_are_strict_frozen_and_forbid_extra_fields() -> None:
@@ -214,7 +278,7 @@ def test_json_schema_exposes_version_checksum_and_bucket_policy_fields() -> None
 
     assert set(policy_schema["required"]) >= {"policy_id", "schema_version", "version"}
     assert {
-        "bucket_arn",
+        "bucket_identity",
         "allow_public",
     } <= set(approval_schema["required"])
     assert "approved_external_principals" in approval_schema["properties"]
