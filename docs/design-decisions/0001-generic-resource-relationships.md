@@ -34,9 +34,10 @@ The version 1 contract contains:
   logical, directional edge across scans at that identity resolution level;
 - `observation_id`: UUIDv5 over scan ID and relationship ID; it separates immutable historical
   observations of that edge;
-- the scan ID and collecting AWS account ID;
+- the scan ID and verified 12-digit collection account ID;
 - a controlled `RelationshipType`, whose endpoint signatures enforce direction;
-- a complete source endpoint containing provider, account, service, resource type, AWS resource
+- a complete source endpoint containing provider, resource-owner account, service, resource type,
+  AWS resource
   identifier, explicit global/Regional scope and Region, the existing deterministic stable
   resource ID, and its required snapshot ID;
 - either a complete target endpoint with the same identity fields and optional snapshot ID, or a
@@ -44,16 +45,26 @@ The version 1 contract contains:
   every account/scope/Region component actually known, a deterministic reference ID, and explicit
   null stable-resource and snapshot IDs;
 - a typed resolution state;
-- collector, AWS API, timezone-aware collection time, and an opaque sanitized reference to the
-  normalized evidence that established the relationship; and
+- collector identity and version, AWS API, timezone-aware collection time, and an opaque
+  sanitized reference to the normalized evidence that established the relationship; and
 - the normalized relationship schema version.
 
 The source must have a snapshot in the relationship's scan. `RESOLVED` means the target also has
 the exact deterministic snapshot ID for that scan. A canonical target that was not observed may
 retain its calculable stable identity without a target snapshot. When AWS has not supplied all
 stable identity components, `TARGET_IDENTITY_INCOMPLETE` instead retains a deterministic partial
-reference whose stable-resource and snapshot IDs are null. Neither target form is a `Resource`
-object or authorizes creating a fabricated resource row.
+reference whose stable-resource and snapshot IDs are null. These serialized endpoint values are
+not themselves ORM rows, and the partial form never authorizes creating a fabricated `Resource`.
+
+At the persistence boundary, every endpoint of a `RESOLVED` relationship must reference a
+top-level normalized `Resource` and its exact `ResourceSnapshot` for the relationship's scan.
+This invariant applies to every relationship type, including IAM access keys, MFA devices,
+groups, managed policies, inline policies, permissions-boundary targets, and policy versions.
+An identifier or object embedded only inside another resource's configuration is evidence input,
+not a canonical relationship endpoint. Existing Sprint 0--4 embedded IAM configuration may
+remain temporarily for compatibility while Sprint 5 adds normalized resources and edges
+atomically; it cannot substitute for either persisted endpoint and is removed only through a
+separately reviewed atomic consumer transition.
 
 An unresolved-reference ID is UUIDv5 over canonical JSON containing provider, every known
 account/scope/Region value, service, type, the identifier AWS returned, and explicit nulls for
@@ -95,22 +106,36 @@ new relationship schema version; it may not silently change historical v1 observ
 
 ### Region and execution scope
 
-Each complete endpoint owns its scope and Region. Global endpoints, including IAM resources,
-require a null Region. Regional endpoints require their actual resource Region. Bucket and KMS
-Regions are their own endpoint values and are never inherited from the executor's requested
-Region. Source and target Regions may differ, so bucket-home-Region and cross-Region references
-remain explicit.
+Each complete endpoint owns its scope and Region. The v1 contract has a closed scope map for every
+approved endpoint type: IAM resources are global, while the approved EC2, S3, KMS, CloudTrail,
+and Access Analyzer resources are Regional. Known types cannot choose a different scope. Global
+endpoints require a null Region, and Regional endpoints require their actual resource Region.
+Bucket and KMS Regions are their own endpoint values and are never inherited from the executor's
+requested Region. Source and target Regions may differ, so bucket-home-Region and cross-Region
+references remain explicit.
 
-A partial target records account, scope, and Region as independently optional knowledge. It never
-fills a missing target Region from the executor or source Region. For example, a CloudTrail
+A partial target records account, scope, and Region as independently optional knowledge, except
+that a controlled known resource type must retain its already-defined global/Regional scope and a
+known Region always requires Regional scope. It never fills a missing target Region from the
+executor or source Region. For example, a CloudTrail
 `GetTrail` response can establish a destination bucket name while bucket owner and home Region
 remain unknown; that is a `TARGET_IDENTITY_INCOMPLETE` CloudTrail-to-S3 reference, not a bucket
 resource and not confirmed absence. A complete identity is rejected from the partial form and
 must use the canonical endpoint form.
 
-The relationship's AWS account identifies the source/collection account. The source endpoint must
-match it. A target endpoint retains its own account so supported cross-account references are not
-misattributed.
+The top-level `collection_account_id` is the verified 12-digit account whose credentials and scan
+scope produced the observation. It is not a resource-owner field. Each endpoint independently
+retains its controlled owner identity, so an organization or cross-account observation need not
+pretend that the resource belongs to the collecting account. AWS-managed IAM policies use the
+explicit `aws` owner sentinel (including their versions); that sentinel is invalid for all other
+resource types. Customer-owned resources require a 12-digit owner account. Discovery and future
+authorization remain bound to the collection account even when a relationship endpoint has a
+different owner.
+
+Every string used by the accepted delimiter-based stable-resource and snapshot-ID helpers rejects
+the U+001F unit separator before identifier calculation. This standalone preflight validation
+closes delimiter-collision aliases without changing the accepted Sprint 0--4 helper or existing
+resource IDs.
 
 ### Missing and duplicate evidence
 
@@ -148,14 +173,49 @@ records.
 
 ### Planned first-class persistence
 
-Slice 5G will introduce one append-only generic relationship-observation table. Its reviewed
-migration must preserve at least the complete domain fields above, a uniqueness constraint on
+The foundational portion of slice 5G will introduce one append-only generic relationship-
+observation table before any collector emits graph data. Its reviewed migration must preserve at
+least the complete domain fields above, a uniqueness constraint on
 `(scan_id, relationship_id)`, the mandatory source resource/snapshot references, and an optional
 target snapshot reference. Target identity uses a checked union: either canonical target stable ID
 and complete identity fields, or unresolved reference ID and nullable account/scope/Region fields,
 never both. Stable-resource and snapshot IDs are null for the partial form. A composite target
 snapshot constraint can apply only when resolved, so either unresolved form does not require or
 create a target `Resource` row.
+
+`InventorySnapshot.account_id`, `Scan.aws_account_id`, and the scan-scope account remain the
+verified collection account. `NormalizedResource.account_id` and persisted
+`Resource.aws_account_id` remain resource-owner identity. Slice 5G must replace the current blanket
+same-account persistence check only as part of atomic graph integration, using this closed
+admission rule:
+
+1. A customer-owned resource normally has the same 12-digit owner as the collection account.
+2. The `aws` owner is accepted only for the controlled AWS-managed IAM policy and matching policy-
+   version resource types, with same-scan identity-authoritative source evidence.
+3. A different 12-digit owner is accepted only when the reviewed collector contract can establish
+   that exact owner, a same-scan source outcome preserves the identity-authoritative evidence, and
+   any resolved edge references that exact top-level resource and snapshot.
+4. Every relationship and source outcome has a `collection_account_id` equal to the scan's
+   verified account. A cross-account owner never expands caller authorization or scan scope.
+
+An external identifier without that complete proof remains an unresolved relationship reference;
+it cannot create a cross-account `Resource`. The scope manifest continues to authorize the
+collection account, requested services, resource types, and Regions rather than treating observed
+owners as new scan principals. Future persistence tests must retain the current rejection for an
+unproven different owner, accept the two explicit owner forms above, verify exact stable/snapshot
+IDs, and round-trip collection account separately from owner account. These changes must land with
+a new Alembic revision that replaces the accepted database `snapshot_provenance` trigger's blanket
+resource-owner/scan-account equality, plus every in-memory inventory, persistence,
+assessment-validation, writer, reader, service/API, and query assumption, with PostgreSQL and
+SQLite rollback validation. Relaxing either the Python guard or database trigger alone is
+prohibited.
+
+The source foreign key always binds `(scan_id, source_stable_resource_id,
+source_resource_snapshot_id)`. When resolution is `RESOLVED`, a second mandatory composite foreign
+key binds `(scan_id, target_stable_resource_id, target_resource_snapshot_id)`; no resource type,
+including IAM types, is exempt. Other resolution states may omit the target snapshot only
+according to the typed union above. These constraints prevent embedded child data from posing as
+a persisted edge endpoint.
 
 The table will be indexed for scan, source stable ID, target stable/reference ID, and relationship
 type.
@@ -188,10 +248,10 @@ this preflight test-only at runtime while still fixing the schema and persistenc
 ## Security and data-integrity consequences
 
 Strict models reject unknown relationship types, reversed endpoint signatures, ambiguous Regions,
-forged stable or snapshot IDs, naive timestamps, inconsistent accounts, invalid resolution state,
-fabricated stable IDs on partial targets, complete identities disguised as partial, and extra
-unreviewed metadata. Provenance uses a bounded single-line reference so callers do not need to put
-raw AWS payloads or credentials in relationship rows or routine errors.
+forged stable or snapshot IDs, naive timestamps, invalid collection/owner account forms, invalid
+resolution state, fabricated stable IDs on partial targets, complete identities disguised as
+partial, and extra unreviewed metadata. Provenance uses a bounded single-line reference so callers
+do not need to put raw AWS payloads or credentials in relationship rows or routine errors.
 
 Stable logical identity plus per-scan identity prevents history from being overwritten. Explicit
 unresolved states preserve uncertainty; joined controls must treat missing or unresolved required

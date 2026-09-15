@@ -49,6 +49,7 @@ def _endpoint(
 def _provenance(**overrides: object) -> RelationshipProvenance:
     values: dict[str, object] = {
         "collector": "Ec2InstanceCollector",
+        "collector_version": "1.0.0",
         "source": "aws-api",
         "source_api": "ec2:DescribeInstances",
         "evidence_reference": "normalized://ec2/instance/i-0123456789abcdef0/block-device/0",
@@ -61,6 +62,7 @@ def _provenance(**overrides: object) -> RelationshipProvenance:
 def _relationship(
     *,
     scan_id: UUID = SCAN_ID,
+    collection_account_id: str = ACCOUNT_ID,
     relationship_type: RelationshipType = RelationshipType.USES_VOLUME,
     source: RelationshipEndpoint | None = None,
     target: RelationshipEndpoint | UnresolvedRelationshipTarget | None = None,
@@ -81,7 +83,7 @@ def _relationship(
     )
     return ResourceRelationship.for_observation(
         scan_id=scan_id,
-        aws_account_id=ACCOUNT_ID,
+        collection_account_id=collection_account_id,
         relationship_type=relationship_type,
         source=source,
         target=target,
@@ -182,17 +184,21 @@ def test_relationship_direction_contract_accepts_each_approved_edge(
 ) -> None:
     source_global = source_signature[0] == "iam"
     target_global = target_signature[0] == "iam"
+    source_account_id = "aws" if source_signature[1] == "iam_aws_managed_policy" else ACCOUNT_ID
+    target_account_id = "aws" if target_signature[1] == "iam_aws_managed_policy" else ACCOUNT_ID
     relationship = _relationship(
         relationship_type=relationship_type,
         source=_endpoint(
             *source_signature,
             "source-id",
             region=None if source_global else "us-east-1",
+            account_id=source_account_id,
         ),
         target=_endpoint(
             *target_signature,
             "target-id",
             region=None if target_global else "us-east-1",
+            account_id=target_account_id,
         ),
     )
 
@@ -432,6 +438,21 @@ def test_partial_target_rejects_fabricated_or_complete_identity() -> None:
             region="us-west-2",
         )
 
+    with pytest.raises(ValidationError, match="must use regional scope"):
+        UnresolvedRelationshipTarget.for_aws_reference(
+            service="s3",
+            resource_type="s3_bucket",
+            aws_resource_id="central-audit-bucket",
+        )
+
+    with pytest.raises(ValidationError, match="Region requires explicit regional scope"):
+        UnresolvedRelationshipTarget.for_aws_reference(
+            service="future-service",
+            resource_type="future_resource",
+            aws_resource_id="future-id",
+            region="us-west-2",
+        )
+
 
 def test_incomplete_target_identity_requires_its_exact_resolution_state() -> None:
     partial_target = UnresolvedRelationshipTarget.for_aws_reference(
@@ -456,6 +477,26 @@ def test_incomplete_target_identity_requires_its_exact_resolution_state() -> Non
             source=source,
             target=_endpoint("s3", "s3_bucket", "central-audit-bucket"),
             resolution=RelationshipResolution.TARGET_IDENTITY_INCOMPLETE,
+        )
+
+
+def test_selected_policy_version_rejects_owner_mismatch() -> None:
+    with pytest.raises(ValidationError, match="selected version must have the same owner"):
+        _relationship(
+            relationship_type=RelationshipType.SELECTS_DEFAULT_VERSION,
+            source=_endpoint(
+                "iam",
+                "iam_customer_managed_policy",
+                "arn:aws:iam::123456789012:policy/SecurityPolicy",
+                region=None,
+            ),
+            target=_endpoint(
+                "iam",
+                "iam_managed_policy_version",
+                "arn:aws:iam::999900001111:policy/SecurityPolicy#v3",
+                account_id="999900001111",
+                region=None,
+            ),
         )
 
 
@@ -574,7 +615,7 @@ def test_unknown_relationship_type_and_reverse_direction_are_rejected() -> None:
         )
 
 
-def test_identifiers_and_account_cannot_be_substituted() -> None:
+def test_identifiers_and_collection_account_cannot_be_substituted() -> None:
     relationship = _relationship()
     payload = relationship.model_dump()
     payload["relationship_id"] = UUID("00000000-0000-0000-0000-000000000001")
@@ -587,9 +628,89 @@ def test_identifiers_and_account_cannot_be_substituted() -> None:
         ResourceRelationship.model_validate(payload)
 
     payload = relationship.model_dump()
-    payload["aws_account_id"] = "999999999999"
-    with pytest.raises(ValidationError, match="account must match the source"):
+    payload["collection_account_id"] = "not-an-account"
+    with pytest.raises(ValidationError, match="collection_account_id"):
         ResourceRelationship.model_validate(payload)
+
+
+def test_collection_account_is_distinct_from_aws_owned_resource_identity() -> None:
+    relationship = _relationship(
+        relationship_type=RelationshipType.SELECTS_DEFAULT_VERSION,
+        source=_endpoint(
+            "iam",
+            "iam_aws_managed_policy",
+            "arn:aws:iam::aws:policy/ReadOnlyAccess",
+            region=None,
+            account_id="aws",
+        ),
+        target=_endpoint(
+            "iam",
+            "iam_managed_policy_version",
+            "arn:aws:iam::aws:policy/ReadOnlyAccess#v133",
+            region=None,
+            account_id="aws",
+        ),
+    )
+
+    assert relationship.collection_account_id == ACCOUNT_ID
+    assert relationship.source.aws_account_id == "aws"
+    assert relationship.target.aws_account_id == "aws"
+
+
+def test_collection_account_is_distinct_from_cross_account_resource_owner() -> None:
+    relationship = _relationship(
+        relationship_type=RelationshipType.DELIVERS_TO_BUCKET,
+        source=_endpoint(
+            "cloudtrail",
+            "cloudtrail_trail",
+            "arn:aws:cloudtrail:us-east-1:999900001111:trail/organization-audit",
+            account_id="999900001111",
+        ),
+        target=_endpoint(
+            "s3",
+            "s3_bucket",
+            "central-organization-audit",
+            account_id="999900001111",
+        ),
+    )
+
+    assert relationship.collection_account_id == ACCOUNT_ID
+    assert relationship.source.aws_account_id == "999900001111"
+
+
+@pytest.mark.parametrize(
+    ("service", "resource_type", "account_id", "message"),
+    [
+        (
+            "iam",
+            "iam_aws_managed_policy",
+            ACCOUNT_ID,
+            "AWS-managed IAM policy endpoints must use the aws owner sentinel",
+        ),
+        (
+            "iam",
+            "iam_customer_managed_policy",
+            "aws",
+            "aws owner sentinel is valid only",
+        ),
+        ("ec2", "ec2_instance", "aws", "aws owner sentinel is valid only"),
+    ],
+)
+def test_resource_owner_sentinel_is_restricted_to_aws_owned_iam_records(
+    service: str,
+    resource_type: str,
+    account_id: str,
+    message: str,
+) -> None:
+    region = None if service == "iam" else "us-east-1"
+    with pytest.raises(ValidationError, match=message):
+        _endpoint(
+            service,
+            resource_type,
+            "resource-id",
+            region=region,
+            account_id=account_id,
+        )
 
 
 def test_endpoint_rejects_forged_stable_identity_and_ambiguous_region() -> None:
@@ -608,6 +729,60 @@ def test_endpoint_rejects_forged_stable_identity_and_ambiguous_region() -> None:
     endpoint_payload["region"] = "us-east-1"
     with pytest.raises(ValidationError, match="global relationship endpoints must not"):
         RelationshipEndpoint.model_validate(endpoint_payload)
+
+
+@pytest.mark.parametrize(
+    ("region", "aws_resource_id"),
+    [
+        ("us-east-1\x1fresource", "b"),
+        ("us-east-1", "a\x1fb"),
+    ],
+)
+def test_endpoint_rejects_identity_delimiter_collisions(
+    region: str,
+    aws_resource_id: str,
+) -> None:
+    with pytest.raises(ValidationError, match="must not contain unit separators"):
+        _endpoint(
+            "future-service",
+            "future_resource",
+            aws_resource_id,
+            region=region,
+        )
+
+
+@pytest.mark.parametrize(
+    ("service", "resource_type", "region", "message"),
+    [
+        ("iam", "iam_user", "us-east-1", "must use global scope"),
+        ("s3", "s3_bucket", None, "must use regional scope"),
+        ("kms", "kms_key", None, "must use regional scope"),
+        (
+            "access-analyzer",
+            "access_analyzer_finding",
+            None,
+            "must use regional scope",
+        ),
+    ],
+)
+def test_known_resource_types_reject_incorrect_execution_scope(
+    service: str,
+    resource_type: str,
+    region: str | None,
+    message: str,
+) -> None:
+    with pytest.raises(ValidationError, match=message):
+        _endpoint(service, resource_type, "resource-id", region=region)
+
+
+def test_known_partial_target_rejects_incorrect_execution_scope() -> None:
+    with pytest.raises(ValidationError, match="must use global scope"):
+        UnresolvedRelationshipTarget.for_aws_reference(
+            service="iam",
+            resource_type="iam_role",
+            aws_resource_id="AROAEXAMPLE",
+            scope=ResourceScope.REGIONAL,
+        )
 
 
 def test_provenance_rejects_ambiguous_time_or_unbounded_reference() -> None:
@@ -642,7 +817,7 @@ def test_json_schema_exposes_required_identity_and_provenance_contract() -> None
         "relationship_id",
         "observation_id",
         "scan_id",
-        "aws_account_id",
+        "collection_account_id",
         "relationship_type",
         "source",
         "target",
@@ -652,6 +827,7 @@ def test_json_schema_exposes_required_identity_and_provenance_contract() -> None
     provenance_schema = RelationshipProvenance.model_json_schema()
     assert set(provenance_schema["required"]) >= {
         "collector",
+        "collector_version",
         "source_api",
         "evidence_reference",
         "collected_at",

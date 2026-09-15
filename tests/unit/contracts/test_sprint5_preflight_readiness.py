@@ -3,8 +3,11 @@
 import re
 from pathlib import Path
 
+import pytest
+
 from app.assessment.controls import build_default_control_catalog
 from app.assessment.relationships import RelationshipType
+from app.assessment.source_outcomes import EvidenceSourceState
 
 ROOT = Path(__file__).resolve().parents[3]
 MATRIX_PATH = ROOT / "docs" / "controls" / "sprint-5-evidence-readiness.md"
@@ -92,6 +95,27 @@ REQUIRED_CONTRACT_FIELDS = {
     "INSUFFICIENT_EVIDENCE",
     "Limitations",
 }
+ALLOWED_MATRIX_STATES = {"CONTRACT_READY", "CURRENT", "EXPAND"}
+CURRENT_CONTROL_IDS = {
+    "IAM-001",
+    "IAM-002",
+    "LOG-001",
+    "NET-001",
+    "NET-002",
+    "NET-003",
+    "NET-004",
+}
+CONTRACT_READY_CONTROL_IDS = {"LOG-004", "S3-002", "S3-004"}
+EXPECTED_MATRIX_STATES = {
+    control_id: (
+        "CURRENT"
+        if control_id in CURRENT_CONTROL_IDS
+        else "CONTRACT_READY"
+        if control_id in CONTRACT_READY_CONTROL_IDS
+        else "EXPAND"
+    )
+    for control_id in EXPECTED_CONTROL_IDS
+}
 
 
 def _read(path: Path) -> str:
@@ -109,6 +133,16 @@ def _matrix_rows() -> dict[str, tuple[str, ...]]:
         assert control_id not in rows, f"duplicate matrix control: {control_id}"
         rows[control_id] = cells[1:]
     return rows
+
+
+def _matrix_state(state_cell: str) -> str:
+    match = re.fullmatch(
+        r"[^|`]+ / `(?P<state>CURRENT|EXPAND|CONTRACT_READY)`",
+        state_cell,
+    )
+    if match is None:
+        raise ValueError(f"invalid matrix state cell: {state_cell}")
+    return match.group("state")
 
 
 def _planned_catalog_sections() -> dict[str, str]:
@@ -141,12 +175,32 @@ def test_every_matrix_row_has_api_permission_scope_evidence_failure_and_state() 
         assert failure != "unknown"
 
 
+def test_matrix_uses_closed_and_exact_per_control_state_vocabulary() -> None:
+    states = {control_id: _matrix_state(cells[-1]) for control_id, cells in _matrix_rows().items()}
+
+    assert set(states.values()) == ALLOWED_MATRIX_STATES
+    assert states == EXPECTED_MATRIX_STATES
+    with pytest.raises(ValueError, match="invalid matrix state cell"):
+        _matrix_state("5Z / `GIBBERISH`")
+
+    matrix = _read(MATRIX_PATH)
+    for required_text in (
+        "closed",
+        "Only that fact is current",
+        "collector, persistence, and integration work has not been implemented",
+        "This is not an implementation-completion state",
+        "`CONTRACT_READY` is orthogonal to evidence implementation",
+        "No other matrix state is valid",
+    ):
+        assert required_text in matrix
+
+
 def test_matrix_defines_common_provenance_failure_and_relationship_contracts() -> None:
     matrix = _read(MATRIX_PATH)
 
     for required_text in (
         "preallocated scan ID",
-        "AWS account",
+        "verified 12-digit collection account",
         "stable resource identity",
         "collector name",
         "AWS service/API source",
@@ -179,6 +233,86 @@ def test_s3_contract_links_and_reserved_meanings_remain_canonical() -> None:
     assert "obsolete prototype meaning" in catalog
 
 
+def test_s3_exact_policy_entries_bind_full_stable_bucket_identity() -> None:
+    matrix = _read(MATRIX_PATH)
+    exposure_contract = _read(ROOT / "docs" / "controls" / "s3-002-exposure-aggregation.md")
+    classifier_contract = _read(
+        ROOT / "docs" / "controls" / "s3-004-sensitive-bucket-classifier.md"
+    )
+
+    for required_text in (
+        "aws_account_id: exact 12-digit owner account",
+        "bucket_region: authoritative bucket home Region",
+        "stable_resource_id: canonical UUID derived from account, Region, and bucket name",
+        "omit owner account and home Region",
+        "S3ExposureApprovalPolicyHistory",
+    ):
+        assert required_text in exposure_contract
+    for required_text in (
+        "strict `S3BucketIdentity`",
+        "owner account, authoritative bucket home Region",
+        "`SensitiveBucketClassifierHistory`",
+        "changing only account or home Region changes artifact identity",
+        "reject a missing or mismatched checksum",
+    ):
+        assert required_text in classifier_contract
+    assert "exact account/Region/ARN/stable bucket identity" in matrix
+
+
+def test_s3_004_classifier_readiness_does_not_invent_sprint_6_kms_policy() -> None:
+    matrix = _read(MATRIX_PATH)
+    catalog = _read(CATALOG_PATH)
+    active_plan = _read(ACTIVE_PLAN_PATH)
+    classifier_contract = _read(
+        ROOT / "docs" / "controls" / "s3-004-sensitive-bucket-classifier.md"
+    )
+
+    for factual_state in (
+        "no-explicit-configuration",
+        "`AES256`",
+        "AWS-managed KMS",
+        "customer-managed KMS",
+        "unavailable",
+        "malformed",
+    ):
+        assert factual_state in matrix
+    assert "refers only to this" in matrix
+    assert "evidence-facing classifier prerequisite" in matrix
+    assert "No encryption state maps to Sprint 6 `PASS`/`FAIL`" in matrix
+    assert "does not" in catalog
+    assert "whether an AWS-managed or only a customer-managed KMS key" in catalog
+    assert "not an invented final Sprint 6 KMS result policy" in active_plan
+    assert "intentionally does not decide whether" in classifier_contract
+    assert "false `restricted_data_requires_kms` setting yields" in classifier_contract
+
+
+def test_result_sensitive_source_outcome_contract_is_closed_and_not_integrated() -> None:
+    matrix = _read(MATRIX_PATH)
+    active_plan = _read(ACTIVE_PLAN_PATH)
+    adr = _read(ROOT / "docs" / "design-decisions" / "0002-result-sensitive-evidence-outcomes.md")
+
+    assert {state.value for state in EvidenceSourceState} == {
+        "PRESENT",
+        "EXPECTED_ABSENCE",
+        "UNAVAILABLE",
+        "MALFORMED",
+        "CONFLICT",
+        "RESOURCE_DISAPPEARED",
+    }
+    assert "`PARTIAL` is never a generic completeness bypass" in matrix
+    assert "Current Sprint 0--4 collectors remain" in active_plan
+    assert "all-or-nothing" in active_plan
+    assert "The new module has no runtime callers" in adr
+    for required_text in (
+        "verified 12-digit collection account",
+        "resource owner may be",
+        "AWS-managed IAM policies",
+        "controlled `aws` owner sentinel",
+        "U+001F unit separator",
+    ):
+        assert required_text in adr
+
+
 def test_required_relationship_vocabulary_is_controlled_and_documented() -> None:
     relationship_types = {item.value for item in RelationshipType}
     adr = _read(RELATIONSHIP_ADR_PATH)
@@ -189,6 +323,7 @@ def test_required_relationship_vocabulary_is_controlled_and_documented() -> None
     for required_text in (
         "relationship_id",
         "observation_id",
+        "collection_account_id",
         "source endpoint",
         "target endpoint",
         "collection time",
@@ -197,6 +332,48 @@ def test_required_relationship_vocabulary_is_controlled_and_documented() -> None
         "schema version",
     ):
         assert required_text in adr
+    assert "verified 12-digit collection account ID" in adr
+    assert "closed scope map" in adr
+    assert "AWS-managed IAM policies use the" in adr
+    for persistence_contract in (
+        "current blanket",
+        "same-account persistence check",
+        "unproven different owner",
+        "Relaxing either the Python guard",
+    ):
+        assert persistence_contract in adr
+
+
+def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
+    matrix_rows = _matrix_rows()
+    matrix = _read(MATRIX_PATH)
+    catalog = _read(CATALOG_PATH)
+    adr = _read(RELATIONSHIP_ADR_PATH)
+
+    for control_id in ("IAM-001", "IAM-002", "IAM-003", "IAM-004"):
+        assert "`Resource` + `ResourceSnapshot`" in matrix_rows[control_id][2]
+
+    assert "child evidence" not in matrix
+    assert "may remain structured child evidence" not in catalog
+    for required_text in (
+        "Every endpoint of a persisted `RESOLVED` relationship is a top-level normalized",
+        "none is a canonical edge endpoint when present only as an embedded child object",
+        "Accepted Sprint 0--4 embedded IAM configuration remains available",
+    ):
+        assert required_text in matrix
+
+    for required_text in (
+        "every endpoint of a `RESOLVED` relationship must reference a",
+        "top-level normalized `Resource` and its exact `ResourceSnapshot`",
+        "including IAM access keys, MFA devices",
+        "cannot substitute for either persisted endpoint",
+        "target_stable_resource_id, target_resource_snapshot_id",
+        "including IAM types, is exempt",
+    ):
+        assert required_text in adr
+
+    assert "an access key present only inside legacy embedded user configuration" in catalog
+    assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
 def test_preflight_does_not_enable_planned_controls_or_start_sprint_5() -> None:
@@ -210,3 +387,5 @@ def test_preflight_does_not_enable_planned_controls_or_start_sprint_5() -> None:
     assert "No sprint is currently `IN PROGRESS`" in roadmap
     assert "Status: **NEXT**" in active_plan
     assert "Sprint 5 has not begun" in active_plan
+    assert "explicitly triaged accepted limitations" in active_plan
+    assert "must be resolved before any multi-tenant deployment" in active_plan

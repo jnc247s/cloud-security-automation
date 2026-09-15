@@ -14,7 +14,7 @@ from enum import StrEnum
 from typing import Annotated, Literal, Self
 from uuid import UUID, uuid5
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.assessment.identities import (
     resource_snapshot_id,
@@ -31,6 +31,8 @@ _RELATIONSHIP_OBSERVATION_NAMESPACE = UUID("1f23e82f-4e5d-5fa8-b27a-012eecebe2fb
 _UNRESOLVED_REFERENCE_NAMESPACE = UUID("d45bfac3-cba3-5aa9-b6c0-4bf094b39bcb")
 
 NonEmptyString = Annotated[str, Field(min_length=1)]
+CollectionAccountId = Annotated[str, Field(pattern=r"^[0-9]{12}$")]
+ResourceOwnerId = Annotated[str, Field(pattern=r"^(?:[0-9]{12}|aws)$")]
 ResourceSignature = tuple[str, str]
 
 
@@ -83,6 +85,34 @@ _IAM_MANAGED_POLICY_TYPES = frozenset(
     {
         ("iam", "iam_aws_managed_policy"),
         ("iam", "iam_customer_managed_policy"),
+    }
+)
+
+_RESOURCE_SCOPES: dict[ResourceSignature, ResourceScope] = {
+    ("access-analyzer", "access_analyzer_finding"): ResourceScope.REGIONAL,
+    ("cloudtrail", "cloudtrail_trail"): ResourceScope.REGIONAL,
+    ("ec2", "ebs_volume"): ResourceScope.REGIONAL,
+    ("ec2", "ec2_instance"): ResourceScope.REGIONAL,
+    ("ec2", "security_group"): ResourceScope.REGIONAL,
+    ("ec2", "subnet"): ResourceScope.REGIONAL,
+    ("ec2", "vpc"): ResourceScope.REGIONAL,
+    ("ec2", "vpc_flow_log"): ResourceScope.REGIONAL,
+    ("iam", "iam_access_key"): ResourceScope.GLOBAL,
+    ("iam", "iam_aws_managed_policy"): ResourceScope.GLOBAL,
+    ("iam", "iam_customer_managed_policy"): ResourceScope.GLOBAL,
+    ("iam", "iam_group"): ResourceScope.GLOBAL,
+    ("iam", "iam_inline_policy"): ResourceScope.GLOBAL,
+    ("iam", "iam_managed_policy_version"): ResourceScope.GLOBAL,
+    ("iam", "iam_mfa_device"): ResourceScope.GLOBAL,
+    ("iam", "iam_role"): ResourceScope.GLOBAL,
+    ("iam", "iam_user"): ResourceScope.GLOBAL,
+    ("kms", "kms_key"): ResourceScope.REGIONAL,
+    ("s3", "s3_bucket"): ResourceScope.REGIONAL,
+}
+_AWS_OWNED_IAM_TYPES = frozenset(
+    {
+        ("iam", "iam_aws_managed_policy"),
+        ("iam", "iam_managed_policy_version"),
     }
 )
 
@@ -176,7 +206,7 @@ class RelationshipEndpoint(BaseModel):
 
     identity_state: Literal["stable"] = "stable"
     provider: Literal["aws"] = "aws"
-    aws_account_id: NonEmptyString
+    aws_account_id: ResourceOwnerId
     service: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9-]*$")
     resource_type: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
     aws_resource_id: NonEmptyString
@@ -184,6 +214,15 @@ class RelationshipEndpoint(BaseModel):
     region: str | None = None
     stable_resource_id: UUID
     resource_snapshot_id: UUID | None = None
+
+    @field_validator("aws_resource_id", "region")
+    @classmethod
+    def reject_identity_separator(cls, value: str | None) -> str | None:
+        """Prevent ambiguous input to the accepted delimiter-based identity derivation."""
+
+        if value is not None and "\x1f" in value:
+            raise ValueError("relationship identity components must not contain unit separators")
+        return value
 
     @model_validator(mode="after")
     def validate_identity_and_scope(self) -> Self:
@@ -193,6 +232,18 @@ class RelationshipEndpoint(BaseModel):
             raise ValueError("regional relationship endpoints require a region")
         if self.scope is ResourceScope.GLOBAL and self.region is not None:
             raise ValueError("global relationship endpoints must not define a region")
+
+        expected_scope = _RESOURCE_SCOPES.get((self.service, self.resource_type))
+        if expected_scope is not None and self.scope is not expected_scope:
+            raise ValueError(
+                f"{self.service}/{self.resource_type} relationship endpoints must use "
+                f"{expected_scope.value} scope"
+            )
+        _validate_resource_owner(
+            service=self.service,
+            resource_type=self.resource_type,
+            aws_account_id=self.aws_account_id,
+        )
 
         expected_resource_id = calculate_stable_resource_id(
             provider=self.provider,
@@ -271,7 +322,7 @@ class UnresolvedRelationshipTarget(BaseModel):
 
     identity_state: Literal["unresolved"] = "unresolved"
     provider: Literal["aws"] = "aws"
-    aws_account_id: NonEmptyString | None = None
+    aws_account_id: ResourceOwnerId | None = None
     service: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9-]*$")
     resource_type: str = Field(min_length=1, pattern=r"^[a-z][a-z0-9_]*$")
     aws_resource_id: NonEmptyString
@@ -281,12 +332,36 @@ class UnresolvedRelationshipTarget(BaseModel):
     stable_resource_id: None = None
     resource_snapshot_id: None = None
 
+    @field_validator("aws_resource_id", "region")
+    @classmethod
+    def reject_identity_separator(cls, value: str | None) -> str | None:
+        """Keep partial references compatible with canonical stable identity inputs."""
+
+        if value is not None and "\x1f" in value:
+            raise ValueError("relationship identity components must not contain unit separators")
+        return value
+
     @model_validator(mode="after")
     def validate_partial_identity(self) -> Self:
         """Reject contradictions, fabricated IDs, and unnecessarily partial identities."""
 
         if self.scope is ResourceScope.GLOBAL and self.region is not None:
             raise ValueError("global unresolved targets must not define a region")
+
+        expected_scope = _RESOURCE_SCOPES.get((self.service, self.resource_type))
+        if expected_scope is not None and self.scope is not expected_scope:
+            raise ValueError(
+                f"{self.service}/{self.resource_type} unresolved targets must use "
+                f"{expected_scope.value} scope"
+            )
+        if self.region is not None and self.scope is None:
+            raise ValueError("an unresolved target Region requires explicit regional scope")
+        if self.aws_account_id is not None:
+            _validate_resource_owner(
+                service=self.service,
+                resource_type=self.resource_type,
+                aws_account_id=self.aws_account_id,
+            )
 
         identity_is_complete = self.aws_account_id is not None and (
             self.scope is ResourceScope.GLOBAL
@@ -352,6 +427,9 @@ class RelationshipProvenance(BaseModel):
     )
 
     collector: str = Field(min_length=1, pattern=r"^[A-Za-z][A-Za-z0-9_.-]*$")
+    collector_version: str = Field(
+        min_length=1, max_length=64, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.+-]*$"
+    )
     source: Literal["aws-api"] = "aws-api"
     source_api: str = Field(
         min_length=3,
@@ -382,7 +460,7 @@ class ResourceRelationship(BaseModel):
     relationship_id: UUID
     observation_id: UUID
     scan_id: UUID
-    aws_account_id: NonEmptyString
+    collection_account_id: CollectionAccountId
     relationship_type: RelationshipType
     source: RelationshipEndpoint
     target: RelationshipEndpoint | UnresolvedRelationshipTarget = Field(
@@ -396,8 +474,6 @@ class ResourceRelationship(BaseModel):
     def validate_relationship(self) -> Self:
         """Bind direction, resolution, snapshots, and deterministic identifiers."""
 
-        if self.source.aws_account_id != self.aws_account_id:
-            raise ValueError("relationship account must match the source account")
         if (
             isinstance(self.target, RelationshipEndpoint)
             and self.source.stable_resource_id == self.target.stable_resource_id
@@ -411,6 +487,10 @@ class ResourceRelationship(BaseModel):
             raise ValueError("source resource type is invalid for relationship direction")
         if target_types is not None and target_signature not in target_types:
             raise ValueError("target resource type is invalid for relationship direction")
+        if self.relationship_type is RelationshipType.SELECTS_DEFAULT_VERSION:
+            target_owner = self.target.aws_account_id
+            if target_owner is not None and self.source.aws_account_id != target_owner:
+                raise ValueError("managed policy and selected version must have the same owner")
 
         expected_source_snapshot_id = _endpoint_snapshot_id(self.scan_id, self.source)
         if self.source.resource_snapshot_id != expected_source_snapshot_id:
@@ -464,7 +544,7 @@ class ResourceRelationship(BaseModel):
         cls,
         *,
         scan_id: UUID,
-        aws_account_id: str,
+        collection_account_id: str,
         relationship_type: RelationshipType,
         source: RelationshipEndpoint,
         target: RelationshipEndpoint | UnresolvedRelationshipTarget,
@@ -490,7 +570,7 @@ class ResourceRelationship(BaseModel):
                 relationship_id=relationship_id,
             ),
             scan_id=scan_id,
-            aws_account_id=aws_account_id,
+            collection_account_id=collection_account_id,
             relationship_type=relationship_type,
             source=source,
             target=target,
@@ -607,3 +687,18 @@ def _endpoint_snapshot_id(scan_id: UUID, endpoint: RelationshipEndpoint) -> UUID
         region=endpoint.region,
         aws_resource_id=endpoint.aws_resource_id,
     )
+
+
+def _validate_resource_owner(
+    *,
+    service: str,
+    resource_type: str,
+    aws_account_id: str,
+) -> None:
+    """Keep the AWS-owned IAM sentinel from forking or contaminating other identities."""
+
+    signature = (service, resource_type)
+    if signature == ("iam", "iam_aws_managed_policy") and aws_account_id != "aws":
+        raise ValueError("AWS-managed IAM policy endpoints must use the aws owner sentinel")
+    if aws_account_id == "aws" and signature not in _AWS_OWNED_IAM_TYPES:
+        raise ValueError("the aws owner sentinel is valid only for AWS-owned IAM policy records")

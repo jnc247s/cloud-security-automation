@@ -4,17 +4,25 @@ Status: canonical pre-implementation plan; no Sprint 5 collector or Sprint 6 rul
 by this document.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
-AWS evidence Sprint 5 must collect. `CURRENT` means the accepted Sprint 1 collector already
-provides the decision-relevant fact; `EXPAND` means the API and normalized contract are identified
-but the evidence is not available until its named Sprint 5 slice is implemented and accepted.
-Neither status means the corresponding Sprint 6 rule exists.
+AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
+vocabulary; the scheduling text before the slash is not a state:
+
+| State | Exact meaning |
+| --- | --- |
+| `CURRENT` | The accepted Sprint 1 runtime already provides the named decision-relevant fact. Only that fact is current; a named Sprint 5 normalization, resource, relationship, or enrichment remains unimplemented, and this state does not claim a rule exists beyond the accepted Sprint 0--4 controls. |
+| `EXPAND` | The required AWS source and normalized evidence contract are identified, but the Sprint 5 collector, persistence, and integration work has not been implemented or accepted. |
+| `CONTRACT_READY` | A formerly blocking domain or policy decision has an accepted standalone contract. This is not an implementation-completion state: the Sprint 5 evidence producer/persistence and Sprint 6 executable rule remain unimplemented unless separately identified as accepted behavior. |
+
+No other matrix state is valid. `CONTRACT_READY` is orthogonal to evidence implementation and is
+not a successor to `EXPAND`; it records that Sprint 5 can implement against an approved decision.
 
 ## Common evidence and failure contract
 
 Every normalized observation must retain:
 
-- preallocated scan ID and AWS account from verified STS identity;
-- stable resource identity and resource type;
+- preallocated scan ID and verified 12-digit collection account from STS identity;
+- stable resource identity, resource type, and the separately controlled resource-owner account
+  where it differs from the collection account;
 - `global`, requested Regional, or bucket-home-Region scope;
 - collector name, AWS service/API source, and timezone-aware collection time;
 - validated, versioned normalized configuration and its digest; and
@@ -27,14 +35,23 @@ defects remain visible. A control that depends on an unrequested, `FAILED`, or `
 must later return `INSUFFICIENT_EVIDENCE`, never `PASS`. An empty successful resource list can
 produce `NOT_APPLICABLE` only for a resource-scoped control whose contract permits it.
 
+That collector-level rule describes the current Sprint 0--4 runtime. Expanded collectors must use
+the accepted [result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md)
+to separate account-scope discovery from resource enrichment, retain valid facts when another
+source is incomplete, and record a typed outcome for every promised source. A `PASS` still
+requires every source that its versioned control declares decision-required. A coherent fact may
+produce `FAIL` despite a different unknown source only when the control's exact aggregation
+contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The new
+domain schema is not integrated into collectors, persistence, or rules by this preflight.
+
 ## IAM controls
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `IAM-001` | `ListUsers`, `ListMFADevices`; `iam:ListUsers`, `iam:ListMFADevices` | IAM global; users emitted once per account | `iam_user.user_id`, ARN, complete `mfa_devices[]`; user -> MFA-device child evidence | Incomplete user/MFA enumeration or malformed device identity -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
-| `IAM-002` | `ListAccessKeys`; `iam:ListAccessKeys` | IAM global | user identity; complete access-key IDs, `status`, `create_date`; user -> access-key child evidence; snapshot collection time is the age anchor | Incomplete enumeration or missing active-key status/date -> `INSUFFICIENT_EVIDENCE` | 5C verification/expansion / `CURRENT` facts |
-| `IAM-003` | `ListAccessKeys`, `GetAccessKeyLastUsed`; `iam:ListAccessKeys`, `iam:GetAccessKeyLastUsed` | IAM global | key creation date/status; last-used date; explicit successful `no_recorded_use` state; user -> access key; observation time | Failed lookup or ambiguous missing last-use/creation state -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` completeness semantics |
-| `IAM-004` | `ListUsers`, `GetUser`, `ListGroups`, paginated `GetGroup`, `ListRoles`, `GetRole`, `ListPolicies(Scope=Local)`, `GetPolicy`, `GetPolicyVersion`, all `ListAttached*Policies`, all `List*Policies`, `GetUserPolicy`, `GetGroupPolicy`, `GetRolePolicy`, and `ListPolicyTags`/`ListRoleTags`; corresponding `iam:` actions | IAM global | managed policy ARN + default VersionId/document; inline owner + policy name/document + snapshot/content digest; customer-managed, AWS-managed referenced by attachment or boundary, trust, and boundary context; exact policy structures; identity -> managed/inline policy and boundary, managed policy -> default version, user -> group | Incomplete enumeration, undecodable/malformed document, missing managed default version, missing inline owner/name/snapshot/digest, or unresolved in-scope relationship -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
+| `IAM-001` | `ListUsers`, `ListMFADevices`; `iam:ListUsers`, `iam:ListMFADevices` | IAM global; users emitted once per account | accepted complete `mfa_devices[]` remains embedded for Sprint 0--4 compatibility; 5C normalizes each observed device as a top-level `iam_mfa_device` `Resource` + `ResourceSnapshot` and emits user -> MFA-device | Incomplete user/MFA enumeration or malformed device identity -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1; 5C relationship normalization / `CURRENT` |
+| `IAM-002` | `ListAccessKeys`; `iam:ListAccessKeys` | IAM global | accepted key facts remain embedded for Sprint 0--4 compatibility; 5C normalizes each observed key ID, `status`, and `create_date` as a top-level `iam_access_key` `Resource` + `ResourceSnapshot`, emits user -> access-key, and uses snapshot collection time as the age anchor | Incomplete enumeration or missing active-key status/date -> `INSUFFICIENT_EVIDENCE` | 5C verification and relationship normalization / `CURRENT` |
+| `IAM-003` | `ListAccessKeys`, `GetAccessKeyLastUsed`; `iam:ListAccessKeys`, `iam:GetAccessKeyLastUsed` | IAM global | access-key `Resource` + `ResourceSnapshot`; key creation date/status; last-used date; explicit successful `no_recorded_use` state; user -> access key; observation time | Failed lookup or ambiguous missing last-use/creation state -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
+| `IAM-004` | `ListUsers`, `GetUser`, `ListGroups`, paginated `GetGroup`, `ListRoles`, `GetRole`, `ListPolicies(Scope=Local)`, `GetPolicy`, `GetPolicyVersion`, all `ListAttached*Policies`, all `List*Policies`, `GetUserPolicy`, `GetGroupPolicy`, `GetRolePolicy`, and `ListPolicyTags`/`ListRoleTags`; corresponding `iam:` actions | IAM global | every user, group, role, managed policy, inline policy, permissions boundary target, and policy version used by an edge is a top-level `Resource` + `ResourceSnapshot`; managed policy ARN + default VersionId/document; inline owner + policy name/document + snapshot/content digest; exact policy structures; identity -> managed/inline policy and boundary, managed policy -> default version, user -> group | Incomplete enumeration, undecodable/malformed document, missing managed default version, missing inline owner/name/snapshot/digest, or unresolved in-scope relationship -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
 | `IAM-005` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountAccessKeysPresent` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
 | `IAM-006` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountMFAEnabled` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
 
@@ -56,9 +73,9 @@ the boundary relationship and must not be presented as attached or effective adm
 | --- | --- | --- | --- | --- | --- |
 | `NET-001` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | stable group/VPC IDs; complete ingress protocol, ports, IPv4/IPv6 CIDRs, group and prefix references; security group -> VPC | Incomplete/malformed ingress or collector coverage -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
 | `NET-002` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | same complete ingress structure as `NET-001`; security group -> VPC | Same fail-closed behavior as `NET-001` | Existing Sprint 1 / `CURRENT` |
-| `NET-003` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | ingress `ip_protocol`, ports where applicable, `/0` IPv4/IPv6 sources, group/prefix sources; security group -> VPC | Missing or malformed all-protocol/source evidence -> `INSUFFICIENT_EVIDENCE` | 5B validation / `CURRENT` facts |
-| `NET-004` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | complete protocol/port-range/public-CIDR evidence; profile-supplied high-risk ports; security group -> VPC | Missing profile or decision-relevant rule fact -> `INSUFFICIENT_EVIDENCE` | 5B validation plus Sprint 6 profile extension / `CURRENT` facts |
-| `NET-005` | `DescribeSecurityGroups`, `DescribeVpcs`; `ec2:DescribeSecurityGroups`, `ec2:DescribeVpcs` | Regional | exact `group_name`; `is_default` derived from `GroupName == "default"` plus valid VPC ID; complete ingress/egress; default security group -> VPC | Uncertain group/VPC identity or incomplete ingress/egress -> `INSUFFICIENT_EVIDENCE` | 5B / `EXPAND` explicit default context |
+| `NET-003` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | ingress `ip_protocol`, ports where applicable, `/0` IPv4/IPv6 CIDRs, group/prefix sources; security group -> VPC | Missing or malformed all-protocol/source evidence -> `INSUFFICIENT_EVIDENCE` | 5B validation / `CURRENT` |
+| `NET-004` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | complete protocol/port-range/public-CIDR evidence; profile-supplied high-risk ports; security group -> VPC | Missing profile or decision-relevant rule fact -> `INSUFFICIENT_EVIDENCE` | 5B validation plus Sprint 6 profile extension / `CURRENT` |
+| `NET-005` | `DescribeSecurityGroups`, `DescribeVpcs`; `ec2:DescribeSecurityGroups`, `ec2:DescribeVpcs` | Regional | exact `group_name`; `is_default` derived from `GroupName == "default"` plus valid VPC ID; complete ingress/egress; default security group -> VPC | Uncertain group/VPC identity or incomplete ingress/egress -> `INSUFFICIENT_EVIDENCE` | 5B / `EXPAND` |
 | `NET-006` | one paginated Regional `DescribeVpcs` and one paginated Regional `DescribeFlowLogs`; `ec2:DescribeVpcs`, `ec2:DescribeFlowLogs` | Regional | VPC identity and complete case-sensitive tags; Flow Log ID, `ResourceId`, `FlowLogStatus`, `TrafficType`, destination type/name/ARN; exact Flow Log `ResourceId` -> collected VPC ID | Absent/blank `Environment`, invalid profile, or incomplete VPC/Flow Log evidence -> `INSUFFICIENT_EVIDENCE`; complete environment outside policy -> `NOT_APPLICABLE` | 5B / `EXPAND` |
 
 The security-group contracts do not claim end-to-end reachability. Route tables, network ACLs,
@@ -92,10 +109,10 @@ and not a global resource.
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `S3-001` | `ListBuckets`; bucket-client `GetPublicAccessBlock`; account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:ListAllMyBuckets`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock` | Account discovery once; account BPA once; bucket follow-up in bucket Region | all four account and bucket BPA booleans plus explicit absent configuration; account -> bucket context | Expected `NoSuchPublicAccessBlockConfiguration` is a complete all-false factual state, not a collection failure; denied, partial, malformed, or unexpected failures -> `INSUFFICIENT_EVIDENCE` | 5E / `EXPAND` account BPA |
+| `S3-001` | `ListBuckets`; bucket-client `GetPublicAccessBlock`; account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:ListAllMyBuckets`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock` | Account discovery once; account BPA once; bucket follow-up in bucket Region | all four account and bucket BPA booleans plus explicit absent configuration; account -> bucket context | Expected `NoSuchPublicAccessBlockConfiguration` is a complete all-false factual state, not a collection failure; denied, partial, malformed, or unexpected failures -> `INSUFFICIENT_EVIDENCE` | 5E account BPA / `EXPAND` |
 | `S3-002` | `GetBucketPolicy`, `GetBucketPolicyStatus`, `GetBucketAcl`, bucket `GetPublicAccessBlock`, and account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:GetBucketPolicy`, `s3:GetBucketPolicyStatus`, `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock`; Analyzer facts remain supplementary | Bucket-home-Region direct facts; account BPA once; Regional analyzer context is non-decisive | complete decoded policy/principals/actions/resources/conditions and digest; `IsPublic`; ACL owner/grants; four account+bucket BPA flags; exact versioned `s3_exposure_approvals`; stable policy/ACL evidence references | Expected no-policy/no-BPA responses are explicit absence/all-false facts. One coherent unapproved channel can `FAIL`; otherwise any denied, malformed, contradictory, unsupported, or required-missing channel -> `INSUFFICIENT_EVIDENCE` under the canonical table | 5E direct collection; 5D supplementary context / `CONTRACT_READY` |
 | `S3-003` | `GetBucketPolicy`; `s3:GetBucketPolicy` | Bucket-home Region | `policy_present`; complete decoded statements preserving effect, principal, actions, bucket/object resources, and `aws:SecureTransport` conditions | Expected `NoSuchBucketPolicy` is complete `policy_present = false`, not a collection failure; denied, undecodable, malformed, or partial evidence -> `INSUFFICIENT_EVIDENCE` | 5E / `EXPAND` |
-| `S3-004` | `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | exact bucket ARN and complete tags consumed by classifier schema `1.0.0`; explicit encryption-present state, `SSEAlgorithm`, bucket-key flag, KMS key ID/ARN and `KeyManager`; S3 bucket -> KMS key | Expected no-encryption/no-tag responses and SSE-S3/AWS-managed-KMS states are explicit facts. Missing configured classification metadata -> classifier `INSUFFICIENT_EVIDENCE`; operational/malformed encryption or KMS evidence remains incomplete | 5E / `CONTRACT_READY` |
+| `S3-004` | `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | exact account/Region/ARN/stable bucket identity and complete tags consumed by classifier schema `1.0.0`; explicit no-configuration versus `AES256`, `aws:kms`, or `aws:kms:dsse`; bucket-key flag; KMS key ID/ARN and `KeyManager`; S3 bucket -> KMS key | Expected no-encryption/no-tag responses, SSE-S3, AWS-managed KMS, and customer-managed KMS are distinct facts. Missing configured classification metadata -> classifier `INSUFFICIENT_EVIDENCE`; operational/malformed encryption or KMS evidence remains incomplete. No encryption state maps to Sprint 6 `PASS`/`FAIL` in this preflight | 5E classifier prerequisite / `CONTRACT_READY` |
 
 Supporting S3 context uses `GetBucketLocation` (`s3:GetBucketLocation`), `GetBucketVersioning`
 (`s3:GetBucketVersioning`), and `GetBucketOwnershipControls`
@@ -109,16 +126,20 @@ AccessDenied, throttling, transport failure, unexpected service errors, or malfo
 collection failures. KMS key descriptions are cached by Region and key reference so shared keys
 are not queried once per bucket. The approved
 [S3-004 classifier contract](s3-004-sensitive-bucket-classifier.md) limits classification inputs
-to exact bucket ARNs, restricted full-name patterns, and exact tags; Sprint 5 collects those facts
-without classifying the bucket. Neither contract enables a rule or changes an existing control.
+to exact full bucket identities, restricted full-name patterns, and exact tags; Sprint 5 collects
+those facts without classifying the bucket. Its `CONTRACT_READY` state refers only to this
+evidence-facing classifier prerequisite, not final Sprint 6 KMS `PASS`/`FAIL` semantics. Sprint 5
+must preserve no-explicit-configuration, `AES256`, AWS-managed KMS, customer-managed KMS,
+unavailable, and malformed states without assigning compliance. Neither S3 contract enables a
+rule or changes an existing control.
 
 ## Logging controls
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `LOG-001` | `ListTrails`, `GetTrail`, `GetTrailStatus`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus` | Account discovery with per-trail home-Region enrichment | trail ARN/home Region and explicit `is_logging`; account -> trail | Incomplete enumeration/status -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
-| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; account -> trails | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` selectors |
-| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` validated contract |
+| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; account -> trails | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` |
+| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F / `EXPAND` |
 | `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E + 5F + 5G / `CONTRACT_READY` |
 
 CloudTrail-to-KMS evidence uses trail `KmsKeyId` and, where inspected, cached
@@ -197,8 +218,8 @@ with a reviewed schema/version transition and a new profile version.
 | Public EC2 allowlist | `public_ec2_exceptions` | Existing policy field; not a Finding Exception | `EC2-002` |
 | Required tag keys | `required_tags` | Existing | `GOV-001` |
 | Resource types governed by required tags | `governed_resource_types` | Planned non-empty tuple restricted to the catalog's exact tag-source vocabulary | `GOV-001` |
-| Approved public/external S3 exposure | `s3_exposure_approvals` | Approved strict versioned artifact; exact bucket ARN plus separate public flag and principal tokens | `S3-002`, `LOG-004` |
-| Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact ARNs, restricted name patterns, and exact tag pairs only | `S3-004` |
+| Approved public/external S3 exposure | `s3_exposure_approvals` | Approved strict versioned artifact; exact account/Region/ARN/stable bucket identity plus separate public flag and principal tokens | `S3-002`, `LOG-004` |
+| Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact account/Region/ARN/stable bucket identities, restricted name patterns, and exact tag pairs only | `S3-004` |
 | Restricted-data KMS consequence | `restricted_data_requires_kms` | Existing boolean; does not itself classify a bucket | `S3-004` |
 
 No new severity is assigned here. New controls also have no NIST mapping until a separate review
@@ -226,13 +247,22 @@ Sprint 5 must preserve these stable typed edges with scan/snapshot provenance:
 - EC2 instance -> security group, EBS volume, subnet, and VPC;
 - security group -> owning VPC;
 - VPC -> subnet and VPC-scoped Flow Log;
-- IAM user -> group and access key;
+- IAM user -> group, access key, and MFA device;
 - IAM user/group/role -> managed or inline policy;
 - IAM user/role -> permissions boundary;
 - managed policy -> selected default version;
 - Access Analyzer finding -> referenced AWS resource;
 - S3 bucket -> KMS key;
 - CloudTrail trail -> S3 bucket and KMS key.
+
+Every endpoint of a persisted `RESOLVED` relationship is a top-level normalized `Resource` with
+the exact `ResourceSnapshot` observed in that scan. This applies uniformly, including IAM access
+keys, MFA devices, groups, inline and managed policy records, permissions-boundary targets, and
+policy versions; none is a canonical edge endpoint when present only as an embedded child object.
+Accepted Sprint 0--4 embedded IAM configuration remains available to existing consumers during an
+atomic Sprint 5 transition, but it is compatibility evidence rather than the generic
+relationship representation. It may be removed only in a separately reviewed atomic migration
+after every consumer has moved to the normalized resources and edges.
 
 The accepted [generic relationship decision](../design-decisions/0001-generic-resource-relationships.md)
 uses first-class, versioned, directional observations with stable logical IDs, per-scan IDs,

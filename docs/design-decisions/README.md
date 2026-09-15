@@ -28,3 +28,4 @@ Supersede records with a new file and links; do not rewrite historical rationale
 ## Accepted decisions
 
 - [0001 — Canonical generic AWS resource relationships](0001-generic-resource-relationships.md)
+- [0002 — Result-sensitive AWS evidence outcomes](0002-result-sensitive-evidence-outcomes.md)

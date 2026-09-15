@@ -49,8 +49,12 @@ now approved in two focused contracts:
 
 These are approved planned contracts, not executable controls. They do not change catalog version
 `0.2.1`, enable a reserved ID, add an AWS call, or alter the five accepted Sprint 0--4 controls.
-`restricted_data_requires_kms` still defines a consequence after classification and never
-classifies a bucket by itself.
+The S3-004 approval is specifically the evidence-facing classifier prerequisite. It does not
+decide whether an AWS-managed or only a customer-managed KMS key satisfies organization policy,
+or which technical result applies when `restricted_data_requires_kms` is false. That boolean
+never classifies a bucket by itself. Sprint 6 must approve and version those result semantics
+before registering S3-004; inventing them in this preflight would change an organization-policy
+contract outside the authorized scope.
 
 ## Planned-contract interpretation
 
@@ -61,9 +65,10 @@ Exceptions and profile allowlists remain distinct: an operational Finding Except
 rewrite the technical result, while a versioned Assessment Profile input is part of the rule's
 reproducible policy definition.
 
-Unless a contract says otherwise, its evidence must retain the scan ID, AWS account, Region or
-explicit global scope, stable resource identity, collector and AWS API source, collection time,
-schema/version, and collector-completeness outcome. The companion
+Unless a contract says otherwise, its evidence must retain the scan ID, verified collection
+account, controlled resource-owner identity where applicable, Region or explicit global scope,
+stable resource identity, collector and AWS API source, collection time, schema/version, and
+collector-completeness outcome. The companion
 [Sprint 5 evidence-readiness matrix](sprint-5-evidence-readiness.md) owns API, permission, field,
 relationship, and sub-sprint planning detail.
 
@@ -84,8 +89,10 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 - **Scope/resource type:** one IAM user, using the complete set of that user's active access keys.
 - **Required evidence:** user identity; access-key identifier; key status; key creation timestamp;
   deterministic observation time; complete key enumeration; and common provenance.
-- **Relationships:** IAM user -> access key. The key may remain structured child evidence rather
-  than a top-level resource if stable identity and history are preserved.
+- **Relationships:** IAM user -> access key. For the canonical persisted relationship, both the
+  user and key are top-level normalized `Resource` + `ResourceSnapshot` endpoints in the same
+  scan; an access key present only inside legacy embedded user configuration is not an edge
+  endpoint.
 - **Assessment Profile:** `enabled_controls` and the approved semantic input
   `max_access_key_age_days`. The current serialized profile field `stale_key_days` already carries
   this policy and defaults to 90; preserving that field avoids silently changing profile `1.0.0`.
@@ -108,7 +115,8 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 - **Required evidence:** key identifier, status, creation timestamp, last-used timestamp when
   present, an explicit `no_recorded_use` state after a successful lookup returns no
   `LastUsedDate`, deterministic observation time, complete enumeration, and common provenance.
-- **Relationships:** IAM user -> access key.
+- **Relationships:** IAM user -> access key. Both endpoints are top-level normalized `Resource` +
+  `ResourceSnapshot` observations for the same scan.
 - **Assessment Profile:** `enabled_controls` and a future versioned
   `max_unused_access_key_days` input. It must be added only with a reviewed new profile schema and
   profile version; it is not hard-coded by the control.
@@ -145,8 +153,10 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
   entries; and exact `Effect`, `Action`, `NotAction`, `Resource`, `NotResource`, and `Condition`
   structures with common provenance.
 - **Relationships:** IAM user/group/role -> attached managed policy; IAM identity -> inline policy;
-  identity -> permissions boundary; and managed policy -> default version. Trust policies remain
-  related to roles without being silently treated as identity permissions policies.
+  identity -> permissions boundary; and managed policy -> default version. Every resolved
+  endpoint, including inline policy and policy-version records, is a top-level normalized
+  `Resource` + `ResourceSnapshot` observation for the same scan. Trust policies remain related to
+  roles without being silently treated as identity permissions policies.
 - **Assessment Profile:** `enabled_controls` only. The v1 match is not threshold-based.
 - **PASS:** complete in-scope policy evidence contains no statement with `Effect` equal to the
   exact string `Allow`, an `Action` string equal to `*` or list containing the exact `*` element,
@@ -523,7 +533,7 @@ enumeration is complete and every relevant trail is deterministically non-qualif
   collection failure, or the tag structure is malformed.
 - **Limitations:** this checks presence and usable values, not truth, ownership authorization, or
   consistency with an external CMDB. Tag keys and governed resource-type identifiers are
-  case-sensitive; IAM groups, AWS-managed policies, access-key child facts, and account/Region
+  case-sensitive; IAM groups, AWS-managed policies, access-key resources, and account/Region
   setting observations are outside the initial taggable vocabulary.
 - **AWS reference:** [Tagging AWS resources](https://docs.aws.amazon.com/tag-editor/latest/userguide/tagging.html).
 
@@ -618,6 +628,12 @@ policy and the versioned
 `IAM-001` fails when an IAM user's collected `mfa_devices` list is valid and empty. A valid
 non-empty list passes. Missing or malformed device evidence is insufficient; no IAM users is not
 applicable.
+
+The accepted Sprint 0--4 rule continues to consume that embedded list. Sprint 5 relationship
+normalization must additionally represent every observed MFA device as a top-level normalized
+`Resource` + `ResourceSnapshot` and connect it to the user with `has_mfa_device`; an embedded
+device object alone is not a canonical relationship endpoint. The compatibility field remains
+until an atomic, separately reviewed transition updates every existing consumer.
 
 Sprint 1 does not collect policies, groups, effective permissions, console-login state, or device
 health. The control therefore assigns `MEDIUM` severity without guessing whether a user is
