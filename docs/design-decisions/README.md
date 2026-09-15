@@ -24,3 +24,8 @@ Date: YYYY-MM-DD
 An accepted decision updates `ARCHITECTURE.md` and, where relevant, `SECURITY.md`,
 `THREAT_MODEL.md`, `docs/api.md`, operations guidance, tests, and the active execution plan.
 Supersede records with a new file and links; do not rewrite historical rationale.
+
+## Accepted decisions
+
+- [0001 — Canonical generic AWS resource relationships](0001-generic-resource-relationships.md)
+- [0002 — Result-sensitive AWS evidence outcomes](0002-result-sensitive-evidence-outcomes.md)

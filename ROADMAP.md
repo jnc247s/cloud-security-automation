@@ -3,8 +3,8 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-10
-Accepted baseline: `main` at `1e190720c5c33a4edfc1cebe44c652e2ee17424f` (Sprint 4 merge)
+Last verified: 2026-09-15
+Accepted baseline: `main` at `97e9217145dba643401053b4c09afa2bc01c999c` (Sprints 0--4 and accepted pre-Sprint-5 repairs)
 
 ## Current state
 

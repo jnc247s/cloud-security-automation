@@ -64,6 +64,14 @@ requires that collector. This repair does not add per-resource collection outcom
 facts. Malformed STS caller identity has its own sanitized identity-evidence failure because a
 snapshot cannot be attributed safely without an account identity.
 
+For later Sprint 5 expansion, the accepted
+[result-sensitive source-outcome decision](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md)
+defines strict per-source discovery/enrichment states and provenance. It permits a future
+collector to retain valid resource facts when a different enrichment source is incomplete while
+keeping `PASS` fail-closed. That schema currently has no runtime callers. The all-or-nothing
+Sprint 0--4 behavior above remains in force until one reviewed Sprint 5 slice integrates source
+outcomes atomically across collection, validation, persistence, rules, and API projections.
+
 ## Scan execution
 
 ```text
@@ -132,6 +140,38 @@ Assessment-profile roll-forward uses the existing immutable profile table and sc
 contract; it requires no new migration. A `(profile_id, version)` pair names exactly one policy
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
+
+## Approved Sprint 5 preflight contracts
+
+Four pre-implementation contracts are approved for later roadmap work while the accepted runtime
+remains Sprint 4:
+
+- [Generic resource relationships](docs/design-decisions/0001-generic-resource-relationships.md)
+  are immutable, directional observations with stable logical IDs, per-scan IDs, explicit endpoint
+  scope and Region, typed resolution, and evidence provenance. Sprint 5 slice 5G will add the one
+  generic Alembic-backed persistence path and integrate it end to end; no relationship table,
+  producer, service projection, or route exists yet.
+- [S3-002 exposure aggregation](docs/controls/s3-002-exposure-aggregation.md) defines the future
+  rule's deterministic policy/ACL/Block Public Access combination and its immutable,
+  bucket-scoped approval artifact. Exact decisions bind account, bucket-home Region, ARN/name,
+  and canonical stable resource ID rather than the account-less ARN alone. It performs no AWS
+  calls and is not in the executable catalog.
+- [S3-004 sensitive-bucket classification](docs/controls/s3-004-sensitive-bucket-classifier.md)
+  defines a pure versioned classifier over exact full bucket identities, restricted name
+  patterns, and exact tags. It assigns applicability only—not compliance, severity, or framework
+  status—and is not registered with the current profile or database.
+- [Result-sensitive source outcomes](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md)
+  separate account-scope discovery from resource enrichment and preserve explicit complete,
+  absent, unavailable, malformed, conflicting, and disappeared states. They are future evidence
+  contracts, not current collector rollups or technical results. The verified collection account
+  remains separate from a resource's controlled owner identity for cross-account and AWS-managed
+  IAM observations.
+
+These contracts preserve the collector/rule boundary: Sprint 5 collectors will collect only the
+versioned facts and provenance named by the evidence-readiness matrix. Later deterministic rules
+will apply the selected policy artifacts. Missing required facts and unresolved required edges
+remain `INSUFFICIENT_EVIDENCE`; neither policy artifact nor a relationship authorizes a fabricated
+resource, inferred AWS state, or historical rewrite.
 
 ## Authentication and authorization
 
