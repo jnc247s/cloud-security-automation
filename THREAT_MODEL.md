@@ -1,8 +1,8 @@
 # Threat model
 
 Status: living model for the accepted Sprint 4 baseline
-Baseline: `main` commit `1e190720c5c33a4edfc1cebe44c652e2ee17424f`
-Last reviewed: 2026-09-10
+Baseline: `main` commit `97e9217145dba643401053b4c09afa2bc01c999c`
+Last reviewed: 2026-09-15
 
 ## Scope and security objectives
 
