@@ -364,7 +364,7 @@ approved and linked above. Their production integration remains in the named Spr
 slices; this preflight does not add a collector, permission, executable rule, profile
 registration, database table, API route, or runtime behavior.
 
-Sprint 5 remains `NEXT` and Sprint 6 remains `PLANNED`. Until the complete preflight validation
-and independent-review gates have passed, the repository readiness marker remains:
+Sprint 5 remains `NEXT` and Sprint 6 remains `PLANNED`. The complete preflight validation and
+independent-review gates have passed. The repository readiness marker is:
 
-`SPRINT_5_CONTROL_CONTRACTS_NOT_READY`
+`SPRINT_5_CONTROL_CONTRACTS_READY`
