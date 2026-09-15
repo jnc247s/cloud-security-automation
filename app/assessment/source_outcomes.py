@@ -1,9 +1,8 @@
 """Normalized outcomes for one AWS evidence source.
 
 This contract is intentionally independent of collectors, services, persistence, and rules. It
-defines the immutable boundary that future Sprint 5 integration can use to retain successful
-resource facts when a separate discovery or enrichment source is incomplete, without changing
-the accepted Sprint 0--4 runtime.
+defines the immutable boundary used to retain successful resource facts when a separate discovery
+or enrichment source is incomplete while outer layers keep their distinct responsibilities.
 """
 
 from __future__ import annotations
@@ -18,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.assessment.identities import resource_snapshot_id
 from app.assessment.identities import stable_resource_id as calculate_stable_resource_id
-from app.schemas.resource import ResourceScope
+from app.schemas.resource import ResourceScope, canonical_resource_scope
 
 SOURCE_OUTCOME_SCHEMA_VERSION = "1.0.0"
 
@@ -27,29 +26,6 @@ _SOURCE_OUTCOME_NAMESPACE = UUID("7906fb56-bcb4-528c-939d-a1cc9bdccd70")
 CollectionAccountId = Annotated[str, Field(pattern=r"^[0-9]{12}$")]
 ResourceOwnerId = Annotated[str, Field(pattern=r"^(?:[0-9]{12}|aws)$")]
 NonEmptyString = Annotated[str, Field(min_length=1)]
-ResourceSignature = tuple[str, str]
-
-_RESOURCE_SCOPES: dict[ResourceSignature, ResourceScope] = {
-    ("access-analyzer", "access_analyzer_finding"): ResourceScope.REGIONAL,
-    ("cloudtrail", "cloudtrail_trail"): ResourceScope.REGIONAL,
-    ("ec2", "ebs_volume"): ResourceScope.REGIONAL,
-    ("ec2", "ec2_instance"): ResourceScope.REGIONAL,
-    ("ec2", "security_group"): ResourceScope.REGIONAL,
-    ("ec2", "subnet"): ResourceScope.REGIONAL,
-    ("ec2", "vpc"): ResourceScope.REGIONAL,
-    ("ec2", "vpc_flow_log"): ResourceScope.REGIONAL,
-    ("iam", "iam_access_key"): ResourceScope.GLOBAL,
-    ("iam", "iam_aws_managed_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_customer_managed_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_group"): ResourceScope.GLOBAL,
-    ("iam", "iam_inline_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_managed_policy_version"): ResourceScope.GLOBAL,
-    ("iam", "iam_mfa_device"): ResourceScope.GLOBAL,
-    ("iam", "iam_role"): ResourceScope.GLOBAL,
-    ("iam", "iam_user"): ResourceScope.GLOBAL,
-    ("kms", "kms_key"): ResourceScope.REGIONAL,
-    ("s3", "s3_bucket"): ResourceScope.REGIONAL,
-}
 _AWS_OWNED_IAM_TYPES = frozenset(
     {
         ("iam", "iam_aws_managed_policy"),
@@ -168,7 +144,7 @@ class ResourceEvidenceSubject(BaseModel):
         if self.scope is ResourceScope.GLOBAL and self.region is not None:
             raise ValueError("global resource evidence subjects must not define a region")
 
-        expected_scope = _RESOURCE_SCOPES.get((self.service, self.resource_type))
+        expected_scope = canonical_resource_scope(self.service, self.resource_type)
         if expected_scope is not None and self.scope is not expected_scope:
             raise ValueError(
                 f"{self.service}/{self.resource_type} resource evidence subjects must use "

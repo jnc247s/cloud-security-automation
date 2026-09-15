@@ -10,6 +10,28 @@ from app.schemas.finding import FindingCandidate
 from app.schemas.inventory import InventorySnapshot
 
 
+def _candidate_owner_is_admitted(
+    snapshot: InventorySnapshot,
+    candidate: FindingCandidate | AssessmentCandidate,
+) -> bool:
+    """Allow a foreign owner only when the exact resource is in validated inventory."""
+
+    account_id = candidate.account_id
+    if account_id == snapshot.account_id:
+        return True
+    if snapshot.evidence_graph is None:
+        return False
+    return any(
+        resource.account_id == account_id
+        and resource.service == candidate.service
+        and resource.resource_type == candidate.resource_type
+        and resource.aws_resource_id == candidate.aws_resource_id
+        and resource.scope == candidate.scope
+        and resource.region == candidate.region
+        for resource in snapshot.resources
+    )
+
+
 class RuleContractError(RuntimeError):
     """Raised when a rule returns output that violates the engine contract."""
 
@@ -34,9 +56,14 @@ class RuleEngine:
                     raise RuleContractError(
                         f"{rule.control_id} returned candidate for {candidate.control_id}"
                     )
-                if candidate.account_id != snapshot.account_id:
+                if not _candidate_owner_is_admitted(snapshot, candidate):
+                    owner_error = (
+                        "a different AWS account"
+                        if snapshot.evidence_graph is None
+                        else "an unadmitted AWS account"
+                    )
                     raise RuleContractError(
-                        f"{rule.control_id} returned candidate for a different AWS account"
+                        f"{rule.control_id} returned candidate for {owner_error}"
                     )
                 if candidate.identity in seen_identities:
                     raise RuleContractError(
@@ -94,9 +121,14 @@ class RuleEngine:
                     raise RuleContractError(
                         f"{rule.control_id} returned assessment for {candidate.control_id}"
                     )
-                if candidate.account_id != snapshot.account_id:
+                if not _candidate_owner_is_admitted(snapshot, candidate):
+                    owner_error = (
+                        "a different AWS account"
+                        if snapshot.evidence_graph is None
+                        else "an unadmitted AWS account"
+                    )
                     raise RuleContractError(
-                        f"{rule.control_id} returned assessment for a different AWS account"
+                        f"{rule.control_id} returned assessment for {owner_error}"
                     )
                 if candidate.scan_id != expected_scan_id:
                     raise RuleContractError(

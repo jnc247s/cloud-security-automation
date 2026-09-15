@@ -1,8 +1,10 @@
 # Service API
 
-This is the authoritative human-readable contract for the accepted Sprint 4 API. OpenAPI at
-`/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it. Future interface
-changes must update this document and tests in the same change.
+This is the authoritative human-readable contract for the accepted Sprint 4 API plus the
+in-progress Sprint 5 shared evidence-graph read foundation. OpenAPI at `/openapi.json` is the exact
+generated schema; `/docs` and `/redoc` render it. No Sprint 5 collector endpoint or Sprint 6
+control is implied. Future interface changes must update this document and tests in the same
+change.
 
 The API is read-only apart from creating a scan. It cannot modify AWS resources, finding status,
 exceptions, controls, mappings, or audit history.
@@ -70,6 +72,10 @@ accepted deployment assumption is one trusted security domain.
 | `READ` | `GET /api/v1/resources` | List stable AWS resource identities |
 | `READ` | `GET /api/v1/resources/{resource_id}` | Read identity and latest observation |
 | `READ` | `GET /api/v1/resources/{resource_id}/history` | Read immutable observations |
+| `READ` | `GET /api/v1/relationships` | List immutable directional relationship observations |
+| `READ` | `GET /api/v1/relationships/{observation_id}` | Read one relationship observation and its provenance |
+| `READ` | `GET /api/v1/source-outcomes` | List declared source evidence results |
+| `READ` | `GET /api/v1/source-outcomes/{source_outcome_id}` | Read one outcome and its normalized artifact |
 | `READ` | `GET /api/v1/assessments` | List four-state technical results |
 | `READ` | `GET /api/v1/assessments/{assessment_id}` | Read evidence and framework mappings |
 | `READ` | `GET /api/v1/findings` | List current finding state |
@@ -91,6 +97,8 @@ boundary only.
 | scans | none |
 | resources | `account_id`, `service`, `resource_type`, `region` |
 | resource history | none beyond `resource_id` in the path |
+| relationships | `collection_account_id`, `scan_id`, `relationship_id`, `source_resource_id`, `target_resource_id`, `target_reference_id`, `relationship_type`, `resolution` |
+| source outcomes | `collection_account_id`, `scan_id`, `contract_key`, `collector`, `phase`, `subject_resource_id`, `evidence_kind`, `state` |
 | assessments | `scan_id`, `resource_id`, `control_id`, `result` |
 | findings | `account_id`, `resource_id`, `control_id`, `status`, `region` |
 | controls | `category`, `severity`, `resource_type`, `catalog_key` |
@@ -108,9 +116,10 @@ Enum values, UUID formats, request constraints, and exact response fields are de
 ## Machine-readable results
 
 The API keeps IDs and facts in explicit fields, including `scan_id`, `resource_id`, `snapshot_id`,
-`assessment_id`, `finding_id`, `control_id`, result/status values, structured evidence payloads,
-occurrences, profile/catalog checksums, collection outcomes, and framework mappings. Clients must
-not parse prose to recover these relationships.
+`assessment_id`, `finding_id`, `control_id`, `source_outcome_id`, `artifact_id`,
+`relationship_id`, `observation_id`, result/status values, structured evidence payloads,
+occurrences, profile/catalog/source-manifest checksums, collection outcomes, and framework
+mappings. Clients must not parse prose to recover these relationships.
 
 `Resource` is stable identity and `latest_snapshot` is the newest observed state. History returns
 immutable snapshots. The top-level stable resource ARN is first-seen metadata; when an ARN changes,
@@ -118,6 +127,29 @@ the latest snapshot's ARN is the current observed value.
 
 Evidence and normalized configurations can contain sensitive infrastructure data. A caller with
 `READ` is trusted to receive it.
+
+## Evidence-graph reads
+
+Relationship list and detail responses expose the controlled relationship type and resolution,
+the complete source endpoint, either a complete target endpoint or a deterministic unresolved
+target reference, the stable logical `relationship_id`, the per-scan `observation_id`, the source
+outcome ID, schema version, and sanitized provenance. Direction is authoritative; clients must not
+infer a reverse edge. A `RESOLVED` target identifies its exact snapshot from the same scan. An
+unresolved target is a reference only and is not a discovered `Resource`.
+
+Source-outcome list responses expose the discovery or enrichment subject, state, controlled
+failure category, collector/source API provenance, artifact identity/reference/digest, and schema
+version. The detail route additionally returns the referenced normalized JSON artifact, including
+its evidence schema/version and digest. It does not return raw AWS responses or provider exception
+text. There is no standalone artifact route and no source-contract list/detail route;
+`contract_key` is only a source-outcome list filter.
+
+`GET /api/v1/scans/{scan_id}` exposes `scope.source_manifest_schema_version` and
+`scope.source_manifest_checksum` when that scan persisted an evidence graph. Both are null for
+graphless scans. The checksum binds the exact declared source contracts; it is not inferred from
+outcome rows, and the full contract manifest is not returned by a public route. Current Sprint
+0--4 collectors remain graphless, so ordinary scans do not yet produce source-outcome or
+relationship records.
 
 ## Starting and following a scan
 

@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from app.database.evidence_graph import (
+    relationship_from_record,
+    source_artifact_from_record,
+    source_outcome_from_record,
+)
 from app.models.assessment import ControlAssessment, EvidenceArtifact
 from app.models.audit import AuditEvent
 from app.models.control import (
@@ -12,6 +17,11 @@ from app.models.control import (
     ControlVersion,
     Framework,
     FrameworkReference,
+)
+from app.models.evidence_graph import (
+    ResourceRelationshipObservation,
+    SourceEvidenceArtifact,
+    SourceEvidenceOutcome,
 )
 from app.models.exception import FindingException
 from app.models.finding import Finding, FindingOccurrence
@@ -31,8 +41,12 @@ from app.schemas.api_views import (
     FrameworkMappingView,
     FrameworkReferenceView,
     FrameworkView,
+    ResourceRelationshipView,
     ResourceSnapshotView,
     ResourceView,
+    SourceEvidenceArtifactView,
+    SourceEvidenceOutcomeDetailView,
+    SourceEvidenceOutcomeView,
 )
 
 
@@ -85,6 +99,41 @@ def evidence_view(evidence: EvidenceArtifact) -> EvidenceArtifactView:
         evidence_key=evidence.evidence_key,
         payload=dict(evidence.payload),
         payload_sha256=evidence.payload_sha256,
+    )
+
+
+def source_artifact_view(artifact: SourceEvidenceArtifact) -> SourceEvidenceArtifactView:
+    domain = source_artifact_from_record(artifact)
+    return SourceEvidenceArtifactView(
+        **domain.model_dump(),
+    )
+
+
+def source_outcome_view(outcome: SourceEvidenceOutcome) -> SourceEvidenceOutcomeView:
+    domain = source_outcome_from_record(outcome)
+    return SourceEvidenceOutcomeView(
+        **domain.model_dump(),
+        artifact_id=outcome.artifact_id,
+    )
+
+
+def source_outcome_detail_view(
+    outcome: SourceEvidenceOutcome,
+    artifact: SourceEvidenceArtifact,
+) -> SourceEvidenceOutcomeDetailView:
+    return SourceEvidenceOutcomeDetailView(
+        **source_outcome_view(outcome).model_dump(),
+        artifact=source_artifact_view(artifact),
+    )
+
+
+def relationship_view(
+    relationship: ResourceRelationshipObservation,
+) -> ResourceRelationshipView:
+    domain = relationship_from_record(relationship)
+    return ResourceRelationshipView(
+        **domain.model_dump(),
+        source_outcome_id=relationship.source_outcome_id,
     )
 
 

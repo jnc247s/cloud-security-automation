@@ -187,6 +187,8 @@ class ScanService:
                     collector_outcomes=dict(scope.collector_outcomes),
                     resource_types=tuple(scope.resource_types),
                     enabled_controls=tuple(scope.enabled_controls),
+                    source_manifest_schema_version=scope.source_manifest_schema_version,
+                    source_manifest_checksum=scope.source_manifest_checksum,
                 )
                 if scope is not None
                 else None

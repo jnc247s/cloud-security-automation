@@ -3,6 +3,11 @@
 Status: accepted
 Date: 2026-09-14
 
+Implementation update: the Sprint 5 shared foundation integrates this contract into the optional
+inventory evidence graph, Alembic revision `20260915_0003`, transactional persistence, and
+authenticated generic reads. Current AWS collectors remain on their accepted graphless behavior;
+collector production starts with slice 5A, and no Sprint 6 rule consumes source outcomes yet.
+
 ## Context
 
 The accepted Sprint 0--4 inventory boundary records one operational outcome for an entire
@@ -201,14 +206,14 @@ retention requirements.
 
 ## Compatibility and migration
 
-The new module has no runtime callers. It does not modify collectors, `InventoryService`,
-`InventorySnapshot`, collector rollup behavior, rules, persistence, migrations, AWS calls, API
-schemas, or Sprint 0--4 tests. Current all-or-nothing collector execution and coarse rule guards
-remain the implemented behavior.
+The shared foundation now integrates this contract into optional `InventorySnapshot` graphs,
+transactional persistence, and API/service projections. Graphless Sprint 0--4 serialization,
+collector rollups, AWS calls, and rules remain unchanged. Revision `20260915_0003` adds the new
+append-only schema without rewriting an accepted migration or historical row.
 
-Sprint 5 must integrate this contract atomically across collectors, inventory validation,
-deterministic rules, persistence, and API/service projections. That future work requires a new
-Alembic revision and may not rewrite an accepted migration or historical row.
+Collector integration remains slice-specific work in 5A--5F. It must construct the complete
+declared-source manifest atomically; no current collector or deterministic rule consumes this
+contract merely because its storage and read boundary now exists.
 
 ## Validation
 

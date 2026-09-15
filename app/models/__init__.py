@@ -10,6 +10,12 @@ from app.models.control import (
     Framework,
     FrameworkReference,
 )
+from app.models.evidence_graph import (
+    ResourceRelationshipObservation,
+    ScanSourceContract,
+    SourceEvidenceArtifact,
+    SourceEvidenceOutcome,
+)
 from app.models.exception import FindingException
 from app.models.finding import Finding, FindingOccurrence
 from app.models.profile import PersistedAssessmentProfile
@@ -31,7 +37,11 @@ __all__ = [
     "FrameworkReference",
     "PersistedAssessmentProfile",
     "Resource",
+    "ResourceRelationshipObservation",
     "ResourceSnapshot",
     "Scan",
     "ScanScopeManifest",
+    "ScanSourceContract",
+    "SourceEvidenceArtifact",
+    "SourceEvidenceOutcome",
 ]

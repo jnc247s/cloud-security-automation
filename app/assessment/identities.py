@@ -5,10 +5,13 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import UTC
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid5
 
-from app.schemas.inventory import InventorySnapshot
 from app.schemas.resource import ResourceScope
+
+if TYPE_CHECKING:
+    from app.schemas.inventory import InventorySnapshot
 
 _ASSESSMENT_NAMESPACE = UUID("e62d55d7-baea-57d6-82cd-b8ea6c1d23d6")
 _RESOURCE_NAMESPACE = UUID("32d096cd-4a27-54fb-a611-01bcf7678bb4")
@@ -37,6 +40,9 @@ def inventory_sha256(snapshot: InventorySnapshot) -> str:
             for resource in sorted(snapshot.resources, key=lambda item: item.identity)
         ],
     }
+    if snapshot.evidence_graph is not None:
+        document["inventory_schema_version"] = "2.0.0"
+        document["evidence_graph"] = snapshot.evidence_graph.canonical_document()
     encoded = json.dumps(
         document, allow_nan=False, ensure_ascii=True, separators=(",", ":"), sort_keys=True
     ).encode("utf-8")

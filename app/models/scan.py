@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
+    FetchedValue,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -153,7 +154,18 @@ class ScanScopeManifest(Base):
     assessment_profile_checksum: Mapped[str] = mapped_column(String(64), nullable=False)
     control_catalog_id: Mapped[str] = mapped_column(String(128), nullable=False)
     control_catalog_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    # FetchedValue keeps the current ORM usable while migration tests exercise
+    # the immediately preceding schema, where these nullable columns do not yet
+    # exist. It emits no database default in the migration.
+    source_manifest_schema_version: Mapped[str | None] = mapped_column(
+        String(64), server_default=FetchedValue()
+    )
+    source_manifest_checksum: Mapped[str | None] = mapped_column(
+        String(64), server_default=FetchedValue()
+    )
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
 
     scan: Mapped[Scan] = relationship(back_populates="scope_manifest")
+
+    __mapper_args__ = {"eager_defaults": False}

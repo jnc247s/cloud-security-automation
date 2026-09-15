@@ -3,6 +3,11 @@
 Status: accepted
 Date: 2026-09-13
 
+Implementation update: the Sprint 5 shared foundation implements this decision in Alembic
+revision `20260915_0003`, the inventory/persistence boundary, and authenticated generic read
+services. Current AWS collectors remain graphless; collector production starts with slice 5A,
+and no Sprint 6 rule consumes these relationships yet.
+
 ## Context
 
 Sprint 5 needs directional relationships that cross AWS services and execution scopes. Examples
@@ -23,8 +28,9 @@ the accepted Sprint 0--4 persistence and API behavior.
 
 Use the immutable `ResourceRelationship` contract in
 `app/assessment/relationships.py` as the canonical normalized relationship observation. It is a
-first-class domain object, not an embedded configuration member. Sprint 5 slice 5G will add one
-generic Alembic-backed persistence representation and integrate it with inventory, persistence,
+first-class domain object, not an embedded configuration member. The shared Sprint 5 foundation
+adds one
+generic Alembic-backed persistence representation and integrates it with inventory, persistence,
 services, and API projections atomically.
 
 The version 1 contract contains:
@@ -225,11 +231,9 @@ Region, version, and provenance rather than service-specific relationship shapes
 and investigation clients will traverse this generic boundary; they will not parse nested
 configuration to rediscover edges.
 
-The migration and runtime integration are intentionally deferred to Sprint 5. There is no current
-producer, consumer, or public route for relationship observations, and adding a table alone would
-change the protected persistence contract without an end-to-end writer/read path. Deferral keeps
-this preflight test-only at runtime while still fixing the schema and persistence decision Sprint
-5 must implement. It does not permit Sprint 5 collectors to invent another representation.
+The preflight intentionally deferred migration and runtime integration to Sprint 5. The shared
+foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
+AWS evidence producers remain deferred to 5A--5F and may not invent another representation.
 
 ## Alternatives considered
 
@@ -260,10 +264,11 @@ framework mapping, remediation instruction, or free-form metadata policy.
 
 ## Compatibility and migration
 
-The standalone domain module has no callers and changes no Sprint 0--4 behavior, database schema,
-API schema, collector output, or persisted history. Existing `stable_resource_id` and
-`resource_snapshot_id` algorithms are reused without modification. Sprint 5 must use a new Alembic
-revision for first-class persistence; accepted revisions must not be rewritten.
+The shared foundation now has validated inventory, persistence, service, and API callers while
+preserving graphless Sprint 0--4 serialization and runtime behavior. Existing
+`stable_resource_id` and `resource_snapshot_id` algorithms are reused without modification.
+Revision `20260915_0003` adds first-class immutable persistence and a safe-blocking downgrade;
+accepted earlier revisions remain unchanged. No current AWS collector emits a relationship.
 
 ## Validation
 

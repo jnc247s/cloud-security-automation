@@ -53,6 +53,8 @@ class ScanScope(BaseModel):
     collector_outcomes: dict[str, str]
     resource_types: tuple[str, ...]
     enabled_controls: tuple[str, ...]
+    source_manifest_schema_version: str | None = None
+    source_manifest_checksum: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class ScanDetail(ScanSummary):

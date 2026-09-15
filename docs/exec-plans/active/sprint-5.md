@@ -1,6 +1,10 @@
 # Sprint 5 — AWS Evidence Expansion
 
-Status: **NEXT**
+Status: **IN PROGRESS**
+
+Current slice: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**
+
+Upcoming slice: **5A EC2 and EBS evidence**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -18,21 +22,16 @@ The gate confirms that Sprints 0--4 are accepted, the 25-control evidence-readin
 complete, `SPRINT_5_CONTROL_CONTRACTS_READY` is canonical, the pre-Sprint-5 repairs are merged,
 and the baseline CI is green. No unresolved `CRITICAL` or `HIGH` finding blocks implementation.
 The dependency-approved first implementation slice is the 5G foundation described below. This
-gate does not itself start Sprint 5, change its `NEXT` status, add a collector, or authorize any
-production action.
+gate did not itself start Sprint 5, add a collector, or authorize any production action. The
+subsequent approved start of the 5G foundation changed Sprint 5 to `IN PROGRESS`.
 
 ## Planning state
 
 The requirements below are approved roadmap scope. They are recorded here so implementation does
-not depend on chat history. Sprint 5 has not begun: its reviewed slice sequence is documented for
-planning, the roadmap remains `NEXT`, and no implementation work is authorized by this plan alone.
-
-Before changing code, perform the repository preflight required by `AGENTS.md`: reconcile this
-plan with the roadmap, inspect the protected contracts and all relevant callers and tests, and
-triage every pre-Sprint 5 attention item as either resolved before the sprint or explicitly
-retained within an approved boundary. Then turn these requirements into reviewable implementation
-slices, record material design decisions, and obtain implementation approval before changing the
-status to `IN PROGRESS`.
+not depend on chat history. The repository preflight required by `AGENTS.md` is complete, the
+reviewed slice sequence is approved, and the shared 5G relationship/source-outcome evidence
+foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A remains upcoming
+and no collector slice has started.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -54,10 +53,11 @@ preflight review has now approved four previously missing design inputs without 
 - the [S3-002 exposure aggregation](../../controls/s3-002-exposure-aggregation.md); and
 - the [S3-004 sensitive-bucket classifier](../../controls/s3-004-sensitive-bucket-classifier.md).
 
-Their standalone schemas and contract tests do not implement an AWS collector, executable rule,
-profile registration, database table, API route, or remediation behavior. Sprint 5 remains
-`NEXT`; starting slice 5A still requires the roadmap start protocol and explicit implementation
-authorization.
+Before Sprint 5 began, their standalone schemas and contract tests did not implement an AWS
+collector, executable rule, profile registration, database table, API route, or remediation
+behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
+projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; slice 5A is
+unblocked but remains upcoming until separately planned and authorized.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -80,10 +80,10 @@ source-level outcomes, but the accepted persistence boundary currently permits s
 when resource owner equals scan account. Implementing a producer before the controlled owner and
 graph boundary would either lose evidence or force that slice to invent a representation.
 
-1. 5G foundation — add the generic source-outcome/relationship persistence and projections, and
-   atomically replace the same-account Python and database-trigger assumptions with the closed
-   collection-account/resource-owner admission contract in ADR 0001;
-2. 5A — EC2 and EBS evidence;
+1. **FOUNDATION_READY_FOR_5A — 5G foundation** — the generic source-outcome/relationship
+   persistence and projections atomically replace the same-account Python and database-trigger
+   assumptions with the closed collection-account/resource-owner admission contract in ADR 0001;
+2. **UPCOMING — 5A** — EC2 and EBS evidence;
 3. 5B — VPC, subnet, Flow Log, and network evidence;
 4. 5C — IAM account and policy evidence;
 5. 5D — IAM Access Analyzer evidence;
@@ -94,11 +94,13 @@ graph boundary would either lose evidence or force that slice to invent a repres
 
 The foundational 5G change is not permission for an empty table or a relaxed account check. Its
 migration, domain integration, writer, reader, API projection, authorization behavior, and
-PostgreSQL/SQLite upgrade/downgrade tests are one reviewable atomic slice. Only then may evidence
-producers depend on it.
+PostgreSQL/SQLite upgrade/downgrade tests are one reviewable atomic slice. That gate is now
+satisfied; later evidence producers may depend on the accepted boundary only when their own slice
+is separately authorized.
 
-Sprint 5 remains `NEXT` until the roadmap start protocol is followed. This plan alone does not
-authorize collectors, permissions, executable Sprint 6 rules, or a status change.
+Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
+`FOUNDATION_READY_FOR_5A`. This acceptance does not start 5A or authorize collectors, new AWS
+permissions, executable Sprint 6 rules, remediation, or later-sprint work.
 
 ## Objective and boundary
 

@@ -1,6 +1,6 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical pre-implementation plan; no Sprint 5 collector or Sprint 6 rule is implemented
+Status: canonical evidence-readiness plan; no Sprint 5 collector or Sprint 6 rule is implemented
 by this document.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
@@ -267,10 +267,9 @@ after every consumer has moved to the normalized resources and edges.
 The accepted [generic relationship decision](../design-decisions/0001-generic-resource-relationships.md)
 uses first-class, versioned, directional observations with stable logical IDs, per-scan IDs,
 explicit endpoint account/scope/Region, typed unresolved references, and normalized-evidence
-provenance. Sprint 5 slice 5G will add one generic Alembic-backed representation and its
-persistence/service/API integration atomically; this preflight adds no table or route. It must not
-create service-specific tables or a graph database. Joined controls must resolve stable identities
-and treat a missing, incomplete, or unresolved required edge as `INSUFFICIENT_EVIDENCE`.
+provenance. The Sprint 5 shared foundation implements one generic Alembic-backed representation
+and its persistence/service/API integration atomically. It adds no service-specific tables or
+graph database. Joined controls must resolve stable identities. A missing, incomplete, or unresolved required edge is treated as `INSUFFICIENT_EVIDENCE`.
 
 ## Read-only permission inventory
 
@@ -355,16 +354,19 @@ kms:DescribeKey
 - [CloudTrail GetEventSelectors](https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_GetEventSelectors.html)
   and [CloudTrail identity-policy examples](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/security_iam_id-based-policy-examples.html)
 
-## Preflight conclusion
+## Phase 0 preflight conclusion and implementation update
 
 The requested IAM, network, EC2/EBS, S3, logging, and governance evidence meanings are canonical.
 `LOG-004` composes the separately owned S3-002 result rather than duplicating exposure logic. The
 detailed S3-002 aggregation, S3-004 classifier, and generic relationship representation are now
-approved and linked above. Their production integration remains in the named Sprint 5/Sprint 6
-slices; this preflight does not add a collector, permission, executable rule, profile
-registration, database table, API route, or runtime behavior.
+approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
+executable rule, profile registration, database table, API route, or runtime behavior. The
+subsequently approved Sprint 5 shared foundation now supplies the generic persistence and
+read-only API boundary; AWS evidence producers and Sprint 6 rule consumers remain in their named
+future slices.
 
-Sprint 5 remains `NEXT` and Sprint 6 remains `PLANNED`. The complete preflight validation and
-independent-review gates have passed. The repository readiness marker is:
+Sprint 5 is `IN PROGRESS`, its 5A collector slice remains upcoming, and Sprint 6 remains
+`PLANNED`. The complete Phase 0 validation and independent-review gates passed. The canonical
+control-contract readiness marker remains:
 
 `SPRINT_5_CONTROL_CONTRACTS_READY`

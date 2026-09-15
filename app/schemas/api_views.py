@@ -11,6 +11,19 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.assessment.controls import AssessmentType
 from app.assessment.frameworks import FrameworkReferenceLevel
 from app.assessment.models import AssessmentResult
+from app.assessment.relationships import (
+    RelationshipEndpoint,
+    RelationshipProvenance,
+    RelationshipResolution,
+    RelationshipType,
+    UnresolvedRelationshipTarget,
+)
+from app.assessment.source_outcomes import (
+    EvidenceCollectionPhase,
+    EvidenceFailureCategory,
+    EvidenceSourceState,
+    EvidenceSubject,
+)
 from app.models.enums import AuditEventType, ExceptionStatus, FindingStatus
 from app.schemas.finding import ControlCategory, Severity
 from app.schemas.resource import ResourceScope
@@ -74,6 +87,61 @@ class EvidenceArtifactView(ApiView):
     evidence_key: str
     payload: dict[str, Any]
     payload_sha256: str
+
+
+class SourceEvidenceArtifactView(ApiView):
+    """Sanitized normalized source artifact exposed only with READ capability."""
+
+    artifact_id: UUID
+    scan_id: UUID
+    collection_account_id: str
+    evidence_reference: str
+    evidence_sha256: str
+    evidence_schema: str
+    evidence_schema_version: str
+    collected_at: datetime
+    normalized_payload: dict[str, Any]
+    schema_version: str
+
+
+class SourceEvidenceOutcomeView(ApiView):
+    source_outcome_id: UUID
+    scan_id: UUID
+    collection_account_id: str
+    phase: EvidenceCollectionPhase
+    subject: EvidenceSubject
+    evidence_kind: str
+    state: EvidenceSourceState
+    failure_category: EvidenceFailureCategory | None
+    collector: str
+    collector_version: str
+    source: str
+    source_api: str
+    collected_at: datetime
+    artifact_id: UUID
+    evidence_reference: str
+    evidence_sha256: str
+    schema_version: str
+
+
+class SourceEvidenceOutcomeDetailView(SourceEvidenceOutcomeView):
+    artifact: SourceEvidenceArtifactView
+
+
+class ResourceRelationshipView(ApiView):
+    observation_id: UUID
+    relationship_id: UUID
+    scan_id: UUID
+    collection_account_id: str
+    relationship_type: RelationshipType
+    source: RelationshipEndpoint
+    target: RelationshipEndpoint | UnresolvedRelationshipTarget = Field(
+        discriminator="identity_state"
+    )
+    resolution: RelationshipResolution
+    provenance: RelationshipProvenance
+    source_outcome_id: UUID
+    schema_version: str
 
 
 class FrameworkMappingView(ApiView):

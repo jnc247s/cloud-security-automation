@@ -7,7 +7,7 @@ from app.rules.engine import RuleContractError, RuleEngine
 from app.rules.registry import RuleRegistry
 from app.schemas.finding import ControlCategory, FindingCandidate, Severity
 from app.schemas.inventory import InventorySnapshot
-from app.schemas.resource import ResourceScope
+from app.schemas.resource import NormalizedResource, ResourceScope
 from tests.unit.rules.factories import ACCOUNT_ID, REGION, snapshot
 
 
@@ -89,6 +89,23 @@ def test_engine_rejects_candidate_for_another_account() -> None:
 
     with pytest.raises(RuleContractError, match="TEST-001"):
         RuleEngine(RuleRegistry((rule,))).evaluate(snapshot())
+
+
+def test_engine_rejects_unproven_foreign_owner_even_when_present_in_legacy_inventory() -> None:
+    foreign = NormalizedResource(
+        account_id="999999999999",
+        service="ec2",
+        resource_type="security_group",
+        aws_resource_id="sg-external",
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+    )
+    rule = FirstStaticRule(
+        (_candidate("TEST-001", foreign.aws_resource_id, account_id=foreign.account_id),)
+    )
+
+    with pytest.raises(RuleContractError, match="different AWS account"):
+        RuleEngine(RuleRegistry((rule,))).evaluate(snapshot(foreign))
 
 
 def test_engine_rejects_duplicate_candidate_identity_without_leaking_evidence() -> None:
