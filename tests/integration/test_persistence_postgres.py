@@ -24,6 +24,7 @@ from app import __version__
 from app.assessment.controls import build_default_control_catalog
 from app.assessment.models import AssessmentResult
 from app.assessment.profiles import create_default_assessment_profile
+from app.assessment.relationships import RelationshipResolution, RelationshipType
 from app.config import Settings, get_settings
 from app.database import session as database_session
 from app.database.evidence_graph import load_evidence_graph
@@ -47,13 +48,13 @@ from app.models import (
 from app.models.enums import AuditEventType, FindingStatus, ScanStatus
 from app.rules.engine import RuleEngine
 from app.rules.registry import build_default_registry
-from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.scan import ScanCreateRequest
 from app.security.authentication import DEVELOPMENT_BEARER_MARKER
 from app.services.errors import AssessmentProfileConflictError
+from app.services.inventory_service import InventoryService
 from app.services.scan_executor import InProcessScanExecutor, _scope_for
 from app.services.scan_service import ScanService
-from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator
+from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, empty_ec2_client
 from tests.unit.database.factories import (
     exceptional_owner_graph_scan_bundle,
     graph_scan_bundle,
@@ -115,9 +116,7 @@ def _scan_settings(postgres_engine: Engine, **overrides: object) -> Settings:
 def _empty_provider(region: str = "us-east-1") -> FakeClientProvider:
     return FakeClientProvider(
         {
-            ("ec2", region): FakeAWSClient(
-                paginators={"describe_security_groups": FakePaginator([{"SecurityGroups": []}])}
-            ),
+            ("ec2", region): empty_ec2_client(),
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
@@ -518,23 +517,8 @@ def test_postgres_finalizes_a_committed_pending_scan(postgres_engine: Engine) ->
         )
     assert executor.scan_ids == [pending.scan_id]
 
-    collected_at = datetime.now(UTC)
-    snapshot = InventorySnapshot(
-        scan_id=pending.scan_id,
-        account_id="123456789012",
-        requested_region="us-east-1",
-        collected_at=collected_at,
-        collector_outcomes=tuple(
-            CollectorOutcome(collector_name=name, status=CollectionStatus.SUCCEEDED)
-            for name in (
-                "cloudtrail_trails",
-                "iam_users",
-                "s3_buckets",
-                "security_groups",
-            )
-        ),
-        resources=(),
-    )
+    snapshot = InventoryService(_empty_provider()).collect(scan_id=pending.scan_id)
+    collected_at = snapshot.collected_at
     profile = create_default_assessment_profile(
         version=settings.assessment_profile_version,
         required_tags=settings.required_tag_names,
@@ -839,7 +823,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -924,13 +908,85 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
             entered=collection_entered,
             release=collection_release,
         )
+        instance_pages = FakePaginator(
+            [
+                {
+                    "Reservations": [
+                        {
+                            "Instances": [
+                                {
+                                    "InstanceId": "i-acceptance",
+                                    "InstanceType": "t3.micro",
+                                    "State": {"Name": "running"},
+                                    "PrivateIpAddress": "10.0.1.10",
+                                    "PublicIpAddress": "198.51.100.10",
+                                    "VpcId": "vpc-acceptance",
+                                    "SubnetId": "subnet-acceptance",
+                                    "SecurityGroups": [{"GroupId": "sg-acceptance-public-ssh"}],
+                                    "NetworkInterfaces": [
+                                        {
+                                            "NetworkInterfaceId": "eni-acceptance",
+                                            "Groups": [{"GroupId": "sg-acceptance-public-ssh"}],
+                                            "Association": {"PublicIp": "198.51.100.10"},
+                                            "PrivateIpAddresses": [
+                                                {
+                                                    "PrivateIpAddress": "10.0.1.10",
+                                                    "Association": {"PublicIp": "198.51.100.10"},
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                    "BlockDeviceMappings": [
+                                        {"Ebs": {"VolumeId": "vol-acceptance"}}
+                                    ],
+                                    "MetadataOptions": {
+                                        "State": "applied",
+                                        "HttpEndpoint": "enabled",
+                                        "HttpTokens": "required",
+                                    },
+                                    "Tags": [
+                                        {"Key": "Owner", "Value": "security"},
+                                        {"Key": "Environment", "Value": "acceptance"},
+                                    ],
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        )
+        volume_pages = FakePaginator(
+            [
+                {
+                    "Volumes": [
+                        {
+                            "VolumeId": "vol-acceptance",
+                            "State": "in-use",
+                            "Encrypted": True,
+                            "KmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/test",
+                            "Attachments": [
+                                {
+                                    "InstanceId": "i-acceptance",
+                                    "State": "attached",
+                                    "Device": "/dev/xvda",
+                                    "DeleteOnTermination": True,
+                                }
+                            ],
+                            "Tags": [{"Key": "Owner", "Value": "security"}],
+                        }
+                    ]
+                }
+            ]
+        )
         s3_pages = FakePaginator([{"Buckets": []}])
         iam_pages = FakePaginator([{"Users": []}])
         cloudtrail_pages = FakePaginator([{"Trails": []}])
         provider = FakeClientProvider(
             {
-                ("ec2", "us-east-1"): FakeAWSClient(
-                    paginators={"describe_security_groups": security_group_pages}
+                ("ec2", "us-east-1"): empty_ec2_client(
+                    security_groups=security_group_pages,
+                    instances=instance_pages,
+                    volumes=volume_pages,
                 ),
                 ("s3", "us-east-1"): FakeAWSClient(paginators={"list_buckets": s3_pages}),
                 ("iam", "us-east-1"): FakeAWSClient(paginators={"list_users": iam_pages}),
@@ -983,6 +1039,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
             assert terminal["successful_regions"] == ["us-east-1"]
             assert set(terminal["successful_collectors"]) == {
                 "cloudtrail_trails",
+                "ec2_ebs_evidence",
                 "iam_users",
                 "s3_buckets",
                 "security_groups",
@@ -998,11 +1055,14 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
 
             assert provider.client_requests == [
                 ("ec2", "us-east-1"),
+                ("ec2", "us-east-1"),
                 ("s3", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("cloudtrail", "us-east-1"),
             ]
             assert security_group_pages.calls == [{}]
+            assert instance_pages.calls == [{}]
+            assert volume_pages.calls == [{}]
             assert s3_pages.calls == [{"PaginationConfig": {"PageSize": 1000}}]
             assert iam_pages.calls == [{}]
             assert cloudtrail_pages.calls == [{}]
@@ -1032,6 +1092,157 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
                 assert snapshot.normalized_configuration["ingress_rules"][0]["ipv4_ranges"] == [
                     {"cidr": "0.0.0.0/0", "description": None}
                 ]
+
+                instance_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "ec2",
+                        Resource.resource_type == "ec2_instance",
+                        Resource.aws_resource_id == "i-acceptance",
+                    )
+                ).one()
+                instance_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == instance_resource.resource_id,
+                    )
+                ).one()
+                assert instance_snapshot.normalized_configuration["public_ipv4_addresses"] == [
+                    "198.51.100.10"
+                ]
+                assert instance_snapshot.normalized_configuration["metadata_options"] == {
+                    "http_endpoint": "enabled",
+                    "http_tokens": "required",
+                    "state": "applied",
+                }
+
+                volume_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "ec2",
+                        Resource.resource_type == "ebs_volume",
+                        Resource.aws_resource_id == "vol-acceptance",
+                    )
+                ).one()
+                volume_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == volume_resource.resource_id,
+                    )
+                ).one()
+                assert volume_snapshot.normalized_configuration["encrypted"] is True
+                assert volume_snapshot.normalized_configuration["attachment_instance_ids"] == [
+                    "i-acceptance"
+                ]
+
+                source_graph = load_evidence_graph(session, scan_id)
+                assert source_graph is not None
+                assert source_graph.scan_id == scan_id
+                assert source_graph.collection_account_id == "123456789012"
+                assert len(source_graph.source_contracts) == 6
+                assert len(source_graph.artifacts) == 6
+                assert len(source_graph.source_outcomes) == 6
+                assert {contract.contract_key for contract in source_graph.source_contracts} == {
+                    "ec2.ebs-default-kms-key",
+                    "ec2.ebs-encryption-default",
+                    "ec2.instance",
+                    "ec2.instances.discovery",
+                    "ec2.volume",
+                    "ec2.volumes.discovery",
+                }
+                assert {outcome.evidence_kind for outcome in source_graph.source_outcomes} == {
+                    "ec2.ebs-default-kms-key",
+                    "ec2.ebs-encryption-default",
+                    "ec2.instance",
+                    "ec2.instances.discovery",
+                    "ec2.volume",
+                    "ec2.volumes.discovery",
+                }
+                assert {
+                    outcome.evidence_kind: outcome.state.value
+                    for outcome in source_graph.source_outcomes
+                } == {
+                    "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
+                    "ec2.ebs-encryption-default": "PRESENT",
+                    "ec2.instance": "PRESENT",
+                    "ec2.instances.discovery": "PRESENT",
+                    "ec2.volume": "PRESENT",
+                    "ec2.volumes.discovery": "PRESENT",
+                }
+                assert {
+                    contract.source_outcome_id for contract in source_graph.source_contracts
+                } == {outcome.source_outcome_id for outcome in source_graph.source_outcomes}
+                assert {artifact.evidence_reference for artifact in source_graph.artifacts} == {
+                    outcome.evidence_reference for outcome in source_graph.source_outcomes
+                }
+
+                source_outcomes_by_kind = {
+                    outcome.evidence_kind: outcome for outcome in source_graph.source_outcomes
+                }
+                source_artifacts_by_reference = {
+                    artifact.evidence_reference: artifact for artifact in source_graph.artifacts
+                }
+                instance_source_outcome = source_outcomes_by_kind["ec2.instance"]
+                volume_source_outcome = source_outcomes_by_kind["ec2.volume"]
+                instance_source_artifact = source_artifacts_by_reference[
+                    instance_source_outcome.evidence_reference
+                ]
+                volume_source_artifact = source_artifacts_by_reference[
+                    volume_source_outcome.evidence_reference
+                ]
+                assert instance_source_artifact.normalized_payload["resource_id"] == (
+                    "i-acceptance"
+                )
+                assert volume_source_artifact.normalized_payload["resource_id"] == (
+                    "vol-acceptance"
+                )
+
+                assert len(source_graph.relationships) == 4
+                source_relationships = {
+                    relationship.relationship_type: relationship
+                    for relationship in source_graph.relationships
+                }
+                assert set(source_relationships) == {
+                    RelationshipType.ATTACHED_TO_SECURITY_GROUP,
+                    RelationshipType.USES_VOLUME,
+                    RelationshipType.IN_SUBNET,
+                    RelationshipType.IN_VPC,
+                }
+                assert all(
+                    relationship.source.stable_resource_id == instance_resource.resource_id
+                    and relationship.source.resource_snapshot_id == instance_snapshot.snapshot_id
+                    for relationship in source_graph.relationships
+                )
+                volume_relationship = source_relationships[RelationshipType.USES_VOLUME]
+                assert volume_relationship.resolution is RelationshipResolution.RESOLVED
+                assert volume_relationship.target.stable_resource_id == (
+                    volume_resource.resource_id
+                )
+                assert volume_relationship.target.resource_snapshot_id == (
+                    volume_snapshot.snapshot_id
+                )
+                unresolved_targets = {
+                    RelationshipType.ATTACHED_TO_SECURITY_GROUP: (
+                        "security_group",
+                        "sg-acceptance-public-ssh",
+                    ),
+                    RelationshipType.IN_SUBNET: ("subnet", "subnet-acceptance"),
+                    RelationshipType.IN_VPC: ("vpc", "vpc-acceptance"),
+                }
+                for relationship_type, (
+                    expected_resource_type,
+                    expected_resource_id,
+                ) in unresolved_targets.items():
+                    relationship = source_relationships[relationship_type]
+                    assert (
+                        relationship.resolution is RelationshipResolution.TARGET_IDENTITY_INCOMPLETE
+                    )
+                    assert relationship.target.identity_state == "unresolved"
+                    assert relationship.target.aws_account_id is None
+                    assert relationship.target.resource_type == expected_resource_type
+                    assert relationship.target.aws_resource_id == expected_resource_id
+                    assert relationship.target.stable_resource_id is None
+                    assert relationship.target.resource_snapshot_id is None
 
                 assessed_control_keys = set(
                     session.scalars(
@@ -1122,6 +1333,20 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
 
                 resource_id = resource.resource_id
                 snapshot_id = snapshot.snapshot_id
+                instance_resource_id = instance_resource.resource_id
+                instance_snapshot_id = instance_snapshot.snapshot_id
+                volume_resource_id = volume_resource.resource_id
+                volume_snapshot_id = volume_snapshot.snapshot_id
+                source_outcome_ids = {
+                    item.source_outcome_id for item in source_graph.source_outcomes
+                }
+                source_artifact_ids = {
+                    item.evidence_reference: item.artifact_id for item in source_graph.artifacts
+                }
+                relationship_observation_ids = {
+                    item.observation_id for item in source_graph.relationships
+                }
+                relationship_ids = {item.relationship_id for item in source_graph.relationships}
                 control_id = control.control_id
                 assessment_id = assessment.assessment_id
                 control_version_id = assessment.control_version_id
@@ -1162,6 +1387,197 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_4_graph(
             assert history.json()["total"] == 1
             assert history.json()["items"][0]["snapshot_id"] == str(snapshot_id)
             assert history.json()["items"][0]["scan_id"] == str(scan_id)
+
+            instance_page = client.get(
+                "/api/v1/resources",
+                headers=headers,
+                params={
+                    "account_id": "123456789012",
+                    "service": "ec2",
+                    "resource_type": "ec2_instance",
+                    "region": "us-east-1",
+                },
+            )
+            assert instance_page.status_code == 200
+            assert instance_page.json()["total"] == 1
+            instance_document = instance_page.json()["items"][0]
+            assert instance_document["resource_id"] == str(instance_resource_id)
+            assert instance_document["aws_resource_id"] == "i-acceptance"
+            assert instance_document["latest_snapshot"]["snapshot_id"] == str(instance_snapshot_id)
+            assert instance_document["latest_snapshot"]["scan_id"] == str(scan_id)
+            instance_detail = client.get(
+                f"/api/v1/resources/{instance_resource_id}",
+                headers=headers,
+            )
+            assert instance_detail.status_code == 200
+            assert instance_detail.json() == instance_document
+            instance_history = client.get(
+                f"/api/v1/resources/{instance_resource_id}/history",
+                headers=headers,
+            )
+            assert instance_history.status_code == 200
+            assert instance_history.json()["total"] == 1
+            assert instance_history.json()["items"][0]["snapshot_id"] == str(instance_snapshot_id)
+
+            volume_page = client.get(
+                "/api/v1/resources",
+                headers=headers,
+                params={
+                    "account_id": "123456789012",
+                    "service": "ec2",
+                    "resource_type": "ebs_volume",
+                    "region": "us-east-1",
+                },
+            )
+            assert volume_page.status_code == 200
+            assert volume_page.json()["total"] == 1
+            volume_document = volume_page.json()["items"][0]
+            assert volume_document["resource_id"] == str(volume_resource_id)
+            assert volume_document["aws_resource_id"] == "vol-acceptance"
+            assert volume_document["latest_snapshot"]["snapshot_id"] == str(volume_snapshot_id)
+            assert volume_document["latest_snapshot"]["scan_id"] == str(scan_id)
+            volume_detail = client.get(
+                f"/api/v1/resources/{volume_resource_id}",
+                headers=headers,
+            )
+            assert volume_detail.status_code == 200
+            assert volume_detail.json() == volume_document
+            volume_history = client.get(
+                f"/api/v1/resources/{volume_resource_id}/history",
+                headers=headers,
+            )
+            assert volume_history.status_code == 200
+            assert volume_history.json()["total"] == 1
+            assert volume_history.json()["items"][0]["snapshot_id"] == str(volume_snapshot_id)
+
+            source_outcome_page = client.get(
+                "/api/v1/source-outcomes",
+                headers=headers,
+                params={"scan_id": str(scan_id)},
+            )
+            assert source_outcome_page.status_code == 200
+            source_outcome_document = source_outcome_page.json()
+            assert source_outcome_document["total"] == 6
+            assert {
+                UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
+            } == source_outcome_ids
+            assert {
+                item["evidence_kind"]: item["state"] for item in source_outcome_document["items"]
+            } == {
+                "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
+                "ec2.ebs-encryption-default": "PRESENT",
+                "ec2.instance": "PRESENT",
+                "ec2.instances.discovery": "PRESENT",
+                "ec2.volume": "PRESENT",
+                "ec2.volumes.discovery": "PRESENT",
+            }
+            source_outcome_details_by_kind = {}
+            for source_outcome in source_outcome_document["items"]:
+                source_outcome_detail = client.get(
+                    f"/api/v1/source-outcomes/{source_outcome['source_outcome_id']}",
+                    headers=headers,
+                )
+                assert source_outcome_detail.status_code == 200
+                source_outcome_detail_document = source_outcome_detail.json()
+                assert (
+                    source_outcome_detail_document["source_outcome_id"]
+                    == (source_outcome["source_outcome_id"])
+                )
+                assert source_outcome_detail_document["scan_id"] == str(scan_id)
+                assert source_outcome_detail_document["artifact"]["artifact_id"] == str(
+                    source_artifact_ids[source_outcome["evidence_reference"]]
+                )
+                assert (
+                    source_outcome_detail_document["artifact"]["evidence_reference"]
+                    == source_outcome["evidence_reference"]
+                )
+                assert (
+                    source_outcome_detail_document["artifact"]["evidence_sha256"]
+                    == (source_outcome["evidence_sha256"])
+                )
+                source_outcome_details_by_kind[source_outcome["evidence_kind"]] = (
+                    source_outcome_detail_document
+                )
+            instance_outcome_detail = source_outcome_details_by_kind["ec2.instance"]
+            assert instance_outcome_detail["subject"]["stable_resource_id"] == str(
+                instance_resource_id
+            )
+            assert instance_outcome_detail["subject"]["resource_snapshot_id"] == str(
+                instance_snapshot_id
+            )
+            assert (
+                instance_outcome_detail["artifact"]["normalized_payload"]["resource_id"]
+                == "i-acceptance"
+            )
+            volume_outcome_detail = source_outcome_details_by_kind["ec2.volume"]
+            assert volume_outcome_detail["subject"]["stable_resource_id"] == str(volume_resource_id)
+            assert volume_outcome_detail["subject"]["resource_snapshot_id"] == str(
+                volume_snapshot_id
+            )
+            assert (
+                volume_outcome_detail["artifact"]["normalized_payload"]["resource_id"]
+                == "vol-acceptance"
+            )
+            encryption_default_detail = source_outcome_details_by_kind["ec2.ebs-encryption-default"]
+            assert encryption_default_detail["artifact"]["normalized_payload"] == {
+                "account_id": "123456789012",
+                "region": "us-east-1",
+                "ebs_encryption_by_default": False,
+                "complete": True,
+                "failure_category": None,
+            }
+            default_kms_detail = source_outcome_details_by_kind["ec2.ebs-default-kms-key"]
+            assert default_kms_detail["artifact"]["normalized_payload"] == {
+                "account_id": "123456789012",
+                "region": "us-east-1",
+                "default_kms_key_id": None,
+                "complete": True,
+                "expected_absence": True,
+                "failure_category": None,
+            }
+
+            relationship_page = client.get(
+                "/api/v1/relationships",
+                headers=headers,
+                params={"scan_id": str(scan_id)},
+            )
+            assert relationship_page.status_code == 200
+            relationship_document = relationship_page.json()
+            assert relationship_document["total"] == 4
+            assert {
+                UUID(item["observation_id"]) for item in relationship_document["items"]
+            } == relationship_observation_ids
+            assert {
+                UUID(item["relationship_id"]) for item in relationship_document["items"]
+            } == relationship_ids
+            relationship_items = {
+                item["relationship_type"]: item for item in relationship_document["items"]
+            }
+            assert relationship_items["uses_volume"]["resolution"] == "RESOLVED"
+            assert relationship_items["uses_volume"]["source"]["stable_resource_id"] == str(
+                instance_resource_id
+            )
+            assert relationship_items["uses_volume"]["target"]["stable_resource_id"] == str(
+                volume_resource_id
+            )
+            for item in relationship_document["items"]:
+                relationship_detail = client.get(
+                    f"/api/v1/relationships/{item['observation_id']}",
+                    headers=headers,
+                )
+                assert relationship_detail.status_code == 200
+                assert relationship_detail.json() == item
+            for relationship_type in (
+                "attached_to_security_group",
+                "in_subnet",
+                "in_vpc",
+            ):
+                item = relationship_items[relationship_type]
+                assert item["resolution"] == "TARGET_IDENTITY_INCOMPLETE"
+                assert item["target"]["identity_state"] == "unresolved"
+                assert item["target"]["aws_account_id"] is None
+                assert item["target"]["stable_resource_id"] is None
+                assert item["target"]["resource_snapshot_id"] is None
 
             assessment_page = client.get(
                 "/api/v1/assessments",

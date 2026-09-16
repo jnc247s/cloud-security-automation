@@ -1,8 +1,8 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
-including the in-progress Sprint 5 shared evidence-graph foundation. Threats and residual risks
-are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+the accepted Sprint 5 shared evidence-graph foundation, and the in-progress 5A EC2/EBS evidence
+producer. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -94,11 +94,21 @@ include the rejected AWS value or raw response. Operational botocore failures, m
 and programming defects remain separate categories: do not add a broad exception handler that
 hides an application defect as incomplete AWS evidence.
 
+The graph-aware 5A EC2/EBS producer records controlled source states and failure categories for
+instance discovery, volume discovery, Regional encryption-by-default, and Regional default-KMS
+evidence. One failed or malformed source does not authorize omission of its outcome or promotion
+of the collector to complete. Independently validated sibling resources may be retained with a
+`PARTIAL` rollup; unknown evidence remains unknown and no Sprint 6 rule consumes it yet.
+
 Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
 artifact to a canonical digest, rejects known credential/authorization key names, and exposes
 controlled source failure categories instead of raw provider exceptions. Relationship provenance
 must identify exactly one `PRESENT` source outcome. These controls reduce accidental secret and
 fabricated-edge exposure; they do not make normalized cloud configuration non-sensitive.
+Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A artifacts rather
+than becoming artifact object keys, so untrusted metadata cannot alter the artifact's structural
+field vocabulary or be mistaken for a credential-bearing structural field. Tag values remain
+sensitive evidence.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -133,6 +143,10 @@ Collection-account identity is not resource ownership or caller authorization. T
 identity-authoritative source evidence; an external owner also requires a resolved relationship.
 Persisting or returning such an observation does not expand the scan principal, grant AWS access,
 or create tenant isolation.
+
+For 5A, the authenticated account is authoritative for collected instances and volumes. Referenced
+security groups, subnets, and VPCs remain unresolved when `DescribeInstances` supplies an ID but
+not owner identity; the collector never fabricates their owner from the collection account.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

@@ -5,8 +5,9 @@ Date: 2026-09-14
 
 Implementation update: the Sprint 5 shared foundation integrates this contract into the optional
 inventory evidence graph, Alembic revision `20260915_0003`, transactional persistence, and
-authenticated generic reads. Current AWS collectors remain on their accepted graphless behavior;
-collector production starts with slice 5A, and no Sprint 6 rule consumes source outcomes yet.
+authenticated generic reads. The in-progress 5A EC2/EBS producer emits the first source manifests,
+artifacts, and outcomes; Sprint 0--4 legacy collectors remain on their accepted graphless behavior,
+and no Sprint 6 rule consumes source outcomes yet.
 
 ## Context
 
@@ -212,8 +213,9 @@ collector rollups, AWS calls, and rules remain unchanged. Revision `20260915_000
 append-only schema without rewriting an accepted migration or historical row.
 
 Collector integration remains slice-specific work in 5A--5F. It must construct the complete
-declared-source manifest atomically; no current collector or deterministic rule consumes this
-contract merely because its storage and read boundary now exists.
+declared-source manifest atomically. 5A now constructs its complete EC2/EBS manifest; later
+collectors and every deterministic Sprint 6 rule remain unimplemented merely because the storage
+and read boundary exists.
 
 ## Validation
 

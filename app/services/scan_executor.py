@@ -41,6 +41,7 @@ ProviderFactory = Callable[[str], AWSClientProvider]
 
 _REQUESTED_COLLECTORS = (
     "cloudtrail_trails",
+    "ec2_ebs_evidence",
     "iam_users",
     "s3_buckets",
     "security_groups",
@@ -48,6 +49,8 @@ _REQUESTED_COLLECTORS = (
 _RESOURCE_TYPES = (
     "aws_account",
     "cloudtrail_trail",
+    "ebs_volume",
+    "ec2_instance",
     "iam_user",
     "s3_bucket",
     "security_group",
@@ -282,6 +285,8 @@ def _scope_for(
     outcome_names = {outcome.collector_name for outcome in outcomes}
     if outcome_names != set(_REQUESTED_COLLECTORS):
         raise ScanPersistenceError("executor inventory has an unexpected collector set")
+    if snapshot.evidence_graph is None:
+        raise ScanPersistenceError("executor inventory omitted its declared-source evidence graph")
     complete = all(outcome.status is CollectionStatus.SUCCEEDED for outcome in outcomes)
     return ScanScopeManifestInput(
         aws_account_id=snapshot.account_id,

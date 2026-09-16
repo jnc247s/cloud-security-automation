@@ -5,8 +5,9 @@ Date: 2026-09-13
 
 Implementation update: the Sprint 5 shared foundation implements this decision in Alembic
 revision `20260915_0003`, the inventory/persistence boundary, and authenticated generic read
-services. Current AWS collectors remain graphless; collector production starts with slice 5A,
-and no Sprint 6 rule consumes these relationships yet.
+services. The in-progress 5A EC2/EBS producer emits the first AWS relationship observations;
+Sprint 0--4 legacy collectors remain graphless, and no Sprint 6 rule consumes these relationships
+yet.
 
 ## Context
 
@@ -233,7 +234,8 @@ configuration to rediscover edges.
 
 The preflight intentionally deferred migration and runtime integration to Sprint 5. The shared
 foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
-AWS evidence producers remain deferred to 5A--5F and may not invent another representation.
+5A now supplies the first AWS relationship producer. Later producers remain deferred to 5B--5F
+and may not invent another representation.
 
 ## Alternatives considered
 
@@ -268,7 +270,9 @@ The shared foundation now has validated inventory, persistence, service, and API
 preserving graphless Sprint 0--4 serialization and runtime behavior. Existing
 `stable_resource_id` and `resource_snapshot_id` algorithms are reused without modification.
 Revision `20260915_0003` adds first-class immutable persistence and a safe-blocking downgrade;
-accepted earlier revisions remain unchanged. No current AWS collector emits a relationship.
+accepted earlier revisions remain unchanged. The 5A EC2/EBS producer emits instance-to-volume,
+security-group, subnet, and VPC observations through this contract; later collectors remain
+unimplemented.
 
 ## Validation
 

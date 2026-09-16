@@ -133,3 +133,24 @@ def client_error(code: str, operation_name: str, *, status_code: int = 400) -> C
         },
         operation_name,
     )
+
+
+def empty_ec2_client(
+    *,
+    security_groups: FakePaginator | None = None,
+    instances: FakePaginator | None = None,
+    volumes: FakePaginator | None = None,
+) -> FakeAWSClient:
+    """Build one EC2 fake with complete empty Sprint 1 and 5A discovery evidence."""
+
+    return FakeAWSClient(
+        paginators={
+            "describe_instances": instances or FakePaginator([{"Reservations": []}]),
+            "describe_volumes": volumes or FakePaginator([{"Volumes": []}]),
+            "describe_security_groups": security_groups or FakePaginator([{"SecurityGroups": []}]),
+        },
+        responses={
+            "get_ebs_encryption_by_default": [{"EbsEncryptionByDefault": False}],
+            "get_ebs_default_kms_key_id": [{}],
+        },
+    )

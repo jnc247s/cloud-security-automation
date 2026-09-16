@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError, PaginationError
 
 from app.collectors.base import CollectorEvidenceError, ResourceCollector
 from app.collectors.cloudtrail import CloudTrailCollector
+from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
@@ -67,12 +68,13 @@ def _resource(resource_id: str, service: str) -> NormalizedResource:
     )
 
 
-def test_default_collectors_cover_sprint_one_inventory() -> None:
+def test_default_collectors_cover_accepted_inventory() -> None:
     provider = FakeClientProvider()
 
     collectors = build_default_collectors(provider)
 
     assert tuple(type(collector) for collector in collectors) == (
+        EC2EbsCollector,
         SecurityGroupCollector,
         S3BucketCollector,
         IAMUserCollector,

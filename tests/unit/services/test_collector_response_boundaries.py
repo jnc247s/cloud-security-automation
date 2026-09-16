@@ -18,7 +18,7 @@ from app.rules.network import PublicSSHRule
 from app.rules.storage import MissingBucketEncryptionRule
 from app.schemas.inventory import CollectionStatus
 from app.services.inventory_service import InventoryService
-from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator
+from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, empty_ec2_client
 
 
 def _iam_case() -> tuple[FakeClientProvider, type[ResourceCollector], SecurityRule]:
@@ -167,9 +167,7 @@ def test_malformed_collector_evidence_becomes_partial_and_never_passes(
 def test_all_collectors_preserve_valid_empty_inventory_semantics() -> None:
     provider = FakeClientProvider(
         {
-            ("ec2", "us-east-1"): FakeAWSClient(
-                paginators={"describe_security_groups": FakePaginator([{"SecurityGroups": []}])}
-            ),
+            ("ec2", "us-east-1"): empty_ec2_client(),
             ("s3", "us-east-1"): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),

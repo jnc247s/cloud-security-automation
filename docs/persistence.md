@@ -1,14 +1,15 @@
 # Persistence and assessment history
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
-Sprint 5 shared foundation extends that history with an optional, versioned evidence graph; it
-does not add an AWS collector or a control. The persistence boundary does not call AWS, run
-controls, schedule scans, or commit transactions on behalf of its caller. The inventory command
-still prints a summary only; it does not persist anything.
+Sprint 5 shared foundation extends that history with an optional, versioned evidence graph, and
+the in-progress 5A EC2/EBS producer now supplies its first AWS graph fragment. The persistence
+boundary does not call AWS, run controls, schedule scans, or commit transactions on behalf of its
+caller. The inventory command still prints a summary only; it does not persist anything.
 
-The five existing controls and their AWS permissions are unchanged. `S3-900` remains the legacy
-explicit-encryption-configuration prototype, not a new production encryption or public-exposure
-control. The technical meanings documented in the [control catalog](controls/catalog.md) and
+The five executable controls are unchanged. 5A adds four documented read-only EC2/EBS calls but
+does not register a control. `S3-900` remains the legacy explicit-encryption-configuration
+prototype, not a new production encryption or public-exposure control. The technical meanings
+documented in the [control catalog](controls/catalog.md) and
 [Assessment framework](assessment-framework.md) still apply.
 
 ## Stable identity and historical state
@@ -185,8 +186,9 @@ rules, not expansion of scan scope or caller authorization.
 
 Authenticated generic services and API projections can list/read relationship observations and
 source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
-public route, and artifacts have no standalone route. Current AWS collectors still emit graphless
-snapshots, so this foundation has no collector producer and changes no current technical result.
+public route, and artifacts have no standalone route. The 5A EC2/EBS producer emits source and
+relationship history through this boundary; Sprint 0--4 legacy collectors remain graphless. No
+current technical result consumes the 5A graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -418,8 +420,8 @@ cleanup; existing schemas are not targeted. CI provides a PostgreSQL test servic
 ## Current boundary and deferred work
 
 Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
-recoverable in-process scan executor. The in-progress Sprint 5 foundation adds the optional
+recoverable in-process scan executor. The accepted Sprint 5 foundation adds the optional
 evidence-graph domain, transactional persistence, authenticated generic reads, and safe migration
-boundary only. Current AWS collectors do not emit source outcomes or relationships. Collector
-expansion, additional production controls, Terraform infrastructure, governance mutation APIs,
-remediation, dashboards/frontend, and AI functionality remain outside this slice.
+boundary. The in-progress 5A producer emits EC2/EBS source outcomes and relationships through it.
+Later collector expansion, additional production controls, Terraform infrastructure, governance
+mutation APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.

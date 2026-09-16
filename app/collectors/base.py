@@ -3,18 +3,139 @@
 import base64
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator, Mapping
+from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
+from botocore.exceptions import (
+    BotoCoreError,
+    ClientError,
+    ConnectTimeoutError,
+    EndpointConnectionError,
+    ReadTimeoutError,
+)
+
+from app.assessment.evidence_graph import (
+    EvidenceCardinality,
+    ScanSourceContract,
+    SourceEvidenceArtifact,
+)
+from app.assessment.relationships import (
+    RelationshipEndpoint,
+    RelationshipProvenance,
+    RelationshipType,
+    UnresolvedRelationshipTarget,
+)
+from app.assessment.source_outcomes import (
+    AccountEvidenceSubject,
+    EvidenceCollectionPhase,
+    EvidenceFailureCategory,
+    EvidenceSourceState,
+    ResourceEvidenceSubject,
+    SourceEvidenceOutcome,
+)
 from app.aws.client import AWSClientProvider
+from app.schemas.inventory import CollectionStatus
 from app.schemas.resource import NormalizedResource
+
+_ACCESS_DENIED_CODES = frozenset(
+    {
+        "AccessDenied",
+        "AccessDeniedException",
+        "AuthorizationError",
+        "UnauthorizedOperation",
+    }
+)
+_AUTHENTICATION_CODES = frozenset(
+    {
+        "AuthFailure",
+        "ExpiredToken",
+        "ExpiredTokenException",
+        "InvalidClientTokenId",
+        "InvalidSignatureException",
+        "SignatureDoesNotMatch",
+        "UnrecognizedClientException",
+    }
+)
+_THROTTLING_CODES = frozenset(
+    {
+        "RequestLimitExceeded",
+        "SlowDown",
+        "ThrottledException",
+        "Throttling",
+        "ThrottlingException",
+        "TooManyRequestsException",
+    }
+)
+_UNSUPPORTED_CODES = frozenset(
+    {
+        "InvalidAction",
+        "NotImplemented",
+        "UnsupportedOperation",
+    }
+)
+
+
+@dataclass(frozen=True, slots=True)
+class CollectionContext:
+    """One immutable execution identity shared by every graph-aware collector."""
+
+    scan_id: UUID
+    collection_account_id: str
+    region: str
+    collected_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class SourceObservation:
+    """One declared source and its normalized, digest-bound result."""
+
+    contract: ScanSourceContract
+    artifact: SourceEvidenceArtifact
+    outcome: SourceEvidenceOutcome
+    provenance: RelationshipProvenance
+
+
+@dataclass(frozen=True, slots=True)
+class RelationshipReference:
+    """Collector-produced edge awaiting target resolution after all collectors run."""
+
+    relationship_type: RelationshipType
+    source: RelationshipEndpoint
+    target: RelationshipEndpoint | UnresolvedRelationshipTarget
+    provenance: RelationshipProvenance
+    target_collector_name: str | None = None
+    target_evidence_kind: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.source.resource_snapshot_id is None:
+            raise ValueError("relationship source must be observed in the current scan")
+        if (
+            isinstance(self.target, RelationshipEndpoint)
+            and self.target.resource_snapshot_id is not None
+        ):
+            raise ValueError("relationship target resolution belongs to the inventory service")
+
+
+@dataclass(frozen=True, slots=True)
+class CollectorResult:
+    """Backward-compatible collector output plus an optional evidence-graph fragment."""
+
+    resources: tuple[NormalizedResource, ...] = ()
+    status: CollectionStatus = CollectionStatus.SUCCEEDED
+    source_contracts: tuple[ScanSourceContract, ...] = ()
+    artifacts: tuple[SourceEvidenceArtifact, ...] = ()
+    source_outcomes: tuple[SourceEvidenceOutcome, ...] = ()
+    relationships: tuple[RelationshipReference, ...] = ()
 
 
 class ResourceCollector(ABC):
     """Base class for fact-only AWS resource collectors."""
 
     collector_name: str
+    produces_evidence_graph = False
 
     def __init__(self, client_provider: AWSClientProvider) -> None:
         self.client_provider = client_provider
@@ -22,6 +143,12 @@ class ResourceCollector(ABC):
     @abstractmethod
     def collect(self) -> list[NormalizedResource]:
         """Collect and normalize resources without making security decisions."""
+
+    def collect_with_context(self, context: CollectionContext) -> CollectorResult:
+        """Collect with graph context while preserving the established collector API."""
+
+        del context
+        return CollectorResult(resources=tuple(self.collect()))
 
 
 class CollectorEvidenceError(RuntimeError):
@@ -31,6 +158,123 @@ class CollectorEvidenceError(RuntimeError):
         self.operation_name = operation_name
         self.fact_path = fact_path
         super().__init__(f"collector evidence is incomplete at {operation_name}.{fact_path}")
+
+
+class CollectorEvidenceConflictError(CollectorEvidenceError):
+    """Raised when one stable AWS identity has contradictory observations."""
+
+
+def build_source_observation(
+    *,
+    context: CollectionContext,
+    contract_key: str,
+    contract_version: str,
+    phase: EvidenceCollectionPhase,
+    subject: AccountEvidenceSubject | ResourceEvidenceSubject,
+    evidence_kind: str,
+    collector: str,
+    collector_version: str,
+    source_api: str,
+    cardinality: EvidenceCardinality,
+    evidence_reference: str,
+    evidence_schema: str,
+    evidence_schema_version: str,
+    normalized_payload: Mapping[str, object],
+    state: EvidenceSourceState,
+    failure_category: EvidenceFailureCategory | None = None,
+    identity_authoritative: bool = False,
+) -> SourceObservation:
+    """Build one exact contract/artifact/outcome/provenance group."""
+
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=context.scan_id,
+        collection_account_id=context.collection_account_id,
+        evidence_reference=evidence_reference,
+        evidence_schema=evidence_schema,
+        evidence_schema_version=evidence_schema_version,
+        collected_at=context.collected_at,
+        normalized_payload=normalized_payload,
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key=contract_key,
+        contract_version=contract_version,
+        scan_id=context.scan_id,
+        collection_account_id=context.collection_account_id,
+        phase=phase,
+        subject=subject,
+        evidence_kind=evidence_kind,
+        collector=collector,
+        collector_version=collector_version,
+        source_api=source_api,
+        cardinality=cardinality,
+        identity_authoritative=identity_authoritative,
+    )
+    outcome = SourceEvidenceOutcome.for_observation(
+        scan_id=context.scan_id,
+        collection_account_id=context.collection_account_id,
+        phase=phase,
+        subject=subject,
+        evidence_kind=evidence_kind,
+        state=state,
+        failure_category=failure_category,
+        collector=collector,
+        collector_version=collector_version,
+        source_api=source_api,
+        collected_at=context.collected_at,
+        evidence_reference=artifact.evidence_reference,
+        evidence_sha256=artifact.evidence_sha256,
+    )
+    return SourceObservation(
+        contract=contract,
+        artifact=artifact,
+        outcome=outcome,
+        provenance=RelationshipProvenance(
+            collector=collector,
+            collector_version=collector_version,
+            source_api=source_api,
+            evidence_reference=artifact.evidence_reference,
+            collected_at=context.collected_at,
+        ),
+    )
+
+
+def source_failure(error: BaseException) -> tuple[EvidenceSourceState, EvidenceFailureCategory]:
+    """Map a provider or evidence-boundary failure to a sanitized closed outcome."""
+
+    if isinstance(error, CollectorEvidenceConflictError):
+        return EvidenceSourceState.CONFLICT, EvidenceFailureCategory.CONFLICTING_EVIDENCE
+    if isinstance(error, CollectorEvidenceError):
+        return EvidenceSourceState.MALFORMED, EvidenceFailureCategory.MALFORMED_RESPONSE
+    if isinstance(error, ClientError):
+        code = error.response.get("Error", {}).get("Code")
+        if code in _ACCESS_DENIED_CODES:
+            category = EvidenceFailureCategory.ACCESS_DENIED
+        elif code in _AUTHENTICATION_CODES:
+            category = EvidenceFailureCategory.AUTHENTICATION_FAILED
+        elif code in _THROTTLING_CODES:
+            category = EvidenceFailureCategory.THROTTLED
+        elif code in _UNSUPPORTED_CODES:
+            category = EvidenceFailureCategory.UNSUPPORTED_OPERATION
+        else:
+            category = EvidenceFailureCategory.SERVICE_ERROR
+        return EvidenceSourceState.UNAVAILABLE, category
+    if isinstance(error, ConnectTimeoutError | ReadTimeoutError | EndpointConnectionError):
+        return EvidenceSourceState.UNAVAILABLE, EvidenceFailureCategory.TIMEOUT
+    if isinstance(error, BotoCoreError):
+        return EvidenceSourceState.UNAVAILABLE, EvidenceFailureCategory.SERVICE_ERROR
+    raise TypeError("unsupported source failure type")
+
+
+def collection_status_for(outcomes: Iterable[SourceEvidenceOutcome]) -> CollectionStatus:
+    """Roll source outcomes up without erasing their result-sensitive detail."""
+
+    states = tuple(outcome.state for outcome in outcomes)
+    complete_states = {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}
+    if states and all(state in complete_states for state in states):
+        return CollectionStatus.SUCCEEDED
+    if states and all(state is EvidenceSourceState.UNAVAILABLE for state in states):
+        return CollectionStatus.FAILED
+    return CollectionStatus.PARTIAL
 
 
 def require_mapping(
@@ -158,7 +402,7 @@ def should_skip_exact_duplicate(
         seen[identity] = candidate
         return False
     if seen[identity] != candidate:
-        raise CollectorEvidenceError(operation_name, fact_path)
+        raise CollectorEvidenceConflictError(operation_name, fact_path)
     return True
 
 
