@@ -1,7 +1,7 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory, accepted Sprint 5A EC2/EBS and 5B network producers, and current
-5C IAM evidence implementation provide a read-only, on-demand AWS inventory run. The standalone
+The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, and 5C IAM evidence
+producers provide a read-only, on-demand AWS inventory run. The standalone
 command returns a normalized in-memory snapshot and prints only an aggregate summary. It does not
 judge compliance, create findings, write to PostgreSQL, or modify AWS; the authorized scan
 executor separately persists the same snapshot through its existing transaction boundary.
@@ -254,8 +254,8 @@ buckets are common.
   explicitly assumed account role.
 - 5A normalizes `ec2_instance` and `ebs_volume` resources. 5B normalizes `security_group`, `vpc`,
   `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
-  policies, and managed-policy versions. IAM Access Analyzer and expanded S3 and CloudTrail
-  evidence remain later-slice work.
+  policies, and managed-policy versions. IAM Access Analyzer 5D is authorized but not implemented;
+  expanded S3 and CloudTrail evidence remain later-slice work.
 - Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains

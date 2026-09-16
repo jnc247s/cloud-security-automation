@@ -1,8 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical evidence-readiness plan with accepted 5A and 5B evidence producers reflected;
-the authorized 5C IAM evidence implementation is under review, and this document does not enable
-any Sprint 6 rule.
+Status: canonical evidence-readiness plan with accepted 5A, 5B, and 5C evidence producers
+reflected; the authorized 5D IAM Access Analyzer evidence implementation has not begun, and this
+document does not enable any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -43,8 +43,8 @@ source is incomplete, and record a typed outcome for every promised source. A `P
 requires every source that its versioned control declares decision-required. A coherent fact may
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
-domain/persistence boundary and the accepted 5A EC2/EBS and 5B network producers are integrated;
-no Sprint 6 rule consumes source outcomes yet.
+domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, and 5C IAM producers are
+integrated; no Sprint 6 rule consumes source outcomes yet.
 
 ## IAM controls
 
@@ -52,10 +52,10 @@ no Sprint 6 rule consumes source outcomes yet.
 | --- | --- | --- | --- | --- | --- |
 | `IAM-001` | `ListUsers`, `ListMFADevices`; `iam:ListUsers`, `iam:ListMFADevices` | IAM global; users emitted once per account | accepted complete `mfa_devices[]` remains embedded for Sprint 0--4 compatibility; 5C normalizes each observed device as a top-level `iam_mfa_device` `Resource` + `ResourceSnapshot` and emits user -> MFA-device | Incomplete user/MFA enumeration or malformed device identity -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1; 5C relationship normalization / `CURRENT` |
 | `IAM-002` | `ListAccessKeys`; `iam:ListAccessKeys` | IAM global | accepted key facts remain embedded for Sprint 0--4 compatibility; 5C normalizes each observed key ID, `status`, and `create_date` as a top-level `iam_access_key` `Resource` + `ResourceSnapshot`, emits user -> access-key, and uses snapshot collection time as the age anchor | Incomplete enumeration or missing active-key status/date -> `INSUFFICIENT_EVIDENCE` | 5C verification and relationship normalization / `CURRENT` |
-| `IAM-003` | `ListAccessKeys`, `GetAccessKeyLastUsed`; `iam:ListAccessKeys`, `iam:GetAccessKeyLastUsed` | IAM global | access-key `Resource` + `ResourceSnapshot`; key creation date/status; last-used date; explicit successful `no_recorded_use` state; user -> access key; observation time | Failed lookup or ambiguous missing last-use/creation state -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
-| `IAM-004` | `ListUsers`, `GetUser`, `ListGroups`, paginated `GetGroup`, `ListRoles`, `GetRole`, `ListPolicies(Scope=Local)`, `GetPolicy`, `GetPolicyVersion`, all `ListAttached*Policies`, all `List*Policies`, `GetUserPolicy`, `GetGroupPolicy`, `GetRolePolicy`, and `ListPolicyTags`/`ListRoleTags`; corresponding `iam:` actions | IAM global | every user, group, role, managed policy, inline policy, permissions boundary target, and policy version used by an edge is a top-level `Resource` + `ResourceSnapshot`; managed policy ARN + default VersionId/document; inline owner + policy name/document + snapshot/content digest; exact policy structures; identity -> managed/inline policy and boundary, managed policy -> default version, user -> group | Incomplete enumeration, undecodable/malformed document, missing managed default version, missing inline owner/name/snapshot/digest, or unresolved in-scope relationship -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
-| `IAM-005` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountAccessKeysPresent` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
-| `IAM-006` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountMFAEnabled` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C / `EXPAND` |
+| `IAM-003` | `ListAccessKeys`, `GetAccessKeyLastUsed`; `iam:ListAccessKeys`, `iam:GetAccessKeyLastUsed` | IAM global | access-key `Resource` + `ResourceSnapshot`; key creation date/status; last-used date; explicit successful `no_recorded_use` state; user -> access key; observation time | Failed lookup or ambiguous missing last-use/creation state -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; Sprint 6 rule pending / `CURRENT` |
+| `IAM-004` | `ListUsers`, `GetUser`, `ListGroups`, paginated `GetGroup`, `ListRoles`, `GetRole`, `ListPolicies(Scope=Local)`, `GetPolicy`, `GetPolicyVersion`, all `ListAttached*Policies`, all `List*Policies`, `GetUserPolicy`, `GetGroupPolicy`, `GetRolePolicy`, and `ListPolicyTags`/`ListRoleTags`; corresponding `iam:` actions | IAM global | every user, group, role, managed policy, inline policy, permissions boundary target, and policy version used by an edge is a top-level `Resource` + `ResourceSnapshot`; managed policy ARN + default VersionId/document; inline owner + policy name/document + snapshot/content digest; exact policy structures; identity -> managed/inline policy and boundary, managed policy -> default version, user -> group | Incomplete enumeration, undecodable/malformed document, missing managed default version, missing inline owner/name/snapshot/digest, or unresolved in-scope relationship -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; Sprint 6 rule pending / `CURRENT` |
+| `IAM-005` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountAccessKeysPresent` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; Sprint 6 rule pending / `CURRENT` |
+| `IAM-006` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountMFAEnabled` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; Sprint 6 rule pending / `CURRENT` |
 
 IAM policy collection is intentionally evidence preservation, not an implementation of AWS's
 authorization engine. Customer-managed, referenced AWS-managed, and inline identity policies are
@@ -187,7 +187,7 @@ batched by the API's `ResourceIdList` limit and the result remains attributable 
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume and 5B VPC/subnet/security-group/Flow Log tags current; 5C--5F expansion and Sprint 6 rule/profile extension pending / `CURRENT` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, and 5C IAM tags current; 5E--5F expansion and Sprint 6 rule/profile extension pending / `CURRENT` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -228,12 +228,16 @@ source, and resource-specific detail are not inferred from a summary.
 Access Analyzer is a Regional API; `ACCOUNT` and `ORGANIZATION` describe the analyzer's zone of
 trust, not a global endpoint. Query each explicitly requested Region and each additional unique S3
 bucket-home Region. Results are deduplicated by analyzer/finding identity and related to matching
-stable resources. An absent analyzer after complete Regional enumeration is an explicit fact, not
-proof that a resource lacks external access. AccessDenied, incomplete detail, or malformed
-pagination—including a repeated, non-progressing, or unconsumed token from any of the three
-operations—makes Analyzer evidence incomplete and can never itself be interpreted as `PASS` or an
-approval. Direct S3 policy, ACL, and BPA evidence remains the v1 decision surface; Analyzer facts
-are retained for investigation and a future separately versioned expansion.
+stable resources. Complete Analyzer Regional coverage requires a complete `s3_buckets` discovery
+outcome because that source establishes the required bucket-home Region set. If bucket discovery
+is failed or partial, retain valid requested-Region Analyzer facts but mark Analyzer coverage
+incomplete and never claim complete analyzer or finding absence. An absent analyzer after complete
+Regional enumeration is an explicit fact, not proof that a resource lacks external access.
+AccessDenied, incomplete detail, or malformed pagination—including a repeated, non-progressing,
+or unconsumed token from any of the three operations—makes Analyzer evidence incomplete and can
+never itself be interpreted as `PASS` or an approval. Direct S3 policy, ACL, and BPA evidence
+remains the v1 decision surface; Analyzer facts are retained for investigation and a future
+separately versioned expansion.
 
 ## Assessment Profile planning
 
@@ -399,14 +403,13 @@ detailed S3-002 aggregation, S3-004 classifier, and generic relationship represe
 approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
-API boundary. The accepted 5A EC2/EBS producer supplies its named evidence, and the accepted 5B
-VPC, subnet, Flow Log, and security-group graph producers supply their named evidence. The current
-5C IAM implementation supplies its named facts and graph contracts for review; the matrix states
-remain unchanged until that producer is accepted. The 5D--5F producers and every Sprint 6 rule
-consumer remain in their named slices.
+API boundary. The accepted 5A EC2/EBS, 5B VPC/network, and 5C IAM producers supply their named
+evidence. The authorized 5D Access Analyzer producer has not begun; its supporting evidence
+remains supplementary and does not change the `S3-002` state. The 5D--5F producers and every
+Sprint 6 rule consumer remain in their named slices.
 
-Sprint 5 is `IN PROGRESS`, 5A and 5B are accepted, 5C is the current authorized slice, and Sprint
-6 remains `PLANNED`.
+Sprint 5 is `IN PROGRESS`, 5A through 5C are accepted, 5D is the current authorized slice, and
+Sprint 6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

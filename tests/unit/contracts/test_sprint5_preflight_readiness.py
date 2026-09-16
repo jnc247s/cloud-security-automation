@@ -104,6 +104,10 @@ CURRENT_CONTROL_IDS = {
     "GOV-001",
     "IAM-001",
     "IAM-002",
+    "IAM-003",
+    "IAM-004",
+    "IAM-005",
+    "IAM-006",
     "LOG-001",
     "NET-001",
     "NET-002",
@@ -309,9 +313,10 @@ def test_result_sensitive_source_outcome_contract_is_closed_and_foundation_only(
     assert "`PARTIAL` is never a generic completeness bypass" in matrix
     assert "Remaining graphless Sprint 0--4 collector" in active_plan
     assert "paths retain all-or-nothing behavior" in active_plan
-    assert "remaining Sprint 0--4 legacy collectors retain their accepted" in adr
+    assert "Sprint 0--4 legacy collectors retain their accepted" in adr
     assert "graphless behavior" in adr
-    assert "no Sprint 6 rule consumes source outcomes yet" in adr
+    assert "no Sprint 6 rule" in adr
+    assert "consumes source outcomes yet" in adr
     for required_text in (
         "verified 12-digit collection account",
         "resource owner may be",
@@ -385,20 +390,31 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5c_start_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5d_start_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
+    matrix = _read(MATRIX_PATH)
 
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "Current slice: **5C IAM account and IAM policy evidence — IN PROGRESS**" in active_plan
-    assert "5B VPC/network evidence slice are accepted" in roadmap
+    assert "Current slice: **5D IAM Access Analyzer evidence — IN PROGRESS**" in active_plan
+    assert "5C IAM evidence slices are accepted" in roadmap
     assert "FOUNDATION_READY_FOR_5A" in active_plan
     assert "**5A EC2 and EBS evidence — COMPLETE**" in active_plan
     assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in active_plan
-    assert "Slice 5C is now separately authorized" in active_plan
+    assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
+    assert "Slice 5D is" in active_plan
+    assert "now separately authorized and in progress" in active_plan
     assert "later collector slices remain unstarted" in active_plan
+    assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
+    assert "evidence remains supplementary and non-decisive" in active_plan
+    assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
+    assert "Complete Analyzer Regional coverage requires a complete `s3_buckets`" in matrix
+    assert "honor each pending scan's persisted `requested_services`" in active_plan
+    assert "resume with the accepted pre-5D collector set" in active_plan
+    assert "completed pre-5D source manifests and evidence graphs valid" in active_plan
+    assert "persisted readback coverage" in active_plan
     assert "explicitly triaged accepted limitations" in active_plan
     assert "must be resolved before any multi-tenant deployment" in active_plan

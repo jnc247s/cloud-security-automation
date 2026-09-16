@@ -1,8 +1,8 @@
 # Service API
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
-Sprint 5 shared evidence-graph reads, the accepted 5A EC2/EBS and 5B network producers, and the
-current 5C IAM evidence implementation.
+Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, and 5C IAM evidence
+producers.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
 All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and

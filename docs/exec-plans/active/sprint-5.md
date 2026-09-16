@@ -2,10 +2,11 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5C IAM account and IAM policy evidence — IN PROGRESS**
+Current slice: **5D IAM Access Analyzer evidence — IN PROGRESS**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
-**5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**
+**5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
+**5C IAM account and IAM policy evidence — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -33,7 +34,8 @@ not depend on chat history. The repository preflight required by `AGENTS.md` is 
 reviewed slice sequence is approved, and the shared 5G relationship/source-outcome evidence
 foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A passed its
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
-pull request 17. Slice 5C is now separately authorized and in progress; later collector slices remain unstarted.
+pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
+now separately authorized and in progress; later collector slices remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -59,7 +61,7 @@ Before Sprint 5 began, their standalone schemas and contract tests did not imple
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
 projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
-and 5B use that boundary, and current slice 5C must use it without enabling Sprint 6 rules.
+through 5C use that boundary, and current slice 5D must use it without enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -89,8 +91,8 @@ graph boundary would have lost evidence or forced that slice to invent a represe
    assumptions with the closed collection-account/resource-owner admission contract in ADR 0001;
 2. **COMPLETE — 5A** — EC2 and EBS evidence;
 3. **COMPLETE — 5B** — VPC, subnet, Flow Log, and network evidence;
-4. **IN PROGRESS — 5C** — IAM account and policy evidence;
-5. 5D — IAM Access Analyzer evidence;
+4. **COMPLETE — 5C** — IAM account and policy evidence;
+5. **IN PROGRESS — 5D** — IAM Access Analyzer evidence;
 6. 5E — S3 evidence expansion;
 7. 5F — CloudTrail evidence expansion; and
 8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
@@ -103,9 +105,9 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A`, 5A and 5B accepted on `main`, and the separately authorized 5C slice
-now in progress. This does not authorize executable Sprint 6 rules, remediation, or later-sprint
-work.
+`FOUNDATION_READY_FOR_5A`, 5A through 5C accepted on `main`, and the separately authorized 5D
+slice now in progress. This does not authorize executable Sprint 6 rules, remediation, or later-
+sprint work.
 
 ## Accepted 5A implementation state
 
@@ -217,20 +219,98 @@ The implementation is authorized only within these boundaries:
 - Do not register IAM-002 through IAM-006 or GOV-001 as executable Sprint 6 rules, change the
   assessment profile, add finding policy, broaden AWS write permissions, or begin 5D--5F work.
 
-The evidence-readiness matrix states do not change merely because 5C has started: IAM-001,
-IAM-002, and GOV-001 remain `CURRENT`, while IAM-003 through IAM-006 remain `EXPAND` until their
-accepted producer implementation is merged. Sprint 6 remains `PLANNED`.
+Acceptance of the 5C producer moves IAM-003 through IAM-006 to `CURRENT` evidence state alongside
+IAM-001, IAM-002, and the implemented IAM portion of GOV-001. This records available facts only;
+it does not register the planned Sprint 6 rules or profile policy. Sprint 6 remains `PLANNED`.
 
-### Current 5C implementation state
+### Accepted 5C implementation state
 
-The feature branch implements the authorized fact-only boundary and remains `IN PROGRESS` pending
-its complete validation, independent review, CI, and merge approval. It keeps legacy direct
-`iam_users` collection behavior, adds a separately attributable `iam_account_evidence` source,
-and uses the existing evidence graph for IAM resources, normalized artifacts, source outcomes,
-and relationships. The implementation adds no schema migration, service-specific API, assessment
-profile change, executable IAM-002 through IAM-006 or GOV-001 rule, finding policy, AWS write
-permission, or 5D--5F behavior. Matrix states and canonical sprint status remain unchanged until
-the slice is accepted on `main`.
+The authorized fact-only implementation passed complete validation, independent review, CI, and
+merge approval in pull request 18 at `main` commit
+`819f9ba3b26490ca23c69a6665b1baf9d7948975`. It keeps legacy direct `iam_users` collection
+behavior, adds a separately attributable `iam_account_evidence` source, and uses the existing
+evidence graph for IAM resources, normalized artifacts, source outcomes, and relationships. The
+implementation adds no schema migration, service-specific API, assessment-profile change,
+executable IAM-002 through IAM-006 or GOV-001 rule, finding policy, AWS write permission, or
+5D--5F behavior.
+
+## Authorized 5D preflight state
+
+The bounded 5D preflight completed against the accepted 5C baseline at `main` commit
+`819f9ba3b26490ca23c69a6665b1baf9d7948975`. The canonical Access Analyzer contract covers the
+AWS APIs and read permissions, Regional scope, normalized facts, relationship, provenance, and
+missing-evidence behavior needed for the supplementary S3-002 investigation evidence. No policy,
+provider, persistence schema, migration, API, authentication, authorization, or security redesign
+blocks implementation.
+
+One current in-memory boundary requires a narrow 5D extension. Access Analyzer must run in the
+explicitly requested Region and every distinct Region of a successfully normalized S3 bucket, but
+the current evidence graph rejects account-level Regional discovery outside the requested Region
+and the collector context cannot yet receive the bucket-derived Region set. Revision
+`20260915_0003` already persists the `allows_supplemental_region` contract flag, so this is not a
+schema change. The 5D implementation is authorized to extend only the in-memory contract and
+orchestration needed to prove those exact bucket-backed Regions; arbitrary supplemental discovery
+must remain rejected.
+
+The implementation is authorized only within these boundaries:
+
+- Add one fact-only, graph-aware `access_analyzer_evidence` collector after S3 inventory. Its
+  immutable execution input is the sorted unique union of the requested Region and Regions from
+  successfully normalized `s3_bucket` resources. It must not make S3 calls, duplicate 5E evidence,
+  or infer a Region when S3 evidence is unavailable.
+- Treat the `s3_buckets` discovery outcome as an input to coverage, not merely as an optional
+  source of Regions. A failed, partial, or otherwise incomplete bucket inventory means incomplete
+  bucket-Region discovery makes Analyzer coverage incomplete (`FAILED` or `PARTIAL`, as the
+  retained source facts warrant), even if the requested Region was scanned successfully. Retain
+  valid requested-Region facts, but never emit a complete no-analyzer or no-finding claim. Persist
+  the source inputs and outcomes needed to reconstruct that coverage decision.
+- Permit supplemental Regional discovery only for the controlled Access Analyzer sources and
+  only when the exact Region is backed by a same-scan normalized S3 bucket. Preserve the existing
+  rejection for every other unrequested discovery Region. Multiple Regional source declarations
+  must remain deterministic, collision-safe, and reconstructable from persisted artifacts.
+- Fully paginate unfiltered `ListAnalyzers`, retaining analyzer ARN, name, type, status, and actual
+  Region. Only external-access analyzers (`ACCOUNT` and `ORGANIZATION`) are relevant to this slice.
+  A complete Region with no such analyzer is explicit absence, never proof that a bucket has no
+  external access.
+- For every relevant analyzer, fully paginate `ListFindingsV2` for external-access S3 bucket
+  findings and then fully paginate `GetFindingV2` for every discovered finding. Retain the
+  analyzer identity, composite analyzer/finding identity, status, bucket ARN, owner account,
+  timestamps, and every detail item including principal, action, condition, `isPublic`, sources,
+  and resource-specific detail. Never infer detail from the summary.
+- Normalize each finding as one Regional `access_analyzer_finding` resource owned by the verified
+  collection account. Its collision-safe AWS resource ID must encode both analyzer ARN and finding
+  ID canonically. Analyzer summaries remain normalized source evidence rather than invented
+  control-plane findings or a service-specific persistence model.
+- Emit the canonical finding -> S3 bucket `references_resource` observation. Resolve only an exact
+  same-scan bucket identity and snapshot; otherwise retain the complete stable target or typed
+  unresolved reference without fabricating a bucket. Keep collection account, analyzer owner, and
+  `resourceOwnerAccount` distinct.
+- Use independent source artifacts and outcomes so a denied, malformed, conflicting, disappeared,
+  or pagination-incomplete analyzer/finding does not erase valid siblings. Repeated,
+  non-progressing, or unconsumed tokens from any of the three operations fail closed and routine
+  errors remain sanitized.
+- Reuse the existing AWS client provider, generic evidence graph, transactional persistence,
+  `ScanExecutor`, services, and authenticated `/api/v1` reads. No migration or service-specific
+  route is planned.
+- Add `access-analyzer` only to the intent of newly created scans and make executor collection and
+  scope construction honor each pending scan's persisted `requested_services`. A pre-5D
+  `RUNNING` scan that lacks that marker must resume with the accepted pre-5D collector set rather
+  than silently gaining the new collector or failing after AWS work. Cover both new and legacy
+  pending-scan paths without weakening exact pending-intent validation or rewriting history.
+- Keep completed pre-5D source manifests and evidence graphs valid when Access Analyzer is neither
+  requested nor represented. Register the collector and its dynamic per-Region discovery checks
+  conditionally from the immutable scan manifest; do not make a new static required-source set
+  invalidate accepted 5A--5C history. Add persisted readback coverage for that compatibility path.
+- Add controlled-fake pagination/validation tests, inventory/executor coverage, generic API tests,
+  and authenticated disposable-PostgreSQL acceptance for artifacts, outcomes, findings-as-
+  resources, and resolved/unresolved relationships. Do not contact live AWS.
+- Do not treat Analyzer evidence as a v1 S3-002 decision or approval, create executable Sprint 6
+  rules, change the assessment profile, implement direct 5E S3 evidence, add finding policy,
+  broaden AWS write permissions, or begin 5F work.
+
+The evidence-readiness state for S3-002 does not change merely because 5D has started. It remains
+`CONTRACT_READY` until the separately accepted direct 5E evidence producer exists, and Analyzer
+evidence remains supplementary and non-decisive. Sprint 6 remains `PLANNED`.
 
 ## Objective and boundary
 
