@@ -1,8 +1,8 @@
 # Architecture
 
-This document describes the accepted Sprint 0--4 implementation plus the in-progress Sprint 5
-shared evidence-graph foundation. It documents repository reality; no Sprint 5 AWS collector or
-Sprint 6 control is presented as implemented.
+This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
+evidence-graph foundation, and the in-progress 5A EC2/EBS evidence producer. It documents
+repository reality; no later Sprint 5 collector or Sprint 6 control is presented as implemented.
 
 ## System context
 
@@ -60,20 +60,23 @@ The failure boundary preserves three distinct categories:
 - application defects are not caught as evidence errors and remain visible to executor
   observability and tests.
 
-The collector result boundary is intentionally all-or-nothing per collector. A malformed item
-discards that collector's in-memory results, independent collectors continue, and deterministic
-assessment receives incomplete coverage and produces `INSUFFICIENT_EVIDENCE` where the control
-requires that collector. This repair does not add per-resource collection outcomes or new AWS
-facts. Malformed STS caller identity has its own sanitized identity-evidence failure because a
-snapshot cannot be attributed safely without an account identity.
+The Sprint 0--4 collector result boundary remains all-or-nothing per legacy collector. A malformed
+item discards that collector's in-memory results, independent collectors continue, and
+deterministic assessment receives incomplete coverage. The graph-aware 5A EC2/EBS producer uses a
+narrower source boundary: independently paginated instance and volume discovery plus the two EBS
+default-setting calls each retain a typed outcome and sanitized artifact. Valid sibling resources
+remain available when another item or source is incomplete, while the collector rollup remains
+`PARTIAL` or `FAILED` as appropriate. Malformed STS caller identity still has its own sanitized
+identity-evidence failure because a snapshot cannot be attributed safely without an account
+identity.
 
-The shared Sprint 5 foundation now validates and persists declared per-source contracts,
+The shared Sprint 5 foundation validates and persists declared per-source contracts,
 normalized source artifacts, source outcomes, and resource relationships as one optional
 `EvidenceGraph` attached to an inventory snapshot. Every declaration has exactly one outcome and
 an exact reference to a digest-bound normalized artifact; every relationship is backed by exactly
-one `PRESENT` outcome. This foundation does not itself change collection behavior or technical
-results. The Sprint 0--4 collectors still use the all-or-nothing behavior above and emit no
-evidence graph, and no current rule treats a source outcome as result-sensitive evidence.
+one `PRESENT` outcome. The 5A producer is the first AWS collector to populate that boundary. The
+Sprint 0--4 collectors retain the all-or-nothing behavior above and emit no graph fragment, and no
+current rule treats a source outcome as result-sensitive evidence.
 
 ## Scan execution
 
@@ -149,10 +152,10 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence-graph foundation
+## Sprint 5 evidence graph and 5A producer
 
-The in-progress 5G foundation implements the shared contracts required before later Sprint 5
-collectors may emit graph evidence:
+The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
+emit graph evidence:
 
 - A graph-enabled `InventorySnapshot` carries one versioned, immutable `EvidenceGraph` bound to
   its scan ID, verified collection account, and collection time. Its source contracts form an
@@ -182,9 +185,25 @@ collectors may emit graph evidence:
   normalized artifact only on detail) and relationship observations without service-specific
   traversal logic or raw provider failures.
 
-No current AWS collector emits this graph, so graph-enabled scan history is presently produced
-only by explicit programmatic callers and controlled tests. The foundation adds no AWS call,
-permission, executable control, finding policy, remediation, or Sprint 6 behavior.
+The 5A `EC2EbsCollector` now emits the first production graph fragment. Once per requested Region,
+it independently paginates `DescribeInstances` and `DescribeVolumes` and calls
+`GetEbsEncryptionByDefault` and `GetEbsDefaultKmsKeyId`. It normalizes top-level `ec2_instance`
+and `ebs_volume` resources, complete tags, addresses, instance metadata settings, attachment facts,
+encryption state, and Regional EBS defaults. The defaults remain account-and-Region source
+observations rather than fabricated resources.
+
+Each instance and volume has identity-authoritative enrichment evidence in addition to its
+discovery outcome. Instance observations emit directional references to security groups, EBS
+volumes, subnets, and VPCs. A volume target can resolve against the independently observed
+same-scan EBS resource. `DescribeInstances` does not prove the owner account of a referenced
+security group, subnet, or VPC, so those targets remain typed
+`TARGET_IDENTITY_INCOMPLETE` references in 5A. A later slice may emit a complete relationship only
+after identity-authoritative evidence supplies the endpoint; 5A never substitutes the collection
+account as an unverified owner.
+
+This producer adds only the four approved read actions and policy-neutral evidence. It does not
+register `EC2-001` through `EC2-004`, change assessment-profile policy, or make any Sprint 6 rule
+executable. The legacy collectors remain graphless and later 5B--5F evidence is not implemented.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -200,7 +219,7 @@ Two approved policy artifacts remain pre-implementation contracts for later road
 
 The foundation preserves the collector/rule boundary defined by the
 [result-sensitive source-outcome decision](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md).
-Later Sprint 5 collectors may collect only the versioned facts and provenance named by the
+Sprint 5 collectors may collect only the versioned facts and provenance named by the
 evidence-readiness matrix. Later deterministic rules will apply the selected policy artifacts.
 Missing required facts and unresolved required edges remain `INSUFFICIENT_EVIDENCE`; neither a
 policy artifact nor a relationship authorizes a fabricated resource, inferred AWS state, or
@@ -257,7 +276,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal, and current AWS collectors do not yet produce graph records.
+  traversal. Only the 5A EC2/EBS producer currently emits graph records; legacy and later planned
+  collectors do not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

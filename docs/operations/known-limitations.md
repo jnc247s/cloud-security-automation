@@ -232,11 +232,12 @@ STS identity also fails closed without coercing null fields or printing response
 
 Collection remains all-or-nothing for each current Sprint 0--4 collector. One malformed or
 inaccessible item discards that collector's otherwise valid in-memory resources, marks its
-coverage incomplete, and leaves independent collectors running. The Sprint 5 foundation can
-validate, persist, and return source-level outcomes and artifacts, but no AWS collector emits them
-yet and no current rule consumes them. A later collector slice must integrate its declared source
-manifest and result-sensitive rule behavior atomically; the existence of empty graph tables is
-not permission to reinterpret `PARTIAL` as complete.
+coverage incomplete, and leaves independent collectors running. The 5A EC2/EBS producer now
+validates, persists, and returns source-level outcomes and artifacts while retaining independently
+valid sibling facts; later collectors have not adopted that boundary and no current rule consumes
+it. Each later collector slice must integrate its declared source manifest atomically, and Sprint
+6 must add separately reviewed result-sensitive rule behavior. Existing graph support is never
+permission to reinterpret `PARTIAL` as complete.
 
 ### Single-region request model — PLANNED LIMIT
 

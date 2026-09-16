@@ -1,7 +1,8 @@
 # Threat model
 
-Status: living model for the accepted Sprint 0--4 baseline and Sprint 5 evidence-graph foundation
-Baseline: `main` commit `97e9217145dba643401053b4c09afa2bc01c999c`
+Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
+foundation, and the in-progress 5A EC2/EBS evidence producer
+Baseline: `main` commit `2ee80d19d5803d93d94215ee7bba2a273cfe5658`
 Last reviewed: 2026-09-15
 
 ## Scope and security objectives
@@ -9,8 +10,9 @@ Last reviewed: 2026-09-15
 The model covers AWS credential use, fact collection, deterministic assessment, PostgreSQL
 history, the source-outcome/relationship evidence-graph foundation, the service layer,
 OIDC/development authentication, capability authorization, FastAPI, and the in-process scan
-executor. No Sprint 5 collector expansion, production deployment, frontend, Terraform
-infrastructure, remediation execution, or AI agent is implemented.
+executor. It includes the in-progress 5A fact-only EC2/EBS producer. No 5B--5F collector,
+Sprint 6 production rule, production deployment, frontend, Terraform infrastructure, remediation
+execution, or AI agent is implemented.
 
 Protect:
 
@@ -56,11 +58,11 @@ and runtime workload identity are supplied by the deployment environment.
 | T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, audit/evidence-graph history guards, terminal graph-completeness checks, and fail-closed populated-downgrade preflights | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
-| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules | New collectors must add matching source contracts and validation; current Sprint 0--4 collectors still discard the affected collector's otherwise valid items on malformed data |
-| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists, and no current collector emits a source manifest |
+| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources and retains only independently validated sibling facts | Later collectors must add matching source contracts and validation; Sprint 0--4 legacy collectors still discard the affected collector's otherwise valid items on malformed data |
+| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; 5A emits a digest-bound exact source manifest | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists, and later collectors do not yet contribute source contracts |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
-| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission | A privileged database/schema operator remains trusted, and graph producers have only controlled-test coverage until Sprint 5 collectors integrate the contract |
+| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A leaves VPC/subnet/security-group owners unresolved rather than inferring them | A privileged database/schema operator remains trusted; 5A has controlled-fake coverage, while later Sprint 5 producers have not yet integrated the contract |
 
 ## Future-boundary threats
 

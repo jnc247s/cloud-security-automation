@@ -2,9 +2,9 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**
+Current slice: **5A EC2 and EBS evidence — IN PROGRESS**
 
-Upcoming slice: **5A EC2 and EBS evidence**
+Accepted prerequisite: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -30,8 +30,8 @@ subsequent approved start of the 5G foundation changed Sprint 5 to `IN PROGRESS`
 The requirements below are approved roadmap scope. They are recorded here so implementation does
 not depend on chat history. The repository preflight required by `AGENTS.md` is complete, the
 reviewed slice sequence is approved, and the shared 5G relationship/source-outcome evidence
-foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A remains upcoming
-and no collector slice has started.
+foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A is now separately
+authorized and in progress; later collector slices remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -56,8 +56,8 @@ preflight review has now approved four previously missing design inputs without 
 Before Sprint 5 began, their standalone schemas and contract tests did not implement an AWS
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
-projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; slice 5A is
-unblocked but remains upcoming until separately planned and authorized.
+projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; slice 5A is now
+using that accepted boundary without enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -71,7 +71,8 @@ The source-outcome contract is required because planned collectors have independ
 enrichment calls. It retains valid facts and explicit source uncertainty without treating a
 collector's `PARTIAL` rollup as permission to pass. Current Sprint 0--4 collectors remain
 all-or-nothing; source-level runtime and persistence integration belongs to the applicable Sprint
-5 slices and must be atomic.
+5 slices and must be atomic. The 5A EC2/EBS producer is the first such integration and no Sprint 6
+rule consumes its outcomes yet.
 
 The reviewed implementation order uses 5G as a foundation-and-closure bookend. This is the
 dependency-driven exception to the earlier recommended collector-first order: 5C must emit
@@ -83,7 +84,7 @@ graph boundary would either lose evidence or force that slice to invent a repres
 1. **FOUNDATION_READY_FOR_5A — 5G foundation** — the generic source-outcome/relationship
    persistence and projections atomically replace the same-account Python and database-trigger
    assumptions with the closed collection-account/resource-owner admission contract in ADR 0001;
-2. **UPCOMING — 5A** — EC2 and EBS evidence;
+2. **IN PROGRESS — 5A** — EC2 and EBS evidence;
 3. 5B — VPC, subnet, Flow Log, and network evidence;
 4. 5C — IAM account and policy evidence;
 5. 5D — IAM Access Analyzer evidence;
@@ -99,8 +100,32 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A`. This acceptance does not start 5A or authorize collectors, new AWS
-permissions, executable Sprint 6 rules, remediation, or later-sprint work.
+`FOUNDATION_READY_FOR_5A` and the separately authorized 5A slice now in progress. This does not
+authorize executable Sprint 6 rules, remediation, or later-sprint work.
+
+## Current 5A implementation state
+
+The 5A feature branch starts from accepted `main` commit
+`2ee80d19d5803d93d94215ee7bba2a273cfe5658`. Its implementation is present and undergoing the
+slice acceptance gates; this plan does not mark 5A complete before validation, review, approval,
+and merge.
+
+- One fact-only `ec2_ebs_evidence` collector uses the existing Regional client/provider boundary.
+- `DescribeInstances` and `DescribeVolumes` are independently paginated. Instances retain state,
+  metadata options, public/private IPv4s, VPC/subnet/security-group IDs, attached volume IDs, and
+  tags. Volumes retain state, strict encryption state, optional KMS key ID, attachments, and tags.
+- `GetEbsEncryptionByDefault` and `GetEbsDefaultKmsKeyId` are independent account/Region source
+  observations. They do not create a synthetic resource, and absent default-KMS configuration is
+  explicit expected absence.
+- Discovery and per-resource enrichment declarations bind normalized artifacts and controlled
+  outcomes to the preallocated scan/account/Region/time context. Valid sibling facts survive a
+  partial source; malformed or unavailable evidence remains explicit in the collector rollup.
+- Instances emit relationship observations to security groups, volumes, subnets, and VPCs. A
+  same-scan volume can resolve. Security-group, subnet, and VPC owner identity is not present in
+  `DescribeInstances`, so those references remain `TARGET_IDENTITY_INCOMPLETE` rather than
+  fabricating the collection account as owner.
+- This slice adds no migration, service-specific API route, executable EC2 control, profile
+  registration, finding policy, AWS write permission, or 5B--5F behavior.
 
 ## Objective and boundary
 

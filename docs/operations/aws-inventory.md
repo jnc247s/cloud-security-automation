@@ -1,8 +1,10 @@
 # AWS inventory operations
 
-Sprint 1 provides a read-only, on-demand AWS inventory run. It discovers resource facts and
-returns a normalized in-memory snapshot. It does not judge compliance, create findings, write
-to PostgreSQL, or modify AWS.
+The accepted Sprint 1 inventory plus the in-progress Sprint 5A EC2/EBS producer provide a
+read-only, on-demand AWS inventory run. The standalone command returns a normalized in-memory
+snapshot and prints only an aggregate summary. It does not judge compliance, create findings,
+write to PostgreSQL, or modify AWS; the authorized scan executor separately persists the same
+snapshot through its existing transaction boundary.
 
 ## Real-world operator flow
 
@@ -14,6 +16,7 @@ to PostgreSQL, or modify AWS.
 5. The operator sets `AWS_REGION` and optionally `AWS_PROFILE`.
 6. The operator runs `python scripts/run_inventory.py` from the project environment.
 7. The application asks STS for the caller account once, then collects:
+   - EC2 instances, EBS volumes, and Regional EBS default settings from the configured region;
    - security groups from the configured region;
    - all account S3 buckets and selected bucket configuration;
    - global IAM users and authentication metadata;
@@ -23,7 +26,9 @@ to PostgreSQL, or modify AWS.
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`.
+   returns one `InventorySnapshot`. The 5A producer also declares source contracts and records
+   digest-bound artifacts, typed source outcomes, and relationship observations in the optional
+   evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
     of console logs.
 
@@ -33,9 +38,9 @@ inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
-The following policy is a practical baseline for the exact calls made by Sprint 1. Review and
-scope it for your partition, account, buckets, permission boundaries, service control policies,
-and role-assumption model before production use.
+The following policy is a practical baseline for the exact calls made by the current inventory,
+including 5A. Review and scope it for your partition, account, buckets, permission boundaries,
+service control policies, and role-assumption model before production use.
 
 ```json
 {
@@ -46,6 +51,10 @@ and role-assumption model before production use.
       "Effect": "Allow",
       "Action": [
         "sts:GetCallerIdentity",
+        "ec2:DescribeInstances",
+        "ec2:DescribeVolumes",
+        "ec2:GetEbsEncryptionByDefault",
+        "ec2:GetEbsDefaultKmsKeyId",
         "ec2:DescribeSecurityGroups",
         "s3:ListAllMyBuckets",
         "iam:ListUsers",
@@ -127,6 +136,7 @@ The command emits a deliberately small JSON document:
   "collected_at": "2026-09-02T18:30:00+00:00",
   "collector_outcomes": {
     "cloudtrail_trails": "SUCCEEDED",
+    "ec2_ebs_evidence": "SUCCEEDED",
     "iam_users": "SUCCEEDED",
     "s3_buckets": "SUCCEEDED",
     "security_groups": "SUCCEEDED"
@@ -153,22 +163,31 @@ summary identifies collection coverage without dumping exception text, AWS respo
 configuration. No partial result is presented as complete.
 
 The accepted response boundary separates three cases. Botocore `ClientError`/`BotoCoreError`
-means an AWS operational failure and marks the collector `FAILED`. Missing, null, wrong-type, or
-otherwise unusable required evidence raises a sanitized `CollectorEvidenceError` and marks that
-collector `PARTIAL`. Genuine application defects are not broadly caught or mislabeled and remain
-visible to tests and executor observability. A malformed STS caller-identity response prevents
-safe account attribution and therefore fails the overall run with a sanitized identity message.
+means an AWS operational failure. Missing, null, wrong-type, or otherwise unusable required
+evidence raises a sanitized `CollectorEvidenceError`. Genuine application defects are not broadly
+caught or mislabeled and remain visible to tests and executor observability. A malformed STS
+caller-identity response prevents safe account attribution and therefore fails the overall run
+with a sanitized identity message.
 
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
-rejected value, response, resource identifier, or credentials. The current result contract is
-collector-granular: one malformed item discards results from that collector, independent
-collectors continue, and controls that require its evidence receive incomplete coverage rather
-than an unsupported clean result.
+rejected value, response, resource identifier, or credentials. Sprint 0--4 legacy collectors are
+collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS
+producer instead records independent outcomes for paginated instance discovery, paginated volume
+discovery, encryption-by-default, and default-KMS evidence. It retains independently validated
+resources and reports discarded items, while any incomplete source keeps the rollup `PARTIAL`
+unless every source is unavailable, which is `FAILED`. It never converts missing evidence into a
+clean result.
 
 Paginator token handling and retry behavior remain boto3/botocore responsibilities. Each yielded
 page and item is validated. Exact repeated resource entries across pages are collected once;
-conflicting entries for the same stable identity make the collector `PARTIAL`. An explicit empty
-result list remains a successful zero-resource inventory.
+conflicting entries for the same stable identity make the relevant source and collector
+incomplete. An explicit empty result list remains a successful zero-resource inventory.
+
+5A declares `ec2.instances.discovery`, `ec2.volumes.discovery`,
+`ec2.ebs-encryption-default`, and `ec2.ebs-default-kms-key` account/Region sources, plus one
+identity-authoritative enrichment source for each retained instance and volume. A missing default
+KMS key is an explicit `EXPECTED_ABSENCE`; the EBS defaults are normalized source artifacts, not
+synthetic resources. Raw provider exception text is never persisted.
 
 Expected S3 absence responses are facts, not failures:
 
@@ -183,8 +202,8 @@ buckets are common.
 
 ## Inventory boundaries
 
-- EC2 security groups are collected only in `AWS_REGION`. Multi-region EC2 orchestration is a
-  later feature.
+- EC2 instances, EBS volumes, EBS default settings, and security groups are collected only in
+  `AWS_REGION`. Multi-region EC2 orchestration is a later feature.
 - S3 and IAM discovery is account-wide; each bucket retains its actual region and IAM resources
   use global scope.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
@@ -193,8 +212,15 @@ buckets are common.
   technical assessment result.
 - Cross-account and AWS Organizations role orchestration are not implemented. Run once per
   explicitly assumed account role.
-- Directory buckets, S3 access points, IAM roles/groups/policies, VPCs, instances, and other AWS
-  resource types are outside Sprint 1.
+- 5A normalizes `ec2_instance` and `ebs_volume` resources. VPCs, subnets, Flow Logs, expanded
+  security-group evidence, S3 access points, directory buckets, and IAM roles/groups/policies
+  remain later-slice work.
+- Instance-to-volume references can resolve against a same-scan volume. Security-group, subnet,
+  and VPC references retain their ID, service, type, Region, and scope but remain
+  `TARGET_IDENTITY_INCOMPLETE` because `DescribeInstances` does not establish target ownership;
+  the collector does not substitute the collection account.
+- EC2/EBS facts are evidence only. `EC2-001` through `EC2-004` remain non-executable until Sprint
+  6 supplies separately reviewed deterministic rules and profile integration.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host

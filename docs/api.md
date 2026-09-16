@@ -1,10 +1,10 @@
 # Service API
 
-This is the authoritative human-readable contract for the accepted Sprint 4 API plus the
-in-progress Sprint 5 shared evidence-graph read foundation. OpenAPI at `/openapi.json` is the exact
-generated schema; `/docs` and `/redoc` render it. No Sprint 5 collector endpoint or Sprint 6
-control is implied. Future interface changes must update this document and tests in the same
-change.
+This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
+Sprint 5 shared evidence-graph reads, and the in-progress 5A EC2/EBS evidence producer. OpenAPI at
+`/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it. 5A uses the existing
+generic scan and read interfaces; no service-specific collector endpoint or Sprint 6 control is
+implied. Future interface changes must update this document and tests in the same change.
 
 The API is read-only apart from creating a scan. It cannot modify AWS resources, finding status,
 exceptions, controls, mappings, or audit history.
@@ -147,9 +147,11 @@ text. There is no standalone artifact route and no source-contract list/detail r
 `GET /api/v1/scans/{scan_id}` exposes `scope.source_manifest_schema_version` and
 `scope.source_manifest_checksum` when that scan persisted an evidence graph. Both are null for
 graphless scans. The checksum binds the exact declared source contracts; it is not inferred from
-outcome rows, and the full contract manifest is not returned by a public route. Current Sprint
-0--4 collectors remain graphless, so ordinary scans do not yet produce source-outcome or
-relationship records.
+outcome rows, and the full contract manifest is not returned by a public route. A 5A scan emits
+source outcomes and artifacts for EC2 instance discovery, EBS volume discovery, both Regional EBS
+default-setting calls, and each normalized instance or volume. Its instance relationships expose
+volume resolution and typed unresolved security-group, subnet, or VPC references where AWS did
+not prove target ownership. Sprint 0--4 legacy collectors remain graphless.
 
 ## Starting and following a scan
 

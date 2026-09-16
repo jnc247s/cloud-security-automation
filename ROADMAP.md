@@ -4,7 +4,8 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-09-15
-Accepted baseline: `main` at `97e9217145dba643401053b4c09afa2bc01c999c` (Sprints 0--4 and accepted pre-Sprint-5 repairs)
+Accepted baseline: `main` at `2ee80d19d5803d93d94215ee7bba2a273cfe5658` (Sprints 0--4,
+accepted pre-Sprint-5 repairs, and the shared Sprint 5 evidence-graph foundation)
 
 ## Current state
 
@@ -25,7 +26,8 @@ Accepted baseline: `main` at `97e9217145dba643401053b4c09afa2bc01c999c` (Sprints
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
 
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
-foundation is `FOUNDATION_READY_FOR_5A`; 5A is the next collector slice and has not started.
+foundation is `FOUNDATION_READY_FOR_5A`; the separately authorized 5A EC2/EBS evidence slice is
+now `IN PROGRESS` on its feature branch and has not enabled any Sprint 6 control.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -36,8 +38,9 @@ and CloudTrail facts, explicit global-versus-regional execution scope, and resou
 
 The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`. Its analysis-only
 preflight and reviewable execution sequence are complete. The shared 5G
-relationship/source-outcome evidence foundation has passed its acceptance gate as
-`FOUNDATION_READY_FOR_5A`; no collector slice has started, and 5A remains upcoming.
+relationship/source-outcome evidence foundation passed its acceptance gate as
+`FOUNDATION_READY_FOR_5A`; 5A now implements only the approved EC2/EBS facts, source outcomes,
+provenance, and relationships on the current feature branch while acceptance remains in progress.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -48,8 +51,8 @@ start; the approved foundation implementation branch has now begun and moved the
 
 The shared foundation gate completed on 2026-09-15 at migration head `20260915_0003`. Domain,
 migration, PostgreSQL, authenticated API, full-regression, lint, format, container, and independent
-review gates passed with no remaining review findings. This readiness state does not start 5A or
-change Sprint 6 from `PLANNED`.
+review gates passed with no remaining review findings. That readiness state did not itself start
+5A; the separately authorized 5A slice is now in progress and Sprint 6 remains `PLANNED`.
 
 ## Pre-Sprint 5 attention
 

@@ -97,6 +97,10 @@ REQUIRED_CONTRACT_FIELDS = {
 }
 ALLOWED_MATRIX_STATES = {"CONTRACT_READY", "CURRENT", "EXPAND"}
 CURRENT_CONTROL_IDS = {
+    "EC2-001",
+    "EC2-002",
+    "EC2-003",
+    "EC2-004",
     "IAM-001",
     "IAM-002",
     "LOG-001",
@@ -302,7 +306,7 @@ def test_result_sensitive_source_outcome_contract_is_closed_and_foundation_only(
     assert "`PARTIAL` is never a generic completeness bypass" in matrix
     assert "Current Sprint 0--4 collectors remain" in active_plan
     assert "all-or-nothing" in active_plan
-    assert "Current AWS collectors remain on their accepted graphless behavior" in adr
+    assert "Sprint 0--4 legacy collectors remain on their accepted graphless behavior" in adr
     assert "no Sprint 6 rule consumes source outcomes yet" in adr
     for required_text in (
         "verified 12-digit collection account",
@@ -377,7 +381,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_foundation_does_not_enable_planned_controls_or_start_collector_slices() -> None:
+def test_5a_start_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -385,12 +389,13 @@ def test_foundation_does_not_enable_planned_controls_or_start_collector_slices()
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
+    assert "Current slice: **5A EC2 and EBS evidence — IN PROGRESS**" in active_plan
+    assert "foundation is `FOUNDATION_READY_FOR_5A`" in roadmap
     assert (
-        "Current slice: **5G shared relationship/source-outcome evidence foundation — "
+        "Accepted prerequisite: **5G shared relationship/source-outcome evidence foundation — "
         "FOUNDATION_READY_FOR_5A**" in active_plan
     )
-    assert "foundation is `FOUNDATION_READY_FOR_5A`" in roadmap
-    assert "Upcoming slice: **5A EC2 and EBS evidence**" in active_plan
-    assert "Slice 5A remains upcoming" in active_plan
+    assert "Slice 5A is now separately" in active_plan
+    assert "later collector slices remain unstarted" in active_plan
     assert "explicitly triaged accepted limitations" in active_plan
     assert "must be resolved before any multi-tenant deployment" in active_plan

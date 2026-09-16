@@ -1,7 +1,7 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical evidence-readiness plan; no Sprint 5 collector or Sprint 6 rule is implemented
-by this document.
+Status: canonical evidence-readiness plan with the in-progress 5A evidence producer reflected;
+this document does not enable any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -9,7 +9,7 @@ vocabulary; the scheduling text before the slash is not a state:
 
 | State | Exact meaning |
 | --- | --- |
-| `CURRENT` | The accepted Sprint 1 runtime already provides the named decision-relevant fact. Only that fact is current; a named Sprint 5 normalization, resource, relationship, or enrichment remains unimplemented, and this state does not claim a rule exists beyond the accepted Sprint 0--4 controls. |
+| `CURRENT` | The current runtime provides the named decision-relevant fact. Only that fact is current; any separately named later-slice normalization, relationship, enrichment, or executable rule remains unimplemented unless stated otherwise. This state never claims a rule exists beyond the accepted Sprint 0--4 controls. |
 | `EXPAND` | The required AWS source and normalized evidence contract are identified, but the Sprint 5 collector, persistence, and integration work has not been implemented or accepted. |
 | `CONTRACT_READY` | A formerly blocking domain or policy decision has an accepted standalone contract. This is not an implementation-completion state: the Sprint 5 evidence producer/persistence and Sprint 6 executable rule remain unimplemented unless separately identified as accepted behavior. |
 
@@ -35,14 +35,15 @@ defects remain visible. A control that depends on an unrequested, `FAILED`, or `
 must later return `INSUFFICIENT_EVIDENCE`, never `PASS`. An empty successful resource list can
 produce `NOT_APPLICABLE` only for a resource-scoped control whose contract permits it.
 
-That collector-level rule describes the current Sprint 0--4 runtime. Expanded collectors must use
+That collector-level rule describes the Sprint 0--4 legacy runtime. Expanded collectors must use
 the accepted [result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md)
 to separate account-scope discovery from resource enrichment, retain valid facts when another
 source is incomplete, and record a typed outcome for every promised source. A `PASS` still
 requires every source that its versioned control declares decision-required. A coherent fact may
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
-contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The new
-domain schema is not integrated into collectors, persistence, or rules by this preflight.
+contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
+domain/persistence boundary and the 5A EC2/EBS producer are integrated; no Sprint 6 rule consumes
+source outcomes yet.
 
 ## IAM controls
 
@@ -95,15 +96,17 @@ this contract.
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `EC2-001` | `DescribeInstances`; `ec2:DescribeInstances` | Regional | instance ID/ARN and `metadata_options.state`, `http_endpoint`, `http_tokens`; instance -> VPC/subnet context | Missing/malformed options or `state = pending` -> `INSUFFICIENT_EVIDENCE`; only `state = applied` permits PASS/FAIL or disabled-endpoint `NOT_APPLICABLE` | 5A / `EXPAND` |
-| `EC2-002` | `DescribeInstances`; `ec2:DescribeInstances` | Regional | deduplicated public IPv4s from instance `PublicIpAddress`, every `NetworkInterfaces[].Association.PublicIp`, and every `NetworkInterfaces[].PrivateIpAddresses[].Association.PublicIp`; a complete empty set is explicit absence; instance/account/Region/state/tags; instance -> subnet/VPC/all interface security groups | Malformed/incomplete instance or ENI association structure, or unavailable profile allowlist -> `INSUFFICIENT_EVIDENCE` | 5A / `EXPAND` |
-| `EC2-003` | `DescribeVolumes`; `ec2:DescribeVolumes` | Regional | volume ID/ARN, state, `encrypted`, optional KMS key ID, attachment instance IDs; EC2 instance -> EBS volume | Missing/malformed encryption state -> `INSUFFICIENT_EVIDENCE` | 5A / `EXPAND` |
-| `EC2-004` | `GetEbsEncryptionByDefault`, `GetEbsDefaultKmsKeyId`; `ec2:GetEbsEncryptionByDefault`, `ec2:GetEbsDefaultKmsKeyId` | Account + Region setting | synthetic account/Region evidence identity; `ebs_encryption_by_default`; optional default KMS key ID | Failed/malformed Regional setting -> `INSUFFICIENT_EVIDENCE` | 5A / `EXPAND` |
+| `EC2-001` | `DescribeInstances`; `ec2:DescribeInstances` | Regional | instance ID/ARN and `metadata_options.state`, `http_endpoint`, `http_tokens`; typed instance -> VPC/subnet references | Missing/malformed options or `state = pending` -> `INSUFFICIENT_EVIDENCE`; only `state = applied` permits PASS/FAIL or disabled-endpoint `NOT_APPLICABLE` | 5A evidence; Sprint 6 rule pending / `CURRENT` |
+| `EC2-002` | `DescribeInstances`; `ec2:DescribeInstances` | Regional | deduplicated public IPv4s from instance `PublicIpAddress`, every `NetworkInterfaces[].Association.PublicIp`, and every `NetworkInterfaces[].PrivateIpAddresses[].Association.PublicIp`; a complete empty set is explicit absence; instance/account/Region/state/tags; typed instance -> subnet/VPC/all interface security-group references | Malformed/incomplete instance or ENI association structure, or unavailable profile allowlist -> `INSUFFICIENT_EVIDENCE` | 5A evidence; Sprint 6 rule pending / `CURRENT` |
+| `EC2-003` | `DescribeVolumes`; `ec2:DescribeVolumes` | Regional | volume ID/ARN, state, `encrypted`, optional KMS key ID, attachment instance IDs; same-scan EC2 instance -> EBS volume | Missing/malformed encryption state -> `INSUFFICIENT_EVIDENCE` | 5A evidence; Sprint 6 rule pending / `CURRENT` |
+| `EC2-004` | `GetEbsEncryptionByDefault`, `GetEbsDefaultKmsKeyId`; `ec2:GetEbsEncryptionByDefault`, `ec2:GetEbsDefaultKmsKeyId` | Account + Region setting | account/Region source observations, not synthetic resources; `ebs_encryption_by_default`; optional default KMS key ID with explicit expected absence | Failed/malformed Regional setting -> `INSUFFICIENT_EVIDENCE` | 5A evidence; Sprint 6 rule pending / `CURRENT` |
 
-5A must also retain instance -> security group, instance -> EBS volume, instance -> subnet, and
-instance -> VPC edges for later investigation and joined controls. Instances and volumes are
-paginated independently. The Regional EBS default is one account/Region observation, not a volume
-and not a global resource.
+5A retains instance -> security group, instance -> EBS volume, instance -> subnet, and instance ->
+VPC observations for later investigation and joined controls. Instances and volumes are paginated
+independently. A same-scan volume can resolve; security-group, subnet, and VPC targets remain typed
+owner-unresolved references because `DescribeInstances` does not establish their owner account.
+The Regional EBS default is one account/Region observation, not a volume and not a global
+resource.
 
 ## S3 controls
 
@@ -153,7 +156,7 @@ batched by the API's `ResourceIdList` limit and the result remains attributable 
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A–5F collection, 5G completeness validation / `EXPAND` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume tags current; 5B–5F expansion / `EXPAND` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -346,6 +349,9 @@ kms:DescribeKey
   and [GetPolicyVersion](https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html)
 - [EC2 API operations](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/),
   [DescribeInstances](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html),
+  [DescribeVolumes](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html),
+  [GetEbsEncryptionByDefault](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_GetEbsEncryptionByDefault.html),
+  [GetEbsDefaultKmsKeyId](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_GetEbsDefaultKmsKeyId.html),
   and [DescribeSecurityGroups](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSecurityGroups.html)
 - [IAM Access Analyzer ListFindingsV2](https://docs.aws.amazon.com/access-analyzer/latest/APIReference/API_ListFindingsV2.html)
   and [GetFindingV2](https://docs.aws.amazon.com/access-analyzer/latest/APIReference/API_GetFindingV2.html)
@@ -361,12 +367,12 @@ The requested IAM, network, EC2/EBS, S3, logging, and governance evidence meanin
 detailed S3-002 aggregation, S3-004 classifier, and generic relationship representation are now
 approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
 executable rule, profile registration, database table, API route, or runtime behavior. The
-subsequently approved Sprint 5 shared foundation now supplies the generic persistence and
-read-only API boundary; AWS evidence producers and Sprint 6 rule consumers remain in their named
-future slices.
+subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
+API boundary. The 5A EC2/EBS producer now supplies its named evidence; 5B--5F producers and every
+Sprint 6 rule consumer remain in their named future slices.
 
-Sprint 5 is `IN PROGRESS`, its 5A collector slice remains upcoming, and Sprint 6 remains
-`PLANNED`. The complete Phase 0 validation and independent-review gates passed. The canonical
-control-contract readiness marker remains:
+Sprint 5 is `IN PROGRESS`, its 5A collector implementation is undergoing acceptance, and Sprint 6
+remains `PLANNED`. The complete Phase 0 validation and independent-review gates passed. The
+canonical control-contract readiness marker remains:
 
 `SPRINT_5_CONTROL_CONTRACTS_READY`
