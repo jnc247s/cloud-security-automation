@@ -22,6 +22,7 @@ from tests.fakes import (
     FakeAWSClient,
     FakeClientProvider,
     FakePaginator,
+    empty_access_analyzer_client,
     empty_ec2_client,
     empty_iam_client,
 )
@@ -176,6 +177,7 @@ def test_malformed_collector_evidence_becomes_partial_and_never_passes(
 def test_all_collectors_preserve_valid_empty_inventory_semantics() -> None:
     provider = FakeClientProvider(
         {
+            ("accessanalyzer", "us-east-1"): empty_access_analyzer_client(),
             ("ec2", "us-east-1"): empty_ec2_client(),
             ("s3", "us-east-1"): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}

@@ -147,8 +147,14 @@ class ScanSourceContract(BaseModel):
             and not self.identity_authoritative
         ):
             raise ValueError("exceptional owner modes require identity-authoritative evidence")
-        if self.phase is EvidenceCollectionPhase.DISCOVERY and self.allows_supplemental_region:
-            raise ValueError("discovery source contracts cannot authorize supplemental Regions")
+        if (
+            self.phase is EvidenceCollectionPhase.DISCOVERY
+            and self.allows_supplemental_region
+            and not _is_access_analyzer_discovery_source(self)
+        ):
+            raise ValueError(
+                "only controlled Access Analyzer discovery can authorize supplemental Regions"
+            )
 
         expected_outcome_id = calculate_source_outcome_id(
             scan_id=self.scan_id,
@@ -228,6 +234,36 @@ class ScanSourceContract(BaseModel):
                 outcome.source_api == self.source_api,
             )
         )
+
+
+def _is_access_analyzer_discovery_source(contract: ScanSourceContract) -> bool:
+    """Recognize only the two approved 5D Regional discovery source families."""
+
+    if (
+        not isinstance(contract.subject, AccountEvidenceSubject)
+        or contract.subject.scope is not ResourceScope.REGIONAL
+        or contract.collector_version != "1.0.0"
+    ):
+        return False
+    if (
+        contract.contract_key == "access-analyzer.analyzers.discovery"
+        and contract.evidence_kind == contract.contract_key
+        and contract.collector == "access-analyzer.analyzers"
+        and contract.source_api == "access-analyzer:ListAnalyzers"
+    ):
+        return True
+    prefix = "access-analyzer.findings.discovery."
+    digest = contract.evidence_kind.removeprefix(prefix)
+    return all(
+        (
+            contract.contract_key == contract.evidence_kind,
+            contract.evidence_kind.startswith(prefix),
+            len(digest) == 64,
+            all(character in "0123456789abcdef" for character in digest),
+            contract.collector == "access-analyzer.findings",
+            contract.source_api == "access-analyzer:ListFindings",
+        )
+    )
 
 
 class SourceEvidenceArtifact(BaseModel):
@@ -517,17 +553,6 @@ def validate_graph_resources(
 ) -> None:
     """Bind graph subjects/endpoints and exceptional ownership to top-level resources."""
 
-    for contract in graph.source_contracts:
-        if (
-            contract.phase is EvidenceCollectionPhase.DISCOVERY
-            and isinstance(contract.subject, AccountEvidenceSubject)
-            and contract.subject.scope is ResourceScope.REGIONAL
-            and contract.subject.region != requested_region
-        ):
-            raise ValueError(
-                "Regional discovery source contracts must match the inventory invocation Region"
-            )
-
     resource_by_snapshot_id: dict[UUID, NormalizedResource] = {}
     for resource in resources:
         expected_scope = canonical_resource_scope(resource.service, resource.resource_type)
@@ -549,6 +574,54 @@ def validate_graph_resources(
         if existing is not None and existing != resource:
             raise ValueError("conflicting resources share a snapshot identity")
         resource_by_snapshot_id[snapshot_id] = resource
+
+    bucket_regions = {
+        resource.region
+        for resource in resources
+        if resource.account_id == graph.collection_account_id
+        and resource.service == "s3"
+        and resource.resource_type == "s3_bucket"
+        and resource.scope is ResourceScope.REGIONAL
+        and resource.region is not None
+    }
+    access_analyzer_regions: list[str] = []
+    for contract in graph.source_contracts:
+        if (
+            contract.phase is EvidenceCollectionPhase.DISCOVERY
+            and isinstance(contract.subject, AccountEvidenceSubject)
+            and contract.subject.scope is ResourceScope.REGIONAL
+        ):
+            region = contract.subject.region
+            if (
+                contract.contract_key == "access-analyzer.analyzers.discovery"
+                and _is_access_analyzer_discovery_source(contract)
+            ):
+                access_analyzer_regions.append(region)
+            if region == requested_region:
+                if contract.allows_supplemental_region:
+                    raise ValueError(
+                        "requested-Region discovery cannot claim supplemental-Region permission"
+                    )
+                continue
+            if not contract.allows_supplemental_region:
+                raise ValueError(
+                    "Regional discovery source contracts must match the inventory invocation Region"
+                )
+            if region not in bucket_regions:
+                raise ValueError(
+                    "Access Analyzer supplemental discovery requires a same-scan S3 bucket Region"
+                )
+
+    if access_analyzer_regions:
+        expected_access_analyzer_regions = {requested_region, *bucket_regions}
+        if (
+            len(access_analyzer_regions) != len(expected_access_analyzer_regions)
+            or set(access_analyzer_regions) != expected_access_analyzer_regions
+        ):
+            raise ValueError(
+                "Access Analyzer Regional coverage must exactly match the requested Region and "
+                "same-scan S3 bucket Regions"
+            )
 
     proof_by_snapshot: dict[UUID, list[ScanSourceContract]] = {}
     resolved_relationship_snapshots: set[UUID] = set()

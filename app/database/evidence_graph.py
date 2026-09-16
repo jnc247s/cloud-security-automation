@@ -38,6 +38,7 @@ from app.collectors.base import (
     graph_collection_status_for,
     graph_collection_validation_required,
     graph_collectors_for_outcomes,
+    validate_access_analyzer_s3_region_source_status,
 )
 from app.models.evidence_graph import (
     ResourceRelationshipObservation,
@@ -46,6 +47,7 @@ from app.models.evidence_graph import (
     SourceEvidenceOutcome,
 )
 from app.models.scan import ScanScopeManifest
+from app.schemas.inventory import CollectionStatus
 from app.schemas.resource import ResourceScope
 
 
@@ -444,6 +446,15 @@ def load_evidence_graph(session: Session, scan_id: UUID) -> EvidenceGraph | None
         if stored_status is None:
             raise EvidenceGraphPersistenceError("persisted graph collector has no coverage outcome")
         try:
+            if collector_name == "access_analyzer_evidence":
+                s3_status = collector_outcomes.get("s3_buckets")
+                if not isinstance(s3_status, str):
+                    raise ValueError("Access Analyzer coverage requires an S3 outcome")
+                validate_access_analyzer_s3_region_source_status(
+                    outcomes=graph.source_outcomes,
+                    artifacts=graph.artifacts,
+                    s3_status=CollectionStatus(s3_status),
+                )
             reconstructed_status = graph_collection_status_for(
                 collector_name=collector_name,
                 outcomes=graph.source_outcomes,

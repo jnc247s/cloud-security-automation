@@ -3,8 +3,8 @@
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, and 5C IAM evidence producers.
 The accepted baseline is `main` commit `819f9ba3b26490ca23c69a6665b1baf9d7948975`. The current
-feature branch contains only the separately authorized 5D IAM Access Analyzer preflight; no 5D--5F
-collector or Sprint 6 control is presented as implemented.
+feature branch implements the separately authorized 5D IAM Access Analyzer evidence slice for
+review; no 5E--5F collector or Sprint 6 control is presented as implemented.
 
 ## System context
 
@@ -161,7 +161,7 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence graph and 5A/5B/5C producers
+## Sprint 5 evidence graph and 5A/5B/5C/5D producers
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:
@@ -258,7 +258,24 @@ them. Policy documents are strictly decoded and preserved as normalized facts, n
 as a complete authorization decision. Collection account identity remains distinct from policy
 ownership, and the controlled `aws` owner is used only for validated AWS-managed policy resources.
 The slice reuses generic persistence and authenticated read APIs, adds no migration or
-service-specific route, and registers no Sprint 6 rule. Slices 5D--5F remain unimplemented.
+service-specific route, and registers no Sprint 6 rule.
+
+The current 5D implementation adds one fact-only `access_analyzer_evidence` producer after S3
+inventory. It scans the requested Region and the sorted unique bucket-home Regions proven by
+same-scan normalized S3 resources, while every other unrequested Regional discovery remains
+rejected. Complete S3 discovery is part of Analyzer coverage: incomplete S3 collection retains
+valid requested-Region facts but makes the Analyzer rollup incomplete. Dynamic per-Region and
+per-analyzer source manifests preserve `ListAnalyzers`, filtered `ListFindingsV2`, and fully
+paginated `GetFindingV2` evidence with sanitized result-sensitive outcomes.
+
+Each discovered S3 external-access finding is a Regional `access_analyzer_finding` resource owned
+by the verified collection account and identified by a collision-safe analyzer-ARN/finding-ID
+composite. Analyzer identity, the finding's reported `resourceOwnerAccount`, and collection
+account stay distinct. A finding emits a canonical `references_resource` edge to the reported S3
+bucket; only an exact same-scan bucket resolves, while other complete identities remain typed
+unresolved references. The implementation reuses generic persistence and authenticated reads,
+adds no schema or service-specific route, and does not interpret Analyzer evidence as an S3-002
+result. Slices 5E--5F and all Sprint 6 rule execution remain unimplemented.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -331,8 +348,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A, 5B, and 5C producers emit graph records; 5D--5F collectors do not yet
-  do so.
+  traversal. The merged 5A, 5B, and 5C producers and current 5D implementation emit graph records;
+  5E--5F collectors do not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

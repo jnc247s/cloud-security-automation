@@ -2,7 +2,8 @@
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
 Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, and 5C IAM evidence
-producers.
+producers. The current feature branch projects the under-review 5D IAM Access Analyzer evidence
+through those same generic interfaces without adding a service-specific route.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
 All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and
@@ -156,8 +157,17 @@ producer adds independent Regional discovery and per-resource evidence for secur
 subnets, and VPC Flow Logs. Identity-authoritative same-scan network observations resolve 5A's
 partial instance references without assuming the collection account owns the target. The generic
 relationship API exposes instance-to-network, security-group-to-VPC, VPC-to-subnet, and exact
-VPC-to-Flow-Log observations. Sprint 0--4 collectors other than the upgraded security-group
-collector remain graphless.
+VPC-to-Flow-Log observations. The accepted 5C producer exposes IAM resources, source outcomes,
+and relationships through the same interfaces.
+
+On the current 5D feature branch, a new scan also declares `access-analyzer` service intent and
+the `access_analyzer_evidence` collector. Its Regional analyzer discovery, per-analyzer finding
+discovery, finding-summary, and fully paginated finding-detail observations are available through
+the source-outcome list/detail routes. Each external-access S3 finding is a generic
+`access-analyzer/access_analyzer_finding` resource; its history is available through the existing
+resource routes and its `references_resource` edge to the exact S3 bucket is available through
+the relationship routes. The normalized AWS finding resource is not a control-plane `Finding` and
+does not decide `S3-002`. Sprint 0--4 collectors that have not been upgraded remain graphless.
 
 ## Starting and following a scan
 
@@ -181,6 +191,12 @@ Invoke-RestMethod `
 The request body permits only optional `region`; omission uses `AWS_REGION`. Extra fields are
 rejected. The API never accepts an AWS account ID from the caller.
 
+The requested Region remains the only caller-supplied Region. On the under-review 5D path,
+inventory assembly may additionally run Access Analyzer in the sorted unique Regions of exact
+same-scan normalized S3 buckets. This does not broaden the HTTP request model or authorize an
+arbitrary Region: the persisted source contract and generic graph validation require the bucket-
+backed Region proof.
+
 The POST operation validates and persists the configured assessment-profile definition, then
 writes a `RUNNING` scan and authenticated `SCAN_STARTED` audit event referencing that exact
 profile before submitting work and returning HTTP `202 Accepted`. STS resolves the account in the
@@ -202,6 +218,11 @@ must provide a claim/lease-capable executor behind the same interface.
 to `REQUIRED_TAGS` or `STALE_ACCESS_KEY_DAYS`, must be deployed with a reviewed new version. An
 existing `RUNNING` scan is unaffected by later configuration: the executor loads the exact profile
 stored for that scan instead of selecting current or latest policy.
+
+The executor also honors the exact `requested_services` persisted for that pending scan. A scan
+created before 5D without the `access-analyzer` marker resumes with the accepted pre-5D collector
+and resource-type set; a newly created 5D scan includes the marker. Completed pre-5D scans retain
+their existing source manifests and remain readable without synthesizing Analyzer evidence.
 
 ## Error behavior
 

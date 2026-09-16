@@ -1,5 +1,8 @@
 """PostgreSQL migration, integrity, and concurrency checks in isolated test schemas."""
 
+import base64
+import hashlib
+import json
 import os
 from collections import Counter
 from collections.abc import Iterator
@@ -59,6 +62,7 @@ from tests.fakes import (
     FakeAWSClient,
     FakeClientProvider,
     FakePaginator,
+    empty_access_analyzer_client,
     empty_ec2_client,
     empty_iam_client,
 )
@@ -123,6 +127,7 @@ def _scan_settings(postgres_engine: Engine, **overrides: object) -> Settings:
 def _empty_provider(region: str = "us-east-1") -> FakeClientProvider:
     return FakeClientProvider(
         {
+            ("accessanalyzer", region): empty_access_analyzer_client(),
             ("ec2", region): empty_ec2_client(),
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
@@ -1025,7 +1030,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1254,11 +1259,115 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 }
             ]
         )
-        s3_pages = FakePaginator([{"Buckets": []}])
+        bucket_name = "acceptance-analyzer-bucket"
+        s3_pages = FakePaginator(
+            [
+                {
+                    "Buckets": [
+                        {
+                            "Name": bucket_name,
+                            "CreationDate": datetime(2026, 9, 16, 16, tzinfo=UTC),
+                            "BucketRegion": "us-east-1",
+                        }
+                    ]
+                }
+            ]
+        )
+        s3_client = FakeAWSClient(
+            paginators={"list_buckets": s3_pages},
+            responses={
+                "get_bucket_tagging": [{"TagSet": [{"Key": "Owner", "Value": "security"}]}],
+                "get_bucket_encryption": [
+                    {
+                        "ServerSideEncryptionConfiguration": {
+                            "Rules": [
+                                {"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}
+                            ]
+                        }
+                    }
+                ],
+                "get_public_access_block": [
+                    {
+                        "PublicAccessBlockConfiguration": {
+                            "BlockPublicAcls": True,
+                            "IgnorePublicAcls": True,
+                            "BlockPublicPolicy": True,
+                            "RestrictPublicBuckets": True,
+                        }
+                    }
+                ],
+            },
+        )
+        analyzer_name = "acceptance-external-access"
+        analyzer_arn = f"arn:aws:access-analyzer:us-east-1:123456789012:analyzer/{analyzer_name}"
+        analyzer_finding_id = "acceptance-external-finding"
+        analyzer_finding = {
+            "analyzedAt": datetime(2026, 9, 16, 16, 5, tzinfo=UTC),
+            "createdAt": datetime(2026, 9, 16, 16, tzinfo=UTC),
+            "id": analyzer_finding_id,
+            "resource": f"arn:aws:s3:::{bucket_name}",
+            "resourceType": "AWS::S3::Bucket",
+            "resourceOwnerAccount": "123456789012",
+            "status": "ACTIVE",
+            "updatedAt": datetime(2026, 9, 16, 16, 10, tzinfo=UTC),
+            "findingType": "ExternalAccess",
+        }
+        analyzer_pages = FakePaginator(
+            [
+                {
+                    "analyzers": [
+                        {
+                            "arn": analyzer_arn,
+                            "name": analyzer_name,
+                            "type": "ACCOUNT",
+                            "createdAt": datetime(2026, 9, 16, 15, tzinfo=UTC),
+                            "status": "ACTIVE",
+                        }
+                    ]
+                }
+            ]
+        )
+        analyzer_finding_pages = FakePaginator([{"findings": [analyzer_finding]}])
+        analyzer_detail_pages = FakePaginator(
+            [
+                {
+                    **analyzer_finding,
+                    "findingDetails": [
+                        {
+                            "externalAccessDetails": {
+                                "action": ["s3:GetObject"],
+                                "condition": {},
+                                "isPublic": True,
+                                "principal": {"AWS": "*"},
+                                "sources": [{"type": "POLICY"}],
+                                "resourceControlPolicyRestriction": "NOT_APPLICABLE",
+                            }
+                        }
+                    ],
+                }
+            ]
+        )
+        analyzer_client = FakeAWSClient(
+            paginators={
+                "list_analyzers": analyzer_pages,
+                "list_findings_v2": analyzer_finding_pages,
+                "get_finding_v2": analyzer_detail_pages,
+            }
+        )
+        analyzer_digest = hashlib.sha256(analyzer_arn.encode("utf-8")).hexdigest()
+        analyzer_finding_kind = f"access-analyzer.findings.discovery.{analyzer_digest}"
+        analyzer_resource_id = "aa1." + base64.urlsafe_b64encode(
+            json.dumps(
+                [analyzer_arn, analyzer_finding_id],
+                ensure_ascii=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).decode("ascii").rstrip("=")
         iam_client, iam_paginators = _iam_acceptance_client()
         cloudtrail_pages = FakePaginator([{"Trails": []}])
         provider = FakeClientProvider(
             {
+                ("accessanalyzer", "us-east-1"): analyzer_client,
                 ("ec2", "us-east-1"): empty_ec2_client(
                     security_groups=security_group_pages,
                     instances=instance_pages,
@@ -1267,7 +1376,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                     subnets=subnet_pages,
                     flow_logs=flow_log_pages,
                 ),
-                ("s3", "us-east-1"): FakeAWSClient(paginators={"list_buckets": s3_pages}),
+                ("s3", "us-east-1"): s3_client,
                 ("iam", "us-east-1"): iam_client,
                 ("cloudtrail", "us-east-1"): FakeAWSClient(
                     paginators={"list_trails": cloudtrail_pages}
@@ -1317,6 +1426,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             assert terminal["requested_regions"] == ["us-east-1"]
             assert terminal["successful_regions"] == ["us-east-1"]
             assert terminal["scope"]["requested_collectors"] == [
+                "access_analyzer_evidence",
                 "cloudtrail_trails",
                 "ec2_ebs_evidence",
                 "iam_account_evidence",
@@ -1326,6 +1436,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 "vpc_network_evidence",
             ]
             assert set(terminal["successful_collectors"]) == {
+                "access_analyzer_evidence",
                 "cloudtrail_trails",
                 "ec2_ebs_evidence",
                 "iam_account_evidence",
@@ -1351,6 +1462,8 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 ("ec2", "us-east-1"),
                 ("ec2", "us-east-1"),
                 ("s3", "us-east-1"),
+                ("s3", "us-east-1"),
+                ("accessanalyzer", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("cloudtrail", "us-east-1"),
@@ -1362,6 +1475,19 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             assert subnet_pages.calls == [{}]
             assert flow_log_pages.calls == [{}]
             assert s3_pages.calls == [{"PaginationConfig": {"PageSize": 1000}}]
+            assert analyzer_pages.calls == [{}]
+            assert analyzer_finding_pages.calls == [
+                {
+                    "analyzerArn": analyzer_arn,
+                    "filter": {
+                        "findingType": {"eq": ["ExternalAccess"]},
+                        "resourceType": {"eq": ["AWS::S3::Bucket"]},
+                    },
+                }
+            ]
+            assert analyzer_detail_pages.calls == [
+                {"analyzerArn": analyzer_arn, "id": analyzer_finding_id}
+            ]
             assert iam_client.paginator_requests == [
                 "list_users",
                 "list_groups",
@@ -1532,6 +1658,62 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                     "traffic_type": "ALL",
                 }
 
+                bucket_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "s3",
+                        Resource.resource_type == "s3_bucket",
+                        Resource.aws_resource_id == bucket_name,
+                    )
+                ).one()
+                bucket_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == bucket_resource.resource_id,
+                    )
+                ).one()
+                assert bucket_snapshot.normalized_configuration["bucket_region"] == "us-east-1"
+                assert (
+                    bucket_snapshot.normalized_configuration["default_encryption"]["Rules"][0][
+                        "ApplyServerSideEncryptionByDefault"
+                    ]["SSEAlgorithm"]
+                    == "AES256"
+                )
+
+                analyzer_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "access-analyzer",
+                        Resource.resource_type == "access_analyzer_finding",
+                        Resource.aws_resource_id == analyzer_resource_id,
+                    )
+                ).one()
+                analyzer_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == analyzer_resource.resource_id,
+                    )
+                ).one()
+                assert analyzer_snapshot.normalized_configuration["summary"] == {
+                    "analyzer_arn": analyzer_arn,
+                    "finding_id": analyzer_finding_id,
+                    "finding_type": "ExternalAccess",
+                    "resource_arn": f"arn:aws:s3:::{bucket_name}",
+                    "resource_type": "AWS::S3::Bucket",
+                    "resource_owner_account": "123456789012",
+                    "status": "ACTIVE",
+                    "analyzed_at": "2026-09-16T16:05:00+00:00",
+                    "created_at": "2026-09-16T16:00:00+00:00",
+                    "updated_at": "2026-09-16T16:10:00+00:00",
+                    "analysis_error_present": False,
+                }
+                external_access = analyzer_snapshot.normalized_configuration["finding_details"][0][
+                    "external_access_details"
+                ]
+                assert external_access["is_public"] is True
+                assert external_access["principal"] == {"AWS": "*"}
+                assert external_access["action"] == ["s3:GetObject"]
+
                 iam_rows = session.execute(
                     select(Resource, ResourceSnapshot)
                     .join(
@@ -1630,6 +1812,10 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 assert source_graph.scan_id == scan_id
                 assert source_graph.collection_account_id == "123456789012"
                 expected_present_once = {
+                    "access-analyzer.analyzers.discovery",
+                    "access-analyzer.finding-details",
+                    "access-analyzer.finding-summary",
+                    analyzer_finding_kind,
                     "ec2.ebs-encryption-default",
                     "ec2.flow-logs.discovery",
                     "ec2.instance",
@@ -1692,9 +1878,9 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 expected_kind_counts = Counter()
                 for (evidence_kind, _state), count in expected_source_states.items():
                     expected_kind_counts[evidence_kind] += count
-                assert len(source_graph.source_contracts) == 51
-                assert len(source_graph.artifacts) == 51
-                assert len(source_graph.source_outcomes) == 51
+                assert len(source_graph.source_contracts) == 55
+                assert len(source_graph.artifacts) == 55
+                assert len(source_graph.source_outcomes) == 55
                 assert (
                     Counter(contract.contract_key for contract in source_graph.source_contracts)
                     == expected_kind_counts
@@ -1775,7 +1961,27 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                     iam_user_snapshot.snapshot_id
                 )
 
-                assert len(source_graph.relationships) == 19
+                analyzer_outcome = source_outcomes_by_kind["access-analyzer.analyzers.discovery"]
+                analyzer_artifact = source_artifacts_by_reference[
+                    analyzer_outcome.evidence_reference
+                ]
+                assert analyzer_artifact.normalized_payload["required_regions"] == ("us-east-1",)
+                assert analyzer_artifact.normalized_payload["s3_region_discovery_complete"] is True
+                finding_outcome = source_outcomes_by_kind["access-analyzer.finding-details"]
+                finding_artifact = source_artifacts_by_reference[finding_outcome.evidence_reference]
+                assert finding_outcome.subject.stable_resource_id == (analyzer_resource.resource_id)
+                assert finding_outcome.subject.resource_snapshot_id == (
+                    analyzer_snapshot.snapshot_id
+                )
+                assert finding_artifact.normalized_payload["finding_id"] == (analyzer_finding_id)
+                assert (
+                    finding_artifact.normalized_payload["finding_details"][0][
+                        "external_access_details"
+                    ]["is_public"]
+                    is True
+                )
+
+                assert len(source_graph.relationships) == 20
                 source_relationships = {
                     (
                         relationship.relationship_type,
@@ -1805,6 +2011,26 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 assert all(
                     relationship.resolution is RelationshipResolution.RESOLVED
                     for relationship in source_graph.relationships
+                )
+                analyzer_relationship = next(
+                    relationship
+                    for relationship in source_graph.relationships
+                    if relationship.source.service == "access-analyzer"
+                )
+                assert analyzer_relationship.relationship_type is (
+                    RelationshipType.REFERENCES_RESOURCE
+                )
+                assert analyzer_relationship.source.stable_resource_id == (
+                    analyzer_resource.resource_id
+                )
+                assert analyzer_relationship.source.resource_snapshot_id == (
+                    analyzer_snapshot.snapshot_id
+                )
+                assert analyzer_relationship.target.stable_resource_id == (
+                    bucket_resource.resource_id
+                )
+                assert analyzer_relationship.target.resource_snapshot_id == (
+                    bucket_snapshot.snapshot_id
                 )
                 volume_relationship = source_relationships[
                     (RelationshipType.USES_VOLUME, "ec2_instance", "i-acceptance")
@@ -2095,6 +2321,10 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 subnet_snapshot_id = subnet_snapshot.snapshot_id
                 flow_log_resource_id = flow_log_resource.resource_id
                 flow_log_snapshot_id = flow_log_snapshot.snapshot_id
+                bucket_resource_id = bucket_resource.resource_id
+                bucket_snapshot_id = bucket_snapshot.snapshot_id
+                analyzer_resource_uuid = analyzer_resource.resource_id
+                analyzer_snapshot_id = analyzer_snapshot.snapshot_id
                 iam_resource_ids = {
                     identity: (iam_resource.resource_id, iam_snapshot.snapshot_id)
                     for identity, (iam_resource, iam_snapshot) in iam_records.items()
@@ -2260,6 +2490,64 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
                 assert network_history.json()["items"][0]["snapshot_id"] == str(network_snapshot_id)
 
             for (
+                evidence_service,
+                evidence_resource_type,
+                evidence_aws_id,
+                evidence_resource_id,
+                evidence_snapshot_id,
+            ) in (
+                (
+                    "s3",
+                    "s3_bucket",
+                    bucket_name,
+                    bucket_resource_id,
+                    bucket_snapshot_id,
+                ),
+                (
+                    "access-analyzer",
+                    "access_analyzer_finding",
+                    analyzer_resource_id,
+                    analyzer_resource_uuid,
+                    analyzer_snapshot_id,
+                ),
+            ):
+                evidence_page = client.get(
+                    "/api/v1/resources",
+                    headers=headers,
+                    params={
+                        "account_id": "123456789012",
+                        "service": evidence_service,
+                        "resource_type": evidence_resource_type,
+                        "region": "us-east-1",
+                    },
+                )
+                assert evidence_page.status_code == 200
+                assert evidence_page.json()["total"] == 1
+                evidence_document = evidence_page.json()["items"][0]
+                assert evidence_document["resource_id"] == str(evidence_resource_id)
+                assert evidence_document["aws_resource_id"] == evidence_aws_id
+                assert evidence_document["latest_snapshot"]["snapshot_id"] == str(
+                    evidence_snapshot_id
+                )
+                assert evidence_document["latest_snapshot"]["scan_id"] == str(scan_id)
+                evidence_detail = client.get(
+                    f"/api/v1/resources/{evidence_resource_id}",
+                    headers=headers,
+                )
+                assert evidence_detail.status_code == 200
+                assert evidence_detail.json() == evidence_document
+                evidence_history = client.get(
+                    f"/api/v1/resources/{evidence_resource_id}/history",
+                    headers=headers,
+                )
+                assert evidence_history.status_code == 200
+                assert evidence_history.json()["total"] == 1
+                assert evidence_history.json()["items"][0]["snapshot_id"] == str(
+                    evidence_snapshot_id
+                )
+                assert evidence_history.json()["items"][0]["scan_id"] == str(scan_id)
+
+            for (
                 iam_owner,
                 iam_resource_type,
                 iam_aws_resource_id,
@@ -2310,7 +2598,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             )
             assert source_outcome_page.status_code == 200
             source_outcome_document = source_outcome_page.json()
-            assert source_outcome_document["total"] == 51
+            assert source_outcome_document["total"] == 55
             assert {
                 UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
             } == source_outcome_ids
@@ -2424,6 +2712,23 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             assert iam_user_detail["artifact"]["normalized_payload"]["resource_id"] == (
                 "AIDAACCEPTANCEALICE"
             )
+            analyzer_detail = source_outcome_details_by_kind["access-analyzer.analyzers.discovery"]
+            assert analyzer_detail["subject"] == {
+                "subject_kind": "account",
+                "provider": "aws",
+                "aws_account_id": "123456789012",
+                "scope": "regional",
+                "region": "us-east-1",
+            }
+            assert analyzer_detail["artifact"]["normalized_payload"]["relevant_analyzer_arns"] == [
+                analyzer_arn
+            ]
+            finding_detail = source_outcome_details_by_kind["access-analyzer.finding-details"]
+            assert finding_detail["subject"]["stable_resource_id"] == str(analyzer_resource_uuid)
+            assert finding_detail["subject"]["resource_snapshot_id"] == str(analyzer_snapshot_id)
+            assert finding_detail["artifact"]["normalized_payload"]["finding_id"] == (
+                analyzer_finding_id
+            )
 
             relationship_page = client.get(
                 "/api/v1/relationships",
@@ -2432,7 +2737,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             )
             assert relationship_page.status_code == 200
             relationship_document = relationship_page.json()
-            assert relationship_document["total"] == 19
+            assert relationship_document["total"] == 20
             assert {
                 UUID(item["observation_id"]) for item in relationship_document["items"]
             } == relationship_observation_ids
@@ -2452,6 +2757,17 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
             assert uses_volume["resolution"] == "RESOLVED"
             assert uses_volume["source"]["stable_resource_id"] == str(instance_resource_id)
             assert uses_volume["target"]["stable_resource_id"] == str(volume_resource_id)
+            analyzer_reference = next(
+                item
+                for item in relationship_document["items"]
+                if item["source"]["service"] == "access-analyzer"
+            )
+            assert analyzer_reference["relationship_type"] == "references_resource"
+            assert analyzer_reference["resolution"] == "RESOLVED"
+            assert analyzer_reference["source"]["stable_resource_id"] == str(analyzer_resource_uuid)
+            assert analyzer_reference["source"]["resource_snapshot_id"] == str(analyzer_snapshot_id)
+            assert analyzer_reference["target"]["stable_resource_id"] == str(bucket_resource_id)
+            assert analyzer_reference["target"]["resource_snapshot_id"] == str(bucket_snapshot_id)
             for item in relationship_document["items"]:
                 relationship_detail = client.get(
                     f"/api/v1/relationships/{item['observation_id']}",

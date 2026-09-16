@@ -5,7 +5,13 @@ from typing import Any
 import pytest
 from botocore.exceptions import ClientError, PaginationError
 
-from app.collectors.base import CollectorEvidenceError, ResourceCollector
+from app.collectors.access_analyzer import AccessAnalyzerCollector
+from app.collectors.base import (
+    CollectionContext,
+    CollectorEvidenceError,
+    CollectorResult,
+    ResourceCollector,
+)
 from app.collectors.cloudtrail import CloudTrailCollector
 from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
@@ -59,6 +65,30 @@ class PartialCollector(ResourceCollector):
         raise CollectorEvidenceError("ListThings", "pages[0].Things")
 
 
+class RecordingAccessAnalyzerCollector(ResourceCollector):
+    collector_name = "access_analyzer_evidence"
+
+    def __init__(self) -> None:
+        self.contexts: list[CollectionContext] = []
+
+    def collect(self) -> list[NormalizedResource]:
+        raise AssertionError("the context-aware collection path is required")
+
+    def collect_with_context(self, context: CollectionContext) -> CollectorResult:
+        self.contexts.append(context)
+        return CollectorResult()
+
+
+class StaticS3Collector(ResourceCollector):
+    collector_name = "s3_buckets"
+
+    def __init__(self, resources: list[NormalizedResource]) -> None:
+        self.resources = resources
+
+    def collect(self) -> list[NormalizedResource]:
+        return self.resources
+
+
 def _resource(resource_id: str, service: str) -> NormalizedResource:
     return NormalizedResource(
         account_id="123456789012",
@@ -67,6 +97,17 @@ def _resource(resource_id: str, service: str) -> NormalizedResource:
         aws_resource_id=resource_id,
         scope=ResourceScope.REGIONAL,
         region="us-west-2",
+    )
+
+
+def _bucket(resource_id: str, region: str) -> NormalizedResource:
+    return NormalizedResource(
+        account_id="123456789012",
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id=resource_id,
+        scope=ResourceScope.REGIONAL,
+        region=region,
     )
 
 
@@ -80,6 +121,7 @@ def test_default_collectors_cover_accepted_inventory() -> None:
         SecurityGroupCollector,
         VPCNetworkCollector,
         S3BucketCollector,
+        AccessAnalyzerCollector,
         IAMAccountEvidenceCollector,
         IAMUserCollector,
         CloudTrailCollector,
@@ -116,6 +158,48 @@ def test_explicit_empty_collector_set_returns_successful_empty_snapshot() -> Non
     assert snapshot.resource_count == 0
     assert snapshot.resources == ()
     assert snapshot.collector_outcomes == ()
+
+
+def test_access_analyzer_context_uses_sorted_unique_normalized_bucket_regions() -> None:
+    analyzer = RecordingAccessAnalyzerCollector()
+
+    InventoryService(
+        FakeClientProvider(),
+        collectors=(
+            StaticS3Collector(
+                [
+                    _bucket("west", "us-west-2"),
+                    _bucket("east-two", "us-east-2"),
+                    _bucket("east-one", "us-east-1"),
+                    _bucket("east-one-again", "us-east-1"),
+                ]
+            ),
+            analyzer,
+        ),
+    ).collect()
+
+    assert len(analyzer.contexts) == 1
+    context = analyzer.contexts[0]
+    assert context.region == "us-west-2"
+    assert context.supplemental_regions == ("us-east-1", "us-east-2")
+    assert context.supplemental_region_source_complete is True
+
+
+def test_access_analyzer_context_fails_closed_without_s3_discovery() -> None:
+    analyzer = RecordingAccessAnalyzerCollector()
+    denied = ClientError(
+        {"Error": {"Code": "AccessDenied", "Message": "sensitive detail"}},
+        "ListBuckets",
+    )
+
+    snapshot = InventoryService(
+        FakeClientProvider(),
+        collectors=(FailingCollector(denied), analyzer),
+    ).collect()
+
+    assert snapshot.collection_status("failing") is CollectionStatus.FAILED
+    assert analyzer.contexts[0].supplemental_regions == ()
+    assert analyzer.contexts[0].supplemental_region_source_complete is False
 
 
 def test_aws_failure_becomes_sanitized_failed_collection_coverage() -> None:

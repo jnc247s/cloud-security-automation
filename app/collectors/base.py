@@ -1,6 +1,7 @@
 """Shared contracts and normalization helpers for AWS resource collectors."""
 
 import base64
+import hashlib
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
@@ -79,6 +80,13 @@ _UNSUPPORTED_CODES = frozenset(
 )
 
 _GRAPH_COLLECTOR_SOURCES = {
+    "access_analyzer_evidence": frozenset(
+        {
+            "access-analyzer.analyzers",
+            "access-analyzer.finding-details",
+            "access-analyzer.findings",
+        }
+    ),
     "ec2_ebs_evidence": frozenset({"ec2.instances", "ec2.volumes", "ec2.ebs-defaults"}),
     "iam_account_evidence": frozenset({"iam.account-summary"}),
     "iam_users": frozenset({"iam.users", "iam.groups", "iam.roles", "iam.policies"}),
@@ -86,6 +94,9 @@ _GRAPH_COLLECTOR_SOURCES = {
     "vpc_network_evidence": frozenset({"ec2.vpcs", "ec2.subnets", "ec2.flow-logs"}),
 }
 _REQUIRED_GRAPH_DISCOVERY_SOURCES = {
+    # Access Analyzer has one declaration per bucket-backed Region and one per analyzer. Its
+    # dynamic manifest is validated separately by _access_analyzer_coverage_is_incomplete.
+    "access_analyzer_evidence": frozenset(),
     "ec2_ebs_evidence": frozenset(
         {
             (
@@ -190,6 +201,27 @@ class CollectionContext:
     collection_account_id: str
     region: str
     collected_at: datetime
+    supplemental_regions: tuple[str, ...] = ()
+    supplemental_region_source_complete: bool = True
+
+    def __post_init__(self) -> None:
+        """Keep the bucket-derived execution scope canonical and unambiguous."""
+
+        if (
+            not isinstance(self.region, str)
+            or not self.region.strip()
+            or any(
+                not isinstance(region, str) or not region.strip()
+                for region in self.supplemental_regions
+            )
+            or self.supplemental_regions != tuple(sorted(set(self.supplemental_regions)))
+            or self.region in self.supplemental_regions
+            or not isinstance(self.supplemental_region_source_complete, bool)
+        ):
+            raise ValueError(
+                "supplemental Regions must be sorted, unique, non-empty, and exclude the "
+                "requested Region"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,6 +319,7 @@ def build_source_observation(
     state: EvidenceSourceState,
     failure_category: EvidenceFailureCategory | None = None,
     identity_authoritative: bool = False,
+    allows_supplemental_region: bool = False,
 ) -> SourceObservation:
     """Build one exact contract/artifact/outcome/provenance group."""
 
@@ -320,6 +353,7 @@ def build_source_observation(
         cardinality=cardinality,
         owner_mode=owner_mode,
         identity_authoritative=identity_authoritative,
+        allows_supplemental_region=allows_supplemental_region,
     )
     outcome = SourceEvidenceOutcome.for_observation(
         scan_id=context.scan_id,
@@ -407,27 +441,34 @@ def graph_collection_status_for(
     )
     if not selected_outcomes:
         raise ValueError("graph-aware collector has no source outcomes")
-    required_discovery_sources = _REQUIRED_GRAPH_DISCOVERY_SOURCES[collector_name]
-    actual_discovery_sources = [
-        (
-            outcome.evidence_kind,
-            outcome.collector,
-            outcome.collector_version,
-            outcome.source_api,
-        )
-        for outcome in selected_outcomes
-        if outcome.phase is EvidenceCollectionPhase.DISCOVERY
-    ]
-    if set(actual_discovery_sources) != required_discovery_sources or len(
-        actual_discovery_sources
-    ) != len(required_discovery_sources):
-        raise ValueError("graph-aware collector discovery manifest is incomplete or unknown")
-
     artifacts_by_reference: dict[str, SourceEvidenceArtifact] = {}
     for artifact in artifacts:
         if artifact.evidence_reference in artifacts_by_reference:
             raise ValueError("evidence references must be unique for coverage reconstruction")
         artifacts_by_reference[artifact.evidence_reference] = artifact
+
+    if collector_name == "access_analyzer_evidence":
+        discovery_incomplete = _access_analyzer_coverage_is_incomplete(
+            outcomes=selected_outcomes,
+            artifacts_by_reference=artifacts_by_reference,
+        )
+    else:
+        required_discovery_sources = _REQUIRED_GRAPH_DISCOVERY_SOURCES[collector_name]
+        actual_discovery_sources = [
+            (
+                outcome.evidence_kind,
+                outcome.collector,
+                outcome.collector_version,
+                outcome.source_api,
+            )
+            for outcome in selected_outcomes
+            if outcome.phase is EvidenceCollectionPhase.DISCOVERY
+        ]
+        if set(actual_discovery_sources) != required_discovery_sources or len(
+            actual_discovery_sources
+        ) != len(required_discovery_sources):
+            raise ValueError("graph-aware collector discovery manifest is incomplete or unknown")
+        discovery_incomplete = False
 
     admission_incomplete = False
     for outcome in selected_outcomes:
@@ -460,9 +501,42 @@ def graph_collection_status_for(
         )
 
     source_status = collection_status_for(selected_outcomes)
-    if source_status is CollectionStatus.SUCCEEDED and admission_incomplete:
+    if source_status is CollectionStatus.SUCCEEDED and (
+        admission_incomplete or discovery_incomplete
+    ):
         return CollectionStatus.PARTIAL
     return source_status
+
+
+def validate_access_analyzer_s3_region_source_status(
+    *,
+    outcomes: Iterable[SourceEvidenceOutcome],
+    artifacts: Iterable[SourceEvidenceArtifact],
+    s3_status: CollectionStatus,
+) -> bool:
+    """Bind persisted Analyzer Region coverage to the outer S3 discovery result."""
+
+    if not isinstance(s3_status, CollectionStatus):
+        raise TypeError("S3 collector status must use the canonical collection status")
+    selected_outcomes = tuple(
+        outcome
+        for outcome in outcomes
+        if outcome.collector in _GRAPH_COLLECTOR_SOURCES["access_analyzer_evidence"]
+    )
+    if not selected_outcomes:
+        raise ValueError("Access Analyzer graph sources are absent")
+    artifacts_by_reference: dict[str, SourceEvidenceArtifact] = {}
+    for artifact in artifacts:
+        if artifact.evidence_reference in artifacts_by_reference:
+            raise ValueError("evidence references must be unique for coverage reconstruction")
+        artifacts_by_reference[artifact.evidence_reference] = artifact
+    source_complete = not _access_analyzer_coverage_is_incomplete(
+        outcomes=selected_outcomes,
+        artifacts_by_reference=artifacts_by_reference,
+    )
+    if source_complete is not (s3_status is CollectionStatus.SUCCEEDED):
+        raise ValueError("Access Analyzer Region coverage disagrees with S3 discovery status")
+    return source_complete
 
 
 def has_graph_collection_sources(
@@ -506,6 +580,7 @@ def graph_collection_validation_required(
         return True
     requested = frozenset(requested_collectors)
     if collector_name in {
+        "access_analyzer_evidence",
         "ec2_ebs_evidence",
         "iam_account_evidence",
         "vpc_network_evidence",
@@ -514,6 +589,300 @@ def graph_collection_validation_required(
     if collector_name == "iam_users":
         return "iam_account_evidence" in requested
     return collector_name == "security_groups" and "vpc_network_evidence" in requested
+
+
+def _access_analyzer_coverage_is_incomplete(
+    *,
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+) -> bool:
+    """Validate the dynamic per-Region Analyzer manifest and its S3 coverage input."""
+
+    analyzer_outcomes: list[SourceEvidenceOutcome] = []
+    findings_outcomes: list[SourceEvidenceOutcome] = []
+    summary_outcomes: list[SourceEvidenceOutcome] = []
+    detail_outcomes: list[SourceEvidenceOutcome] = []
+    for outcome in outcomes:
+        if outcome.collector == "access-analyzer.analyzers":
+            if (
+                outcome.phase is not EvidenceCollectionPhase.DISCOVERY
+                or outcome.evidence_kind != "access-analyzer.analyzers.discovery"
+                or outcome.collector_version != "1.0.0"
+                or outcome.source_api != "access-analyzer:ListAnalyzers"
+            ):
+                raise ValueError("Access Analyzer source identity is invalid")
+            analyzer_outcomes.append(outcome)
+        elif outcome.collector == "access-analyzer.findings":
+            if outcome.phase is EvidenceCollectionPhase.DISCOVERY:
+                prefix = "access-analyzer.findings.discovery."
+                digest = outcome.evidence_kind.removeprefix(prefix)
+                if (
+                    not outcome.evidence_kind.startswith(prefix)
+                    or len(digest) != 64
+                    or any(character not in "0123456789abcdef" for character in digest)
+                    or outcome.collector_version != "1.0.0"
+                    or outcome.source_api != "access-analyzer:ListFindings"
+                ):
+                    raise ValueError("Access Analyzer source identity is invalid")
+                findings_outcomes.append(outcome)
+            elif (
+                outcome.phase is EvidenceCollectionPhase.ENRICHMENT
+                and outcome.evidence_kind == "access-analyzer.finding-summary"
+                and outcome.collector_version == "1.0.0"
+                and outcome.source_api == "access-analyzer:ListFindings"
+            ):
+                summary_outcomes.append(outcome)
+            else:
+                raise ValueError("Access Analyzer source identity is invalid")
+        elif outcome.collector == "access-analyzer.finding-details":
+            if (
+                outcome.phase is not EvidenceCollectionPhase.ENRICHMENT
+                or outcome.evidence_kind != "access-analyzer.finding-details"
+                or outcome.collector_version != "1.0.0"
+                or outcome.source_api != "access-analyzer:GetFinding"
+            ):
+                raise ValueError("Access Analyzer source identity is invalid")
+            detail_outcomes.append(outcome)
+        else:
+            raise ValueError("Access Analyzer source identity is invalid")
+
+    if not analyzer_outcomes:
+        raise ValueError("Access Analyzer discovery manifest is incomplete")
+
+    declared_regions: list[str] = []
+    required_regions: tuple[str, ...] | None = None
+    region_source_complete: bool | None = None
+    relevant_analyzers: dict[str, str] = {}
+    for outcome in analyzer_outcomes:
+        if not isinstance(outcome.subject, AccountEvidenceSubject):
+            raise ValueError("Access Analyzer discovery requires an account subject")
+        region = outcome.subject.region
+        if outcome.subject.scope is not ResourceScope.REGIONAL or region is None:
+            raise ValueError("Access Analyzer discovery requires a Regional subject")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact model invariant
+            raise ValueError("Access Analyzer discovery metadata is malformed")
+        payload_regions = payload.get("required_regions")
+        payload_region_source_complete = payload.get("s3_region_discovery_complete")
+        analyzer_arns = payload.get("relevant_analyzer_arns")
+        if (
+            payload.get("account_id") != outcome.collection_account_id
+            or payload.get("region") != region
+            or not isinstance(payload_regions, list)
+            or not payload_regions
+            or not all(isinstance(item, str) and item for item in payload_regions)
+            or payload_regions != sorted(set(payload_regions))
+            or not isinstance(payload_region_source_complete, bool)
+            or not isinstance(payload.get("analyzers"), list)
+            or not isinstance(analyzer_arns, list)
+            or not all(isinstance(item, str) and item for item in analyzer_arns)
+            or analyzer_arns != sorted(set(analyzer_arns))
+        ):
+            raise ValueError("Access Analyzer discovery metadata is malformed")
+        _validate_source_completion_metadata(outcome=outcome, payload=payload)
+
+        regional_manifest = tuple(payload_regions)
+        if required_regions is None:
+            required_regions = regional_manifest
+            region_source_complete = payload_region_source_complete
+        elif (
+            required_regions != regional_manifest
+            or region_source_complete is not payload_region_source_complete
+        ):
+            raise ValueError("Access Analyzer Regional manifests disagree")
+        declared_regions.append(region)
+        for analyzer_arn in analyzer_arns:
+            if analyzer_arn in relevant_analyzers:
+                raise ValueError("Access Analyzer identity appears in multiple Regions")
+            relevant_analyzers[analyzer_arn] = region
+
+    if required_regions is None or tuple(sorted(declared_regions)) != required_regions:
+        raise ValueError("Access Analyzer Regional discovery manifest is incomplete")
+
+    observed_analyzers: dict[str, str] = {}
+    for outcome in findings_outcomes:
+        if not isinstance(outcome.subject, AccountEvidenceSubject):
+            raise ValueError("Access Analyzer findings discovery requires an account subject")
+        region = outcome.subject.region
+        if outcome.subject.scope is not ResourceScope.REGIONAL or region is None:
+            raise ValueError("Access Analyzer findings discovery requires a Regional subject")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+            expected_schema="access-analyzer.findings.discovery",
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact model invariant
+            raise ValueError("Access Analyzer findings metadata is malformed")
+        analyzer = payload.get("analyzer")
+        analyzer_arn = analyzer.get("arn") if isinstance(analyzer, dict) else None
+        finding_ids = payload.get("finding_ids")
+        resource_arns = payload.get("resource_arns")
+        if (
+            payload.get("account_id") != outcome.collection_account_id
+            or payload.get("region") != region
+            or not isinstance(analyzer_arn, str)
+            or not analyzer_arn
+            or not isinstance(finding_ids, list)
+            or not all(isinstance(item, str) and item for item in finding_ids)
+            or finding_ids != sorted(set(finding_ids))
+            or not isinstance(resource_arns, list)
+            or not all(isinstance(item, str) and item for item in resource_arns)
+            or len(resource_arns) != len(finding_ids)
+        ):
+            raise ValueError("Access Analyzer findings metadata is malformed")
+        expected_kind = (
+            "access-analyzer.findings.discovery."
+            + hashlib.sha256(analyzer_arn.encode("utf-8")).hexdigest()
+        )
+        if outcome.evidence_kind != expected_kind:
+            raise ValueError("Access Analyzer findings identity is ambiguous")
+        _validate_source_completion_metadata(outcome=outcome, payload=payload)
+        if analyzer_arn in observed_analyzers:
+            raise ValueError("Access Analyzer findings source is duplicated")
+        observed_analyzers[analyzer_arn] = region
+
+    if observed_analyzers != relevant_analyzers:
+        raise ValueError("Access Analyzer findings manifest is incomplete or unknown")
+    expected_findings = {
+        (analyzer_arn, finding_id): region
+        for outcome in findings_outcomes
+        for analyzer_arn, finding_id, region in _finding_manifest_entries(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+        )
+    }
+    summary_subjects = _finding_enrichment_subjects(
+        outcomes=summary_outcomes,
+        artifacts_by_reference=artifacts_by_reference,
+        expected_findings=expected_findings,
+        expected_schema="access-analyzer.finding-summary",
+    )
+    detail_subjects = _finding_enrichment_subjects(
+        outcomes=detail_outcomes,
+        artifacts_by_reference=artifacts_by_reference,
+        expected_findings=expected_findings,
+        expected_schema="access-analyzer.finding-details",
+    )
+    if summary_subjects != detail_subjects or set(summary_subjects) != set(expected_findings):
+        raise ValueError("Access Analyzer finding enrichment manifest is incomplete or unknown")
+    return region_source_complete is False
+
+
+def _require_matching_source_artifact(
+    *,
+    outcome: SourceEvidenceOutcome,
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+    expected_schema: str | None = None,
+) -> SourceEvidenceArtifact:
+    artifact = artifacts_by_reference.get(outcome.evidence_reference)
+    if artifact is None:
+        raise ValueError("source outcome has no bound artifact")
+    if (
+        artifact.evidence_schema != (expected_schema or outcome.evidence_kind)
+        or artifact.evidence_schema_version != "1.0.0"
+        or artifact.scan_id != outcome.scan_id
+        or artifact.collection_account_id != outcome.collection_account_id
+        or artifact.collected_at != outcome.collected_at
+        or artifact.evidence_sha256 != outcome.evidence_sha256
+    ):
+        raise ValueError("source artifact does not match its outcome")
+    return artifact
+
+
+def _finding_manifest_entries(
+    *,
+    outcome: SourceEvidenceOutcome,
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+) -> tuple[tuple[str, str, str], ...]:
+    """Return the exact analyzer/finding identities promised by one discovery source."""
+
+    artifact = _require_matching_source_artifact(
+        outcome=outcome,
+        artifacts_by_reference=artifacts_by_reference,
+        expected_schema="access-analyzer.findings.discovery",
+    )
+    payload = artifact.model_dump(mode="json")["normalized_payload"]
+    if not isinstance(payload, dict):  # pragma: no cover - artifact model invariant
+        raise ValueError("Access Analyzer findings metadata is malformed")
+    analyzer = payload.get("analyzer")
+    analyzer_arn = analyzer.get("arn") if isinstance(analyzer, dict) else None
+    region = outcome.subject.region if isinstance(outcome.subject, AccountEvidenceSubject) else None
+    finding_ids = payload.get("finding_ids")
+    if (
+        not isinstance(analyzer_arn, str)
+        or not analyzer_arn
+        or not isinstance(region, str)
+        or not isinstance(finding_ids, list)
+    ):
+        raise ValueError("Access Analyzer findings metadata is malformed")
+    return tuple((analyzer_arn, finding_id, region) for finding_id in finding_ids)
+
+
+def _finding_enrichment_subjects(
+    *,
+    outcomes: Iterable[SourceEvidenceOutcome],
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+    expected_findings: Mapping[tuple[str, str], str],
+    expected_schema: str,
+) -> dict[tuple[str, str], UUID]:
+    """Bind each discovered finding to one exact resource enrichment subject."""
+
+    subjects: dict[tuple[str, str], UUID] = {}
+    for outcome in outcomes:
+        if not isinstance(outcome.subject, ResourceEvidenceSubject):
+            raise ValueError("Access Analyzer finding enrichment requires a resource subject")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+            expected_schema=expected_schema,
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact model invariant
+            raise ValueError("Access Analyzer finding enrichment metadata is malformed")
+        analyzer_arn = payload.get("analyzer_arn")
+        finding_id = payload.get("finding_id")
+        if not isinstance(analyzer_arn, str) or not isinstance(finding_id, str):
+            raise ValueError("Access Analyzer finding enrichment identity is invalid")
+        identity = (analyzer_arn, finding_id)
+        expected_region = expected_findings.get(identity)
+        if (
+            expected_region is None
+            or outcome.subject.service != "access-analyzer"
+            or outcome.subject.resource_type != "access_analyzer_finding"
+            or outcome.subject.scope is not ResourceScope.REGIONAL
+            or outcome.subject.region != expected_region
+            or identity in subjects
+        ):
+            raise ValueError("Access Analyzer finding enrichment identity is invalid")
+        subjects[identity] = outcome.subject.resource_snapshot_id
+    return subjects
+
+
+def _validate_source_completion_metadata(
+    *,
+    outcome: SourceEvidenceOutcome,
+    payload: Mapping[str, object],
+) -> None:
+    complete = payload.get("complete")
+    failure_category = payload.get("failure_category")
+    expected_complete = outcome.state in {
+        EvidenceSourceState.PRESENT,
+        EvidenceSourceState.EXPECTED_ABSENCE,
+    }
+    expected_failure = (
+        outcome.failure_category.value if outcome.failure_category is not None else None
+    )
+    if (
+        not isinstance(complete, bool)
+        or complete is not expected_complete
+        or failure_category != expected_failure
+    ):
+        raise ValueError("source completion metadata disagrees with its outcome")
 
 
 def _admission_projection_is_incomplete(
