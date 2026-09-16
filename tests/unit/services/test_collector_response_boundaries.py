@@ -18,7 +18,13 @@ from app.rules.network import PublicSSHRule
 from app.rules.storage import MissingBucketEncryptionRule
 from app.schemas.inventory import CollectionStatus
 from app.services.inventory_service import InventoryService
-from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, empty_ec2_client
+from tests.fakes import (
+    FakeAWSClient,
+    FakeClientProvider,
+    FakePaginator,
+    empty_ec2_client,
+    empty_iam_client,
+)
 
 
 def _iam_case() -> tuple[FakeClientProvider, type[ResourceCollector], SecurityRule]:
@@ -38,7 +44,10 @@ def _iam_case() -> tuple[FakeClientProvider, type[ResourceCollector], SecurityRu
                         ]
                     }
                 ]
-            )
+            ),
+            "list_groups": FakePaginator([{"Groups": []}]),
+            "list_roles": FakePaginator([{"Roles": []}]),
+            "list_policies": FakePaginator([{"Policies": []}]),
         }
     )
     return (
@@ -171,9 +180,7 @@ def test_all_collectors_preserve_valid_empty_inventory_semantics() -> None:
             ("s3", "us-east-1"): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
-            ("iam", "us-east-1"): FakeAWSClient(
-                paginators={"list_users": FakePaginator([{"Users": []}])}
-            ),
+            ("iam", "us-east-1"): empty_iam_client(),
             ("cloudtrail", "us-east-1"): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}
             ),

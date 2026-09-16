@@ -1,7 +1,7 @@
 # Sprint 5 control-to-evidence readiness
 
 Status: canonical evidence-readiness plan with accepted 5A and 5B evidence producers reflected;
-the 5C IAM evidence slice is authorized but not yet implemented, and this document does not enable
+the authorized 5C IAM evidence implementation is under review, and this document does not enable
 any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
@@ -400,8 +400,9 @@ approved and linked above. At the Phase 0 gate, the preflight added no collector
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
 API boundary. The accepted 5A EC2/EBS producer supplies its named evidence, and the accepted 5B
-VPC, subnet, Flow Log, and security-group graph producers supply their named evidence. The 5C IAM
-evidence slice is authorized but unimplemented; the 5C--5F producers and every Sprint 6 rule
+VPC, subnet, Flow Log, and security-group graph producers supply their named evidence. The current
+5C IAM implementation supplies its named facts and graph contracts for review; the matrix states
+remain unchanged until that producer is accepted. The 5D--5F producers and every Sprint 6 rule
 consumer remain in their named slices.
 
 Sprint 5 is `IN PROGRESS`, 5A and 5B are accepted, 5C is the current authorized slice, and Sprint

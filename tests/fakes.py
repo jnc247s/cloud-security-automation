@@ -160,3 +160,26 @@ def empty_ec2_client(
             "get_ebs_default_kms_key_id": [{}],
         },
     )
+
+
+def empty_iam_client() -> FakeAWSClient:
+    """Build one IAM fake with complete empty global 5C evidence."""
+
+    return FakeAWSClient(
+        paginators={
+            "list_users": FakePaginator([{"Users": []}]),
+            "list_groups": FakePaginator([{"Groups": []}]),
+            "list_roles": FakePaginator([{"Roles": []}]),
+            "list_policies": FakePaginator([{"Policies": []}]),
+        },
+        responses={
+            "get_account_summary": [
+                {
+                    "SummaryMap": {
+                        "AccountAccessKeysPresent": 0,
+                        "AccountMFAEnabled": 1,
+                    }
+                }
+            ]
+        },
+    )

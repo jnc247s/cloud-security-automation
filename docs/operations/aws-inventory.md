@@ -1,10 +1,10 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory and Sprint 5A EC2/EBS and 5B network producers provide a
-read-only, on-demand AWS inventory run. The standalone command returns a normalized in-memory
-snapshot and prints only an aggregate summary. It does not judge compliance, create findings,
-write to PostgreSQL, or modify AWS; the authorized scan executor separately persists the same
-snapshot through its existing transaction boundary.
+The accepted Sprint 1 inventory, accepted Sprint 5A EC2/EBS and 5B network producers, and current
+5C IAM evidence implementation provide a read-only, on-demand AWS inventory run. The standalone
+command returns a normalized in-memory snapshot and prints only an aggregate summary. It does not
+judge compliance, create findings, write to PostgreSQL, or modify AWS; the authorized scan
+executor separately persists the same snapshot through its existing transaction boundary.
 
 ## Real-world operator flow
 
@@ -19,16 +19,17 @@ snapshot through its existing transaction boundary.
    - EC2 instances, EBS volumes, and Regional EBS default settings from the configured region;
    - security groups, VPCs, subnets, and VPC Flow Logs from the configured region;
    - all account S3 buckets and selected bucket configuration;
-   - global IAM users and authentication metadata;
+   - global IAM account-summary, identity, authentication, tag, attachment, inline-policy,
+     managed-policy, and default policy-version evidence;
    - account CloudTrail trails, enriched through each trail's home region.
 8. Each AWS response crosses explicit structural and typed validation before it is transformed
    into the common `NormalizedResource` contract. AWS timestamps and other SDK values are then
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`. The 5A and 5B producers also declare source contracts and record
-   digest-bound artifacts, typed source outcomes, and relationship observations in the optional
-   evidence graph.
+   returns one `InventorySnapshot`. The 5A, 5B, and 5C producers also declare source contracts and
+   record digest-bound artifacts, typed source outcomes, and relationship observations in the
+   optional evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
     of console logs.
 
@@ -39,8 +40,8 @@ inventory-only diagnostic and does not evaluate or persist results.
 ## Read-only policy baseline
 
 The following policy is a practical baseline for the exact calls made by the current inventory,
-including 5A and 5B. Review and scope it for your partition, account, buckets, permission boundaries,
-service control policies, and role-assumption model before production use.
+including 5A, 5B, and 5C. Review and scope it for your partition, account, buckets, permission
+boundaries, service control policies, and role-assumption model before production use.
 
 ```json
 {
@@ -60,8 +61,11 @@ service control policies, and role-assumption model before production use.
         "ec2:DescribeSubnets",
         "ec2:DescribeFlowLogs",
         "s3:ListAllMyBuckets",
+        "iam:GetAccountSummary",
         "iam:ListUsers",
-        "iam:GetAccessKeyLastUsed",
+        "iam:ListGroups",
+        "iam:ListRoles",
+        "iam:ListPolicies",
         "cloudtrail:ListTrails"
       ],
       "Resource": "*"
@@ -78,14 +82,31 @@ service control policies, and role-assumption model before production use.
       "Resource": "arn:aws:s3:::*"
     },
     {
-      "Sid": "ReadUserAuthenticationMetadata",
+      "Sid": "ReadIamEvidence",
       "Effect": "Allow",
       "Action": [
+        "iam:GetUser",
         "iam:ListUserTags",
         "iam:ListMFADevices",
-        "iam:ListAccessKeys"
+        "iam:ListAccessKeys",
+        "iam:GetAccessKeyLastUsed",
+        "iam:GetGroup",
+        "iam:GetRole",
+        "iam:ListRoleTags",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:ListPolicyTags",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListAttachedGroupPolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListUserPolicies",
+        "iam:ListGroupPolicies",
+        "iam:ListRolePolicies",
+        "iam:GetUserPolicy",
+        "iam:GetGroupPolicy",
+        "iam:GetRolePolicy"
       ],
-      "Resource": "arn:aws:iam::*:user/*"
+      "Resource": "*"
     },
     {
       "Sid": "ReadTrailConfiguration",
@@ -140,6 +161,7 @@ The command emits a deliberately small JSON document:
   "collector_outcomes": {
     "cloudtrail_trails": "SUCCEEDED",
     "ec2_ebs_evidence": "SUCCEEDED",
+    "iam_account_evidence": "SUCCEEDED",
     "iam_users": "SUCCEEDED",
     "s3_buckets": "SUCCEEDED",
     "security_groups": "SUCCEEDED",
@@ -175,14 +197,14 @@ with a sanitized identity message.
 
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
 rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
-are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS
-and 5B network producers instead record independent outcomes for each declared discovery or
-enrichment source. They retain independently validated resources and report discarded items,
+are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS,
+5B network, and 5C IAM producers instead record independent outcomes for each declared discovery
+or enrichment source. They retain independently validated resources and report discarded items,
 while any incomplete source keeps the rollup `PARTIAL` unless every source is unavailable, which
 is `FAILED`. They never convert missing evidence into a clean result. The graph-aware
-security-group collector preserves its accepted name and independently admissible same-account
-NET-001/NET-002 evidence while isolating its discovery source from the separate VPC network
-collector. The external-owner admission exception is described below.
+security-group and IAM-user collectors preserve their accepted names. IAM account-summary
+evidence is isolated in its own collector so its failure cannot erase complete user/MFA evidence.
+The external-owner admission exception is described below.
 
 An observed external-owner resource is retained as a top-level resource only when an exact
 same-scan resolved edge supplies the accepted admission proof. If that proof is unavailable,
@@ -231,8 +253,9 @@ buckets are common.
 - Cross-account and AWS Organizations role orchestration are not implemented. Run once per
   explicitly assumed account role.
 - 5A normalizes `ec2_instance` and `ebs_volume` resources. 5B normalizes `security_group`, `vpc`,
-  `subnet`, and `vpc_flow_log` resources. S3 access points, directory buckets, and IAM
-  roles/groups/policies remain later-slice work.
+  `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
+  policies, and managed-policy versions. IAM Access Analyzer and expanded S3 and CloudTrail
+  evidence remain later-slice work.
 - Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains

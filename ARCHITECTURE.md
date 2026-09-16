@@ -2,9 +2,9 @@
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
 evidence-graph foundation, and the merged 5A EC2/EBS and 5B network evidence producers. The
-accepted baseline is `main` commit `66cadb20cd6a469d5a656628c27ae8cb569d8c69`. Slice 5C is
-authorized but not yet implemented; no 5C--5F collector or Sprint 6 control is presented as
-implemented.
+accepted baseline is `main` commit `66cadb20cd6a469d5a656628c27ae8cb569d8c69`. The current
+feature branch implements the separately authorized 5C IAM evidence slice for review; no 5D--5F
+collector or Sprint 6 control is presented as implemented.
 
 ## System context
 
@@ -161,7 +161,7 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence graph and 5A/5B producers
+## Sprint 5 evidence graph and 5A/5B/5C producers
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:
@@ -245,8 +245,21 @@ authenticated read APIs require no service-specific table or route.
 The accepted 5A and 5B producers add only approved read actions and
 policy-neutral evidence. They do not register `EC2-001` through `EC2-004` or `NET-003` through
 `NET-006`, change assessment-profile policy, or make any Sprint 6 rule executable. Sprint 5
-remains `IN PROGRESS`; 5C is the separately authorized current slice, and 5C--5F remain
-unimplemented.
+remains `IN PROGRESS`.
+
+The current 5C implementation preserves the established `iam_users` direct-collection contract
+and embedded MFA/access-key facts while its scan path emits account-global evidence graph
+fragments. A separate `iam_account_evidence` collector records strictly validated root access-key
+and root-MFA presence flags so account-summary failure cannot erase otherwise valid user
+evidence. The IAM graph normalizes users, groups, roles, MFA devices, access keys, customer-managed
+and referenced AWS-managed policies, default policy versions, inline policies, permissions
+boundaries, tags, trust policy, and their directional relationships. Local policies are discovered
+with `Scope=Local`; AWS-managed policies are fetched only when an attachment or boundary references
+them. Policy documents are strictly decoded and preserved as normalized facts, never interpreted
+as a complete authorization decision. Collection account identity remains distinct from policy
+ownership, and the controlled `aws` owner is used only for validated AWS-managed policy resources.
+The slice reuses generic persistence and authenticated read APIs, adds no migration or
+service-specific route, and registers no Sprint 6 rule. Slices 5D--5F remain unimplemented.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -319,8 +332,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A and 5B producers emit graph records; 5C--5F collectors do not yet do
-  so.
+  traversal. The merged 5A and 5B producers and current 5C implementation emit graph records;
+  5D--5F collectors do not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

@@ -221,6 +221,17 @@ The evidence-readiness matrix states do not change merely because 5C has started
 IAM-002, and GOV-001 remain `CURRENT`, while IAM-003 through IAM-006 remain `EXPAND` until their
 accepted producer implementation is merged. Sprint 6 remains `PLANNED`.
 
+### Current 5C implementation state
+
+The feature branch implements the authorized fact-only boundary and remains `IN PROGRESS` pending
+its complete validation, independent review, CI, and merge approval. It keeps legacy direct
+`iam_users` collection behavior, adds a separately attributable `iam_account_evidence` source,
+and uses the existing evidence graph for IAM resources, normalized artifacts, source outcomes,
+and relationships. The implementation adds no schema migration, service-specific API, assessment
+profile change, executable IAM-002 through IAM-006 or GOV-001 rule, finding policy, AWS write
+permission, or 5D--5F behavior. Matrix states and canonical sprint status remain unchanged until
+the slice is accepted on `main`.
+
 ## Objective and boundary
 
 Collect the normalized AWS evidence required by the planned Sprint 6 production control library.

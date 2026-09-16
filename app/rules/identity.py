@@ -4,9 +4,11 @@ from collections.abc import Mapping
 
 from app.assessment.models import AssessmentCandidate, AssessmentResult
 from app.assessment.profiles import AssessmentProfile
+from app.assessment.source_outcomes import EvidenceSourceState, ResourceEvidenceSubject
 from app.rules.base import RuleEvaluationError, SecurityRule
 from app.schemas.finding import ControlCategory, FindingCandidate, Severity
 from app.schemas.inventory import InventorySnapshot
+from app.schemas.resource import NormalizedResource
 
 
 class IAMUserWithoutMFARule(SecurityRule):
@@ -32,7 +34,8 @@ class IAMUserWithoutMFARule(SecurityRule):
     ) -> tuple[AssessmentCandidate, ...]:
         """Assess MFA-device evidence for each collected IAM user."""
 
-        if not snapshot.collector_succeeded("iam_users"):
+        collector_succeeded = snapshot.collector_succeeded("iam_users")
+        if not collector_succeeded and not _iam_user_discovery_succeeded(snapshot):
             return (
                 self.assessment_for_unavailable_collector(
                     snapshot,
@@ -67,6 +70,24 @@ class IAMUserWithoutMFARule(SecurityRule):
 
         assessments: list[AssessmentCandidate] = []
         for resource in resources:
+            if not collector_succeeded and not _iam_user_mfa_evidence_succeeded(
+                snapshot,
+                resource,
+            ):
+                assessments.append(
+                    self.assessment_for_resource(
+                        snapshot,
+                        profile,
+                        resource,
+                        result=AssessmentResult.INSUFFICIENT_EVIDENCE,
+                        evidence=None,
+                        missing_evidence=("source_outcomes.iam.user.mfa-devices.PRESENT",),
+                        reason="Required IAM MFA-device evidence is unavailable or invalid.",
+                        collector="iam_users",
+                        source_api="iam:ListMFADevices",
+                    )
+                )
+                continue
             mfa_devices = resource.configuration.get("mfa_devices")
             error_path = _mfa_devices_error_path(mfa_devices)
             if error_path is not None:
@@ -111,7 +132,9 @@ class IAMUserWithoutMFARule(SecurityRule):
         return tuple(assessments)
 
     def evaluate(self, snapshot: InventorySnapshot) -> tuple[FindingCandidate, ...]:
-        self.require_collector_success(snapshot, "iam_users")
+        collector_succeeded = snapshot.collector_succeeded("iam_users")
+        if not collector_succeeded and not _iam_user_discovery_succeeded(snapshot):
+            self.require_collector_success(snapshot, "iam_users")
         findings: list[FindingCandidate] = []
         resources = sorted(
             (
@@ -123,6 +146,15 @@ class IAMUserWithoutMFARule(SecurityRule):
         )
 
         for resource in resources:
+            if not collector_succeeded and not _iam_user_mfa_evidence_succeeded(
+                snapshot,
+                resource,
+            ):
+                raise RuleEvaluationError(
+                    self.control_id,
+                    resource.aws_resource_id,
+                    "evidence_graph.iam.user.mfa-devices",
+                )
             mfa_devices = resource.configuration.get("mfa_devices")
             error_path = _mfa_devices_error_path(mfa_devices)
             if error_path is not None:
@@ -161,3 +193,43 @@ def _mfa_devices_error_path(mfa_devices: object) -> str | None:
         if not isinstance(serial_number, str) or not serial_number.strip():
             return f"configuration.mfa_devices[{index}].SerialNumber"
     return None
+
+
+def _iam_user_discovery_succeeded(snapshot: InventorySnapshot) -> bool:
+    """Use the 5C source boundary without weakening graphless collector coverage."""
+
+    graph = snapshot.evidence_graph
+    if graph is None:
+        return False
+    return any(
+        outcome.evidence_kind == "iam.users.discovery"
+        and outcome.collector == "iam.users"
+        and outcome.source_api == "iam:ListUsers"
+        and outcome.state is EvidenceSourceState.PRESENT
+        for outcome in graph.source_outcomes
+    )
+
+
+def _iam_user_mfa_evidence_succeeded(
+    snapshot: InventorySnapshot,
+    resource: NormalizedResource,
+) -> bool:
+    """Require exact successful ListMFADevices evidence for one observed IAM user."""
+
+    graph = snapshot.evidence_graph
+    if graph is None:
+        return False
+    return any(
+        outcome.evidence_kind == "iam.user.mfa-devices"
+        and outcome.collector == "iam.users"
+        and outcome.source_api == "iam:ListMFADevices"
+        and outcome.state is EvidenceSourceState.PRESENT
+        and isinstance(outcome.subject, ResourceEvidenceSubject)
+        and outcome.subject.aws_account_id == resource.account_id
+        and outcome.subject.service == resource.service
+        and outcome.subject.resource_type == resource.resource_type
+        and outcome.subject.aws_resource_id == resource.aws_resource_id
+        and outcome.subject.scope is resource.scope
+        and outcome.subject.region == resource.region
+        for outcome in graph.source_outcomes
+    )

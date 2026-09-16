@@ -1,7 +1,8 @@
 # Threat model
 
 Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
-foundation, and the merged 5A EC2/EBS and 5B network evidence producers
+foundation, the merged 5A EC2/EBS and 5B network evidence producers, and the current 5C IAM
+evidence implementation
 Baseline: `main` commit `66cadb20cd6a469d5a656628c27ae8cb569d8c69`
 Last reviewed: 2026-09-16
 
@@ -10,10 +11,11 @@ Last reviewed: 2026-09-16
 The model covers AWS credential use, fact collection, deterministic assessment, PostgreSQL
 history, the source-outcome/relationship evidence-graph foundation, the service layer,
 OIDC/development authentication, capability authorization, FastAPI, and the in-process scan
-executor. It includes the merged 5A fact-only EC2/EBS producer and the merged 5B fact-only
-security-group, VPC, subnet, and Flow Log implementation. No 5C--5F collector, Sprint 6
-production rule, production deployment, frontend, Terraform infrastructure, remediation
-execution, or AI agent is implemented.
+executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fact-only
+security-group, VPC, subnet, and Flow Log implementation, and the current fact-only 5C IAM
+account, identity, and policy implementation. No 5D--5F collector, Sprint 6 production rule,
+production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
+implemented.
 
 Protect:
 
@@ -59,11 +61,11 @@ and runtime workload identity are supplied by the deployment environment.
 | T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, audit/evidence-graph history guards, terminal graph-completeness checks, and fail-closed populated-downgrade preflights | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
-| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, while 5B independently paginates security groups, VPCs, subnets, and Flow Logs and retains only validated sibling facts | 5C--5F collectors must add matching source contracts and validation; remaining Sprint 0--4 legacy collectors still discard the affected collector's otherwise valid items on malformed data |
-| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; 5A and 5B emit digest-bound exact source manifests | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists, and 5C--5F collectors do not yet contribute source contracts |
+| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, 5B independently paginates network sources, and 5C independently validates IAM discovery and enrichment sources while retaining valid siblings | 5D--5F collectors must add matching source contracts and validation; remaining legacy collectors still discard the affected collector's otherwise valid items on malformed data |
+| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; 5A, 5B, and the current 5C implementation emit digest-bound exact source manifests | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists, and 5D--5F collectors do not yet contribute source contracts |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
-| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners, while 5B accepts AWS `OwnerId`, refines a partial target only from exactly one matching same-scan `PRESENT` identity proof, and records pruned external identities as canonical digest-bound admission gaps without falsifying the AWS source state | A privileged database/schema operator remains trusted; 5A and 5B are merged, while 5C--5F producers have not integrated the contract |
+| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners; 5B refines owner-incomplete targets only with exact proof; 5C keeps collection account distinct from IAM policy owner, validates partition-aware ARNs, and admits the `aws` owner only for referenced AWS-managed policy identities | A privileged database/schema operator remains trusted; 5A and 5B are merged, current 5C is under review, and 5D--5F producers have not integrated the contract |
 
 ## Future-boundary threats
 
