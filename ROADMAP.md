@@ -16,7 +16,7 @@ Accepted baseline: `main` at `97e9217145dba643401053b4c09afa2bc01c999c` (Sprints
 | Sprint 2.1 | Assessment Framework / NIST / Control Contracts | **COMPLETE** |
 | Sprint 3 | Persistence / History / Evidence / Findings / Exceptions / Audit | **COMPLETE** |
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
-| Sprint 5 | AWS Evidence Expansion | **NEXT** |
+| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |
 | Sprint 6 | Production Security Controls | **PLANNED** |
 | Sprint 7 | Dashboard / NIST Technical Posture | **PLANNED** |
 | Sprint 8 | Human-Approved Remediation | **PLANNED** |
@@ -24,24 +24,32 @@ Accepted baseline: `main` at `97e9217145dba643401053b4c09afa2bc01c999c` (Sprints
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
 
-No sprint is currently `IN PROGRESS`. Sprint 5 has not begun.
+Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
+foundation is `FOUNDATION_READY_FOR_5A`; 5A is the next collector slice and has not started.
 
-## Next: Sprint 5 — AWS Evidence Expansion
+## In progress: Sprint 5 — AWS Evidence Expansion
 
 Sprint 5 collects the normalized evidence needed by the Sprint 6 production control library; it
 does not implement those controls. Approved roadmap scope includes EC2 and EBS facts, VPC/network
 facts, IAM account and policy evidence, IAM Access Analyzer evidence where available, expanded S3
 and CloudTrail facts, explicit global-versus-regional execution scope, and resource relationships.
 
-The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`. Before
-implementation, complete its analysis-only preflight and approve a reviewable execution sequence.
-Only then change Sprint 5 from `NEXT` to `IN PROGRESS`.
+The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`. Its analysis-only
+preflight and reviewable execution sequence are complete. The shared 5G
+relationship/source-outcome evidence foundation has passed its acceptance gate as
+`FOUNDATION_READY_FOR_5A`; no collector slice has started, and 5A remains upcoming.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
 implementation slice is the 5G relationship/source-outcome persistence foundation documented in
 the active plan, followed by 5A through 5F and the 5G closure. This gate makes Sprint 5 ready to
-start; the sprint remains `NEXT` until an implementation branch begins.
+start; the approved foundation implementation branch has now begun and moved the sprint to
+`IN PROGRESS`.
+
+The shared foundation gate completed on 2026-09-15 at migration head `20260915_0003`. Domain,
+migration, PostgreSQL, authenticated API, full-regression, lint, format, container, and independent
+review gates passed with no remaining review findings. This readiness state does not start 5A or
+change Sprint 6 from `PLANNED`.
 
 ## Pre-Sprint 5 attention
 
@@ -60,11 +68,13 @@ an approved Sprint 5 plan:
   policy. The established schema already supports this roll-forward, so no migration was added.
 - **RESOLVED — acceptance coverage:** the PostgreSQL integration suite now drives authenticated
   HTTP scan creation through deterministic fake AWS collection, real execution and persistence,
-  and the principal read APIs. Sprint 5 remains `NEXT` and has not begun.
+  and the principal read APIs. At the time of this repair, Sprint 5 remained `NEXT` and had not
+  begun.
 - **RESOLVED — collector failure contract:** existing Sprint 1 collectors now validate required
   identities, promoted nested evidence, pages, tags, permissions, and duplicate stable resources.
   Operational AWS failures remain `FAILED`, malformed evidence becomes sanitized `PARTIAL`, and
-  programming defects remain visible. Sprint 5 remains `NEXT` and adds no evidence in this repair.
+  programming defects remain visible. This repair added no Sprint 5 evidence and was completed
+  before Sprint 5 began.
 - **MEDIUM — audit principal context:** scan-start audit records retain the authenticated subject,
   but not issuer, roles, or the authorizing capability.
 - **MEDIUM — authorization scope:** authenticated readers can query every account in this

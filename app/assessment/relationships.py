@@ -1,8 +1,8 @@
 """Canonical typed relationships between normalized AWS resource identities.
 
-This module is deliberately independent of collectors, persistence, services, and HTTP.  It
-defines the validated domain contract that Sprint 5 producers and consumers will share without
-starting that sprint or changing the accepted Sprint 0--4 runtime.
+This module is deliberately independent of collectors, persistence, services, and HTTP. It
+defines the validated domain contract shared by Sprint 5 producers and consumers while those
+outer layers retain their separate responsibilities.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from app.assessment.identities import (
 from app.assessment.identities import (
     stable_resource_id as calculate_stable_resource_id,
 )
-from app.schemas.resource import ResourceScope
+from app.schemas.resource import ResourceScope, canonical_resource_scope
 
 RELATIONSHIP_SCHEMA_VERSION = "1.0.0"
 
@@ -88,27 +88,6 @@ _IAM_MANAGED_POLICY_TYPES = frozenset(
     }
 )
 
-_RESOURCE_SCOPES: dict[ResourceSignature, ResourceScope] = {
-    ("access-analyzer", "access_analyzer_finding"): ResourceScope.REGIONAL,
-    ("cloudtrail", "cloudtrail_trail"): ResourceScope.REGIONAL,
-    ("ec2", "ebs_volume"): ResourceScope.REGIONAL,
-    ("ec2", "ec2_instance"): ResourceScope.REGIONAL,
-    ("ec2", "security_group"): ResourceScope.REGIONAL,
-    ("ec2", "subnet"): ResourceScope.REGIONAL,
-    ("ec2", "vpc"): ResourceScope.REGIONAL,
-    ("ec2", "vpc_flow_log"): ResourceScope.REGIONAL,
-    ("iam", "iam_access_key"): ResourceScope.GLOBAL,
-    ("iam", "iam_aws_managed_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_customer_managed_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_group"): ResourceScope.GLOBAL,
-    ("iam", "iam_inline_policy"): ResourceScope.GLOBAL,
-    ("iam", "iam_managed_policy_version"): ResourceScope.GLOBAL,
-    ("iam", "iam_mfa_device"): ResourceScope.GLOBAL,
-    ("iam", "iam_role"): ResourceScope.GLOBAL,
-    ("iam", "iam_user"): ResourceScope.GLOBAL,
-    ("kms", "kms_key"): ResourceScope.REGIONAL,
-    ("s3", "s3_bucket"): ResourceScope.REGIONAL,
-}
 _AWS_OWNED_IAM_TYPES = frozenset(
     {
         ("iam", "iam_aws_managed_policy"),
@@ -233,7 +212,7 @@ class RelationshipEndpoint(BaseModel):
         if self.scope is ResourceScope.GLOBAL and self.region is not None:
             raise ValueError("global relationship endpoints must not define a region")
 
-        expected_scope = _RESOURCE_SCOPES.get((self.service, self.resource_type))
+        expected_scope = canonical_resource_scope(self.service, self.resource_type)
         if expected_scope is not None and self.scope is not expected_scope:
             raise ValueError(
                 f"{self.service}/{self.resource_type} relationship endpoints must use "
@@ -348,7 +327,7 @@ class UnresolvedRelationshipTarget(BaseModel):
         if self.scope is ResourceScope.GLOBAL and self.region is not None:
             raise ValueError("global unresolved targets must not define a region")
 
-        expected_scope = _RESOURCE_SCOPES.get((self.service, self.resource_type))
+        expected_scope = canonical_resource_scope(self.service, self.resource_type)
         if expected_scope is not None and self.scope is not expected_scope:
             raise ValueError(
                 f"{self.service}/{self.resource_type} unresolved targets must use "

@@ -1,7 +1,8 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules and the accepted Sprint 4 security
-boundary. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
+including the in-progress Sprint 5 shared evidence-graph foundation. Threats and residual risks
+are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -27,9 +28,10 @@ intentionally unauthenticated. They must not return secrets or resource evidence
 | `APPROVER` | `READ`, `PROPOSE`, `APPROVE` |
 | `ADMIN` | `READ`, `PROPOSE`, `APPROVE`, `EXECUTE` |
 
-Current query endpoints require `READ`; `POST /api/v1/scans` requires `EXECUTE`, which only
-`ADMIN` currently holds. `PROPOSE` and `APPROVE` are reserved for later explicit workflows. Do not
-collapse the four capabilities into a generic administrator permission.
+Current query endpoints—including source-outcome/artifact and resource-relationship reads—require
+`READ`; `POST /api/v1/scans` requires `EXECUTE`, which only `ADMIN` currently holds. `PROPOSE` and
+`APPROVE` are reserved for later explicit workflows. Do not collapse the four capabilities into a
+generic administrator permission.
 
 The accepted application is a single-trust-domain control plane. A reader can query all persisted
 AWS accounts; there is no tenant/account claim enforcement or row-level isolation. Do not deploy
@@ -75,8 +77,10 @@ human authorization.
 ## Sensitive data, logging, and errors
 
 Treat account identifiers, ARNs, topology, policies, normalized configurations, evidence,
-findings, exceptions, audit metadata, database dumps, and backups as sensitive security data.
-Grant database and backup access on least privilege.
+source manifests, source outcomes, normalized source artifacts, resource relationships, findings,
+exceptions, audit metadata, database dumps, and backups as sensitive security data. Grant
+database and backup access on least privilege. A `READ` principal is trusted to receive normalized
+artifact payloads from source-outcome detail; there is no field-level or account-level policy.
 
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine
@@ -89,6 +93,12 @@ Collector evidence failures expose only an operation name and structural fact pa
 include the rejected AWS value or raw response. Operational botocore failures, malformed evidence,
 and programming defects remain separate categories: do not add a broad exception handler that
 hides an application defect as incomplete AWS evidence.
+
+Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
+artifact to a canonical digest, rejects known credential/authorization key names, and exposes
+controlled source failure categories instead of raw provider exceptions. Relationship provenance
+must identify exactly one `PRESENT` source outcome. These controls reduce accidental secret and
+fabricated-edge exposure; they do not make normalized cloud configuration non-sensitive.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -109,6 +119,20 @@ locks the scan table before checking so concurrent writes cannot create a time-o
 offline SQL generation across the boundary fails closed. This guard does not authorize a
 production rollback: quiesce writers, verify a restorable backup, and follow the documented
 recovery runbook. Never fabricate or delete history to satisfy an older constraint.
+
+The environment also blocks downgrade across `20260915_0003` before DDL when the older schema
+would lose source-manifest or evidence-graph history, or cannot represent an exceptional-owner or
+supplemental-Region snapshot admitted by the new provenance contract. PostgreSQL excludes writers
+across the inspected scan, scope, resource, snapshot, and graph tables while deciding and
+transitioning compatible data. Offline generation across this boundary fails closed. Keep the
+current revision after a block and follow the documented backup and recovery runbook; never erase
+graph rows, rewrite resource ownership/Region, or stamp around the revision to force rollback.
+
+Collection-account identity is not resource ownership or caller authorization. The controlled
+`aws` owner and a different 12-digit owner are admitted only with exact, same-scan,
+identity-authoritative source evidence; an external owner also requires a resolved relationship.
+Persisting or returning such an observation does not expand the scan principal, grant AWS access,
+or create tenant isolation.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

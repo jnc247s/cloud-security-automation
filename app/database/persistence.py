@@ -28,6 +28,7 @@ from app.assessment.models import AssessmentCandidate, AssessmentResult
 from app.assessment.profiles import AssessmentProfile
 from app.assessment.provenance import control_catalog_sha256
 from app.database.catalogs import ensure_assessment_profile, ensure_control_catalog
+from app.database.evidence_graph import persist_evidence_graph
 from app.database.integrity import canonical_json_sha256
 from app.database.validation import canonical_scope_document, validate_expected_assessments
 from app.models import (
@@ -149,7 +150,7 @@ def _validate_bundle(
 
     targets: dict[UUID, NormalizedResource] = {}
     for resource in snapshot.resources:
-        if resource.account_id != snapshot.account_id:
+        if resource.account_id != snapshot.account_id and snapshot.evidence_graph is None:
             raise ScanPersistenceError("inventory contains a different AWS account")
         if resource.service not in scope.requested_services:
             raise ScanPersistenceError("resource service is outside the requested scope")
@@ -159,6 +160,7 @@ def _validate_bundle(
             resource.region is not None
             and resource.region not in scope.requested_regions
             and resource.service not in {"s3", "cloudtrail"}
+            and snapshot.evidence_graph is None
         ):
             raise ScanPersistenceError("resource region is outside the requested scope")
         target_id = _target_snapshot_id(snapshot.scan_id, resource)
@@ -171,8 +173,8 @@ def _validate_bundle(
     expected_inventory_sha256 = inventory_sha256(snapshot)
     expected_catalog_sha256 = control_catalog_sha256(catalog)
     for candidate in assessments:
-        if candidate.account_id != snapshot.account_id or candidate.scan_id != snapshot.scan_id:
-            raise ScanPersistenceError("assessment belongs to another account or scan")
+        if candidate.scan_id != snapshot.scan_id:
+            raise ScanPersistenceError("assessment belongs to another scan")
         if candidate.inventory_sha256 != expected_inventory_sha256:
             raise ScanPersistenceError("inventory facts changed after assessment")
         if candidate.control_catalog_sha256 != expected_catalog_sha256:
@@ -307,19 +309,21 @@ def persist_scan_result(
                 .isoformat()
             )
         assessment_documents.append(document)
-    result_checksum = canonical_json_sha256(
-        {
-            "scan_id": str(snapshot.scan_id),
-            "observed_at": snapshot.collected_at.astimezone(UTC).isoformat(),
-            "started_at": started_at.isoformat(),
-            "completed_at": completed_at.isoformat(),
-            "scanner_version": scanner_version,
-            "scope": canonical_scope_document(scope),
-            "catalog_sha256": control_catalog_sha256(catalog),
-            "resources": {str(key): _state_document(value) for key, value in targets.items()},
-            "assessments": assessment_documents,
-        }
-    )
+    result_document: dict[str, Any] = {
+        "scan_id": str(snapshot.scan_id),
+        "observed_at": snapshot.collected_at.astimezone(UTC).isoformat(),
+        "started_at": started_at.isoformat(),
+        "completed_at": completed_at.isoformat(),
+        "scanner_version": scanner_version,
+        "scope": canonical_scope_document(scope),
+        "catalog_sha256": control_catalog_sha256(catalog),
+        "resources": {str(key): _state_document(value) for key, value in targets.items()},
+        "assessments": assessment_documents,
+    }
+    if snapshot.evidence_graph is not None:
+        result_document["inventory_schema_version"] = "2.0.0"
+        result_document["evidence_graph"] = snapshot.evidence_graph.canonical_document()
+    result_checksum = canonical_json_sha256(result_document)
     existing = session.scalar(
         select(Scan).where(Scan.scan_id == snapshot.scan_id).with_for_update()
     )
@@ -406,14 +410,34 @@ def persist_scan_result(
                 for key, value in scope_values.items()
             },
             collector_outcomes=scope.collector_outcome_document(),
+            source_manifest_schema_version=(
+                snapshot.evidence_graph.source_manifest_schema_version
+                if snapshot.evidence_graph is not None
+                else None
+            ),
+            source_manifest_checksum=(
+                snapshot.evidence_graph.source_manifest_sha256
+                if snapshot.evidence_graph is not None
+                else None
+            ),
             recorded_at=completed_at,
         )
     )
     resource_ids: dict[UUID, UUID] = {}
     # A stable lock order prevents opposing multi-resource scans from deadlocking.
     for snapshot_id, target in sorted(targets.items(), key=lambda item: item[1].identity):
-        resource_ids[snapshot_id] = _persist_resource_snapshot(
-            session, scan, snapshot_id, target, snapshot.collected_at
+        resource_ids[snapshot_id] = _ensure_resource(session, target)
+    session.flush()
+    if snapshot.evidence_graph is not None:
+        persist_evidence_graph(session, snapshot.evidence_graph)
+    for snapshot_id, target in sorted(targets.items(), key=lambda item: item[1].identity):
+        _add_resource_snapshot(
+            session,
+            scan,
+            snapshot_id,
+            resource_ids[snapshot_id],
+            target,
+            snapshot.collected_at,
         )
     session.flush()
 
@@ -559,12 +583,9 @@ def fail_pending_scan(
     return scan
 
 
-def _persist_resource_snapshot(
+def _ensure_resource(
     session: Session,
-    scan: Scan,
-    snapshot_id: UUID,
     target: NormalizedResource,
-    observed_at: datetime,
 ) -> UUID:
     resource_id = stable_resource_id(
         provider="aws",
@@ -595,6 +616,17 @@ def _persist_resource_snapshot(
     )
     if resource is None or any(getattr(resource, key) != value for key, value in identity.items()):
         raise ScanPersistenceError("stable resource identity conflict")
+    return resource_id
+
+
+def _add_resource_snapshot(
+    session: Session,
+    scan: Scan,
+    snapshot_id: UUID,
+    resource_id: UUID,
+    target: NormalizedResource,
+    observed_at: datetime,
+) -> None:
     state = _state_document(target)
     session.add(
         ResourceSnapshot(
@@ -611,7 +643,6 @@ def _persist_resource_snapshot(
             observed_at=observed_at,
         )
     )
-    return resource_id
 
 
 def _reconcile_finding(

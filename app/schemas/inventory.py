@@ -5,8 +5,17 @@ from enum import StrEnum
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
+from app.assessment.evidence_graph import EvidenceGraph, validate_graph_resources
 from app.schemas.resource import NormalizedResource
 
 
@@ -38,6 +47,16 @@ class InventorySnapshot(BaseModel):
     collected_at: datetime
     collector_outcomes: tuple[CollectorOutcome, ...]
     resources: tuple[NormalizedResource, ...]
+    evidence_graph: EvidenceGraph | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_snapshot(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        """Keep graphless Sprint 0--4 serialization byte-shape compatible."""
+
+        document = handler(self)
+        if self.evidence_graph is None:
+            document.pop("evidence_graph", None)
+        return document
 
     @field_validator("collected_at")
     @classmethod
@@ -50,11 +69,23 @@ class InventorySnapshot(BaseModel):
 
     @model_validator(mode="after")
     def require_unique_collector_outcomes(self) -> Self:
-        """Reject ambiguous coverage for the same collector."""
+        """Reject ambiguous coverage and bind an optional graph to this snapshot."""
 
         names = tuple(outcome.collector_name for outcome in self.collector_outcomes)
         if len(names) != len(set(names)):
             raise ValueError("collector outcomes must be unique")
+        if self.evidence_graph is not None:
+            if self.evidence_graph.scan_id != self.scan_id:
+                raise ValueError("evidence graph must identify the inventory snapshot scan")
+            if self.evidence_graph.collection_account_id != self.account_id:
+                raise ValueError("evidence graph must identify the inventory collection account")
+            if self.evidence_graph.collected_at != self.collected_at:
+                raise ValueError("evidence graph must use the inventory collection time")
+            validate_graph_resources(
+                graph=self.evidence_graph,
+                resources=self.resources,
+                requested_region=self.requested_region,
+            )
         return self
 
     @property

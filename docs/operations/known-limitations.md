@@ -1,11 +1,86 @@
-# Known limitations after Sprint 4
+# Current known limitations
 
-This register records accepted implementation reality discovered during the 2026-09-05
-governance audit. These items were not silently repaired by documentation work. `ROADMAP.md`
-identifies the items that require pre-Sprint 5 triage; security consequences belong in
-`THREAT_MODEL.md`.
+This register records accepted Sprint 0--4 implementation reality and the in-progress Sprint 5
+shared evidence-graph foundation. These items are not silently repaired by documentation work.
+`ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
+
+### Guarded populated downgrade from `20260915_0003` — RESOLVED
+
+Revision `20260915_0003` adds the shared source-manifest, source-artifact/outcome, relationship,
+and controlled resource-owner/Region provenance boundary. Its predecessor cannot represent any
+evidence-graph row or source-manifest identity. It also cannot represent a snapshot whose owner or
+Region was admitted only by the new identity-authoritative source evidence rules.
+
+The Alembic environment preflights every online downgrade path that would execute the
+`20260915_0003` downgrade. It blocks before any migration step if it finds either category of
+incompatible history. The error is sanitized: it reports only the incompatible category and this
+runbook, never a scan, resource, source-outcome, relationship, account, artifact, digest, payload,
+or connection value. On PostgreSQL, Alembic takes `ACCESS EXCLUSIVE` locks on `scans`,
+`scan_scope_manifests`, `resources`, `resource_snapshots`, and all four graph tables before the
+check, then holds them through a compatible transition. Offline SQL generation is always blocked
+because it cannot inspect retained data.
+
+Before any planned rollback:
+
+1. Stop or quiesce the API and scan workers, and use the current repository checkout so this
+   preflight is active.
+2. Take and verify a restorable database backup. Preserve that backup outside the database being
+   changed.
+3. In a non-production rehearsal or explicitly approved maintenance window, use this read-only
+   PostgreSQL query to determine compatibility without returning identifiers or evidence:
+
+   ```sql
+   SELECT
+       EXISTS (
+           SELECT 1
+           FROM scan_scope_manifests
+           WHERE source_manifest_schema_version IS NOT NULL
+              OR source_manifest_checksum IS NOT NULL
+           UNION ALL SELECT 1 FROM scan_source_contracts
+           UNION ALL SELECT 1 FROM source_evidence_artifacts
+           UNION ALL SELECT 1 FROM source_evidence_outcomes
+           UNION ALL SELECT 1 FROM resource_relationship_observations
+       ) AS retained_evidence_graph,
+       EXISTS (
+           SELECT 1
+           FROM resource_snapshots AS rs
+           JOIN resources AS r ON r.resource_id = rs.resource_id
+           JOIN scans AS s ON s.scan_id = rs.scan_id
+           WHERE r.aws_account_id <> s.aws_account_id
+              OR r.scope <> rs.scope
+              OR (
+                   r.scope = 'global'
+                   AND (r.region <> 'global' OR rs.region IS NOT NULL)
+              )
+              OR (
+                   r.scope = 'regional'
+                   AND (
+                       r.region <> rs.region
+                       OR (
+                           r.service NOT IN ('s3', 'cloudtrail')
+                           AND NOT EXISTS (
+                               SELECT 1
+                               FROM jsonb_array_elements_text(s.requested_regions) AS region(value)
+                               WHERE region.value = rs.region
+                           )
+                       )
+                   )
+              )
+       ) AS snapshots_incompatible_with_previous_guard;
+   ```
+
+4. If both values are false, the online Alembic downgrade may use the established migration path.
+   The preflight repeats the check while PostgreSQL excludes writers.
+5. If either value is true, keep the database at `20260915_0003`. Preserve the history and either
+   retain the current schema, restore a known-compatible backup into an isolated environment, or
+   design a separate reviewed history-preserving transition.
+
+Never delete graph rows, clear manifest fields, rewrite a resource owner or Region, fabricate
+provenance, disable the guard, or stamp around the revision merely to force rollback. No
+destructive data-conversion procedure is approved. Passing this preflight does not authorize a
+production downgrade; production database mutation still requires explicit human approval.
 
 ### Guarded populated downgrade from `20260904_0002` — RESOLVED
 
@@ -99,8 +174,9 @@ may be historical. Define the intended projection before relying on it for mutab
 
 All recognized roles have `READ`, and reads are not restricted by AWS account or tenant claim.
 Filters narrow queries but are not authorization. Operate one database/API within one trusted
-security organization; do not expose it as multi-tenant SaaS without object-level policy and
-denied-path tests.
+security organization; this includes normalized source artifacts and relationship topology, even
+when a resource owner differs from the verified collection account. Do not expose it as
+multi-tenant SaaS without object-level policy and denied-path tests.
 
 ### Audit identity context — MEDIUM
 
@@ -123,6 +199,13 @@ runs. Consumers must consider both status and timestamp.
 
 List ordering is deterministic, but `total`, `limit`, and `offset` do not create a frozen database
 snapshot. Concurrent writes may shift items between page requests.
+
+### Generic graph reads are bounded projections — LOW
+
+The relationship and source-outcome APIs provide authenticated, filterable list/detail reads.
+They do not expose arbitrary graph-query syntax, recursive or multi-hop traversal, a standalone
+source-contract view, or a standalone artifact list. Clients must compose bounded requests and
+must not infer reverse edges or treat an unresolved target reference as an observed resource.
 
 ## Collection and execution
 
@@ -147,11 +230,13 @@ STS identity also fails closed without coercing null fields or printing response
 
 ### Collector-level partial granularity — LOW
 
-Collection remains all-or-nothing for each collector. One malformed or inaccessible item discards
-that collector's otherwise valid in-memory resources, marks its coverage incomplete, and leaves
-independent collectors running. This is conservative and prevents false `PASS`, but a future
-design may retain validated items alongside item-level coverage. Do not add that larger outcome
-model implicitly while expanding Sprint 5 evidence.
+Collection remains all-or-nothing for each current Sprint 0--4 collector. One malformed or
+inaccessible item discards that collector's otherwise valid in-memory resources, marks its
+coverage incomplete, and leaves independent collectors running. The Sprint 5 foundation can
+validate, persist, and return source-level outcomes and artifacts, but no AWS collector emits them
+yet and no current rule consumes them. A later collector slice must integrate its declared source
+manifest and result-sensitive rule behavior atomically; the existence of empty graph tables is
+not permission to reinterpret `PARTIAL` as complete.
 
 ### Single-region request model — PLANNED LIMIT
 

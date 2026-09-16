@@ -3,7 +3,7 @@
 import os
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from threading import Barrier, Event
 from time import monotonic
@@ -14,7 +14,7 @@ from alembic import command
 from alembic.config import Config
 from alembic.util import CommandError
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, inspect, select, text, update
+from sqlalchemy import create_engine, event, func, inspect, select, text, update
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.exc import IntegrityError
@@ -26,6 +26,7 @@ from app.assessment.models import AssessmentResult
 from app.assessment.profiles import create_default_assessment_profile
 from app.config import Settings, get_settings
 from app.database import session as database_session
+from app.database.evidence_graph import load_evidence_graph
 from app.database.persistence import fail_pending_scan, persist_scan_result
 from app.main import create_app
 from app.models import (
@@ -37,8 +38,11 @@ from app.models import (
     FindingOccurrence,
     PersistedAssessmentProfile,
     Resource,
+    ResourceRelationshipObservation,
     ResourceSnapshot,
     Scan,
+    ScanScopeManifest,
+    SourceEvidenceArtifact,
 )
 from app.models.enums import AuditEventType, FindingStatus, ScanStatus
 from app.rules.engine import RuleEngine
@@ -50,11 +54,16 @@ from app.services.errors import AssessmentProfileConflictError
 from app.services.scan_executor import InProcessScanExecutor, _scope_for
 from app.services.scan_service import ScanService
 from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator
-from tests.unit.database.factories import scan_bundle
+from tests.unit.database.factories import (
+    exceptional_owner_graph_scan_bundle,
+    graph_scan_bundle,
+    scan_bundle,
+)
 
 pytestmark = pytest.mark.integration
 
-_CURRENT_REVISION = "20260904_0002"
+_CURRENT_REVISION = "20260915_0003"
+_PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"
 
@@ -208,6 +217,11 @@ def test_postgres_migration_round_trip_and_jsonb(postgres_engine: Engine) -> Non
         }
         assert isinstance(columns["normalized_configuration"]["type"], JSONB)
         assert isinstance(columns["tags"]["type"], JSONB)
+        source_columns = {
+            column["name"]: column
+            for column in inspect(connection).get_columns(SourceEvidenceArtifact.__tablename__)
+        }
+        assert isinstance(source_columns["normalized_payload"]["type"], JSONB)
         command.downgrade(config, "base")
         assert inspect(connection).get_table_names() == ["alembic_version"]
         command.upgrade(config, "head")
@@ -222,6 +236,8 @@ def test_postgres_pending_scan_downgrade_preserves_compatible_populated_history(
         persisted = persist_scan_result(session, **bundle)
         scan_id = persisted.scan_id
 
+    with postgres_engine.begin() as connection:
+        command.downgrade(migration_config(connection), _PENDING_SCAN_REVISION)
     before = _postgres_migration_state(postgres_engine)
     assert before["scan_rows"][0]["aws_account_id"] is not None
     assert before["scan_rows"][0]["inventory_sha256"] is not None
@@ -229,7 +245,7 @@ def test_postgres_pending_scan_downgrade_preserves_compatible_populated_history(
         command.downgrade(migration_config(connection), _PREVIOUS_REVISION)
     after = _postgres_migration_state(postgres_engine)
 
-    assert before["revision"] == _CURRENT_REVISION
+    assert before["revision"] == _PENDING_SCAN_REVISION
     assert after["revision"] == _PREVIOUS_REVISION
     assert after["scan_columns"]["aws_account_id"] is False
     assert after["scan_columns"]["inventory_sha256"] is False
@@ -308,6 +324,170 @@ def test_postgres_pending_scan_downgrade_blocks_incompatible_history_without_cha
 
     with postgres_engine.begin() as connection:
         command.check(migration_config(connection))
+
+
+def test_postgres_evidence_graph_round_trip_is_immutable_and_blocks_lossy_downgrade(
+    postgres_engine: Engine,
+) -> None:
+    bundle = graph_scan_bundle(
+        observed_at=datetime(2026, 9, 15, 7, tzinfo=timezone(timedelta(hours=-5)))
+    )
+    expected_graph = bundle["snapshot"].evidence_graph
+    assert expected_graph is not None
+    scan_id = bundle["snapshot"].scan_id
+
+    with Session(postgres_engine) as session, session.begin():
+        persist_scan_result(session, **bundle)
+
+    retry = graph_scan_bundle(
+        observed_at=bundle["snapshot"].collected_at.astimezone(UTC),
+        scan_id=scan_id,
+    )
+    retry["started_at"] = bundle["started_at"]
+    retry["completed_at"] = bundle["completed_at"]
+    with Session(postgres_engine) as session, session.begin():
+        assert persist_scan_result(session, **retry).scan_id == scan_id
+
+    before = _postgres_migration_state(postgres_engine)
+    with Session(postgres_engine) as session:
+        assert load_evidence_graph(session, scan_id) == expected_graph
+        assert (
+            session.scalar(select(func.count()).select_from(ResourceRelationshipObservation)) == 1
+        )
+        with pytest.raises(IntegrityError, match="historical records are immutable"):
+            session.execute(
+                update(ResourceRelationshipObservation).values(schema_version="rewritten")
+            )
+        session.rollback()
+        assert load_evidence_graph(session, scan_id) == expected_graph
+        with pytest.raises(IntegrityError, match="historical records are immutable"):
+            session.execute(
+                update(ScanScopeManifest)
+                .where(ScanScopeManifest.scan_id == scan_id)
+                .values(source_manifest_checksum="0" * 64)
+            )
+        session.rollback()
+        assert load_evidence_graph(session, scan_id) == expected_graph
+
+    with pytest.raises(CommandError, match="Downgrade blocked before revision") as error:
+        with postgres_engine.begin() as connection:
+            command.downgrade(migration_config(connection), _PENDING_SCAN_REVISION)
+
+    after = _postgres_migration_state(postgres_engine)
+    assert after == before
+    assert after["revision"] == _CURRENT_REVISION
+    error_message = str(error.value)
+    assert "No schema or data changes were applied" in error_message
+    assert "docs/operations/known-limitations.md" in error_message
+    assert str(scan_id) not in error_message
+    assert scan_id.hex not in error_message
+
+    with Session(postgres_engine) as session:
+        assert load_evidence_graph(session, scan_id) == expected_graph
+    with postgres_engine.begin() as connection:
+        command.check(migration_config(connection))
+
+
+def test_postgres_evidence_graph_writer_completes_before_downgrade_preflight(
+    postgres_engine: Engine,
+) -> None:
+    bundle = graph_scan_bundle()
+    scan_id = bundle["snapshot"].scan_id
+    graph_inserted = Event()
+    release_writer = Event()
+    downgrade_lock_attempted = Event()
+
+    def write_graph() -> None:
+        with postgres_engine.connect() as connection:
+
+            @event.listens_for(connection, "after_cursor_execute")
+            def pause_after_graph_insert(
+                _connection,
+                _cursor,
+                statement,
+                _parameters,
+                _context,
+                _executemany,
+            ) -> None:
+                if (
+                    "INSERT INTO resource_relationship_observations" in statement
+                    and not graph_inserted.is_set()
+                ):
+                    graph_inserted.set()
+                    if not release_writer.wait(timeout=15):
+                        raise AssertionError("downgrade test did not release the graph writer")
+
+            with Session(connection) as session, session.begin():
+                persist_scan_result(session, **bundle)
+
+    def downgrade_graph() -> None:
+        with postgres_engine.begin() as connection:
+
+            @event.listens_for(connection, "before_cursor_execute")
+            def observe_downgrade_lock(
+                _connection,
+                _cursor,
+                statement,
+                _parameters,
+                _context,
+                _executemany,
+            ) -> None:
+                if statement.startswith("LOCK TABLE scans, scan_scope_manifests"):
+                    downgrade_lock_attempted.set()
+
+            command.downgrade(migration_config(connection), _PENDING_SCAN_REVISION)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        writer = pool.submit(write_graph)
+        assert graph_inserted.wait(timeout=10), "graph writer did not reach relationship insert"
+        downgrade = pool.submit(downgrade_graph)
+        try:
+            assert downgrade_lock_attempted.wait(timeout=10), "downgrade did not attempt its lock"
+            assert not downgrade.done(), "downgrade lock did not wait for the active graph writer"
+        finally:
+            release_writer.set()
+        writer.result(timeout=15)
+        with pytest.raises(CommandError, match="retained source-evidence"):
+            downgrade.result(timeout=15)
+
+    with postgres_engine.begin() as connection:
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
+            _CURRENT_REVISION
+        )
+        command.check(migration_config(connection))
+    with Session(postgres_engine) as session:
+        assert load_evidence_graph(session, scan_id) == bundle["snapshot"].evidence_graph
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    ("aws-managed", "external-owner", "supplemental-region"),
+)
+def test_postgres_accepts_only_explicit_exceptional_owner_and_scope_provenance(
+    postgres_engine: Engine,
+    scenario: str,
+) -> None:
+    bundle = exceptional_owner_graph_scan_bundle(scenario)
+    expected_graph = bundle["snapshot"].evidence_graph
+    assert expected_graph is not None
+    scan_id = bundle["snapshot"].scan_id
+
+    with Session(postgres_engine) as session, session.begin():
+        persist_scan_result(session, **bundle)
+
+    with Session(postgres_engine) as session:
+        assert load_evidence_graph(session, scan_id) == expected_graph
+        owners = set(
+            session.scalars(
+                select(Resource.aws_account_id).where(Resource.snapshots.any(scan_id=scan_id))
+            )
+        )
+    if scenario == "aws-managed":
+        assert "aws" in owners
+    elif scenario == "external-owner":
+        assert "210987654321" in owners
+    else:
+        assert any(resource.region == "us-west-2" for resource in bundle["snapshot"].resources)
 
 
 def test_postgres_history_and_append_only_audit(postgres_engine: Engine) -> None:

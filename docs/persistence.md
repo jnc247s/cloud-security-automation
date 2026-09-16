@@ -1,8 +1,10 @@
 # Persistence and assessment history
 
-Sprint 3 established durable history for already-collected and already-assessed results. The persistence
-boundary does not call AWS, run controls, schedule scans, or commit transactions on behalf of its
-caller. The inventory command still prints a summary only; it does not persist anything.
+Sprint 3 established durable history for already-collected and already-assessed results. The
+Sprint 5 shared foundation extends that history with an optional, versioned evidence graph; it
+does not add an AWS collector or a control. The persistence boundary does not call AWS, run
+controls, schedule scans, or commit transactions on behalf of its caller. The inventory command
+still prints a summary only; it does not persist anything.
 
 The five existing controls and their AWS permissions are unchanged. `S3-900` remains the legacy
 explicit-encryption-configuration prototype, not a new production encryption or public-exposure
@@ -16,6 +18,8 @@ control. The technical meanings documented in the [control catalog](controls/cat
 | `Resource` | Stable AWS identity: provider, account, service, resource type, scope, region, and AWS resource ID. |
 | `ResourceSnapshot` | One scan's observed ARN, name, region, tags, normalized configuration, observation time, and state digest. |
 | `Scan` and `ScanScopeManifest` | Run identity, timestamps, scanner/input versions, declared scope, and actual collection coverage. |
+| `ScanSourceContract`, `SourceEvidenceArtifact`, and `SourceEvidenceOutcome` | The exact source manifest, normalized digest-bound artifacts, and one explicit result for every declared source in a graph-enabled scan. |
+| `ResourceRelationshipObservation` | One immutable, directional, per-scan relationship observation with typed resolution and source provenance. |
 | `ControlAssessment` and `EvidenceArtifact` | The exact technical result, target snapshot, profile/control versions, structured evidence, and provenance. |
 | `Finding` and `FindingOccurrence` | One current operational issue plus the historical failed assessments that produced it. |
 | `FindingException` and `AuditEvent` | Time-bounded handling decisions and an append-only record of domain changes. |
@@ -57,6 +61,12 @@ new scan still belong to a new historical observation.
 - exactly one `SUCCEEDED`, `FAILED`, or `PARTIAL` outcome for every requested collector;
 - resource types and enabled controls; and
 - exact assessment-profile and control-catalog identities, versions, and profile checksum.
+
+For a graph-enabled inventory, persistence additionally derives and stores
+`source_manifest_schema_version` and `source_manifest_checksum` from the complete declared source
+contracts in the validated `EvidenceGraph`. These fields are both null for a graphless scan; one
+cannot be present without the other. They are not caller-supplied substitutes for the graph and
+completeness is never inferred from whichever outcome rows happen to exist.
 
 The persistence boundary checks that the manifest matches the inventory, profile, catalog, and
 assessment targets. Duplicate targets, inconsistent provenance, missing enabled-control results,
@@ -122,34 +132,61 @@ missing evidence never becomes `PASS`.
 NIST mappings remain reporting metadata parallel to technical evaluation. Persisting a mapping
 does not make a passing technical check proof of organization-wide CSF compliance.
 
-### Approved future persistence contracts
+### Source manifests, outcomes, artifacts, and relationships
 
-The pre-Sprint-5 review approved a first-class generic
-[resource-relationship contract](design-decisions/0001-generic-resource-relationships.md). Sprint 5
-slice 5G must introduce one new append-only Alembic-backed observation table and integrate its
-writer, validation, service, and API projection atomically. The table must preserve stable and
-per-scan relationship IDs, direction, endpoint identity/scope/Region, typed resolution, schema
-version, collection time, and evidence provenance. Its target is a checked union of either a
-canonical stable resource reference or a deterministic partial reference; it must never create a
-placeholder `Resource`. The current schema has no relationship table and this preflight adds no
-migration.
+The Sprint 5 shared foundation implements the
+[result-sensitive source-outcome contract](design-decisions/0002-result-sensitive-evidence-outcomes.md)
+and [generic relationship contract](design-decisions/0001-generic-resource-relationships.md) as an
+optional `EvidenceGraph` on `InventorySnapshot`. A graph is bound to one scan ID, verified
+collection account, and collection timestamp. Graphless Sprint 0--4 snapshots preserve their
+existing serialized shape, digest behavior, persistence behavior, and null source-manifest
+fields.
 
-The accepted [result-sensitive source-outcome contract](design-decisions/0002-result-sensitive-evidence-outcomes.md)
-will let Sprint 5 retain valid discovery and enrichment facts alongside explicit source-level
-uncertainty. Its domain schema is strict and reconstructable but is not persisted or used by the
-current runtime. Future integration must add an append-only Alembic representation and write the
-source outcomes, referenced normalized artifacts, resources, snapshots, relationships,
-assessments, evidence, and findings in one transaction. It may not infer completeness from a
-missing row or weaken the accepted collector-level guards before that atomic integration.
-The future representation must persist the verified collection account separately from each
-resource owner's account (or the controlled `aws` sentinel for AWS-managed IAM policy records),
-so cross-account observations remain attributable without falsifying stable resource identity.
-The [generic relationship decision](design-decisions/0001-generic-resource-relationships.md)
-defines the closed owner-admission rule and required atomic transition from the current
-same-account guard. Merely deleting or relaxing that guard is prohibited: an AWS-owned or
-different-account resource requires the exact type, source-outcome proof, scan binding,
-stable/snapshot identity, relationship, migration, writer, reader, and API validation defined
-there.
+A graph-enabled scan persists four append-only record families:
+
+- `ScanSourceContract` records every source promised for the execution, including contract
+  key/version, discovery or enrichment subject, evidence kind, collector/API version, cardinality,
+  and the controlled owner and supplemental-Region admission flags.
+- `SourceEvidenceArtifact` stores one immutable normalized JSON object identified by its scan and
+  `normalized://` reference. Its artifact ID is recomputed from the scan and reference, and its
+  SHA-256 digest is recomputed from the canonical payload; sensitive key names, non-finite values,
+  and non-JSON values are rejected.
+- `SourceEvidenceOutcome` records exactly one controlled state and optional failure category for
+  one declared source. It binds the declaration, subject, artifact ID, reference, digest,
+  collector/API provenance, and collection time without retaining raw provider exceptions.
+- `ResourceRelationshipObservation` stores one directional observation with a stable logical
+  `relationship_id`, a per-scan `observation_id`, controlled endpoint types and resolution,
+  collection-account attribution, and provenance tied to one `PRESENT` source outcome.
+
+Validation requires a non-empty set of contracts, artifacts, and outcomes whenever a graph is
+present. Every contract has exactly one outcome; every outcome resolves to an exact digest-bound
+artifact; every artifact is referenced; and all records use the graph's scan, collection account,
+and timestamp. A relationship source always references its exact same-scan resource snapshot. A
+`RESOLVED` target also references its exact same-scan snapshot. Other typed resolutions may retain
+a complete stable target without a snapshot, while `TARGET_IDENTITY_INCOMPLETE` uses only a
+deterministic unresolved reference. No unresolved reference creates a placeholder `Resource`.
+
+`persist_scan_result` validates and writes the graph, stable resources, snapshots, assessments,
+evidence, findings, scope, and audit history inside the caller's existing transaction. It folds
+the graph into both the inventory digest and idempotent result checksum. Database foreign keys and
+provenance guards bind contracts, artifacts, outcomes, relationships, and snapshots to the same
+`RUNNING` scan; append-only guards reject graph updates and deletes; and scan terminalization is
+rejected when a graph or manifest is incomplete. Retrying identical content remains idempotent,
+while changed graph content under the same scan ID is a conflict.
+
+The verified collection account remains distinct from resource-owner identity. Same-account
+resources use the established path. The `aws` sentinel is admitted only for the controlled
+AWS-managed IAM policy and policy-version resource types with identity-authoritative `PRESENT`
+source evidence. A different 12-digit owner additionally requires exact identity-authoritative
+evidence and a resolved same-scan relationship containing that snapshot. A resource outside the
+requested Region requires the established S3/CloudTrail exception or an explicit
+supplemental-Region source contract with a `PRESENT` outcome. These are closed evidence-admission
+rules, not expansion of scan scope or caller authorization.
+
+Authenticated generic services and API projections can list/read relationship observations and
+source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
+public route, and artifacts have no standalone route. Current AWS collectors still emit graphless
+snapshots, so this foundation has no collector producer and changes no current technical result.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -289,8 +326,9 @@ or organizational information; protect database access and backups accordingly.
 
 ## Migrations and startup
 
-The initial canonical revision is `20260903_0001`. All schema changes belong in reviewed Alembic
-revisions; application startup does not call `metadata.create_all()`.
+The initial canonical revision is `20260903_0001`; the current head is `20260915_0003`. All schema
+changes belong in reviewed Alembic revisions; application startup does not call
+`metadata.create_all()`.
 
 For local Python development, configure `DATABASE_URL` in the environment or local `.env`, then:
 
@@ -315,6 +353,17 @@ The PostgreSQL volume survives `docker compose down`. Downgrading to `base` drop
 schema, and `docker compose down --volumes` deletes local database data; neither is a routine
 upgrade or troubleshooting step. Back up important data before schema changes.
 
+Revision `20260915_0003` adds the four evidence-graph tables, nullable source-manifest identity on
+the scan scope, append-only and provenance guards, and the closed exceptional-owner and
+supplemental-Region snapshot admission rules. Its downgrade intentionally removes only an empty,
+backward-compatible foundation. Before any downgrade path executes `0003` downgrade DDL, the
+Alembic environment blocks if it finds source-manifest metadata, any graph table row, or any
+snapshot that the `0002` owner/scope/Region guard cannot represent. PostgreSQL takes exclusive
+locks on all inspected parent and graph tables before the check and holds them through the
+transition. Offline SQL generation across this boundary always fails closed. See the
+[evidence-graph downgrade runbook](operations/known-limitations.md#guarded-populated-downgrade-from-20260915_0003--resolved)
+for the compatibility query and safe response to a block.
+
 The accepted `20260904_0002` migration remains unchanged. Before Alembic executes its downgrade,
 the migration environment now rejects retained rows with a null `aws_account_id` or
 `inventory_sha256`, because the older `NOT NULL` schema cannot represent them safely. The check
@@ -335,17 +384,18 @@ ruff format --check .
 ```
 
 AWS tests use injected fakes. Database unit tests apply the real Alembic migrations to isolated
-SQLite databases and exercise history, provenance, idempotent retries, rollback, four-state
-results, finding lifecycle safety, governance, and version-content conflicts. No real AWS account
-is required.
+SQLite databases and exercise history, source-manifest and evidence-graph provenance,
+idempotent retries, rollback, four-state results, finding lifecycle safety, governance, and
+version-content conflicts. Service and authenticated API tests cover bounded source-outcome and
+relationship reads. No real AWS account is required.
 
 PostgreSQL-specific integration tests are in `tests/integration/test_persistence_postgres.py`.
 They are skipped unless `TEST_DATABASE_URL` is supplied. Against a dedicated disposable database
 they verify empty-database migration upgrade/downgrade and metadata parity, JSONB, timezone-aware
-timestamps, append-only audit enforcement, compatible populated downgrade, blocked incompatible
-downgrade integrity, immutable assessment-profile roll-forward and conflict behavior, persisted
-profile use after executor restart, committed pending-scan finalization, early failure before AWS
-identity, and concurrent finding/scan deduplication.
+timestamps, append-only audit and evidence-graph enforcement, compatible populated downgrades,
+blocked incompatible downgrade integrity, immutable assessment-profile roll-forward and conflict
+behavior, persisted profile use after executor restart, committed pending-scan finalization,
+early failure before AWS identity, and concurrent finding/scan deduplication.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 
@@ -368,6 +418,8 @@ cleanup; existing schemas are not targeted. CI provides a PostgreSQL test servic
 ## Current boundary and deferred work
 
 Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
-recoverable in-process scan executor. AWS evidence expansion, additional production controls,
-Terraform infrastructure, governance mutation APIs, remediation, dashboards/frontend, and AI
-functionality remain outside this sprint.
+recoverable in-process scan executor. The in-progress Sprint 5 foundation adds the optional
+evidence-graph domain, transactional persistence, authenticated generic reads, and safe migration
+boundary only. Current AWS collectors do not emit source outcomes or relationships. Collector
+expansion, additional production controls, Terraform infrastructure, governance mutation APIs,
+remediation, dashboards/frontend, and AI functionality remain outside this slice.
