@@ -10,9 +10,9 @@ provide certification or claim organization-wide NIST compliance.
 ## Status
 
 Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
-`IN PROGRESS`: its shared evidence-graph foundation, 5A EC2/EBS slice, and 5B VPC/network slice
-are accepted, while the separately authorized 5C IAM account and policy evidence implementation
-is the current work. Sprint 6 remains `PLANNED`.
+`IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, and 5C IAM
+evidence slices are accepted, while the separately authorized 5D IAM Access Analyzer evidence
+slice is the current work. Sprint 6 remains `PLANNED`.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:
@@ -31,13 +31,13 @@ The current implementation includes:
   exceptions; and
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
 - generic immutable source-outcome/artifact and relationship history, populated by the accepted
-  5A EC2/EBS and 5B network-evidence producers and the current 5C IAM implementation.
+  5A EC2/EBS, 5B network-evidence, and 5C IAM producers.
 
 Current controls are `IAM-001`, `LOG-001`, `NET-001`, `NET-002`, and legacy non-core `S3-900`.
 Canonical `S3-001` through `S3-004` are reserved for later roadmap meanings and are not
-implemented. The collected 5A/5B evidence does not make `EC2-001` through `EC2-004` or
-`NET-003` through `NET-006` executable; those rules and their profile policy remain Sprint 6
-work.
+implemented. The collected 5A/5B/5C evidence does not make `IAM-002` through `IAM-006`,
+`EC2-001` through `EC2-004`, or `NET-003` through `NET-006` executable; those rules and their
+profile policy remain Sprint 6 work.
 
 No Terraform deployment, dashboard, remediation, or AI functionality exists yet. AWS resources
 are never modified.

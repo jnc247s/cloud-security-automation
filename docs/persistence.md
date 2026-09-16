@@ -2,7 +2,7 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS and 5B network producers and the current 5C IAM implementation supply AWS
+accepted 5A EC2/EBS, 5B network, and 5C IAM producers supply AWS
 graph fragments. The persistence boundary does not call AWS, run controls, schedule scans, or
 commit transactions on behalf of its caller. The inventory command still prints a summary only;
 it does not persist anything.
@@ -197,7 +197,7 @@ with a legacy graphless `security_groups` outcome remains readable.
 
 Authenticated generic services and API projections can list/read relationship observations and
 source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
-public route, and artifacts have no standalone route. The 5A EC2/EBS, 5B network, and current 5C
+public route, and artifacts have no standalone route. The accepted 5A EC2/EBS, 5B network, and 5C
 IAM producers emit source and relationship history through this boundary; remaining legacy
 collectors remain graphless. No current technical result consumes the Sprint 5 graph.
 
@@ -435,7 +435,8 @@ recoverable in-process scan executor. The accepted Sprint 5 foundation adds the 
 evidence-graph domain, transactional persistence, authenticated generic reads, and safe migration
 boundary. The accepted 5A producer emits EC2/EBS source outcomes and relationships, and the
 accepted 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow Logs.
-The current 5C implementation extends the same generic graph with IAM account, identity, policy,
-and relationship evidence and requires no schema migration. Later collector expansion, additional
+The accepted 5C implementation extends the same generic graph with IAM account, identity, policy,
+and relationship evidence and requires no schema migration. The authorized 5D preflight adds no
+runtime or schema change. Later collector expansion, additional
 production controls, Terraform infrastructure, governance mutation APIs, remediation,
 dashboards/frontend, and AI functionality remain outside this slice.
