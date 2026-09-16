@@ -2,10 +2,10 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5B VPC, subnet, Flow Log, and network evidence — IN PROGRESS**
+Current slice: **5C IAM account and IAM policy evidence — IN PROGRESS**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
-**5A EC2 and EBS evidence — COMPLETE**
+**5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -32,8 +32,8 @@ The requirements below are approved roadmap scope. They are recorded here so imp
 not depend on chat history. The repository preflight required by `AGENTS.md` is complete, the
 reviewed slice sequence is approved, and the shared 5G relationship/source-outcome evidence
 foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A passed its
-acceptance gates and merged in pull request 16. Slice 5B is now separately authorized and in
-progress; later collector slices remain unstarted.
+acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
+pull request 17. Slice 5C is now separately authorized and in progress; later collector slices remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -58,8 +58,8 @@ preflight review has now approved four previously missing design inputs without 
 Before Sprint 5 began, their standalone schemas and contract tests did not implement an AWS
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
-projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slice 5A
-and in-progress slice 5B use that boundary without enabling Sprint 6 rules.
+projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
+and 5B use that boundary, and current slice 5C must use it without enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -71,25 +71,25 @@ made in this plan.
 
 The source-outcome contract is required because planned collectors have independent discovery and
 enrichment calls. It retains valid facts and explicit source uncertainty without treating a
-collector's `PARTIAL` rollup as permission to pass. Current Sprint 0--4 collectors remain
-all-or-nothing; source-level runtime and persistence integration belongs to the applicable Sprint
-5 slices and must be atomic. The 5A EC2/EBS producer was the first such integration; the 5B
-network producers now use the same boundary while undergoing acceptance. No Sprint 6 rule
-consumes either slice's outcomes yet.
+collector's `PARTIAL` rollup as permission to pass. Remaining graphless Sprint 0--4 collector
+paths retain all-or-nothing behavior. Source-level runtime and persistence integration belongs to
+the applicable Sprint 5 slices and must be atomic. The 5A EC2/EBS producer was the first such
+integration; the accepted 5B network producers use the same boundary. No Sprint 6 rule consumes
+either slice's outcomes yet.
 
 The reviewed implementation order uses 5G as a foundation-and-closure bookend. This is the
 dependency-driven exception to the earlier recommended collector-first order: 5C must emit
 AWS-managed IAM policies with owner `aws`, and several slices must emit relationships and
-source-level outcomes, but the accepted persistence boundary currently permits snapshots only
-when resource owner equals scan account. Implementing a producer before the controlled owner and
-graph boundary would either lose evidence or force that slice to invent a representation.
+source-level outcomes. Before the 5G foundation, the persistence boundary permitted snapshots only
+when resource owner equaled scan account. Implementing a producer before the controlled owner and
+graph boundary would have lost evidence or forced that slice to invent a representation.
 
 1. **FOUNDATION_READY_FOR_5A — 5G foundation** — the generic source-outcome/relationship
    persistence and projections atomically replace the same-account Python and database-trigger
    assumptions with the closed collection-account/resource-owner admission contract in ADR 0001;
 2. **COMPLETE — 5A** — EC2 and EBS evidence;
-3. **IN PROGRESS — 5B** — VPC, subnet, Flow Log, and network evidence;
-4. 5C — IAM account and policy evidence;
+3. **COMPLETE — 5B** — VPC, subnet, Flow Log, and network evidence;
+4. **IN PROGRESS — 5C** — IAM account and policy evidence;
 5. 5D — IAM Access Analyzer evidence;
 6. 5E — S3 evidence expansion;
 7. 5F — CloudTrail evidence expansion; and
@@ -103,8 +103,9 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A`, 5A accepted on `main`, and the separately authorized 5B slice now in
-progress. This does not authorize executable Sprint 6 rules, remediation, or later-sprint work.
+`FOUNDATION_READY_FOR_5A`, 5A and 5B accepted on `main`, and the separately authorized 5C slice
+now in progress. This does not authorize executable Sprint 6 rules, remediation, or later-sprint
+work.
 
 ## Accepted 5A implementation state
 
@@ -129,12 +130,11 @@ merge.
 - This slice adds no migration, service-specific API route, executable EC2 control, profile
   registration, finding policy, AWS write permission, or 5B--5F behavior.
 
-## Current 5B implementation state
+## Accepted 5B implementation state
 
-The 5B implementation starts from the accepted 5A merge at `main` commit
-`5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d`. Its code and tests are present on the scoped feature
-branch and are undergoing the slice acceptance gates; this plan does not mark 5B complete before
-validation, independent review, approval, and merge.
+The 5B implementation was accepted and merged in pull request 17 at `main` commit
+`66cadb20cd6a469d5a656628c27ae8cb569d8c69` after validation, independent review, approval, and
+merge.
 
 - The existing `security_groups` collector retains its accepted name, direct graphless behavior,
   and NET-001/NET-002 configuration shape. Its graph-aware path adds authoritative `OwnerId`,
@@ -169,12 +169,68 @@ validation, independent review, approval, and merge.
   gateway-scoped Flow Log never fabricates a VPC edge. The inventory resolver supplies exact
   same-scan target snapshots for resolved relationships and preserves typed uncertainty when a
   target source is incomplete.
-- The current branch supplies the factual inputs for NET-003 through NET-006 and the VPC, subnet,
-  security-group, and Flow Log tag inputs for GOV-001. NET-003 through NET-006 remain unregistered
-  Sprint 6 rules, and their planned profile fields remain deferred to the reviewed Sprint 6
-  profile transition.
+- The accepted implementation supplies the factual inputs for NET-003 through NET-006 and the VPC,
+  subnet, security-group, and Flow Log tag inputs for GOV-001. NET-003 through NET-006 remain
+  unregistered Sprint 6 rules, and their planned profile fields remain deferred to the reviewed
+  Sprint 6 profile transition.
 - This slice adds no migration, service-specific API route, executable network control, profile
   registration, finding policy, AWS write permission, or 5C--5F behavior.
+
+## Authorized 5C preflight state
+
+The bounded 5C preflight completed against the accepted 5B baseline at `main` commit
+`66cadb20cd6a469d5a656628c27ae8cb569d8c69`. IAM-001 through IAM-006 and the IAM portion of
+GOV-001 have authoritative evidence contracts covering AWS APIs and read permissions,
+account-global scope, normalized facts, relationships, provenance, missing-evidence behavior, and
+5C ownership. No unresolved contract, provider, persistence, migration, API, authentication,
+authorization, or security blocker requires redesign before implementation.
+
+The implementation is authorized only within these boundaries:
+
+- Preserve the existing `iam_users` collector name, direct compatibility behavior, embedded MFA
+  and access-key configuration, and current IAM-001 evidence semantics. Its graph-aware path will
+  add the approved user, group, role, membership, MFA-device, access-key, managed-policy,
+  managed-policy-version, inline-policy, trust-policy, permissions-boundary, and tag evidence.
+- Add a separate graph-aware `iam_account_evidence` collector for `GetAccountSummary`. An account-
+  summary denial or malformed response must not erase or misstate independently valid IAM-001
+  user evidence. The new requested-collector marker gates the exact 5C source manifest while
+  preserving accepted pre-5C history whose `iam_users` collector was graphless.
+- Execute IAM collection once per scan as account-global work. Use the accepted response-boundary
+  validation, pagination, source-manifest, artifact, outcome, stable-identity, relationship, and
+  collection-account/resource-owner contracts. Customer-managed resources use their 12-digit
+  owner account; referenced AWS-managed policies use only the controlled `aws` owner sentinel.
+- Discover local managed policies, then retrieve only AWS-managed policies referenced by an
+  attachment or permissions boundary. Validate partition-aware ARNs; do not hardcode `arn:aws` or
+  enumerate every AWS-managed policy.
+- Preserve explicit no-recorded-use facts for access keys and strict integer `0`/`1` account-
+  summary indicators. Decode policy documents strictly, retain the complete normalized policy
+  structure and digest, and never weaken the sensitive-key guard or persist credential secrets.
+- Emit top-level same-scan resources for every resolved relationship endpoint. Use the canonical
+  relationship vocabulary and collision-safe identities for inline policies and managed-policy
+  versions. Role trust policy is retained as evidence and is not treated as an identity-
+  permissions policy or a complete IAM authorization decision.
+- Reuse the generic `Resource`/`ResourceSnapshot`, evidence graph, persistence, `ScanExecutor`,
+  service, and authenticated `/api/v1` boundaries. No migration or service-specific route is
+  planned unless implementation exposes a concrete contract mismatch requiring a new review.
+- Add controlled-fake collector tests, executor/service coverage, and authenticated disposable-
+  PostgreSQL acceptance proving persistence and generic retrieval. Do not contact live AWS.
+- Do not register IAM-002 through IAM-006 or GOV-001 as executable Sprint 6 rules, change the
+  assessment profile, add finding policy, broaden AWS write permissions, or begin 5D--5F work.
+
+The evidence-readiness matrix states do not change merely because 5C has started: IAM-001,
+IAM-002, and GOV-001 remain `CURRENT`, while IAM-003 through IAM-006 remain `EXPAND` until their
+accepted producer implementation is merged. Sprint 6 remains `PLANNED`.
+
+### Current 5C implementation state
+
+The feature branch implements the authorized fact-only boundary and remains `IN PROGRESS` pending
+its complete validation, independent review, CI, and merge approval. It keeps legacy direct
+`iam_users` collection behavior, adds a separately attributable `iam_account_evidence` source,
+and uses the existing evidence graph for IAM resources, normalized artifacts, source outcomes,
+and relationships. The implementation adds no schema migration, service-specific API, assessment
+profile change, executable IAM-002 through IAM-006 or GOV-001 rule, finding policy, AWS write
+permission, or 5D--5F behavior. Matrix states and canonical sprint status remain unchanged until
+the slice is accepted on `main`.
 
 ## Objective and boundary
 

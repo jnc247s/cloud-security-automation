@@ -25,7 +25,13 @@ from app.schemas.scan import ScanCreateRequest
 from app.services.errors import AssessmentProfileConflictError
 from app.services.scan_executor import InProcessScanExecutor, ScanExecutorCapacityError
 from app.services.scan_service import ScanService, ScanSubmissionError
-from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, empty_ec2_client
+from tests.fakes import (
+    FakeAWSClient,
+    FakeClientProvider,
+    FakePaginator,
+    empty_ec2_client,
+    empty_iam_client,
+)
 
 
 @pytest.fixture
@@ -93,9 +99,7 @@ def _empty_provider() -> FakeClientProvider:
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
-            ("iam", region): FakeAWSClient(
-                paginators={"list_users": FakePaginator([{"Users": []}])}
-            ),
+            ("iam", region): empty_iam_client(),
             ("cloudtrail", region): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}
             ),

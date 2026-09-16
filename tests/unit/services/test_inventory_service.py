@@ -9,6 +9,7 @@ from app.collectors.base import CollectorEvidenceError, ResourceCollector
 from app.collectors.cloudtrail import CloudTrailCollector
 from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
+from app.collectors.iam_account import IAMAccountEvidenceCollector
 from app.collectors.network import VPCNetworkCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
@@ -79,6 +80,7 @@ def test_default_collectors_cover_accepted_inventory() -> None:
         SecurityGroupCollector,
         VPCNetworkCollector,
         S3BucketCollector,
+        IAMAccountEvidenceCollector,
         IAMUserCollector,
         CloudTrailCollector,
     )

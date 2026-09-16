@@ -10,18 +10,18 @@ provide certification or claim organization-wide NIST compliance.
 ## Status
 
 Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
-`IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS slice are accepted, while the
-5B VPC, subnet, Flow Log, and network-evidence slice is undergoing implementation acceptance.
-Sprint 6 remains `PLANNED`.
+`IN PROGRESS`: its shared evidence-graph foundation, 5A EC2/EBS slice, and 5B VPC/network slice
+are accepted, while the separately authorized 5C IAM account and policy evidence implementation
+is the current work. Sprint 6 remains `PLANNED`.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:
 
 - FastAPI health/readiness, centralized configuration, PostgreSQL/SQLAlchemy/Alembic, Compose,
   pytest, Ruff, and GitHub Actions;
-- standard-chain boto3 authentication, STS identity, and fact-only IAM-user, security-group, VPC,
-  subnet, VPC Flow Log, S3, CloudTrail, EC2-instance, EBS-volume, and Regional EBS-default
-  collection;
+- standard-chain boto3 authentication, STS identity, and fact-only IAM account, identity, policy,
+  security-group, VPC, subnet, VPC Flow Log, S3, CloudTrail, EC2-instance, EBS-volume, and
+  Regional EBS-default collection;
 - deterministic four-state assessment with structured evidence, versioned profiles and control
   contracts, and checksum-validated NIST CSF 2.0 mapping metadata;
 - immutable resource snapshots, scan scope, assessments, evidence, deduplicated findings and
@@ -30,8 +30,8 @@ The current implementation includes:
   versioned APIs for scans, resources/history, assessments, findings, controls, frameworks, and
   exceptions; and
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
-- generic immutable source-outcome/artifact and relationship history, populated by the 5A EC2/EBS
-  and in-review 5B network-evidence producers.
+- generic immutable source-outcome/artifact and relationship history, populated by the accepted
+  5A EC2/EBS and 5B network-evidence producers and the current 5C IAM implementation.
 
 Current controls are `IAM-001`, `LOG-001`, `NET-001`, `NET-002`, and legacy non-core `S3-900`.
 Canonical `S3-001` through `S3-004` are reserved for later roadmap meanings and are not

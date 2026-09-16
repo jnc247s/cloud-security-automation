@@ -307,9 +307,10 @@ def test_result_sensitive_source_outcome_contract_is_closed_and_foundation_only(
         "RESOURCE_DISAPPEARED",
     }
     assert "`PARTIAL` is never a generic completeness bypass" in matrix
-    assert "Current Sprint 0--4 collectors remain" in active_plan
-    assert "all-or-nothing" in active_plan
-    assert "Sprint 0--4 legacy collectors remain on their accepted graphless behavior" in adr
+    assert "Remaining graphless Sprint 0--4 collector" in active_plan
+    assert "paths retain all-or-nothing behavior" in active_plan
+    assert "remaining Sprint 0--4 legacy collectors retain their accepted" in adr
+    assert "graphless behavior" in adr
     assert "no Sprint 6 rule consumes source outcomes yet" in adr
     for required_text in (
         "verified 12-digit collection account",
@@ -384,7 +385,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5b_start_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5c_start_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -392,14 +393,12 @@ def test_5b_start_does_not_enable_planned_controls_or_later_slices() -> None:
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert (
-        "Current slice: **5B VPC, subnet, Flow Log, and network evidence — IN PROGRESS**"
-        in active_plan
-    )
-    assert "foundation and 5A EC2/EBS evidence slice are accepted" in roadmap
+    assert "Current slice: **5C IAM account and IAM policy evidence — IN PROGRESS**" in active_plan
+    assert "5B VPC/network evidence slice are accepted" in roadmap
     assert "FOUNDATION_READY_FOR_5A" in active_plan
     assert "**5A EC2 and EBS evidence — COMPLETE**" in active_plan
-    assert "Slice 5B is now separately authorized" in active_plan
+    assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in active_plan
+    assert "Slice 5C is now separately authorized" in active_plan
     assert "later collector slices remain unstarted" in active_plan
     assert "explicitly triaged accepted limitations" in active_plan
     assert "must be resolved before any multi-tenant deployment" in active_plan

@@ -1,7 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical evidence-readiness plan with accepted 5A evidence and the in-review 5B evidence
-producer reflected; this document does not enable any Sprint 6 rule.
+Status: canonical evidence-readiness plan with accepted 5A and 5B evidence producers reflected;
+the authorized 5C IAM evidence implementation is under review, and this document does not enable
+any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -42,8 +43,8 @@ source is incomplete, and record a typed outcome for every promised source. A `P
 requires every source that its versioned control declares decision-required. A coherent fact may
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
-domain/persistence boundary, the accepted 5A EC2/EBS producer, and the in-review 5B network
-producers are integrated; no Sprint 6 rule consumes source outcomes yet.
+domain/persistence boundary and the accepted 5A EC2/EBS and 5B network producers are integrated;
+no Sprint 6 rule consumes source outcomes yet.
 
 ## IAM controls
 
@@ -82,7 +83,7 @@ the boundary relationship and must not be presented as attached or effective adm
 The security-group contracts do not claim end-to-end reachability. Route tables, network ACLs,
 firewalls, load balancers, and host controls are outside these initial syntactic rules.
 
-The in-review 5B runtime keeps `DescribeSecurityGroups` in the accepted `security_groups`
+The accepted 5B runtime keeps `DescribeSecurityGroups` in the accepted `security_groups`
 collector so independent VPC, subnet, or Flow Log failures cannot erase independently admissible
 same-account NET-001/NET-002 evidence. An external-owner group whose resolved-edge proof is
 unavailable is pruned and makes that collector `PARTIAL`. The graph path emits top-level
@@ -100,8 +101,8 @@ operational, malformed, and conflicting evidence remains typed and sanitized. Re
 security group -> VPC, VPC -> subnet, and VPC -> VPC-scoped Flow Log with same-scan provenance.
 Subnet and Flow Log edges require an exact collected VPC identity in the same owner/collection
 context and Region. A Flow Log whose `ResourceId` names a subnet, interface, or transit gateway is
-retained as evidence but does not produce a VPC edge. These facts are in acceptance; they do not
-register or execute NET-003 through NET-006.
+retained as evidence but does not produce a VPC edge. These accepted facts do not register or
+execute NET-003 through NET-006.
 
 An external-owner resource without any exact resolved same-scan edge cannot satisfy the accepted
 exceptional-owner admission contract. Assembly excludes that resource and its resource-scoped
@@ -398,12 +399,14 @@ detailed S3-002 aggregation, S3-004 classifier, and generic relationship represe
 approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
-API boundary. The accepted 5A EC2/EBS producer supplies its named evidence, and the 5B VPC,
-subnet, Flow Log, and security-group graph producers now supply their named evidence while
-undergoing acceptance. The 5C--5F producers and every Sprint 6 rule consumer remain in their named
-future slices.
+API boundary. The accepted 5A EC2/EBS producer supplies its named evidence, and the accepted 5B
+VPC, subnet, Flow Log, and security-group graph producers supply their named evidence. The current
+5C IAM implementation supplies its named facts and graph contracts for review; the matrix states
+remain unchanged until that producer is accepted. The 5D--5F producers and every Sprint 6 rule
+consumer remain in their named slices.
 
-Sprint 5 is `IN PROGRESS`, 5A is accepted, 5B is in acceptance, and Sprint 6 remains `PLANNED`.
+Sprint 5 is `IN PROGRESS`, 5A and 5B are accepted, 5C is the current authorized slice, and Sprint
+6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

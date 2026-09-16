@@ -36,6 +36,7 @@ from app.collectors.base import (
 from app.collectors.cloudtrail import CloudTrailCollector
 from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
+from app.collectors.iam_account import IAMAccountEvidenceCollector
 from app.collectors.network import VPCNetworkCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
@@ -53,6 +54,7 @@ def build_default_collectors(
         SecurityGroupCollector(client_provider),
         VPCNetworkCollector(client_provider),
         S3BucketCollector(client_provider),
+        IAMAccountEvidenceCollector(client_provider),
         IAMUserCollector(client_provider),
         CloudTrailCollector(client_provider),
     )

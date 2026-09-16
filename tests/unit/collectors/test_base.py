@@ -7,6 +7,7 @@ from botocore.exceptions import PaginationError
 
 from app.collectors.base import (
     CollectorEvidenceError,
+    graph_collection_validation_required,
     iter_paginated_items,
     require_boolean,
     require_datetime,
@@ -196,3 +197,23 @@ def test_paginated_items_preserve_botocore_pagination_failures() -> None:
         list(iter_paginated_items(client, "list_things", "Things"))
 
     assert error_info.value is error
+
+
+def test_5c_manifest_marker_preserves_pre_5c_iam_history_and_gates_new_scans() -> None:
+    """The new account collector distinguishes exact 5C manifests from legacy IAM scans."""
+
+    assert not graph_collection_validation_required(
+        collector_name="iam_users",
+        requested_collectors=("iam_users",),
+        outcomes=(),
+    )
+    assert graph_collection_validation_required(
+        collector_name="iam_users",
+        requested_collectors=("iam_account_evidence", "iam_users"),
+        outcomes=(),
+    )
+    assert graph_collection_validation_required(
+        collector_name="iam_account_evidence",
+        requested_collectors=("iam_account_evidence", "iam_users"),
+        outcomes=(),
+    )

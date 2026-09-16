@@ -255,7 +255,7 @@ persisted graph through the public read API. Run it against a dedicated disposab
 database with:
 
 ```text
-python -m pytest tests/integration/test_persistence_postgres.py::test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph
+python -m pytest tests/integration/test_persistence_postgres.py::test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph
 ```
 
 `TEST_DATABASE_URL` must be set as described in the repository test instructions; CI supplies

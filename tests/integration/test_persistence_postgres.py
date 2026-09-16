@@ -1,6 +1,7 @@
 """PostgreSQL migration, integrity, and concurrency checks in isolated test schemas."""
 
 import os
+from collections import Counter
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta, timezone
@@ -54,7 +55,13 @@ from app.services.errors import AssessmentProfileConflictError
 from app.services.inventory_service import InventoryService
 from app.services.scan_executor import InProcessScanExecutor, _scope_for
 from app.services.scan_service import ScanService
-from tests.fakes import FakeAWSClient, FakeClientProvider, FakePaginator, empty_ec2_client
+from tests.fakes import (
+    FakeAWSClient,
+    FakeClientProvider,
+    FakePaginator,
+    empty_ec2_client,
+    empty_iam_client,
+)
 from tests.unit.database.factories import (
     exceptional_owner_graph_scan_bundle,
     graph_scan_bundle,
@@ -120,15 +127,210 @@ def _empty_provider(region: str = "us-east-1") -> FakeClientProvider:
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
-            ("iam", region): FakeAWSClient(
-                paginators={"list_users": FakePaginator([{"Users": []}])}
-            ),
+            ("iam", region): empty_iam_client(),
             ("cloudtrail", region): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}
             ),
         },
         region_name=region,
     )
+
+
+def _iam_acceptance_client() -> tuple[FakeAWSClient, dict[str, FakePaginator]]:
+    """Build complete deterministic global IAM evidence for the HTTP acceptance path."""
+
+    account_id = "123456789012"
+    created_at = datetime(2024, 1, 1, tzinfo=UTC)
+    local_policy_arn = f"arn:aws:iam::{account_id}:policy/Admin"
+    aws_policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+    user = {
+        "Path": "/engineering/",
+        "UserName": "alice",
+        "UserId": "AIDAACCEPTANCEALICE",
+        "Arn": f"arn:aws:iam::{account_id}:user/engineering/alice",
+        "CreateDate": created_at,
+    }
+    group = {
+        "Path": "/",
+        "GroupName": "admins",
+        "GroupId": "AGPAACCEPTANCEADMINS",
+        "Arn": f"arn:aws:iam::{account_id}:group/admins",
+        "CreateDate": created_at,
+    }
+    role = {
+        "Path": "/",
+        "RoleName": "reader",
+        "RoleId": "AROAACCEPTANCEREADER",
+        "Arn": f"arn:aws:iam::{account_id}:role/reader",
+        "CreateDate": created_at,
+        "MaxSessionDuration": 3600,
+    }
+    local_policy = {
+        "PolicyName": "Admin",
+        "PolicyId": "ANPAACCEPTANCELOCAL",
+        "Arn": local_policy_arn,
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "IsAttachable": True,
+        "AttachmentCount": 2,
+        "PermissionsBoundaryUsageCount": 1,
+    }
+    allow_document = {
+        "Version": "2012-10-17",
+        "Statement": [{"Effect": "Allow", "Action": "*", "Resource": "*"}],
+    }
+    trust_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {"Service": "ec2.amazonaws.com"},
+                "Action": "sts:AssumeRole",
+            }
+        ],
+    }
+    paginators = {
+        "list_users": FakePaginator([{"Users": [user]}]),
+        "list_groups": FakePaginator([{"Groups": [group]}]),
+        "list_roles": FakePaginator([{"Roles": [role]}]),
+        "list_policies": FakePaginator([{"Policies": [local_policy]}]),
+        "list_user_tags": FakePaginator([{"Tags": [{"Key": "Owner", "Value": "security"}]}]),
+        "list_mfa_devices": FakePaginator(
+            [
+                {
+                    "MFADevices": [
+                        {
+                            "UserName": "alice",
+                            "SerialNumber": f"arn:aws:iam::{account_id}:mfa/alice",
+                            "EnableDate": created_at,
+                        }
+                    ]
+                }
+            ]
+        ),
+        "list_access_keys": FakePaginator(
+            [
+                {
+                    "AccessKeyMetadata": [
+                        {
+                            "UserName": "alice",
+                            "AccessKeyId": "AKIAEXAMPLEONLY",
+                            "Status": "Active",
+                            "CreateDate": created_at,
+                        }
+                    ]
+                }
+            ]
+        ),
+        "list_attached_user_policies": FakePaginator(
+            [
+                {
+                    "AttachedPolicies": [
+                        {"PolicyName": "Admin", "PolicyArn": local_policy_arn},
+                        {"PolicyName": "ReadOnlyAccess", "PolicyArn": aws_policy_arn},
+                    ]
+                }
+            ]
+        ),
+        "list_user_policies": FakePaginator([{"PolicyNames": ["Emergency"]}]),
+        "get_group": FakePaginator([{"Group": group, "Users": [user]}]),
+        "list_attached_group_policies": FakePaginator([{"AttachedPolicies": []}]),
+        "list_group_policies": FakePaginator([{"PolicyNames": []}]),
+        "list_role_tags": FakePaginator([{"Tags": [{"Key": "Owner", "Value": "platform"}]}]),
+        "list_attached_role_policies": FakePaginator(
+            [{"AttachedPolicies": [{"PolicyName": "Admin", "PolicyArn": local_policy_arn}]}]
+        ),
+        "list_role_policies": FakePaginator([{"PolicyNames": ["Emergency"]}]),
+        "list_policy_tags": FakePaginator([{"Tags": [{"Key": "Owner", "Value": "security"}]}]),
+    }
+    client = FakeAWSClient(
+        paginators=paginators,
+        responses={
+            "get_account_summary": [
+                {
+                    "SummaryMap": {
+                        "AccountAccessKeysPresent": 0,
+                        "AccountMFAEnabled": 1,
+                    }
+                }
+            ],
+            "get_access_key_last_used": [
+                {
+                    "UserName": "alice",
+                    "AccessKeyLastUsed": {"ServiceName": "N/A", "Region": "N/A"},
+                }
+            ],
+            "get_user": [
+                {
+                    "User": {
+                        **user,
+                        "PermissionsBoundary": {
+                            "PermissionsBoundaryType": "PermissionsBoundaryPolicy",
+                            "PermissionsBoundaryArn": aws_policy_arn,
+                        },
+                    }
+                }
+            ],
+            "get_user_policy": [
+                {
+                    "UserName": "alice",
+                    "PolicyName": "Emergency",
+                    "PolicyDocument": allow_document,
+                }
+            ],
+            "get_role": [
+                {
+                    "Role": {
+                        **role,
+                        "AssumeRolePolicyDocument": trust_document,
+                        "PermissionsBoundary": {
+                            "PermissionsBoundaryType": "PermissionsBoundaryPolicy",
+                            "PermissionsBoundaryArn": local_policy_arn,
+                        },
+                    }
+                }
+            ],
+            "get_role_policy": [
+                {
+                    "RoleName": "reader",
+                    "PolicyName": "Emergency",
+                    "PolicyDocument": allow_document,
+                }
+            ],
+            "get_policy": [
+                {"Policy": local_policy},
+                {
+                    "Policy": {
+                        "PolicyName": "ReadOnlyAccess",
+                        "PolicyId": "ANPAAWSMANAGED",
+                        "Arn": aws_policy_arn,
+                        "Path": "/",
+                        "DefaultVersionId": "v5",
+                        "IsAttachable": True,
+                    }
+                },
+            ],
+            "get_policy_version": [
+                {
+                    "PolicyVersion": {
+                        "VersionId": "v1",
+                        "IsDefaultVersion": True,
+                        "CreateDate": created_at,
+                        "Document": allow_document,
+                    }
+                },
+                {
+                    "PolicyVersion": {
+                        "VersionId": "v5",
+                        "IsDefaultVersion": True,
+                        "CreateDate": created_at,
+                        "Document": allow_document,
+                    }
+                },
+            ],
+        },
+    )
+    return client, paginators
 
 
 def migration_config(connection) -> Config:
@@ -823,7 +1025,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5c_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1053,7 +1255,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
             ]
         )
         s3_pages = FakePaginator([{"Buckets": []}])
-        iam_pages = FakePaginator([{"Users": []}])
+        iam_client, iam_paginators = _iam_acceptance_client()
         cloudtrail_pages = FakePaginator([{"Trails": []}])
         provider = FakeClientProvider(
             {
@@ -1066,7 +1268,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                     flow_logs=flow_log_pages,
                 ),
                 ("s3", "us-east-1"): FakeAWSClient(paginators={"list_buckets": s3_pages}),
-                ("iam", "us-east-1"): FakeAWSClient(paginators={"list_users": iam_pages}),
+                ("iam", "us-east-1"): iam_client,
                 ("cloudtrail", "us-east-1"): FakeAWSClient(
                     paginators={"list_trails": cloudtrail_pages}
                 ),
@@ -1114,9 +1316,19 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
             assert terminal["aws_account_id"] == "123456789012"
             assert terminal["requested_regions"] == ["us-east-1"]
             assert terminal["successful_regions"] == ["us-east-1"]
+            assert terminal["scope"]["requested_collectors"] == [
+                "cloudtrail_trails",
+                "ec2_ebs_evidence",
+                "iam_account_evidence",
+                "iam_users",
+                "s3_buckets",
+                "security_groups",
+                "vpc_network_evidence",
+            ]
             assert set(terminal["successful_collectors"]) == {
                 "cloudtrail_trails",
                 "ec2_ebs_evidence",
+                "iam_account_evidence",
                 "iam_users",
                 "s3_buckets",
                 "security_groups",
@@ -1130,12 +1342,16 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 "S3-900",
             ]
             assert set(terminal["scope"]["collector_outcomes"].values()) == {"SUCCEEDED"}
+            assert set(terminal["scope"]["collector_outcomes"]) == set(
+                terminal["scope"]["requested_collectors"]
+            )
 
             assert provider.client_requests == [
                 ("ec2", "us-east-1"),
                 ("ec2", "us-east-1"),
                 ("ec2", "us-east-1"),
                 ("s3", "us-east-1"),
+                ("iam", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("cloudtrail", "us-east-1"),
             ]
@@ -1146,7 +1362,38 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
             assert subnet_pages.calls == [{}]
             assert flow_log_pages.calls == [{}]
             assert s3_pages.calls == [{"PaginationConfig": {"PageSize": 1000}}]
-            assert iam_pages.calls == [{}]
+            assert iam_client.paginator_requests == [
+                "list_users",
+                "list_groups",
+                "list_roles",
+                "list_policies",
+                "list_user_tags",
+                "list_mfa_devices",
+                "list_access_keys",
+                "list_attached_user_policies",
+                "list_user_policies",
+                "get_group",
+                "list_attached_group_policies",
+                "list_group_policies",
+                "list_role_tags",
+                "list_attached_role_policies",
+                "list_role_policies",
+                "list_policy_tags",
+            ]
+            assert iam_paginators["list_policies"].calls == [{"Scope": "Local"}]
+            assert iam_paginators["get_group"].calls == [{"GroupName": "admins"}]
+            assert [call.operation_name for call in iam_client.calls] == [
+                "get_account_summary",
+                "get_access_key_last_used",
+                "get_user",
+                "get_user_policy",
+                "get_role",
+                "get_role_policy",
+                "get_policy",
+                "get_policy_version",
+                "get_policy",
+                "get_policy_version",
+            ]
             assert cloudtrail_pages.calls == [{}]
 
             with Session(postgres_engine) as session:
@@ -1285,15 +1532,104 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                     "traffic_type": "ALL",
                 }
 
+                iam_rows = session.execute(
+                    select(Resource, ResourceSnapshot)
+                    .join(
+                        ResourceSnapshot,
+                        ResourceSnapshot.resource_id == Resource.resource_id,
+                    )
+                    .where(
+                        Resource.service == "iam",
+                        ResourceSnapshot.scan_id == scan_id,
+                    )
+                ).all()
+                iam_records = {
+                    (
+                        iam_resource.aws_account_id,
+                        iam_resource.resource_type,
+                        iam_resource.aws_resource_id,
+                    ): (iam_resource, iam_snapshot)
+                    for iam_resource, iam_snapshot in iam_rows
+                }
+                expected_user_inline_id = (
+                    '{"owner_account_id":"123456789012",'
+                    '"owner_resource_id":"AIDAACCEPTANCEALICE",'
+                    '"owner_resource_type":"iam_user","policy_name":"Emergency"}'
+                )
+                expected_role_inline_id = (
+                    '{"owner_account_id":"123456789012",'
+                    '"owner_resource_id":"AROAACCEPTANCEREADER",'
+                    '"owner_resource_type":"iam_role","policy_name":"Emergency"}'
+                )
+                expected_local_version_id = (
+                    '{"policy_arn":"arn:aws:iam::123456789012:policy/Admin","version_id":"v1"}'
+                )
+                expected_aws_version_id = (
+                    '{"policy_arn":"arn:aws:iam::aws:policy/ReadOnlyAccess","version_id":"v5"}'
+                )
+                expected_iam_identities = {
+                    ("123456789012", "iam_access_key", "AKIAEXAMPLEONLY"),
+                    (
+                        "123456789012",
+                        "iam_customer_managed_policy",
+                        "arn:aws:iam::123456789012:policy/Admin",
+                    ),
+                    ("123456789012", "iam_group", "AGPAACCEPTANCEADMINS"),
+                    ("123456789012", "iam_inline_policy", expected_user_inline_id),
+                    ("123456789012", "iam_inline_policy", expected_role_inline_id),
+                    (
+                        "123456789012",
+                        "iam_managed_policy_version",
+                        expected_local_version_id,
+                    ),
+                    (
+                        "123456789012",
+                        "iam_mfa_device",
+                        "arn:aws:iam::123456789012:mfa/alice",
+                    ),
+                    ("123456789012", "iam_role", "AROAACCEPTANCEREADER"),
+                    ("123456789012", "iam_user", "AIDAACCEPTANCEALICE"),
+                    (
+                        "aws",
+                        "iam_aws_managed_policy",
+                        "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    ),
+                    ("aws", "iam_managed_policy_version", expected_aws_version_id),
+                }
+                assert set(iam_records) == expected_iam_identities
+                iam_user_snapshot = iam_records[
+                    ("123456789012", "iam_user", "AIDAACCEPTANCEALICE")
+                ][1]
+                assert iam_user_snapshot.tags == {"Owner": "security"}
+                assert (
+                    iam_user_snapshot.normalized_configuration["mfa_devices"][0]["SerialNumber"]
+                    == "arn:aws:iam::123456789012:mfa/alice"
+                )
+                assert (
+                    iam_user_snapshot.normalized_configuration["access_keys"][0]["LastUsed"] is None
+                )
+                iam_access_key_snapshot = iam_records[
+                    ("123456789012", "iam_access_key", "AKIAEXAMPLEONLY")
+                ][1]
+                assert (
+                    iam_access_key_snapshot.normalized_configuration["last_used_state"]
+                    == "no_recorded_use"
+                )
+                iam_role_snapshot = iam_records[
+                    ("123456789012", "iam_role", "AROAACCEPTANCEREADER")
+                ][1]
+                assert (
+                    iam_role_snapshot.normalized_configuration["trust_policy_document"][
+                        "Statement"
+                    ][0]["Action"]
+                    == "sts:AssumeRole"
+                )
+
                 source_graph = load_evidence_graph(session, scan_id)
                 assert source_graph is not None
                 assert source_graph.scan_id == scan_id
                 assert source_graph.collection_account_id == "123456789012"
-                assert len(source_graph.source_contracts) == 14
-                assert len(source_graph.artifacts) == 14
-                assert len(source_graph.source_outcomes) == 14
-                assert {contract.contract_key for contract in source_graph.source_contracts} == {
-                    "ec2.ebs-default-kms-key",
+                expected_present_once = {
                     "ec2.ebs-encryption-default",
                     "ec2.flow-logs.discovery",
                     "ec2.instance",
@@ -1307,42 +1643,69 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                     "ec2.vpcs.discovery",
                     "ec2.volume",
                     "ec2.volumes.discovery",
+                    "iam.access-key",
+                    "iam.account-summary",
+                    "iam.customer-managed-policies.discovery",
+                    "iam.customer-managed-policy",
+                    "iam.customer-managed-policy.tags",
+                    "iam.group",
+                    "iam.group.attached-managed-policies",
+                    "iam.group.inline-policies",
+                    "iam.group.members",
+                    "iam.groups.discovery",
+                    "iam.managed-policy.reference",
+                    "iam.mfa-device",
+                    "iam.role",
+                    "iam.role.attached-managed-policies",
+                    "iam.role.inline-policies",
+                    "iam.role.profile",
+                    "iam.role.tags",
+                    "iam.roles.discovery",
+                    "iam.user",
+                    "iam.user.access-keys",
+                    "iam.user.attached-managed-policies",
+                    "iam.user.inline-policies",
+                    "iam.user.mfa-devices",
+                    "iam.user.profile",
+                    "iam.user.tags",
+                    "iam.users.discovery",
                 }
-                assert {outcome.evidence_kind for outcome in source_graph.source_outcomes} == {
-                    "ec2.ebs-default-kms-key",
-                    "ec2.ebs-encryption-default",
-                    "ec2.flow-logs.discovery",
-                    "ec2.instance",
-                    "ec2.instances.discovery",
-                    "ec2.security-group",
-                    "ec2.security-groups.discovery",
-                    "ec2.subnet",
-                    "ec2.subnets.discovery",
-                    "ec2.vpc",
-                    "ec2.vpc-flow-log",
-                    "ec2.vpcs.discovery",
-                    "ec2.volume",
-                    "ec2.volumes.discovery",
+                expected_present_twice = {
+                    "iam.inline-policy.document",
+                    "iam.inline-policy.reference",
+                    "iam.managed-policy-version.document",
+                    "iam.managed-policy-version.reference",
+                    "iam.managed-policy.metadata",
                 }
-                assert {
-                    outcome.evidence_kind: outcome.state.value
-                    for outcome in source_graph.source_outcomes
-                } == {
-                    "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
-                    "ec2.ebs-encryption-default": "PRESENT",
-                    "ec2.flow-logs.discovery": "PRESENT",
-                    "ec2.instance": "PRESENT",
-                    "ec2.instances.discovery": "PRESENT",
-                    "ec2.security-group": "PRESENT",
-                    "ec2.security-groups.discovery": "PRESENT",
-                    "ec2.subnet": "PRESENT",
-                    "ec2.subnets.discovery": "PRESENT",
-                    "ec2.vpc": "PRESENT",
-                    "ec2.vpc-flow-log": "PRESENT",
-                    "ec2.vpcs.discovery": "PRESENT",
-                    "ec2.volume": "PRESENT",
-                    "ec2.volumes.discovery": "PRESENT",
-                }
+                expected_source_states = Counter(
+                    {(evidence_kind, "PRESENT"): 1 for evidence_kind in expected_present_once}
+                )
+                expected_source_states.update(
+                    {(evidence_kind, "PRESENT"): 2 for evidence_kind in expected_present_twice}
+                )
+                expected_source_states.update(
+                    {
+                        ("ec2.ebs-default-kms-key", "EXPECTED_ABSENCE"): 1,
+                        ("iam.access-key.last-used", "EXPECTED_ABSENCE"): 1,
+                    }
+                )
+                expected_kind_counts = Counter()
+                for (evidence_kind, _state), count in expected_source_states.items():
+                    expected_kind_counts[evidence_kind] += count
+                assert len(source_graph.source_contracts) == 51
+                assert len(source_graph.artifacts) == 51
+                assert len(source_graph.source_outcomes) == 51
+                assert (
+                    Counter(contract.contract_key for contract in source_graph.source_contracts)
+                    == expected_kind_counts
+                )
+                assert (
+                    Counter(
+                        (outcome.evidence_kind, outcome.state.value)
+                        for outcome in source_graph.source_outcomes
+                    )
+                    == expected_source_states
+                )
                 assert {
                     contract.source_outcome_id for contract in source_graph.source_contracts
                 } == {outcome.source_outcome_id for outcome in source_graph.source_outcomes}
@@ -1391,8 +1754,28 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                     ].normalized_payload["resource_id"]
                     == "fl-acceptance"
                 )
+                account_summary_outcome = source_outcomes_by_kind["iam.account-summary"]
+                assert source_artifacts_by_reference[
+                    account_summary_outcome.evidence_reference
+                ].normalized_payload == {
+                    "account_id": "123456789012",
+                    "account_access_keys_present": False,
+                    "account_mfa_enabled": True,
+                    "complete": True,
+                    "failure_category": None,
+                }
+                iam_user_outcome = source_outcomes_by_kind["iam.user"]
+                iam_user_resource, iam_user_snapshot = iam_records[
+                    ("123456789012", "iam_user", "AIDAACCEPTANCEALICE")
+                ]
+                assert iam_user_outcome.subject.stable_resource_id == (
+                    iam_user_resource.resource_id
+                )
+                assert iam_user_outcome.subject.resource_snapshot_id == (
+                    iam_user_snapshot.snapshot_id
+                )
 
-                assert len(source_graph.relationships) == 7
+                assert len(source_graph.relationships) == 19
                 source_relationships = {
                     (
                         relationship.relationship_type,
@@ -1400,6 +1783,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                         relationship.source.aws_resource_id,
                     ): relationship
                     for relationship in source_graph.relationships
+                    if relationship.source.service == "ec2"
                 }
                 assert set(source_relationships) == {
                     (
@@ -1459,6 +1843,157 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 for edge, expected_target_id in expected_edges.items():
                     assert source_relationships[edge].target.stable_resource_id == (
                         expected_target_id
+                    )
+
+                iam_relationships = {
+                    (
+                        relationship.relationship_type,
+                        relationship.source.aws_account_id,
+                        relationship.source.resource_type,
+                        relationship.source.aws_resource_id,
+                        relationship.target.aws_account_id,
+                        relationship.target.resource_type,
+                        relationship.target.aws_resource_id,
+                    ): relationship
+                    for relationship in source_graph.relationships
+                    if relationship.source.service == "iam"
+                }
+                assert set(iam_relationships) == {
+                    (
+                        RelationshipType.HAS_MFA_DEVICE,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "123456789012",
+                        "iam_mfa_device",
+                        "arn:aws:iam::123456789012:mfa/alice",
+                    ),
+                    (
+                        RelationshipType.HAS_ACCESS_KEY,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "123456789012",
+                        "iam_access_key",
+                        "AKIAEXAMPLEONLY",
+                    ),
+                    (
+                        RelationshipType.MEMBER_OF_GROUP,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "123456789012",
+                        "iam_group",
+                        "AGPAACCEPTANCEADMINS",
+                    ),
+                    (
+                        RelationshipType.ATTACHED_INLINE_POLICY,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "123456789012",
+                        "iam_inline_policy",
+                        expected_user_inline_id,
+                    ),
+                    (
+                        RelationshipType.ATTACHED_INLINE_POLICY,
+                        "123456789012",
+                        "iam_role",
+                        "AROAACCEPTANCEREADER",
+                        "123456789012",
+                        "iam_inline_policy",
+                        expected_role_inline_id,
+                    ),
+                    (
+                        RelationshipType.ATTACHED_MANAGED_POLICY,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "123456789012",
+                        "iam_customer_managed_policy",
+                        "arn:aws:iam::123456789012:policy/Admin",
+                    ),
+                    (
+                        RelationshipType.ATTACHED_MANAGED_POLICY,
+                        "123456789012",
+                        "iam_role",
+                        "AROAACCEPTANCEREADER",
+                        "123456789012",
+                        "iam_customer_managed_policy",
+                        "arn:aws:iam::123456789012:policy/Admin",
+                    ),
+                    (
+                        RelationshipType.PERMISSIONS_BOUNDARY,
+                        "123456789012",
+                        "iam_role",
+                        "AROAACCEPTANCEREADER",
+                        "123456789012",
+                        "iam_customer_managed_policy",
+                        "arn:aws:iam::123456789012:policy/Admin",
+                    ),
+                    (
+                        RelationshipType.ATTACHED_MANAGED_POLICY,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "aws",
+                        "iam_aws_managed_policy",
+                        "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    ),
+                    (
+                        RelationshipType.PERMISSIONS_BOUNDARY,
+                        "123456789012",
+                        "iam_user",
+                        "AIDAACCEPTANCEALICE",
+                        "aws",
+                        "iam_aws_managed_policy",
+                        "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    ),
+                    (
+                        RelationshipType.SELECTS_DEFAULT_VERSION,
+                        "123456789012",
+                        "iam_customer_managed_policy",
+                        "arn:aws:iam::123456789012:policy/Admin",
+                        "123456789012",
+                        "iam_managed_policy_version",
+                        expected_local_version_id,
+                    ),
+                    (
+                        RelationshipType.SELECTS_DEFAULT_VERSION,
+                        "aws",
+                        "iam_aws_managed_policy",
+                        "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                        "aws",
+                        "iam_managed_policy_version",
+                        expected_aws_version_id,
+                    ),
+                }
+                for relationship in iam_relationships.values():
+                    source_key = (
+                        relationship.source.aws_account_id,
+                        relationship.source.resource_type,
+                        relationship.source.aws_resource_id,
+                    )
+                    target_key = (
+                        relationship.target.aws_account_id,
+                        relationship.target.resource_type,
+                        relationship.target.aws_resource_id,
+                    )
+                    assert (
+                        relationship.source.stable_resource_id
+                        == iam_records[source_key][0].resource_id
+                    )
+                    assert (
+                        relationship.source.resource_snapshot_id
+                        == iam_records[source_key][1].snapshot_id
+                    )
+                    assert (
+                        relationship.target.stable_resource_id
+                        == iam_records[target_key][0].resource_id
+                    )
+                    assert (
+                        relationship.target.resource_snapshot_id
+                        == iam_records[target_key][1].snapshot_id
                     )
 
                 assessed_control_keys = set(
@@ -1560,6 +2095,10 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 subnet_snapshot_id = subnet_snapshot.snapshot_id
                 flow_log_resource_id = flow_log_resource.resource_id
                 flow_log_snapshot_id = flow_log_snapshot.snapshot_id
+                iam_resource_ids = {
+                    identity: (iam_resource.resource_id, iam_snapshot.snapshot_id)
+                    for identity, (iam_resource, iam_snapshot) in iam_records.items()
+                }
                 source_outcome_ids = {
                     item.source_outcome_id for item in source_graph.source_outcomes
                 }
@@ -1720,35 +2259,68 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 assert network_history.json()["total"] == 1
                 assert network_history.json()["items"][0]["snapshot_id"] == str(network_snapshot_id)
 
+            for (
+                iam_owner,
+                iam_resource_type,
+                iam_aws_resource_id,
+            ), (iam_resource_id, iam_snapshot_id) in iam_resource_ids.items():
+                iam_page = client.get(
+                    "/api/v1/resources",
+                    headers=headers,
+                    params={
+                        "account_id": iam_owner,
+                        "service": "iam",
+                        "resource_type": iam_resource_type,
+                    },
+                )
+                assert iam_page.status_code == 200
+                matching_documents = [
+                    item
+                    for item in iam_page.json()["items"]
+                    if item["aws_resource_id"] == iam_aws_resource_id
+                ]
+                assert len(matching_documents) == 1
+                iam_document = matching_documents[0]
+                assert iam_document["resource_id"] == str(iam_resource_id)
+                assert iam_document["scope"] == "global"
+                assert iam_document["region"] == "global"
+                assert iam_document["latest_snapshot"]["snapshot_id"] == str(iam_snapshot_id)
+                assert iam_document["latest_snapshot"]["scan_id"] == str(scan_id)
+                assert iam_document["latest_snapshot"]["region"] is None
+
+                iam_detail = client.get(
+                    f"/api/v1/resources/{iam_resource_id}",
+                    headers=headers,
+                )
+                assert iam_detail.status_code == 200
+                assert iam_detail.json() == iam_document
+                iam_history = client.get(
+                    f"/api/v1/resources/{iam_resource_id}/history",
+                    headers=headers,
+                )
+                assert iam_history.status_code == 200
+                assert iam_history.json()["total"] == 1
+                assert iam_history.json()["items"][0]["snapshot_id"] == str(iam_snapshot_id)
+                assert iam_history.json()["items"][0]["scan_id"] == str(scan_id)
+
             source_outcome_page = client.get(
                 "/api/v1/source-outcomes",
                 headers=headers,
-                params={"scan_id": str(scan_id)},
+                params={"scan_id": str(scan_id), "limit": 100},
             )
             assert source_outcome_page.status_code == 200
             source_outcome_document = source_outcome_page.json()
-            assert source_outcome_document["total"] == 14
+            assert source_outcome_document["total"] == 51
             assert {
                 UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
             } == source_outcome_ids
-            assert {
-                item["evidence_kind"]: item["state"] for item in source_outcome_document["items"]
-            } == {
-                "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
-                "ec2.ebs-encryption-default": "PRESENT",
-                "ec2.flow-logs.discovery": "PRESENT",
-                "ec2.instance": "PRESENT",
-                "ec2.instances.discovery": "PRESENT",
-                "ec2.security-group": "PRESENT",
-                "ec2.security-groups.discovery": "PRESENT",
-                "ec2.subnet": "PRESENT",
-                "ec2.subnets.discovery": "PRESENT",
-                "ec2.vpc": "PRESENT",
-                "ec2.vpc-flow-log": "PRESENT",
-                "ec2.vpcs.discovery": "PRESENT",
-                "ec2.volume": "PRESENT",
-                "ec2.volumes.discovery": "PRESENT",
-            }
+            assert (
+                Counter(
+                    (item["evidence_kind"], item["state"])
+                    for item in source_outcome_document["items"]
+                )
+                == expected_source_states
+            )
             source_outcome_details_by_kind = {}
             for source_outcome in source_outcome_document["items"]:
                 source_outcome_detail = client.get(
@@ -1828,6 +2400,30 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 "expected_absence": True,
                 "failure_category": None,
             }
+            account_summary_detail = source_outcome_details_by_kind["iam.account-summary"]
+            assert account_summary_detail["subject"] == {
+                "subject_kind": "account",
+                "provider": "aws",
+                "aws_account_id": "123456789012",
+                "scope": "global",
+                "region": None,
+            }
+            assert account_summary_detail["artifact"]["normalized_payload"] == {
+                "account_id": "123456789012",
+                "account_access_keys_present": False,
+                "account_mfa_enabled": True,
+                "complete": True,
+                "failure_category": None,
+            }
+            iam_user_detail = source_outcome_details_by_kind["iam.user"]
+            iam_user_resource_id, iam_user_snapshot_id = iam_resource_ids[
+                ("123456789012", "iam_user", "AIDAACCEPTANCEALICE")
+            ]
+            assert iam_user_detail["subject"]["stable_resource_id"] == str(iam_user_resource_id)
+            assert iam_user_detail["subject"]["resource_snapshot_id"] == str(iam_user_snapshot_id)
+            assert iam_user_detail["artifact"]["normalized_payload"]["resource_id"] == (
+                "AIDAACCEPTANCEALICE"
+            )
 
             relationship_page = client.get(
                 "/api/v1/relationships",
@@ -1836,7 +2432,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
             )
             assert relationship_page.status_code == 200
             relationship_document = relationship_page.json()
-            assert relationship_document["total"] == 7
+            assert relationship_document["total"] == 19
             assert {
                 UUID(item["observation_id"]) for item in relationship_document["items"]
             } == relationship_observation_ids
@@ -1850,6 +2446,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                     item["source"]["aws_resource_id"],
                 ): item
                 for item in relationship_document["items"]
+                if item["source"]["service"] == "ec2"
             }
             uses_volume = relationship_items[("uses_volume", "ec2_instance", "i-acceptance")]
             assert uses_volume["resolution"] == "RESOLVED"
@@ -1884,6 +2481,52 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
                 assert item["target"]["identity_state"] == "stable"
                 assert item["target"]["stable_resource_id"] == str(expected_target_id)
                 assert item["target"]["resource_snapshot_id"] is not None
+
+            iam_api_relationships = {
+                (
+                    item["relationship_type"],
+                    item["source"]["aws_account_id"],
+                    item["source"]["resource_type"],
+                    item["source"]["aws_resource_id"],
+                    item["target"]["aws_account_id"],
+                    item["target"]["resource_type"],
+                    item["target"]["aws_resource_id"],
+                ): item
+                for item in relationship_document["items"]
+                if item["source"]["service"] == "iam"
+            }
+            assert set(iam_api_relationships) == {
+                (
+                    relationship_type.value,
+                    source_owner,
+                    source_type,
+                    source_id,
+                    target_owner,
+                    target_type,
+                    target_id,
+                )
+                for (
+                    relationship_type,
+                    source_owner,
+                    source_type,
+                    source_id,
+                    target_owner,
+                    target_type,
+                    target_id,
+                ) in iam_relationships
+            }
+            for edge, item in iam_api_relationships.items():
+                source_key = (edge[1], edge[2], edge[3])
+                target_key = (edge[4], edge[5], edge[6])
+                assert item["resolution"] == "RESOLVED"
+                assert item["source"]["stable_resource_id"] == str(iam_resource_ids[source_key][0])
+                assert item["source"]["resource_snapshot_id"] == str(
+                    iam_resource_ids[source_key][1]
+                )
+                assert item["target"]["stable_resource_id"] == str(iam_resource_ids[target_key][0])
+                assert item["target"]["resource_snapshot_id"] == str(
+                    iam_resource_ids[target_key][1]
+                )
 
             assessment_page = client.get(
                 "/api/v1/assessments",

@@ -1,9 +1,10 @@
 # Service API
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
-Sprint 5 shared evidence-graph reads, accepted 5A EC2/EBS producer, and in-review 5B network
-producer. OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
-Both slices use the existing generic scan and read interfaces; no service-specific collector
+Sprint 5 shared evidence-graph reads, the accepted 5A EC2/EBS and 5B network producers, and the
+current 5C IAM evidence implementation.
+OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
+All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and
 tests in the same change.
 
@@ -150,7 +151,7 @@ text. There is no standalone artifact route and no source-contract list/detail r
 graphless scans. The checksum binds the exact declared source contracts; it is not inferred from
 outcome rows, and the full contract manifest is not returned by a public route. A current scan
 emits 5A source outcomes and artifacts for EC2 instance discovery, EBS volume discovery, both
-Regional EBS default-setting calls, and each normalized instance or volume. The in-review 5B
+Regional EBS default-setting calls, and each normalized instance or volume. The accepted 5B
 producer adds independent Regional discovery and per-resource evidence for security groups, VPCs,
 subnets, and VPC Flow Logs. Identity-authoritative same-scan network observations resolve 5A's
 partial instance references without assuming the collection account owns the target. The generic

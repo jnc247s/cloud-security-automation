@@ -80,6 +80,8 @@ _UNSUPPORTED_CODES = frozenset(
 
 _GRAPH_COLLECTOR_SOURCES = {
     "ec2_ebs_evidence": frozenset({"ec2.instances", "ec2.volumes", "ec2.ebs-defaults"}),
+    "iam_account_evidence": frozenset({"iam.account-summary"}),
+    "iam_users": frozenset({"iam.users", "iam.groups", "iam.roles", "iam.policies"}),
     "security_groups": frozenset({"ec2.security-groups"}),
     "vpc_network_evidence": frozenset({"ec2.vpcs", "ec2.subnets", "ec2.flow-logs"}),
 }
@@ -120,6 +122,29 @@ _REQUIRED_GRAPH_DISCOVERY_SOURCES = {
                 "2.0.0",
                 "ec2:DescribeSecurityGroups",
             )
+        }
+    ),
+    "iam_account_evidence": frozenset(
+        {
+            (
+                "iam.account-summary",
+                "iam.account-summary",
+                "1.0.0",
+                "iam:GetAccountSummary",
+            )
+        }
+    ),
+    "iam_users": frozenset(
+        {
+            ("iam.users.discovery", "iam.users", "2.0.0", "iam:ListUsers"),
+            ("iam.groups.discovery", "iam.groups", "2.0.0", "iam:ListGroups"),
+            ("iam.roles.discovery", "iam.roles", "2.0.0", "iam:ListRoles"),
+            (
+                "iam.customer-managed-policies.discovery",
+                "iam.policies",
+                "2.0.0",
+                "iam:ListPolicies",
+            ),
         }
     ),
     "vpc_network_evidence": frozenset(
@@ -480,8 +505,14 @@ def graph_collection_validation_required(
     if has_graph_collection_sources(collector_name=collector_name, outcomes=outcomes):
         return True
     requested = frozenset(requested_collectors)
-    if collector_name in {"ec2_ebs_evidence", "vpc_network_evidence"}:
+    if collector_name in {
+        "ec2_ebs_evidence",
+        "iam_account_evidence",
+        "vpc_network_evidence",
+    }:
         return collector_name in requested
+    if collector_name == "iam_users":
+        return "iam_account_evidence" in requested
     return collector_name == "security_groups" and "vpc_network_evidence" in requested
 
 
