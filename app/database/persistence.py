@@ -27,6 +27,12 @@ from app.assessment.identities import (
 from app.assessment.models import AssessmentCandidate, AssessmentResult
 from app.assessment.profiles import AssessmentProfile
 from app.assessment.provenance import control_catalog_sha256
+from app.collectors.base import (
+    GRAPH_AWARE_COLLECTOR_NAMES,
+    graph_collection_status_for,
+    graph_collection_validation_required,
+    graph_collectors_for_outcomes,
+)
 from app.database.catalogs import ensure_assessment_profile, ensure_control_catalog
 from app.database.evidence_graph import persist_evidence_graph
 from app.database.integrity import canonical_json_sha256
@@ -132,6 +138,37 @@ def _validate_bundle(
         item.collector_name: item.status.value for item in snapshot.collector_outcomes
     }:
         raise ScanPersistenceError("scope collector outcomes do not match the inventory")
+    if snapshot.evidence_graph is not None:
+        represented_collectors = graph_collectors_for_outcomes(
+            snapshot.evidence_graph.source_outcomes
+        )
+        if not represented_collectors.issubset(scope.requested_collectors):
+            raise ScanPersistenceError(
+                "graph source outcomes require matching requested collectors"
+            )
+        for collector_outcome in snapshot.collector_outcomes:
+            if collector_outcome.collector_name not in GRAPH_AWARE_COLLECTOR_NAMES:
+                continue
+            if not graph_collection_validation_required(
+                collector_name=collector_outcome.collector_name,
+                requested_collectors=scope.requested_collectors,
+                outcomes=snapshot.evidence_graph.source_outcomes,
+            ):
+                continue
+            try:
+                reconstructed = graph_collection_status_for(
+                    collector_name=collector_outcome.collector_name,
+                    outcomes=snapshot.evidence_graph.source_outcomes,
+                    artifacts=snapshot.evidence_graph.artifacts,
+                )
+            except ValueError as error:
+                raise ScanPersistenceError(
+                    "evidence graph cannot reconstruct collector coverage"
+                ) from error
+            if collector_outcome.status is not reconstructed:
+                raise ScanPersistenceError(
+                    "collector coverage disagrees with persisted graph evidence"
+                )
     if (
         scope.assessment_profile_id != profile.profile_id
         or scope.assessment_profile_version != profile.version

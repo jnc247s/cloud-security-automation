@@ -1,13 +1,15 @@
 # Persistence and assessment history
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
-Sprint 5 shared foundation extends that history with an optional, versioned evidence graph, and
-the in-progress 5A EC2/EBS producer now supplies its first AWS graph fragment. The persistence
+Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
+accepted 5A EC2/EBS producer and in-acceptance 5B network producer supply its first AWS graph
+fragments. The persistence
 boundary does not call AWS, run controls, schedule scans, or commit transactions on behalf of its
 caller. The inventory command still prints a summary only; it does not persist anything.
 
-The five executable controls are unchanged. 5A adds four documented read-only EC2/EBS calls but
-does not register a control. `S3-900` remains the legacy explicit-encryption-configuration
+The five executable controls are unchanged. 5A and 5B add documented read-only EC2/EBS and
+network evidence calls but do not register a control. `S3-900` remains the legacy
+explicit-encryption-configuration
 prototype, not a new production encryption or public-exposure control. The technical meanings
 documented in the [control catalog](controls/catalog.md) and
 [Assessment framework](assessment-framework.md) still apply.
@@ -184,11 +186,20 @@ requested Region requires the established S3/CloudTrail exception or an explicit
 supplemental-Region source contract with a `PRESENT` outcome. These are closed evidence-admission
 rules, not expansion of scan scope or caller authorization.
 
+For 5B discovery schemas, a canonical non-empty `unadmitted_resources` list and
+`admission_complete = false` are digest-bound operational coverage inputs. They preserve the full
+AWS enumeration and its truthful source state while making the collector's `PARTIAL` projection
+reconstructable after persistence. Graph writes and reads validate that reconstructed result
+against the stored scope-manifest collector outcome. They also require the exact versioned
+discovery-source set for every integrated graph collector and reject graph sources whose
+operational collector was omitted from the requested scope or outcome map. Accepted 5A history
+with a legacy graphless `security_groups` outcome remains readable.
+
 Authenticated generic services and API projections can list/read relationship observations and
 source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
-public route, and artifacts have no standalone route. The 5A EC2/EBS producer emits source and
-relationship history through this boundary; Sprint 0--4 legacy collectors remain graphless. No
-current technical result consumes the 5A graph.
+public route, and artifacts have no standalone route. The 5A EC2/EBS and 5B network producers emit
+source and relationship history through this boundary; other Sprint 0--4 legacy collectors remain
+graphless. No current technical result consumes the Sprint 5 graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -422,6 +433,7 @@ cleanup; existing schemas are not targeted. CI provides a PostgreSQL test servic
 Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
 recoverable in-process scan executor. The accepted Sprint 5 foundation adds the optional
 evidence-graph domain, transactional persistence, authenticated generic reads, and safe migration
-boundary. The in-progress 5A producer emits EC2/EBS source outcomes and relationships through it.
-Later collector expansion, additional production controls, Terraform infrastructure, governance
+boundary. The accepted 5A producer emits EC2/EBS source outcomes and relationships, and the
+in-acceptance 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow
+Logs. Later collector expansion, additional production controls, Terraform infrastructure, governance
 mutation APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.

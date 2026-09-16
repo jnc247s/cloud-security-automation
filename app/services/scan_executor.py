@@ -45,6 +45,7 @@ _REQUESTED_COLLECTORS = (
     "iam_users",
     "s3_buckets",
     "security_groups",
+    "vpc_network_evidence",
 )
 _RESOURCE_TYPES = (
     "aws_account",
@@ -54,6 +55,9 @@ _RESOURCE_TYPES = (
     "iam_user",
     "s3_bucket",
     "security_group",
+    "subnet",
+    "vpc",
+    "vpc_flow_log",
 )
 
 

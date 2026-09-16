@@ -124,14 +124,28 @@ Future integration will calculate the rollup only after retaining validated sour
 - `SUCCEEDED` requires every declared source needed for the collector's promised coverage to be
   conclusively complete (`PRESENT` or `EXPECTED_ABSENCE`);
 - `PARTIAL` means trustworthy resources or facts were retained while one or more promised sources
-  were unavailable, malformed, conflicting, or disappeared during collection; and
+  were unavailable, malformed, conflicting, or disappeared during collection, or when a
+  validated digest-bound admission gap proves that a safely retained projection excludes an
+  observed resource; and
 - `FAILED` means the collector could not retain the minimum trustworthy discovery facts required
   for its promised inventory boundary.
 
 The rollup describes collection coverage, not security posture. It cannot itself create a
 `PASS`, `FAIL`, finding, exception, or remediation proposal. A future collector's declared source
 manifest and version determine which sources are promised; callers may not silently omit a source
-to turn `PARTIAL` into `SUCCEEDED`.
+to turn `PARTIAL` into `SUCCEEDED`. An admission gap is a separate operational rollup input: it
+does not rewrite a structurally valid, complete AWS discovery response from `PRESENT` to a source
+failure. The complete artifact retains the AWS-observed identities and records canonical
+`unadmitted_resources`; future consumers must consider that metadata and may not treat the source
+state alone as proof that every observation was admitted to the top-level projection.
+
+For each integrated graph-aware operational collector/version, reconstruction requires its exact
+fixed discovery-source set, not merely whichever subset remains in the graph. Every operational
+collector represented by source outcomes must also have exactly one matching requested collector
+and collector outcome in the scope manifest. Missing or unknown discovery sources, omitted
+collector coverage, malformed admission metadata, and a mismatch between reconstructed and stored
+rollup fail closed. Accepted pre-5B history may retain the legacy `security_groups` outcome without
+5B source records; the new `vpc_network_evidence` collector has no such compatibility exception.
 
 ### Deterministic assessment semantics
 

@@ -1,7 +1,7 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical evidence-readiness plan with the in-progress 5A evidence producer reflected;
-this document does not enable any Sprint 6 rule.
+Status: canonical evidence-readiness plan with accepted 5A evidence and the in-review 5B evidence
+producer reflected; this document does not enable any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -42,8 +42,8 @@ source is incomplete, and record a typed outcome for every promised source. A `P
 requires every source that its versioned control declares decision-required. A coherent fact may
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
-domain/persistence boundary and the 5A EC2/EBS producer are integrated; no Sprint 6 rule consumes
-source outcomes yet.
+domain/persistence boundary, the accepted 5A EC2/EBS producer, and the in-review 5B network
+producers are integrated; no Sprint 6 rule consumes source outcomes yet.
 
 ## IAM controls
 
@@ -74,13 +74,43 @@ the boundary relationship and must not be presented as attached or effective adm
 | --- | --- | --- | --- | --- | --- |
 | `NET-001` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | stable group/VPC IDs; complete ingress protocol, ports, IPv4/IPv6 CIDRs, group and prefix references; security group -> VPC | Incomplete/malformed ingress or collector coverage -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
 | `NET-002` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | same complete ingress structure as `NET-001`; security group -> VPC | Same fail-closed behavior as `NET-001` | Existing Sprint 1 / `CURRENT` |
-| `NET-003` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | ingress `ip_protocol`, ports where applicable, `/0` IPv4/IPv6 CIDRs, group/prefix sources; security group -> VPC | Missing or malformed all-protocol/source evidence -> `INSUFFICIENT_EVIDENCE` | 5B validation / `CURRENT` |
-| `NET-004` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | complete protocol/port-range/public-CIDR evidence; profile-supplied high-risk ports; security group -> VPC | Missing profile or decision-relevant rule fact -> `INSUFFICIENT_EVIDENCE` | 5B validation plus Sprint 6 profile extension / `CURRENT` |
-| `NET-005` | `DescribeSecurityGroups`, `DescribeVpcs`; `ec2:DescribeSecurityGroups`, `ec2:DescribeVpcs` | Regional | exact `group_name`; `is_default` derived from `GroupName == "default"` plus valid VPC ID; complete ingress/egress; default security group -> VPC | Uncertain group/VPC identity or incomplete ingress/egress -> `INSUFFICIENT_EVIDENCE` | 5B / `EXPAND` |
-| `NET-006` | one paginated Regional `DescribeVpcs` and one paginated Regional `DescribeFlowLogs`; `ec2:DescribeVpcs`, `ec2:DescribeFlowLogs` | Regional | VPC identity and complete case-sensitive tags; Flow Log ID, `ResourceId`, `FlowLogStatus`, `TrafficType`, destination type/name/ARN; exact Flow Log `ResourceId` -> collected VPC ID | Absent/blank `Environment`, invalid profile, or incomplete VPC/Flow Log evidence -> `INSUFFICIENT_EVIDENCE`; complete environment outside policy -> `NOT_APPLICABLE` | 5B / `EXPAND` |
+| `NET-003` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | ingress `ip_protocol`, ports where applicable, `/0` IPv4/IPv6 CIDRs, group/prefix sources; security group -> VPC | Missing or malformed all-protocol/source evidence -> `INSUFFICIENT_EVIDENCE` | 5B evidence validation current; Sprint 6 rule pending / `CURRENT` |
+| `NET-004` | `DescribeSecurityGroups`; `ec2:DescribeSecurityGroups` | Regional | complete protocol/port-range/public-CIDR evidence; profile-supplied high-risk ports; security group -> VPC | Missing profile or decision-relevant rule fact -> `INSUFFICIENT_EVIDENCE` | 5B evidence validation current; Sprint 6 rule/profile extension pending / `CURRENT` |
+| `NET-005` | `DescribeSecurityGroups`, `DescribeVpcs`; `ec2:DescribeSecurityGroups`, `ec2:DescribeVpcs` | Regional | exact `group_name`; `is_default` derived from `GroupName == "default"` plus valid VPC ID; complete ingress/egress; default security group -> VPC | Uncertain group/VPC identity or incomplete ingress/egress -> `INSUFFICIENT_EVIDENCE` | 5B evidence current; Sprint 6 rule pending / `CURRENT` |
+| `NET-006` | one paginated Regional `DescribeVpcs` and one paginated Regional `DescribeFlowLogs`; `ec2:DescribeVpcs`, `ec2:DescribeFlowLogs` | Regional | VPC identity and complete case-sensitive tags; Flow Log ID, `ResourceId`, `FlowLogStatus`, `TrafficType`, destination type/name/ARN; exact Flow Log `ResourceId` -> collected VPC ID | Absent/blank `Environment`, invalid profile, or incomplete VPC/Flow Log evidence -> `INSUFFICIENT_EVIDENCE`; complete environment outside policy -> `NOT_APPLICABLE` | 5B evidence current; Sprint 6 rule/profile extension pending / `CURRENT` |
 
 The security-group contracts do not claim end-to-end reachability. Route tables, network ACLs,
 firewalls, load balancers, and host controls are outside these initial syntactic rules.
+
+The in-review 5B runtime keeps `DescribeSecurityGroups` in the accepted `security_groups`
+collector so independent VPC, subnet, or Flow Log failures cannot erase independently admissible
+same-account NET-001/NET-002 evidence. An external-owner group whose resolved-edge proof is
+unavailable is pruned and makes that collector `PARTIAL`. The graph path emits top-level
+`security_group` resources with authoritative `OwnerId`,
+exact `group_name`/derived `is_default`, complete ingress and egress structures, tags, and
+security-group -> VPC observations. A separate `vpc_network_evidence` collector emits top-level
+`vpc`, `subnet`, and `vpc_flow_log` resources from independently paginated `DescribeVpcs`,
+`DescribeSubnets`, and `DescribeFlowLogs`. It preserves VPC owner/state/CIDR/default context,
+subnet owner/VPC/Availability Zone/public-IP-assignment context, and complete Flow Log status,
+traffic, destination, delivery, and aggregation context.
+
+All four Regional APIs produce declared discovery artifacts/outcomes, and every retained resource
+has an identity-authoritative enrichment artifact/outcome. Valid siblings survive partial sources;
+operational, malformed, and conflicting evidence remains typed and sanitized. Relationships are
+security group -> VPC, VPC -> subnet, and VPC -> VPC-scoped Flow Log with same-scan provenance.
+Subnet and Flow Log edges require an exact collected VPC identity in the same owner/collection
+context and Region. A Flow Log whose `ResourceId` names a subnet, interface, or transit gateway is
+retained as evidence but does not produce a VPC edge. These facts are in acceptance; they do not
+register or execute NET-003 through NET-006.
+
+An external-owner resource without any exact resolved same-scan edge cannot satisfy the accepted
+exceptional-owner admission contract. Assembly excludes that resource and its resource-scoped
+enrichment records. Its complete discovery artifact preserves the AWS-observed ID, records the
+canonical rejected identity in `unadmitted_resources`, and sets `admission_complete = false`
+without changing the truthful `PRESENT` source state. The shared evidence rollup derives
+`PARTIAL` from that digest-bound gap. Valid same-account siblings remain available, but
+NET-001/NET-002 and future joined controls cannot treat either the pruned projection or the
+`PRESENT` discovery state alone as complete admitted coverage.
 
 For `NET-006`, v1 applicability is the exact case-sensitive value of the VPC tag named
 `Environment`. A complete non-empty value outside `vpc_flow_log_required_environments` is
@@ -156,7 +186,7 @@ batched by the API's `ResourceIdList` limit and the result remains attributable 
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume tags current; 5B–5F expansion / `EXPAND` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume and 5B VPC/subnet/security-group/Flow Log tags current; 5C--5F expansion and Sprint 6 rule/profile extension pending / `CURRENT` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -368,11 +398,13 @@ detailed S3-002 aggregation, S3-004 classifier, and generic relationship represe
 approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
-API boundary. The 5A EC2/EBS producer now supplies its named evidence; 5B--5F producers and every
-Sprint 6 rule consumer remain in their named future slices.
+API boundary. The accepted 5A EC2/EBS producer supplies its named evidence, and the 5B VPC,
+subnet, Flow Log, and security-group graph producers now supply their named evidence while
+undergoing acceptance. The 5C--5F producers and every Sprint 6 rule consumer remain in their named
+future slices.
 
-Sprint 5 is `IN PROGRESS`, its 5A collector implementation is undergoing acceptance, and Sprint 6
-remains `PLANNED`. The complete Phase 0 validation and independent-review gates passed. The
-canonical control-contract readiness marker remains:
+Sprint 5 is `IN PROGRESS`, 5A is accepted, 5B is in acceptance, and Sprint 6 remains `PLANNED`.
+The complete Phase 0 validation and independent-review gates passed. The canonical
+control-contract readiness marker remains:
 
 `SPRINT_5_CONTROL_CONTRACTS_READY`

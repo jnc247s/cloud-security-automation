@@ -101,6 +101,7 @@ CURRENT_CONTROL_IDS = {
     "EC2-002",
     "EC2-003",
     "EC2-004",
+    "GOV-001",
     "IAM-001",
     "IAM-002",
     "LOG-001",
@@ -108,6 +109,8 @@ CURRENT_CONTROL_IDS = {
     "NET-002",
     "NET-003",
     "NET-004",
+    "NET-005",
+    "NET-006",
 }
 CONTRACT_READY_CONTROL_IDS = {"LOG-004", "S3-002", "S3-004"}
 EXPECTED_MATRIX_STATES = {
@@ -381,7 +384,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5a_start_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5b_start_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -389,13 +392,14 @@ def test_5a_start_does_not_enable_planned_controls_or_later_slices() -> None:
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "Current slice: **5A EC2 and EBS evidence — IN PROGRESS**" in active_plan
-    assert "foundation is `FOUNDATION_READY_FOR_5A`" in roadmap
     assert (
-        "Accepted prerequisite: **5G shared relationship/source-outcome evidence foundation — "
-        "FOUNDATION_READY_FOR_5A**" in active_plan
+        "Current slice: **5B VPC, subnet, Flow Log, and network evidence — IN PROGRESS**"
+        in active_plan
     )
-    assert "Slice 5A is now separately" in active_plan
+    assert "foundation and 5A EC2/EBS evidence slice are accepted" in roadmap
+    assert "FOUNDATION_READY_FOR_5A" in active_plan
+    assert "**5A EC2 and EBS evidence — COMPLETE**" in active_plan
+    assert "Slice 5B is now separately authorized" in active_plan
     assert "later collector slices remain unstarted" in active_plan
     assert "explicitly triaged accepted limitations" in active_plan
     assert "must be resolved before any multi-tenant deployment" in active_plan

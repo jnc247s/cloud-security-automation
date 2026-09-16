@@ -19,6 +19,7 @@ from botocore.exceptions import (
 
 from app.assessment.evidence_graph import (
     EvidenceCardinality,
+    ResourceOwnerMode,
     ScanSourceContract,
     SourceEvidenceArtifact,
 )
@@ -38,7 +39,7 @@ from app.assessment.source_outcomes import (
 )
 from app.aws.client import AWSClientProvider
 from app.schemas.inventory import CollectionStatus
-from app.schemas.resource import NormalizedResource
+from app.schemas.resource import NormalizedResource, ResourceScope
 
 _ACCESS_DENIED_CODES = frozenset(
     {
@@ -76,6 +77,84 @@ _UNSUPPORTED_CODES = frozenset(
         "UnsupportedOperation",
     }
 )
+
+_GRAPH_COLLECTOR_SOURCES = {
+    "ec2_ebs_evidence": frozenset({"ec2.instances", "ec2.volumes", "ec2.ebs-defaults"}),
+    "security_groups": frozenset({"ec2.security-groups"}),
+    "vpc_network_evidence": frozenset({"ec2.vpcs", "ec2.subnets", "ec2.flow-logs"}),
+}
+_REQUIRED_GRAPH_DISCOVERY_SOURCES = {
+    "ec2_ebs_evidence": frozenset(
+        {
+            (
+                "ec2.instances.discovery",
+                "ec2.instances",
+                "1.0.0",
+                "ec2:DescribeInstances",
+            ),
+            (
+                "ec2.volumes.discovery",
+                "ec2.volumes",
+                "1.0.0",
+                "ec2:DescribeVolumes",
+            ),
+            (
+                "ec2.ebs-encryption-default",
+                "ec2.ebs-defaults",
+                "1.0.0",
+                "ec2:GetEbsEncryptionByDefault",
+            ),
+            (
+                "ec2.ebs-default-kms-key",
+                "ec2.ebs-defaults",
+                "1.0.0",
+                "ec2:GetEbsDefaultKmsKeyId",
+            ),
+        }
+    ),
+    "security_groups": frozenset(
+        {
+            (
+                "ec2.security-groups.discovery",
+                "ec2.security-groups",
+                "2.0.0",
+                "ec2:DescribeSecurityGroups",
+            )
+        }
+    ),
+    "vpc_network_evidence": frozenset(
+        {
+            ("ec2.vpcs.discovery", "ec2.vpcs", "1.0.0", "ec2:DescribeVpcs"),
+            (
+                "ec2.subnets.discovery",
+                "ec2.subnets",
+                "1.0.0",
+                "ec2:DescribeSubnets",
+            ),
+            (
+                "ec2.flow-logs.discovery",
+                "ec2.flow-logs",
+                "1.0.0",
+                "ec2:DescribeFlowLogs",
+            ),
+        }
+    ),
+}
+_ADMISSION_AWARE_DISCOVERY_SOURCES = {
+    "ec2.security-groups.discovery": (
+        "security_group",
+        "ec2.security-groups",
+        "ec2:DescribeSecurityGroups",
+    ),
+    "ec2.vpcs.discovery": ("vpc", "ec2.vpcs", "ec2:DescribeVpcs"),
+    "ec2.subnets.discovery": ("subnet", "ec2.subnets", "ec2:DescribeSubnets"),
+    "ec2.flow-logs.discovery": (
+        "vpc_flow_log",
+        "ec2.flow-logs",
+        "ec2:DescribeFlowLogs",
+    ),
+}
+GRAPH_AWARE_COLLECTOR_NAMES = frozenset(_GRAPH_COLLECTOR_SOURCES)
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,6 +265,13 @@ def build_source_observation(
 ) -> SourceObservation:
     """Build one exact contract/artifact/outcome/provenance group."""
 
+    owner_mode = ResourceOwnerMode.COLLECTION_ACCOUNT
+    if isinstance(subject, ResourceEvidenceSubject):
+        if subject.aws_account_id == "aws":
+            owner_mode = ResourceOwnerMode.AWS_MANAGED
+        elif subject.aws_account_id != context.collection_account_id:
+            owner_mode = ResourceOwnerMode.EXTERNAL_ACCOUNT
+
     artifact = SourceEvidenceArtifact.for_payload(
         scan_id=context.scan_id,
         collection_account_id=context.collection_account_id,
@@ -207,6 +293,7 @@ def build_source_observation(
         collector_version=collector_version,
         source_api=source_api,
         cardinality=cardinality,
+        owner_mode=owner_mode,
         identity_authoritative=identity_authoritative,
     )
     outcome = SourceEvidenceOutcome.for_observation(
@@ -275,6 +362,228 @@ def collection_status_for(outcomes: Iterable[SourceEvidenceOutcome]) -> Collecti
     if states and all(state is EvidenceSourceState.UNAVAILABLE for state in states):
         return CollectionStatus.FAILED
     return CollectionStatus.PARTIAL
+
+
+def graph_collection_status_for(
+    *,
+    collector_name: str,
+    outcomes: Iterable[SourceEvidenceOutcome],
+    artifacts: Iterable[SourceEvidenceArtifact],
+) -> CollectionStatus:
+    """Reconstruct one graph collector's coverage from persisted evidence only."""
+
+    try:
+        source_collectors = _GRAPH_COLLECTOR_SOURCES[collector_name]
+    except KeyError as error:
+        raise ValueError("unknown graph-aware collector") from error
+
+    selected_outcomes = tuple(
+        outcome for outcome in outcomes if outcome.collector in source_collectors
+    )
+    if not selected_outcomes:
+        raise ValueError("graph-aware collector has no source outcomes")
+    required_discovery_sources = _REQUIRED_GRAPH_DISCOVERY_SOURCES[collector_name]
+    actual_discovery_sources = [
+        (
+            outcome.evidence_kind,
+            outcome.collector,
+            outcome.collector_version,
+            outcome.source_api,
+        )
+        for outcome in selected_outcomes
+        if outcome.phase is EvidenceCollectionPhase.DISCOVERY
+    ]
+    if set(actual_discovery_sources) != required_discovery_sources or len(
+        actual_discovery_sources
+    ) != len(required_discovery_sources):
+        raise ValueError("graph-aware collector discovery manifest is incomplete or unknown")
+
+    artifacts_by_reference: dict[str, SourceEvidenceArtifact] = {}
+    for artifact in artifacts:
+        if artifact.evidence_reference in artifacts_by_reference:
+            raise ValueError("evidence references must be unique for coverage reconstruction")
+        artifacts_by_reference[artifact.evidence_reference] = artifact
+
+    admission_incomplete = False
+    for outcome in selected_outcomes:
+        expected_source = _ADMISSION_AWARE_DISCOVERY_SOURCES.get(outcome.evidence_kind)
+        if expected_source is None:
+            continue
+        expected_resource_type, expected_collector, expected_source_api = expected_source
+        if outcome.phase is not EvidenceCollectionPhase.DISCOVERY or not isinstance(
+            outcome.subject, AccountEvidenceSubject
+        ):
+            raise ValueError("admission metadata requires a Regional discovery outcome")
+        if outcome.collector != expected_collector or outcome.source_api != expected_source_api:
+            raise ValueError("admission-aware discovery source identity is invalid")
+        artifact = artifacts_by_reference.get(outcome.evidence_reference)
+        if artifact is None:
+            raise ValueError("admission-aware discovery outcome has no bound artifact")
+        if (
+            artifact.evidence_schema != outcome.evidence_kind
+            or artifact.evidence_schema_version != "1.0.0"
+            or artifact.scan_id != outcome.scan_id
+            or artifact.collection_account_id != outcome.collection_account_id
+            or artifact.collected_at != outcome.collected_at
+            or artifact.evidence_sha256 != outcome.evidence_sha256
+        ):
+            raise ValueError("admission-aware discovery artifact does not match its outcome")
+        admission_incomplete |= _admission_projection_is_incomplete(
+            outcome=outcome,
+            artifact=artifact,
+            expected_resource_type=expected_resource_type,
+        )
+
+    source_status = collection_status_for(selected_outcomes)
+    if source_status is CollectionStatus.SUCCEEDED and admission_incomplete:
+        return CollectionStatus.PARTIAL
+    return source_status
+
+
+def has_graph_collection_sources(
+    *,
+    collector_name: str,
+    outcomes: Iterable[SourceEvidenceOutcome],
+) -> bool:
+    """Return whether a graph contains sources owned by one operational collector."""
+
+    try:
+        source_collectors = _GRAPH_COLLECTOR_SOURCES[collector_name]
+    except KeyError as error:
+        raise ValueError("unknown graph-aware collector") from error
+    return any(outcome.collector in source_collectors for outcome in outcomes)
+
+
+def graph_collectors_for_outcomes(
+    outcomes: Iterable[SourceEvidenceOutcome],
+) -> frozenset[str]:
+    """Return operational graph collectors represented by persisted source outcomes."""
+
+    outcome_collectors = {outcome.collector for outcome in outcomes}
+    return frozenset(
+        collector_name
+        for collector_name, source_collectors in _GRAPH_COLLECTOR_SOURCES.items()
+        if outcome_collectors & source_collectors
+    )
+
+
+def graph_collection_validation_required(
+    *,
+    collector_name: str,
+    requested_collectors: Iterable[str],
+    outcomes: Iterable[SourceEvidenceOutcome],
+) -> bool:
+    """Preserve accepted history while requiring every integrated graph producer."""
+
+    if collector_name not in GRAPH_AWARE_COLLECTOR_NAMES:
+        return False
+    if has_graph_collection_sources(collector_name=collector_name, outcomes=outcomes):
+        return True
+    requested = frozenset(requested_collectors)
+    if collector_name in {"ec2_ebs_evidence", "vpc_network_evidence"}:
+        return collector_name in requested
+    return collector_name == "security_groups" and "vpc_network_evidence" in requested
+
+
+def _admission_projection_is_incomplete(
+    *,
+    outcome: SourceEvidenceOutcome,
+    artifact: SourceEvidenceArtifact,
+    expected_resource_type: str,
+) -> bool:
+    """Validate canonical 5B admission metadata without changing AWS source truth."""
+
+    payload = artifact.model_dump(mode="json")["normalized_payload"]
+    if not isinstance(payload, dict):  # pragma: no cover - artifact model invariant
+        raise ValueError("admission-aware discovery payload must be an object")
+    resource_ids = payload.get("resource_ids")
+    resource_count = payload.get("resource_count")
+    discarded_item_count = payload.get("discarded_item_count")
+    admission_complete = payload.get("admission_complete")
+    unadmitted_resources = payload.get("unadmitted_resources")
+    complete = payload.get("complete")
+    failure_category = payload.get("failure_category")
+    if (
+        not isinstance(resource_ids, list)
+        or not all(isinstance(item, str) and item for item in resource_ids)
+        or resource_ids != sorted(set(resource_ids))
+        or not isinstance(resource_count, int)
+        or isinstance(resource_count, bool)
+        or resource_count != len(resource_ids)
+        or not isinstance(discarded_item_count, int)
+        or isinstance(discarded_item_count, bool)
+        or discarded_item_count < 0
+        or not isinstance(admission_complete, bool)
+        or not isinstance(unadmitted_resources, list)
+        or not isinstance(complete, bool)
+    ):
+        raise ValueError("admission-aware discovery metadata is malformed")
+    expected_complete = outcome.state in {
+        EvidenceSourceState.PRESENT,
+        EvidenceSourceState.EXPECTED_ABSENCE,
+    }
+    expected_failure = (
+        outcome.failure_category.value if outcome.failure_category is not None else None
+    )
+    if complete is not expected_complete or failure_category != expected_failure:
+        raise ValueError("discovery payload disagrees with its source outcome")
+
+    region = outcome.subject.region
+    if outcome.subject.scope is not ResourceScope.REGIONAL or region is None:
+        raise ValueError("5B admission metadata requires a Regional discovery subject")
+    if (
+        payload.get("account_id") != outcome.collection_account_id
+        or payload.get("region") != region
+    ):
+        raise ValueError("discovery payload scope disagrees with its source outcome")
+    expected_keys = {
+        "account_id",
+        "service",
+        "resource_type",
+        "scope",
+        "region",
+        "resource_id",
+    }
+    canonical_identities: list[tuple[str, str, str, str, str, str]] = []
+    for item in unadmitted_resources:
+        if not isinstance(item, dict) or set(item) != expected_keys:
+            raise ValueError("unadmitted resource identity is malformed")
+        identity = tuple(item[key] for key in sorted(expected_keys))
+        if not all(isinstance(value, str) for value in identity):
+            raise ValueError("unadmitted resource identity is malformed")
+        account_id = item["account_id"]
+        resource_id = item["resource_id"]
+        if (
+            len(account_id) != 12
+            or not account_id.isascii()
+            or not account_id.isdigit()
+            or account_id == outcome.collection_account_id
+            or item["service"] != "ec2"
+            or item["resource_type"] != expected_resource_type
+            or item["scope"] != ResourceScope.REGIONAL.value
+            or item["region"] != region
+            or not resource_id
+            or any(separator in resource_id for separator in ("\x1f", "\r", "\n"))
+            or resource_id not in resource_ids
+        ):
+            raise ValueError("unadmitted resource identity contradicts discovery scope")
+        canonical_identities.append(
+            (
+                account_id,
+                item["service"],
+                item["resource_type"],
+                item["scope"],
+                item["region"],
+                resource_id,
+            )
+        )
+    if canonical_identities != sorted(set(canonical_identities)):
+        raise ValueError("unadmitted resource identities must be sorted and unique")
+    if len({identity[5] for identity in canonical_identities}) != len(canonical_identities):
+        raise ValueError("unadmitted resource IDs must be unique within one discovery source")
+    if admission_complete is not (not canonical_identities):
+        raise ValueError("admission completeness disagrees with unadmitted resources")
+    return not admission_complete
 
 
 def require_mapping(
