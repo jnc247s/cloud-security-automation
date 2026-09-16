@@ -1,8 +1,7 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory and Sprint 5A EC2/EBS producer, plus the in-acceptance Sprint 5B
-network producer, provide a read-only, on-demand AWS inventory run. The standalone command returns
-a normalized in-memory
+The accepted Sprint 1 inventory and Sprint 5A EC2/EBS and 5B network producers provide a
+read-only, on-demand AWS inventory run. The standalone command returns a normalized in-memory
 snapshot and prints only an aggregate summary. It does not judge compliance, create findings,
 write to PostgreSQL, or modify AWS; the authorized scan executor separately persists the same
 snapshot through its existing transaction boundary.

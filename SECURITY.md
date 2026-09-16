@@ -1,9 +1,9 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
-the accepted Sprint 5 shared evidence-graph foundation, the merged 5A EC2/EBS producer at `main`
-commit `5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d`, and the in-review 5B network evidence
-implementation. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS and 5B network
+evidence producers at `main` commit `66cadb20cd6a469d5a656628c27ae8cb569d8c69`. Threats and
+residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -173,8 +173,8 @@ future rules fail closed instead of treating the pruned resource set as complete
 
 The 5B collectors preserve facts and provenance only. They do not decide whether a default group,
 Flow Log, public-IP setting, or network permission passes a control, and they do not add an
-executable Sprint 6 rule. Sprint 5 remains `IN PROGRESS`, 5B remains under review until merge, and
-5C--5F are not implemented.
+executable Sprint 6 rule. Sprint 5 remains `IN PROGRESS`; 5B is accepted, 5C is separately
+authorized but not yet implemented, and 5D--5F are not implemented.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

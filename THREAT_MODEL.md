@@ -1,8 +1,8 @@
 # Threat model
 
 Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
-foundation, the merged 5A EC2/EBS producer, and the in-review 5B network evidence implementation
-Baseline: `main` commit `5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d`
+foundation, and the merged 5A EC2/EBS and 5B network evidence producers
+Baseline: `main` commit `66cadb20cd6a469d5a656628c27ae8cb569d8c69`
 Last reviewed: 2026-09-16
 
 ## Scope and security objectives
@@ -10,7 +10,7 @@ Last reviewed: 2026-09-16
 The model covers AWS credential use, fact collection, deterministic assessment, PostgreSQL
 history, the source-outcome/relationship evidence-graph foundation, the service layer,
 OIDC/development authentication, capability authorization, FastAPI, and the in-process scan
-executor. It includes the merged 5A fact-only EC2/EBS producer and the in-review 5B fact-only
+executor. It includes the merged 5A fact-only EC2/EBS producer and the merged 5B fact-only
 security-group, VPC, subnet, and Flow Log implementation. No 5C--5F collector, Sprint 6
 production rule, production deployment, frontend, Terraform infrastructure, remediation
 execution, or AI agent is implemented.
@@ -63,7 +63,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; 5A and 5B emit digest-bound exact source manifests | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists, and 5C--5F collectors do not yet contribute source contracts |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
-| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners, while 5B accepts AWS `OwnerId`, refines a partial target only from exactly one matching same-scan `PRESENT` identity proof, and records pruned external identities as canonical digest-bound admission gaps without falsifying the AWS source state | A privileged database/schema operator remains trusted; 5A is merged and 5B has controlled-fake coverage under review, while 5C--5F producers have not integrated the contract |
+| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners, while 5B accepts AWS `OwnerId`, refines a partial target only from exactly one matching same-scan `PRESENT` identity proof, and records pruned external identities as canonical digest-bound admission gaps without falsifying the AWS source state | A privileged database/schema operator remains trusted; 5A and 5B are merged, while 5C--5F producers have not integrated the contract |
 
 ## Future-boundary threats
 

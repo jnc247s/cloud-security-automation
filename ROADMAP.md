@@ -4,9 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-09-16
-Accepted baseline: `main` at `5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d` (Sprints 0--4,
-accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, and accepted 5A
-EC2/EBS evidence)
+Accepted baseline: `main` at `66cadb20cd6a469d5a656628c27ae8cb569d8c69` (Sprints 0--4,
+accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
+evidence, and accepted 5B network evidence)
 
 ## Current state
 
@@ -27,9 +27,9 @@ EC2/EBS evidence)
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
 
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
-foundation and 5A EC2/EBS evidence slice are accepted on `main`. The separately authorized 5B
-VPC, subnet, Flow Log, and network-evidence slice is now `IN PROGRESS`; no Sprint 6 control has
-been enabled.
+foundation, 5A EC2/EBS evidence slice, and 5B VPC/network evidence slice are accepted on `main`.
+The separately authorized 5C IAM account and policy evidence slice is now `IN PROGRESS`; no
+Sprint 6 control has been enabled.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -41,9 +41,9 @@ and CloudTrail facts, explicit global-versus-regional execution scope, and resou
 The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`. Its analysis-only
 preflight and reviewable execution sequence are complete. The shared 5G
 relationship/source-outcome evidence foundation passed its acceptance gate as
-`FOUNDATION_READY_FOR_5A`; 5A was accepted and merged in pull request 16. Slice 5B now implements
-only the approved VPC, subnet, Flow Log, and network facts, source outcomes, provenance, and
-relationships while acceptance remains in progress.
+`FOUNDATION_READY_FOR_5A`; 5A was accepted and merged in pull request 16, and 5B was accepted and
+merged in pull request 17. Slice 5C is separately authorized to implement only the approved IAM
+account and policy facts, source outcomes, provenance, and relationships.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -55,8 +55,9 @@ start; the approved foundation implementation branch has now begun and moved the
 The shared foundation gate completed on 2026-09-15 at migration head `20260915_0003`. Domain,
 migration, PostgreSQL, authenticated API, full-regression, lint, format, container, and independent
 review gates passed with no remaining review findings. The separately authorized 5A slice passed
-its acceptance gates and was merged on 2026-09-16. Slice 5B is now in progress and Sprint 6
-remains `PLANNED`.
+its acceptance gates and was merged on 2026-09-16. Slice 5B subsequently passed its acceptance
+gates and was merged in pull request 17 at `66cadb20cd6a469d5a656628c27ae8cb569d8c69`.
+Slice 5C is now in progress and Sprint 6 remains `PLANNED`.
 
 ## Pre-Sprint 5 attention
 

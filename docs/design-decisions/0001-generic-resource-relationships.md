@@ -5,9 +5,9 @@ Date: 2026-09-13
 
 Implementation update: the Sprint 5 shared foundation implements this decision in Alembic
 revision `20260915_0003`, the inventory/persistence boundary, and authenticated generic read
-services. The in-progress 5A EC2/EBS producer emits the first AWS relationship observations;
-Sprint 0--4 legacy collectors remain graphless, and no Sprint 6 rule consumes these relationships
-yet.
+services. The accepted 5A EC2/EBS and 5B network producers emit AWS relationship observations;
+remaining Sprint 0--4 legacy collectors remain graphless, and no Sprint 6 rule consumes these
+relationships yet.
 
 ## Context
 
@@ -234,8 +234,8 @@ configuration to rediscover edges.
 
 The preflight intentionally deferred migration and runtime integration to Sprint 5. The shared
 foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
-5A now supplies the first AWS relationship producer. Later producers remain deferred to 5B--5F
-and may not invent another representation.
+5A supplied the first AWS relationship producer, and 5B extended it with the accepted network
+graph. The 5C--5F producers remain unimplemented and may not invent another representation.
 
 ## Alternatives considered
 

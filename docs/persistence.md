@@ -2,10 +2,10 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS producer and in-acceptance 5B network producer supply its first AWS graph
-fragments. The persistence
-boundary does not call AWS, run controls, schedule scans, or commit transactions on behalf of its
-caller. The inventory command still prints a summary only; it does not persist anything.
+accepted 5A EC2/EBS and 5B network producers supply its first AWS graph fragments. The
+persistence boundary does not call AWS, run controls, schedule scans, or commit transactions on
+behalf of its caller. The inventory command still prints a summary only; it does not persist
+anything.
 
 The five executable controls are unchanged. 5A and 5B add documented read-only EC2/EBS and
 network evidence calls but do not register a control. `S3-900` remains the legacy
@@ -434,6 +434,6 @@ Sprint 4 provides authorized read/query services, versioned REST endpoints, and 
 recoverable in-process scan executor. The accepted Sprint 5 foundation adds the optional
 evidence-graph domain, transactional persistence, authenticated generic reads, and safe migration
 boundary. The accepted 5A producer emits EC2/EBS source outcomes and relationships, and the
-in-acceptance 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow
-Logs. Later collector expansion, additional production controls, Terraform infrastructure, governance
+accepted 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow Logs.
+Later collector expansion, additional production controls, Terraform infrastructure, governance
 mutation APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.
