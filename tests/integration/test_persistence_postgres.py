@@ -823,7 +823,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5b_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -882,6 +882,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                     "SecurityGroups": [
                         {
                             "GroupId": "sg-acceptance-public-ssh",
+                            "OwnerId": "123456789012",
                             "GroupName": "acceptance-public-ssh",
                             "Description": "Deterministic offline acceptance fixture",
                             "VpcId": "vpc-acceptance",
@@ -978,6 +979,79 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 }
             ]
         )
+        vpc_pages = FakePaginator(
+            [
+                {
+                    "Vpcs": [
+                        {
+                            "VpcId": "vpc-acceptance",
+                            "OwnerId": "123456789012",
+                            "State": "available",
+                            "CidrBlock": "10.0.0.0/16",
+                            "DhcpOptionsId": "dopt-acceptance",
+                            "InstanceTenancy": "default",
+                            "IsDefault": False,
+                            "Tags": [
+                                {"Key": "Owner", "Value": "security"},
+                                {"Key": "Environment", "Value": "acceptance"},
+                            ],
+                        }
+                    ]
+                }
+            ]
+        )
+        subnet_pages = FakePaginator(
+            [
+                {
+                    "Subnets": [
+                        {
+                            "SubnetId": "subnet-acceptance",
+                            "SubnetArn": (
+                                "arn:aws:ec2:us-east-1:123456789012:subnet/subnet-acceptance"
+                            ),
+                            "OwnerId": "123456789012",
+                            "VpcId": "vpc-acceptance",
+                            "State": "available",
+                            "CidrBlock": "10.0.1.0/24",
+                            "AvailabilityZone": "us-east-1a",
+                            "AvailabilityZoneId": "use1-az1",
+                            "AvailableIpAddressCount": 250,
+                            "MapPublicIpOnLaunch": False,
+                            "AssignIpv6AddressOnCreation": False,
+                            "DefaultForAz": False,
+                            "Ipv6Native": False,
+                            "Tags": [{"Key": "Owner", "Value": "security"}],
+                        }
+                    ]
+                }
+            ]
+        )
+        flow_log_pages = FakePaginator(
+            [
+                {
+                    "FlowLogs": [
+                        {
+                            "FlowLogId": "fl-acceptance",
+                            "ResourceId": "vpc-acceptance",
+                            "FlowLogStatus": "ACTIVE",
+                            "TrafficType": "ALL",
+                            "LogDestinationType": "cloud-watch-logs",
+                            "LogGroupName": "acceptance-vpc-flow-logs",
+                            "LogDestination": (
+                                "arn:aws:logs:us-east-1:123456789012:log-group:"
+                                "acceptance-vpc-flow-logs"
+                            ),
+                            "DeliverLogsPermissionArn": (
+                                "arn:aws:iam::123456789012:role/flow-log-delivery"
+                            ),
+                            "DeliverLogsStatus": "SUCCESS",
+                            "MaxAggregationInterval": 60,
+                            "Tags": [{"Key": "Owner", "Value": "security"}],
+                        }
+                    ]
+                }
+            ]
+        )
         s3_pages = FakePaginator([{"Buckets": []}])
         iam_pages = FakePaginator([{"Users": []}])
         cloudtrail_pages = FakePaginator([{"Trails": []}])
@@ -987,6 +1061,9 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                     security_groups=security_group_pages,
                     instances=instance_pages,
                     volumes=volume_pages,
+                    vpcs=vpc_pages,
+                    subnets=subnet_pages,
+                    flow_logs=flow_log_pages,
                 ),
                 ("s3", "us-east-1"): FakeAWSClient(paginators={"list_buckets": s3_pages}),
                 ("iam", "us-east-1"): FakeAWSClient(paginators={"list_users": iam_pages}),
@@ -1043,6 +1120,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 "iam_users",
                 "s3_buckets",
                 "security_groups",
+                "vpc_network_evidence",
             }
             assert terminal["scope"]["enabled_controls"] == [
                 "IAM-001",
@@ -1056,6 +1134,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             assert provider.client_requests == [
                 ("ec2", "us-east-1"),
                 ("ec2", "us-east-1"),
+                ("ec2", "us-east-1"),
                 ("s3", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("cloudtrail", "us-east-1"),
@@ -1063,6 +1142,9 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             assert security_group_pages.calls == [{}]
             assert instance_pages.calls == [{}]
             assert volume_pages.calls == [{}]
+            assert vpc_pages.calls == [{}]
+            assert subnet_pages.calls == [{}]
+            assert flow_log_pages.calls == [{}]
             assert s3_pages.calls == [{"PaginationConfig": {"PageSize": 1000}}]
             assert iam_pages.calls == [{}]
             assert cloudtrail_pages.calls == [{}]
@@ -1135,26 +1217,110 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                     "i-acceptance"
                 ]
 
+                vpc_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "ec2",
+                        Resource.resource_type == "vpc",
+                        Resource.aws_resource_id == "vpc-acceptance",
+                    )
+                ).one()
+                vpc_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == vpc_resource.resource_id,
+                    )
+                ).one()
+                assert vpc_snapshot.normalized_configuration["cidr_block"] == "10.0.0.0/16"
+                assert vpc_snapshot.tags == {
+                    "Environment": "acceptance",
+                    "Owner": "security",
+                }
+
+                subnet_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "ec2",
+                        Resource.resource_type == "subnet",
+                        Resource.aws_resource_id == "subnet-acceptance",
+                    )
+                ).one()
+                subnet_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == subnet_resource.resource_id,
+                    )
+                ).one()
+                assert subnet_snapshot.normalized_configuration["vpc_id"] == "vpc-acceptance"
+                assert subnet_snapshot.normalized_configuration["map_public_ip_on_launch"] is False
+
+                flow_log_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "ec2",
+                        Resource.resource_type == "vpc_flow_log",
+                        Resource.aws_resource_id == "fl-acceptance",
+                    )
+                ).one()
+                flow_log_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == flow_log_resource.resource_id,
+                    )
+                ).one()
+                assert flow_log_snapshot.normalized_configuration == {
+                    "deliver_cross_account_role": None,
+                    "deliver_logs_permission_arn": (
+                        "arn:aws:iam::123456789012:role/flow-log-delivery"
+                    ),
+                    "deliver_logs_status": "SUCCESS",
+                    "flow_log_status": "ACTIVE",
+                    "log_destination": (
+                        "arn:aws:logs:us-east-1:123456789012:log-group:acceptance-vpc-flow-logs"
+                    ),
+                    "log_destination_type": "cloud-watch-logs",
+                    "log_group_name": "acceptance-vpc-flow-logs",
+                    "max_aggregation_interval": 60,
+                    "resource_id": "vpc-acceptance",
+                    "traffic_type": "ALL",
+                }
+
                 source_graph = load_evidence_graph(session, scan_id)
                 assert source_graph is not None
                 assert source_graph.scan_id == scan_id
                 assert source_graph.collection_account_id == "123456789012"
-                assert len(source_graph.source_contracts) == 6
-                assert len(source_graph.artifacts) == 6
-                assert len(source_graph.source_outcomes) == 6
+                assert len(source_graph.source_contracts) == 14
+                assert len(source_graph.artifacts) == 14
+                assert len(source_graph.source_outcomes) == 14
                 assert {contract.contract_key for contract in source_graph.source_contracts} == {
                     "ec2.ebs-default-kms-key",
                     "ec2.ebs-encryption-default",
+                    "ec2.flow-logs.discovery",
                     "ec2.instance",
                     "ec2.instances.discovery",
+                    "ec2.security-group",
+                    "ec2.security-groups.discovery",
+                    "ec2.subnet",
+                    "ec2.subnets.discovery",
+                    "ec2.vpc",
+                    "ec2.vpc-flow-log",
+                    "ec2.vpcs.discovery",
                     "ec2.volume",
                     "ec2.volumes.discovery",
                 }
                 assert {outcome.evidence_kind for outcome in source_graph.source_outcomes} == {
                     "ec2.ebs-default-kms-key",
                     "ec2.ebs-encryption-default",
+                    "ec2.flow-logs.discovery",
                     "ec2.instance",
                     "ec2.instances.discovery",
+                    "ec2.security-group",
+                    "ec2.security-groups.discovery",
+                    "ec2.subnet",
+                    "ec2.subnets.discovery",
+                    "ec2.vpc",
+                    "ec2.vpc-flow-log",
+                    "ec2.vpcs.discovery",
                     "ec2.volume",
                     "ec2.volumes.discovery",
                 }
@@ -1164,8 +1330,16 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 } == {
                     "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
                     "ec2.ebs-encryption-default": "PRESENT",
+                    "ec2.flow-logs.discovery": "PRESENT",
                     "ec2.instance": "PRESENT",
                     "ec2.instances.discovery": "PRESENT",
+                    "ec2.security-group": "PRESENT",
+                    "ec2.security-groups.discovery": "PRESENT",
+                    "ec2.subnet": "PRESENT",
+                    "ec2.subnets.discovery": "PRESENT",
+                    "ec2.vpc": "PRESENT",
+                    "ec2.vpc-flow-log": "PRESENT",
+                    "ec2.vpcs.discovery": "PRESENT",
                     "ec2.volume": "PRESENT",
                     "ec2.volumes.discovery": "PRESENT",
                 }
@@ -1190,30 +1364,67 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 volume_source_artifact = source_artifacts_by_reference[
                     volume_source_outcome.evidence_reference
                 ]
+                vpc_source_outcome = source_outcomes_by_kind["ec2.vpc"]
+                subnet_source_outcome = source_outcomes_by_kind["ec2.subnet"]
+                flow_log_source_outcome = source_outcomes_by_kind["ec2.vpc-flow-log"]
                 assert instance_source_artifact.normalized_payload["resource_id"] == (
                     "i-acceptance"
                 )
                 assert volume_source_artifact.normalized_payload["resource_id"] == (
                     "vol-acceptance"
                 )
+                assert (
+                    source_artifacts_by_reference[
+                        vpc_source_outcome.evidence_reference
+                    ].normalized_payload["resource_id"]
+                    == "vpc-acceptance"
+                )
+                assert (
+                    source_artifacts_by_reference[
+                        subnet_source_outcome.evidence_reference
+                    ].normalized_payload["resource_id"]
+                    == "subnet-acceptance"
+                )
+                assert (
+                    source_artifacts_by_reference[
+                        flow_log_source_outcome.evidence_reference
+                    ].normalized_payload["resource_id"]
+                    == "fl-acceptance"
+                )
 
-                assert len(source_graph.relationships) == 4
+                assert len(source_graph.relationships) == 7
                 source_relationships = {
-                    relationship.relationship_type: relationship
+                    (
+                        relationship.relationship_type,
+                        relationship.source.resource_type,
+                        relationship.source.aws_resource_id,
+                    ): relationship
                     for relationship in source_graph.relationships
                 }
                 assert set(source_relationships) == {
-                    RelationshipType.ATTACHED_TO_SECURITY_GROUP,
-                    RelationshipType.USES_VOLUME,
-                    RelationshipType.IN_SUBNET,
-                    RelationshipType.IN_VPC,
+                    (
+                        RelationshipType.ATTACHED_TO_SECURITY_GROUP,
+                        "ec2_instance",
+                        "i-acceptance",
+                    ),
+                    (RelationshipType.USES_VOLUME, "ec2_instance", "i-acceptance"),
+                    (RelationshipType.IN_SUBNET, "ec2_instance", "i-acceptance"),
+                    (RelationshipType.IN_VPC, "ec2_instance", "i-acceptance"),
+                    (
+                        RelationshipType.IN_VPC,
+                        "security_group",
+                        "sg-acceptance-public-ssh",
+                    ),
+                    (RelationshipType.CONTAINS_SUBNET, "vpc", "vpc-acceptance"),
+                    (RelationshipType.HAS_FLOW_LOG, "vpc", "vpc-acceptance"),
                 }
                 assert all(
-                    relationship.source.stable_resource_id == instance_resource.resource_id
-                    and relationship.source.resource_snapshot_id == instance_snapshot.snapshot_id
+                    relationship.resolution is RelationshipResolution.RESOLVED
                     for relationship in source_graph.relationships
                 )
-                volume_relationship = source_relationships[RelationshipType.USES_VOLUME]
+                volume_relationship = source_relationships[
+                    (RelationshipType.USES_VOLUME, "ec2_instance", "i-acceptance")
+                ]
                 assert volume_relationship.resolution is RelationshipResolution.RESOLVED
                 assert volume_relationship.target.stable_resource_id == (
                     volume_resource.resource_id
@@ -1221,28 +1432,34 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 assert volume_relationship.target.resource_snapshot_id == (
                     volume_snapshot.snapshot_id
                 )
-                unresolved_targets = {
-                    RelationshipType.ATTACHED_TO_SECURITY_GROUP: (
+                expected_edges = {
+                    (
+                        RelationshipType.ATTACHED_TO_SECURITY_GROUP,
+                        "ec2_instance",
+                        "i-acceptance",
+                    ): resource.resource_id,
+                    (RelationshipType.IN_SUBNET, "ec2_instance", "i-acceptance"): (
+                        subnet_resource.resource_id
+                    ),
+                    (RelationshipType.IN_VPC, "ec2_instance", "i-acceptance"): (
+                        vpc_resource.resource_id
+                    ),
+                    (
+                        RelationshipType.IN_VPC,
                         "security_group",
                         "sg-acceptance-public-ssh",
+                    ): vpc_resource.resource_id,
+                    (RelationshipType.CONTAINS_SUBNET, "vpc", "vpc-acceptance"): (
+                        subnet_resource.resource_id
                     ),
-                    RelationshipType.IN_SUBNET: ("subnet", "subnet-acceptance"),
-                    RelationshipType.IN_VPC: ("vpc", "vpc-acceptance"),
+                    (RelationshipType.HAS_FLOW_LOG, "vpc", "vpc-acceptance"): (
+                        flow_log_resource.resource_id
+                    ),
                 }
-                for relationship_type, (
-                    expected_resource_type,
-                    expected_resource_id,
-                ) in unresolved_targets.items():
-                    relationship = source_relationships[relationship_type]
-                    assert (
-                        relationship.resolution is RelationshipResolution.TARGET_IDENTITY_INCOMPLETE
+                for edge, expected_target_id in expected_edges.items():
+                    assert source_relationships[edge].target.stable_resource_id == (
+                        expected_target_id
                     )
-                    assert relationship.target.identity_state == "unresolved"
-                    assert relationship.target.aws_account_id is None
-                    assert relationship.target.resource_type == expected_resource_type
-                    assert relationship.target.aws_resource_id == expected_resource_id
-                    assert relationship.target.stable_resource_id is None
-                    assert relationship.target.resource_snapshot_id is None
 
                 assessed_control_keys = set(
                     session.scalars(
@@ -1337,6 +1554,12 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 instance_snapshot_id = instance_snapshot.snapshot_id
                 volume_resource_id = volume_resource.resource_id
                 volume_snapshot_id = volume_snapshot.snapshot_id
+                vpc_resource_id = vpc_resource.resource_id
+                vpc_snapshot_id = vpc_snapshot.snapshot_id
+                subnet_resource_id = subnet_resource.resource_id
+                subnet_snapshot_id = subnet_snapshot.snapshot_id
+                flow_log_resource_id = flow_log_resource.resource_id
+                flow_log_snapshot_id = flow_log_snapshot.snapshot_id
                 source_outcome_ids = {
                     item.source_outcome_id for item in source_graph.source_outcomes
                 }
@@ -1450,6 +1673,53 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             assert volume_history.json()["total"] == 1
             assert volume_history.json()["items"][0]["snapshot_id"] == str(volume_snapshot_id)
 
+            for (
+                network_resource_type,
+                network_aws_id,
+                network_resource_id,
+                network_snapshot_id,
+            ) in (
+                ("vpc", "vpc-acceptance", vpc_resource_id, vpc_snapshot_id),
+                ("subnet", "subnet-acceptance", subnet_resource_id, subnet_snapshot_id),
+                (
+                    "vpc_flow_log",
+                    "fl-acceptance",
+                    flow_log_resource_id,
+                    flow_log_snapshot_id,
+                ),
+            ):
+                network_page = client.get(
+                    "/api/v1/resources",
+                    headers=headers,
+                    params={
+                        "account_id": "123456789012",
+                        "service": "ec2",
+                        "resource_type": network_resource_type,
+                        "region": "us-east-1",
+                    },
+                )
+                assert network_page.status_code == 200
+                assert network_page.json()["total"] == 1
+                network_document = network_page.json()["items"][0]
+                assert network_document["resource_id"] == str(network_resource_id)
+                assert network_document["aws_resource_id"] == network_aws_id
+                assert network_document["latest_snapshot"]["snapshot_id"] == str(
+                    network_snapshot_id
+                )
+                network_detail = client.get(
+                    f"/api/v1/resources/{network_resource_id}",
+                    headers=headers,
+                )
+                assert network_detail.status_code == 200
+                assert network_detail.json() == network_document
+                network_history = client.get(
+                    f"/api/v1/resources/{network_resource_id}/history",
+                    headers=headers,
+                )
+                assert network_history.status_code == 200
+                assert network_history.json()["total"] == 1
+                assert network_history.json()["items"][0]["snapshot_id"] == str(network_snapshot_id)
+
             source_outcome_page = client.get(
                 "/api/v1/source-outcomes",
                 headers=headers,
@@ -1457,7 +1727,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             )
             assert source_outcome_page.status_code == 200
             source_outcome_document = source_outcome_page.json()
-            assert source_outcome_document["total"] == 6
+            assert source_outcome_document["total"] == 14
             assert {
                 UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
             } == source_outcome_ids
@@ -1466,8 +1736,16 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             } == {
                 "ec2.ebs-default-kms-key": "EXPECTED_ABSENCE",
                 "ec2.ebs-encryption-default": "PRESENT",
+                "ec2.flow-logs.discovery": "PRESENT",
                 "ec2.instance": "PRESENT",
                 "ec2.instances.discovery": "PRESENT",
+                "ec2.security-group": "PRESENT",
+                "ec2.security-groups.discovery": "PRESENT",
+                "ec2.subnet": "PRESENT",
+                "ec2.subnets.discovery": "PRESENT",
+                "ec2.vpc": "PRESENT",
+                "ec2.vpc-flow-log": "PRESENT",
+                "ec2.vpcs.discovery": "PRESENT",
                 "ec2.volume": "PRESENT",
                 "ec2.volumes.discovery": "PRESENT",
             }
@@ -1518,6 +1796,21 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 volume_outcome_detail["artifact"]["normalized_payload"]["resource_id"]
                 == "vol-acceptance"
             )
+            for evidence_kind, expected_resource_id, expected_stable_id in (
+                ("ec2.vpc", "vpc-acceptance", vpc_resource_id),
+                ("ec2.subnet", "subnet-acceptance", subnet_resource_id),
+                ("ec2.vpc-flow-log", "fl-acceptance", flow_log_resource_id),
+                (
+                    "ec2.security-group",
+                    "sg-acceptance-public-ssh",
+                    resource_id,
+                ),
+            ):
+                detail = source_outcome_details_by_kind[evidence_kind]
+                assert detail["subject"]["stable_resource_id"] == str(expected_stable_id)
+                assert detail["artifact"]["normalized_payload"]["resource_id"] == (
+                    expected_resource_id
+                )
             encryption_default_detail = source_outcome_details_by_kind["ec2.ebs-encryption-default"]
             assert encryption_default_detail["artifact"]["normalized_payload"] == {
                 "account_id": "123456789012",
@@ -1543,7 +1836,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
             )
             assert relationship_page.status_code == 200
             relationship_document = relationship_page.json()
-            assert relationship_document["total"] == 4
+            assert relationship_document["total"] == 7
             assert {
                 UUID(item["observation_id"]) for item in relationship_document["items"]
             } == relationship_observation_ids
@@ -1551,15 +1844,17 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 UUID(item["relationship_id"]) for item in relationship_document["items"]
             } == relationship_ids
             relationship_items = {
-                item["relationship_type"]: item for item in relationship_document["items"]
+                (
+                    item["relationship_type"],
+                    item["source"]["resource_type"],
+                    item["source"]["aws_resource_id"],
+                ): item
+                for item in relationship_document["items"]
             }
-            assert relationship_items["uses_volume"]["resolution"] == "RESOLVED"
-            assert relationship_items["uses_volume"]["source"]["stable_resource_id"] == str(
-                instance_resource_id
-            )
-            assert relationship_items["uses_volume"]["target"]["stable_resource_id"] == str(
-                volume_resource_id
-            )
+            uses_volume = relationship_items[("uses_volume", "ec2_instance", "i-acceptance")]
+            assert uses_volume["resolution"] == "RESOLVED"
+            assert uses_volume["source"]["stable_resource_id"] == str(instance_resource_id)
+            assert uses_volume["target"]["stable_resource_id"] == str(volume_resource_id)
             for item in relationship_document["items"]:
                 relationship_detail = client.get(
                     f"/api/v1/relationships/{item['observation_id']}",
@@ -1567,17 +1862,28 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5a_graph(
                 )
                 assert relationship_detail.status_code == 200
                 assert relationship_detail.json() == item
-            for relationship_type in (
-                "attached_to_security_group",
-                "in_subnet",
-                "in_vpc",
-            ):
-                item = relationship_items[relationship_type]
-                assert item["resolution"] == "TARGET_IDENTITY_INCOMPLETE"
-                assert item["target"]["identity_state"] == "unresolved"
-                assert item["target"]["aws_account_id"] is None
-                assert item["target"]["stable_resource_id"] is None
-                assert item["target"]["resource_snapshot_id"] is None
+            expected_api_targets = {
+                (
+                    "attached_to_security_group",
+                    "ec2_instance",
+                    "i-acceptance",
+                ): resource_id,
+                ("in_subnet", "ec2_instance", "i-acceptance"): subnet_resource_id,
+                ("in_vpc", "ec2_instance", "i-acceptance"): vpc_resource_id,
+                (
+                    "in_vpc",
+                    "security_group",
+                    "sg-acceptance-public-ssh",
+                ): vpc_resource_id,
+                ("contains_subnet", "vpc", "vpc-acceptance"): subnet_resource_id,
+                ("has_flow_log", "vpc", "vpc-acceptance"): flow_log_resource_id,
+            }
+            for edge, expected_target_id in expected_api_targets.items():
+                item = relationship_items[edge]
+                assert item["resolution"] == "RESOLVED"
+                assert item["target"]["identity_state"] == "stable"
+                assert item["target"]["stable_resource_id"] == str(expected_target_id)
+                assert item["target"]["resource_snapshot_id"] is not None
 
             assessment_page = client.get(
                 "/api/v1/assessments",

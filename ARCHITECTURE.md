@@ -1,8 +1,10 @@
 # Architecture
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
-evidence-graph foundation, and the in-progress 5A EC2/EBS evidence producer. It documents
-repository reality; no later Sprint 5 collector or Sprint 6 control is presented as implemented.
+evidence-graph foundation, the merged 5A EC2/EBS producer, and the in-review 5B network evidence
+implementation. The accepted 5A baseline is `main` commit
+`5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d`. No 5C--5F collector or Sprint 6 control is presented
+as implemented.
 
 ## System context
 
@@ -64,8 +66,13 @@ The Sprint 0--4 collector result boundary remains all-or-nothing per legacy coll
 item discards that collector's in-memory results, independent collectors continue, and
 deterministic assessment receives incomplete coverage. The graph-aware 5A EC2/EBS producer uses a
 narrower source boundary: independently paginated instance and volume discovery plus the two EBS
-default-setting calls each retain a typed outcome and sanitized artifact. Valid sibling resources
-remain available when another item or source is incomplete, while the collector rollup remains
+default-setting calls each retain a typed outcome and sanitized artifact. The 5B implementation
+uses the same result-sensitive pattern while keeping `security_groups` independent from
+`vpc_network_evidence`; a VPC, subnet, or Flow Log failure therefore cannot erase independently
+admissible same-account security-group evidence used by the accepted NET-001/NET-002 rules. The
+exception is an external-owner group whose mandatory resolved-edge admission proof depends on the
+unavailable VPC source; that group is pruned and `security_groups` becomes `PARTIAL`. Valid sibling
+resources remain available when another item or source is incomplete, while each collector rollup remains
 `PARTIAL` or `FAILED` as appropriate. Malformed STS caller identity still has its own sanitized
 identity-evidence failure because a snapshot cannot be attributed safely without an account
 identity.
@@ -74,9 +81,11 @@ The shared Sprint 5 foundation validates and persists declared per-source contra
 normalized source artifacts, source outcomes, and resource relationships as one optional
 `EvidenceGraph` attached to an inventory snapshot. Every declaration has exactly one outcome and
 an exact reference to a digest-bound normalized artifact; every relationship is backed by exactly
-one `PRESENT` outcome. The 5A producer is the first AWS collector to populate that boundary. The
-Sprint 0--4 collectors retain the all-or-nothing behavior above and emit no graph fragment, and no
-current rule treats a source outcome as result-sensitive evidence.
+one `PRESENT` outcome. The accepted 5A producer is the first AWS collector to populate that
+boundary; 5B extends it to security groups, VPCs, subnets, and Flow Logs without changing the
+generic persistence or API model. Remaining Sprint 0--4 collectors retain the all-or-nothing
+behavior above and emit no graph fragment, and no current rule treats a source outcome as
+result-sensitive evidence.
 
 ## Scan execution
 
@@ -152,7 +161,7 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence graph and 5A producer
+## Sprint 5 evidence graph and 5A/5B producers
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:
@@ -196,14 +205,47 @@ Each instance and volume has identity-authoritative enrichment evidence in addit
 discovery outcome. Instance observations emit directional references to security groups, EBS
 volumes, subnets, and VPCs. A volume target can resolve against the independently observed
 same-scan EBS resource. `DescribeInstances` does not prove the owner account of a referenced
-security group, subnet, or VPC, so those targets remain typed
-`TARGET_IDENTITY_INCOMPLETE` references in 5A. A later slice may emit a complete relationship only
-after identity-authoritative evidence supplies the endpoint; 5A never substitutes the collection
+security group, subnet, or VPC, so those references remain typed
+`TARGET_IDENTITY_INCOMPLETE` at the 5A collector boundary; 5A never substitutes the collection
 account as an unverified owner.
 
-This producer adds only the four approved read actions and policy-neutral evidence. It does not
-register `EC2-001` through `EC2-004`, change assessment-profile policy, or make any Sprint 6 rule
-executable. The legacy collectors remain graphless and later 5B--5F evidence is not implemented.
+The 5B implementation keeps the established `security_groups` collector outcome separate from a
+new `vpc_network_evidence` outcome. Across those boundaries it independently paginates exactly
+four Regional APIs: `DescribeSecurityGroups`, `DescribeVpcs`, `DescribeSubnets`, and
+`DescribeFlowLogs`. Security groups retain normalized ingress/egress facts, exact group name, the
+derived default-group indicator, tags, and their VPC reference. `VPCNetworkCollector`
+normalizes top-level `vpc`, `subnet`, and `vpc_flow_log` resources, including VPC/subnet tags,
+subnet public-IP auto-assignment, and Flow Log status, traffic type, and destination context.
+
+Security-group, VPC, and subnet ownership comes only from the validated AWS `OwnerId`; it is not
+copied from the collection account. Their enrichment declarations record the corresponding
+identity-authoritative owner mode. During graph assembly, a partial 5A target may become
+`RESOLVED` only when exactly one resource identity matches every supplied reference component and
+that resource has a matching same-scan `PRESENT`, identity-authoritative contract/outcome pair.
+No proof or multiple owner candidates leaves the original reference
+`TARGET_IDENTITY_INCOMPLETE`. This refinement supplies missing endpoint identity; it never infers
+an edge whose source observation was absent or incomplete.
+
+Graph assembly then applies the accepted exceptional-owner admission rule. An external-owner
+resource that participates in no exact `RESOLVED` same-scan edge is excluded together with its
+resource-scoped enrichment records. The complete discovery artifact preserves every AWS-observed
+ID and records the canonical rejected identity in `unadmitted_resources` with
+`admission_complete = false`; its successful AWS source outcome remains `PRESENT`. The shared
+rollup derives the originating collector's `PARTIAL` state from source outcomes plus this
+digest-bound admission gap. Same-account siblings and independent collector fragments remain
+available, so an unadmitted external observation cannot abort the entire scan or be misread by
+NET-001/NET-002 as complete coverage.
+
+5B emits security group -> VPC, VPC -> subnet, and VPC -> Flow Log observations. A Flow Log edge
+exists only when its exact `ResourceId` matches a collected VPC in the same account and Region;
+subnet, network-interface, and transit-gateway Flow Logs remain collected facts but cannot satisfy
+that VPC-scoped relationship. The existing generic graph, transactional persistence, and
+authenticated read APIs require no service-specific table or route.
+
+The accepted 5A producer and in-review 5B implementation add only approved read actions and
+policy-neutral evidence. They do not register `EC2-001` through `EC2-004` or `NET-003` through
+`NET-006`, change assessment-profile policy, or make any Sprint 6 rule executable. Sprint 5
+remains `IN PROGRESS`; 5B is not complete before review and merge, and 5C--5F remain unimplemented.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -276,8 +318,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. Only the 5A EC2/EBS producer currently emits graph records; legacy and later planned
-  collectors do not yet do so.
+  traversal. The merged 5A producer emits graph records and the 5B network producer is under
+  review; 5C--5F collectors do not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

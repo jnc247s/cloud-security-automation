@@ -33,6 +33,12 @@ from app.assessment.source_outcomes import (
 from app.assessment.source_outcomes import (
     SourceEvidenceOutcome as DomainSourceOutcome,
 )
+from app.collectors.base import (
+    GRAPH_AWARE_COLLECTOR_NAMES,
+    graph_collection_status_for,
+    graph_collection_validation_required,
+    graph_collectors_for_outcomes,
+)
 from app.models.evidence_graph import (
     ResourceRelationshipObservation,
     ScanSourceContract,
@@ -410,4 +416,45 @@ def load_evidence_graph(session: Session, scan_id: UUID) -> EvidenceGraph | None
         raise EvidenceGraphPersistenceError(
             "persisted source manifest checksum does not match the evidence graph"
         )
+    collector_outcomes = manifest.collector_outcomes
+    requested_collectors = manifest.requested_collectors
+    if not isinstance(collector_outcomes, dict) or not isinstance(requested_collectors, list):
+        raise EvidenceGraphPersistenceError("persisted collector scope is invalid")
+    if (
+        any(not isinstance(name, str) or not name for name in requested_collectors)
+        or len(requested_collectors) != len(set(requested_collectors))
+        or any(not isinstance(name, str) or not name for name in collector_outcomes)
+    ):
+        raise EvidenceGraphPersistenceError("persisted collector scope is invalid")
+    if set(requested_collectors) != set(collector_outcomes):
+        raise EvidenceGraphPersistenceError("persisted collector scope is inconsistent")
+    represented_collectors = graph_collectors_for_outcomes(graph.source_outcomes)
+    if not represented_collectors.issubset(requested_collectors):
+        raise EvidenceGraphPersistenceError(
+            "persisted graph source outcomes have no collector coverage"
+        )
+    for collector_name in GRAPH_AWARE_COLLECTOR_NAMES:
+        if not graph_collection_validation_required(
+            collector_name=collector_name,
+            requested_collectors=requested_collectors,
+            outcomes=graph.source_outcomes,
+        ):
+            continue
+        stored_status = collector_outcomes.get(collector_name)
+        if stored_status is None:
+            raise EvidenceGraphPersistenceError("persisted graph collector has no coverage outcome")
+        try:
+            reconstructed_status = graph_collection_status_for(
+                collector_name=collector_name,
+                outcomes=graph.source_outcomes,
+                artifacts=graph.artifacts,
+            )
+        except ValueError as error:
+            raise EvidenceGraphPersistenceError(
+                "persisted graph cannot reconstruct collector coverage"
+            ) from error
+        if stored_status != reconstructed_status.value:
+            raise EvidenceGraphPersistenceError(
+                "persisted collector coverage disagrees with graph evidence"
+            )
     return graph

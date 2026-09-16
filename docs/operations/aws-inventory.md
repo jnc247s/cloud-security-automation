@@ -1,7 +1,8 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory plus the in-progress Sprint 5A EC2/EBS producer provide a
-read-only, on-demand AWS inventory run. The standalone command returns a normalized in-memory
+The accepted Sprint 1 inventory and Sprint 5A EC2/EBS producer, plus the in-acceptance Sprint 5B
+network producer, provide a read-only, on-demand AWS inventory run. The standalone command returns
+a normalized in-memory
 snapshot and prints only an aggregate summary. It does not judge compliance, create findings,
 write to PostgreSQL, or modify AWS; the authorized scan executor separately persists the same
 snapshot through its existing transaction boundary.
@@ -17,7 +18,7 @@ snapshot through its existing transaction boundary.
 6. The operator runs `python scripts/run_inventory.py` from the project environment.
 7. The application asks STS for the caller account once, then collects:
    - EC2 instances, EBS volumes, and Regional EBS default settings from the configured region;
-   - security groups from the configured region;
+   - security groups, VPCs, subnets, and VPC Flow Logs from the configured region;
    - all account S3 buckets and selected bucket configuration;
    - global IAM users and authentication metadata;
    - account CloudTrail trails, enriched through each trail's home region.
@@ -26,7 +27,7 @@ snapshot through its existing transaction boundary.
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`. The 5A producer also declares source contracts and records
+   returns one `InventorySnapshot`. The 5A and 5B producers also declare source contracts and record
    digest-bound artifacts, typed source outcomes, and relationship observations in the optional
    evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
@@ -39,7 +40,7 @@ inventory-only diagnostic and does not evaluate or persist results.
 ## Read-only policy baseline
 
 The following policy is a practical baseline for the exact calls made by the current inventory,
-including 5A. Review and scope it for your partition, account, buckets, permission boundaries,
+including 5A and 5B. Review and scope it for your partition, account, buckets, permission boundaries,
 service control policies, and role-assumption model before production use.
 
 ```json
@@ -56,6 +57,9 @@ service control policies, and role-assumption model before production use.
         "ec2:GetEbsEncryptionByDefault",
         "ec2:GetEbsDefaultKmsKeyId",
         "ec2:DescribeSecurityGroups",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeFlowLogs",
         "s3:ListAllMyBuckets",
         "iam:ListUsers",
         "iam:GetAccessKeyLastUsed",
@@ -139,7 +143,8 @@ The command emits a deliberately small JSON document:
     "ec2_ebs_evidence": "SUCCEEDED",
     "iam_users": "SUCCEEDED",
     "s3_buckets": "SUCCEEDED",
-    "security_groups": "SUCCEEDED"
+    "security_groups": "SUCCEEDED",
+    "vpc_network_evidence": "SUCCEEDED"
   },
   "resource_count": 27,
   "resources_by_service": {
@@ -170,13 +175,24 @@ caller-identity response prevents safe account attribution and therefore fails t
 with a sanitized identity message.
 
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
-rejected value, response, resource identifier, or credentials. Sprint 0--4 legacy collectors are
-collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS
-producer instead records independent outcomes for paginated instance discovery, paginated volume
-discovery, encryption-by-default, and default-KMS evidence. It retains independently validated
-resources and reports discarded items, while any incomplete source keeps the rollup `PARTIAL`
-unless every source is unavailable, which is `FAILED`. It never converts missing evidence into a
-clean result.
+rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
+are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS
+and 5B network producers instead record independent outcomes for each declared discovery or
+enrichment source. They retain independently validated resources and report discarded items,
+while any incomplete source keeps the rollup `PARTIAL` unless every source is unavailable, which
+is `FAILED`. They never convert missing evidence into a clean result. The graph-aware
+security-group collector preserves its accepted name and independently admissible same-account
+NET-001/NET-002 evidence while isolating its discovery source from the separate VPC network
+collector. The external-owner admission exception is described below.
+
+An observed external-owner resource is retained as a top-level resource only when an exact
+same-scan resolved edge supplies the accepted admission proof. If that proof is unavailable,
+assembly excludes only that external resource and its enrichment records. The discovery artifact
+preserves the full AWS-observed ID list, records the canonical rejected identity under
+`unadmitted_resources`, and sets `admission_complete = false` while its complete AWS source stays
+`PRESENT`. The owning collector derives `PARTIAL` from the persisted outcome plus digest-bound
+admission metadata; independent and same-account sibling facts remain available. This prevents
+either a scan-wide graph failure, false AWS failure attribution, or a false complete result.
 
 Paginator token handling and retry behavior remain boto3/botocore responsibilities. Each yielded
 page and item is validated. Exact repeated resource entries across pages are collected once;
@@ -187,7 +203,10 @@ incomplete. An explicit empty result list remains a successful zero-resource inv
 `ec2.ebs-encryption-default`, and `ec2.ebs-default-kms-key` account/Region sources, plus one
 identity-authoritative enrichment source for each retained instance and volume. A missing default
 KMS key is an explicit `EXPECTED_ABSENCE`; the EBS defaults are normalized source artifacts, not
-synthetic resources. Raw provider exception text is never persisted.
+synthetic resources. 5B declares independent `ec2.security-groups.discovery`,
+`ec2.vpcs.discovery`, `ec2.subnets.discovery`, and `ec2.flow-logs.discovery` sources, plus an
+identity-authoritative source for every retained network resource. Raw provider exception text is
+never persisted.
 
 Expected S3 absence responses are facts, not failures:
 
@@ -202,8 +221,8 @@ buckets are common.
 
 ## Inventory boundaries
 
-- EC2 instances, EBS volumes, EBS default settings, and security groups are collected only in
-  `AWS_REGION`. Multi-region EC2 orchestration is a later feature.
+- EC2 instances, EBS volumes, EBS default settings, security groups, VPCs, subnets, and VPC Flow
+  Logs are collected only in `AWS_REGION`. Multi-region EC2 orchestration is a later feature.
 - S3 and IAM discovery is account-wide; each bucket retains its actual region and IAM resources
   use global scope.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
@@ -212,15 +231,18 @@ buckets are common.
   technical assessment result.
 - Cross-account and AWS Organizations role orchestration are not implemented. Run once per
   explicitly assumed account role.
-- 5A normalizes `ec2_instance` and `ebs_volume` resources. VPCs, subnets, Flow Logs, expanded
-  security-group evidence, S3 access points, directory buckets, and IAM roles/groups/policies
-  remain later-slice work.
-- Instance-to-volume references can resolve against a same-scan volume. Security-group, subnet,
-  and VPC references retain their ID, service, type, Region, and scope but remain
-  `TARGET_IDENTITY_INCOMPLETE` because `DescribeInstances` does not establish target ownership;
-  the collector does not substitute the collection account.
+- 5A normalizes `ec2_instance` and `ebs_volume` resources. 5B normalizes `security_group`, `vpc`,
+  `subnet`, and `vpc_flow_log` resources. S3 access points, directory buckets, and IAM
+  roles/groups/policies remain later-slice work.
+- Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
+  instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
+  observations. Missing, ambiguous, or non-authoritative ownership evidence remains
+  `TARGET_IDENTITY_INCOMPLETE`; the collector never substitutes the collection account.
 - EC2/EBS facts are evidence only. `EC2-001` through `EC2-004` remain non-executable until Sprint
   6 supplies separately reviewed deterministic rules and profile integration.
+- The 5B network facts are evidence only. `NET-003` through `NET-006` and network-tag use by
+  `GOV-001` remain non-executable until Sprint 6 supplies separately reviewed deterministic rules
+  and profile integration. Existing `NET-001` and `NET-002` behavior is unchanged.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host

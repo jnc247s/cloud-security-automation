@@ -1,8 +1,9 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
-the accepted Sprint 5 shared evidence-graph foundation, and the in-progress 5A EC2/EBS evidence
-producer. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+the accepted Sprint 5 shared evidence-graph foundation, the merged 5A EC2/EBS producer at `main`
+commit `5fccdf9f78ea35ead9b40ffe5a6e6367ef110e8d`, and the in-review 5B network evidence
+implementation. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -96,19 +97,22 @@ hides an application defect as incomplete AWS evidence.
 
 The graph-aware 5A EC2/EBS producer records controlled source states and failure categories for
 instance discovery, volume discovery, Regional encryption-by-default, and Regional default-KMS
-evidence. One failed or malformed source does not authorize omission of its outcome or promotion
-of the collector to complete. Independently validated sibling resources may be retained with a
-`PARTIAL` rollup; unknown evidence remains unknown and no Sprint 6 rule consumes it yet.
+evidence. The 5B implementation adds independently paginated Regional security-group, VPC,
+subnet, and Flow Log sources. `security_groups` and `vpc_network_evidence` remain separate
+collector boundaries so failure of one source family cannot falsely complete—or unnecessarily
+erase—the other. One failed or malformed source does not authorize omission of its outcome or
+promotion of the collector to complete. Independently validated sibling resources may be retained
+with a `PARTIAL` rollup; unknown evidence remains unknown and no Sprint 6 rule consumes it yet.
 
 Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
 artifact to a canonical digest, rejects known credential/authorization key names, and exposes
 controlled source failure categories instead of raw provider exceptions. Relationship provenance
 must identify exactly one `PRESENT` source outcome. These controls reduce accidental secret and
 fabricated-edge exposure; they do not make normalized cloud configuration non-sensitive.
-Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A artifacts rather
-than becoming artifact object keys, so untrusted metadata cannot alter the artifact's structural
-field vocabulary or be mistaken for a credential-bearing structural field. Tag values remain
-sensitive evidence.
+Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A and 5B artifacts
+rather than becoming artifact object keys, so untrusted metadata cannot alter the artifact's
+structural field vocabulary or be mistaken for a credential-bearing structural field. Tag values
+remain sensitive evidence.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -144,9 +148,33 @@ identity-authoritative source evidence; an external owner also requires a resolv
 Persisting or returning such an observation does not expand the scan principal, grant AWS access,
 or create tenant isolation.
 
-For 5A, the authenticated account is authoritative for collected instances and volumes. Referenced
-security groups, subnets, and VPCs remain unresolved when `DescribeInstances` supplies an ID but
-not owner identity; the collector never fabricates their owner from the collection account.
+For 5A, the authenticated account is authoritative for collected instances and volumes.
+`DescribeInstances` references remain owner-incomplete at their collector boundary. In 5B,
+security-group, VPC, and subnet resource owners come only from strictly validated AWS `OwnerId`
+values; an observed external owner is preserved rather than rewritten as the collection account.
+Flow Logs remain bound to the verified collection account because their inventory response does
+not supply a separate owner field.
+
+Inventory assembly may refine an owner-incomplete target only when exactly one same-scan resource
+matches every known service, type, resource ID, scope, and Region component and has a matching
+`PRESENT`, identity-authoritative source contract/outcome. A graphless resource, non-authoritative
+observation, missing proof, or ambiguous owner set cannot authorize resolution. External-owner
+admission still requires the accepted resolved-relationship proof and does not expand caller or
+scan authorization.
+
+Assembly excludes an external-owner observation that has no exact resolved-edge proof rather than
+weakening that admission rule or aborting unrelated evidence. Its resource-scoped graph records
+are excluded; the complete discovery artifact preserves the AWS-observed ID and separately
+records its canonical identity under `unadmitted_resources` with `admission_complete = false`.
+The AWS source remains truthfully `PRESENT`, while the owning collector's `PARTIAL` state is
+reconstructable from the persisted outcome and digest-bound admission metadata. Existing and
+future rules fail closed instead of treating the pruned resource set as complete or treating
+`PRESENT` alone as proof of an admitted projection.
+
+The 5B collectors preserve facts and provenance only. They do not decide whether a default group,
+Flow Log, public-IP setting, or network permission passes a control, and they do not add an
+executable Sprint 6 rule. Sprint 5 remains `IN PROGRESS`, 5B remains under review until merge, and
+5C--5F are not implemented.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content
