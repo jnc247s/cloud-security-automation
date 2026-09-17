@@ -1,9 +1,9 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, and 5C IAM evidence
-producers provide a read-only, on-demand AWS inventory run. The current feature branch adds the
-fact-only 5D IAM Access Analyzer producer for review. The standalone command returns a normalized
-in-memory snapshot and prints only an aggregate summary. It does not judge compliance, create
+The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
+Access Analyzer evidence producers provide a read-only, on-demand AWS inventory run. The
+standalone command returns a normalized in-memory snapshot and prints only an aggregate summary.
+It does not judge compliance, create
 control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor
 separately persists the same snapshot through its existing transaction boundary.
 
@@ -42,8 +42,8 @@ inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
-The following policy is a practical baseline for the exact calls made by the current feature
-branch, including 5A through 5D. Review and scope it for your partition, account, buckets,
+The following policy is a practical baseline for the exact calls made by the accepted `main`
+baseline, including 5A through 5D. Review and scope it for your partition, account, buckets,
 permission boundaries, service control policies, and role-assumption model before production use.
 
 ```json
@@ -206,7 +206,7 @@ with a sanitized identity message.
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
 rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
 are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS,
-5B network, 5C IAM, and under-review 5D Access Analyzer producers instead record independent
+5B network, 5C IAM, and accepted 5D Access Analyzer producers instead record independent
 outcomes for each declared discovery or enrichment source. They retain independently validated
 resources and report discarded items, while any incomplete source keeps the rollup `PARTIAL`
 unless every source is unavailable, which is `FAILED`. They never convert missing evidence into a
@@ -276,7 +276,7 @@ buckets are common.
   explicitly assumed account role.
 - 5A normalizes `ec2_instance` and `ebs_volume` resources. 5B normalizes `security_group`, `vpc`,
   `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
-  policies, and managed-policy versions. The under-review 5D producer normalizes each relevant
+  policies, and managed-policy versions. The accepted 5D producer normalizes each relevant
   external-access finding as an `access_analyzer_finding`; analyzer summaries remain source
   artifacts rather than resources. Expanded 5E S3 and 5F CloudTrail evidence remain later-slice
   work.

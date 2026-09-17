@@ -10,9 +10,9 @@ provide certification or claim organization-wide NIST compliance.
 ## Status
 
 Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
-`IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, and 5C IAM
-evidence slices are accepted, while the separately authorized 5D IAM Access Analyzer evidence
-implementation is under review. Sprint 6 remains `PLANNED`.
+`IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and
+5D IAM Access Analyzer evidence slices are accepted. The 5E S3 evidence preflight is complete,
+but implementation has not started. Sprint 6 remains `PLANNED`.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:
@@ -31,8 +31,7 @@ The current implementation includes:
   exceptions; and
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
 - generic immutable source-outcome/artifact and relationship history, populated by the accepted
-  5A EC2/EBS, 5B network-evidence, and 5C IAM producers and the current 5D Access Analyzer
-  implementation.
+  5A EC2/EBS, 5B network-evidence, 5C IAM, and 5D Access Analyzer producers.
 
 Current controls are `IAM-001`, `LOG-001`, `NET-001`, `NET-002`, and legacy non-core `S3-900`.
 Canonical `S3-001` through `S3-004` are reserved for later roadmap meanings and are not

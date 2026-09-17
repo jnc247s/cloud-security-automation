@@ -1,9 +1,9 @@
 # Service API
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
-Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, and 5C IAM evidence
-producers. The current feature branch projects the under-review 5D IAM Access Analyzer evidence
-through those same generic interfaces without adding a service-specific route.
+Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
+Access Analyzer evidence producers. The 5D evidence is projected through those same generic
+interfaces without adding a service-specific route.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
 All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and
@@ -160,7 +160,7 @@ relationship API exposes instance-to-network, security-group-to-VPC, VPC-to-subn
 VPC-to-Flow-Log observations. The accepted 5C producer exposes IAM resources, source outcomes,
 and relationships through the same interfaces.
 
-On the current 5D feature branch, a new scan also declares `access-analyzer` service intent and
+In the accepted 5D implementation, a new scan also declares `access-analyzer` service intent and
 the `access_analyzer_evidence` collector. Its Regional analyzer discovery, per-analyzer finding
 discovery, finding-summary, and fully paginated finding-detail observations are available through
 the source-outcome list/detail routes. Each external-access S3 finding is a generic
@@ -191,7 +191,7 @@ Invoke-RestMethod `
 The request body permits only optional `region`; omission uses `AWS_REGION`. Extra fields are
 rejected. The API never accepts an AWS account ID from the caller.
 
-The requested Region remains the only caller-supplied Region. On the under-review 5D path,
+The requested Region remains the only caller-supplied Region. On the accepted 5D path,
 inventory assembly may additionally run Access Analyzer in the sorted unique Regions of exact
 same-scan normalized S3 buckets. This does not broaden the HTTP request model or authorize an
 arbitrary Region: the persisted source contract and generic graph validation require the bucket-

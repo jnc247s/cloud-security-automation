@@ -6,8 +6,9 @@ Date: 2026-09-13
 Implementation update: the Sprint 5 shared foundation implements this decision in Alembic
 revision `20260915_0003`, the inventory/persistence boundary, and authenticated generic read
 services. The accepted 5A EC2/EBS and 5B network producers emit AWS relationship observations;
-the accepted 5C IAM producer does likewise, remaining Sprint 0--4 legacy collectors remain
-graphless, and no Sprint 6 rule consumes these relationships yet.
+the accepted 5C IAM producer does likewise, and the accepted 5D producer emits Access
+Analyzer-to-S3 references. Remaining Sprint 0--4 legacy collectors remain graphless, and no
+Sprint 6 rule consumes these relationships yet.
 
 ## Context
 
@@ -235,8 +236,9 @@ configuration to rediscover edges.
 The preflight intentionally deferred migration and runtime integration to Sprint 5. The shared
 foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
 5A supplied the first AWS relationship producer, and 5B extended it with the accepted network
-graph. The accepted 5C producer extended it with IAM relationships. The 5D--5F producers remain
-unimplemented and may not invent another representation.
+graph. The accepted 5C producer extended it with IAM relationships, and the accepted 5D producer
+added Access Analyzer-to-S3 references. The 5E--5F producers remain unimplemented and may not
+invent another representation.
 
 ## Alternatives considered
 
@@ -272,7 +274,8 @@ preserving graphless Sprint 0--4 serialization and runtime behavior. Existing
 `stable_resource_id` and `resource_snapshot_id` algorithms are reused without modification.
 Revision `20260915_0003` adds first-class immutable persistence and a safe-blocking downgrade;
 accepted earlier revisions remain unchanged. The 5A EC2/EBS, 5B network, and 5C IAM producers emit
-their accepted observations through this contract; later collectors remain unimplemented.
+their accepted observations through this contract; the accepted 5D producer adds Access
+Analyzer-to-S3 references. Later collectors remain unimplemented.
 
 ## Validation
 

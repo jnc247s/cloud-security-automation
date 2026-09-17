@@ -1,10 +1,10 @@
 # Architecture
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
-evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, and 5C IAM evidence producers.
-The accepted baseline is `main` commit `819f9ba3b26490ca23c69a6665b1baf9d7948975`. The current
-feature branch implements the separately authorized 5D IAM Access Analyzer evidence slice for
-review; no 5E--5F collector or Sprint 6 control is presented as implemented.
+evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access
+Analyzer evidence producers. The accepted baseline is `main` commit
+`1a355107eb7a3ed7845fa3a569dbff80da2778bb`. The 5E S3 evidence preflight is complete, but no
+5E--5F collector or Sprint 6 control is presented as implemented.
 
 ## System context
 
@@ -260,7 +260,7 @@ ownership, and the controlled `aws` owner is used only for validated AWS-managed
 The slice reuses generic persistence and authenticated read APIs, adds no migration or
 service-specific route, and registers no Sprint 6 rule.
 
-The current 5D implementation adds one fact-only `access_analyzer_evidence` producer after S3
+The accepted 5D implementation adds one fact-only `access_analyzer_evidence` producer after S3
 inventory. It scans the requested Region and the sorted unique bucket-home Regions proven by
 same-scan normalized S3 resources, while every other unrequested Regional discovery remains
 rejected. Complete S3 discovery is part of Analyzer coverage: incomplete S3 collection retains
@@ -348,8 +348,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A, 5B, and 5C producers and current 5D implementation emit graph records;
-  5E--5F collectors do not yet do so.
+  traversal. The merged 5A through 5D producers emit graph records; 5E--5F collectors do not yet
+  do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in
