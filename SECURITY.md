@@ -1,11 +1,11 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
-the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, and
-5C IAM evidence producers at `main` commit `819f9ba3b26490ca23c69a6665b1baf9d7948975`.
-The current feature branch adds the authorized, fact-only 5D IAM Access Analyzer evidence
-producer for review; it is not an accepted baseline until approval and merge. Threats and
-residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
+IAM, and 5D IAM Access Analyzer evidence producers at `main` commit
+`1a355107eb7a3ed7845fa3a569dbff80da2778bb`. The 5E S3 evidence preflight is complete, but its
+collector implementation has not started. Threats and residual risks are tracked in
+[THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -106,9 +106,9 @@ erase—the other. One failed or malformed source does not authorize omission of
 promotion of the collector to complete. Independently validated sibling resources may be retained
 with a `PARTIAL` rollup; unknown evidence remains unknown and no Sprint 6 rule consumes it yet.
 
-The 5D feature branch applies the same boundary to Regional IAM Access Analyzer evidence. It
-queries only the requested Region and additional Regions proved by same-scan normalized S3 bucket
-identity, records the S3 Region-discovery completeness input, and preserves independent
+The accepted 5D implementation applies the same boundary to Regional IAM Access Analyzer
+evidence. It queries only the requested Region and additional Regions proved by same-scan
+normalized S3 bucket identity, records the S3 Region-discovery completeness input, and preserves independent
 `ListAnalyzers`, `ListFindingsV2`, and `GetFindingV2` artifacts and outcomes. Malformed,
 inaccessible, conflicting, or pagination-incomplete data remains sanitized and incomplete while
 valid siblings are retained. Analyzer findings are investigation facts only: they do not decide
@@ -182,13 +182,13 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B and 5C collectors and the under-review 5D collector preserve facts and provenance
+The accepted 5B, 5C, and 5D collectors preserve facts and provenance
 only. They do not decide whether a default group, Flow Log, public-IP setting, network permission,
 IAM policy, root-account flag, tag, or external-access finding passes a planned control, and they
 do not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
-failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5C are
-accepted on `main`, 5D is under review, and 5E--5F are not implemented.
+failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5D are
+accepted on `main`, and 5E--5F are not implemented.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

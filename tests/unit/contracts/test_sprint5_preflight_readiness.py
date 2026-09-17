@@ -390,7 +390,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5d_start_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5e_preflight_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -399,22 +399,42 @@ def test_5d_start_does_not_enable_planned_controls_or_later_slices() -> None:
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "Current slice: **5D IAM Access Analyzer evidence — IN PROGRESS**" in active_plan
-    assert "5C IAM evidence slices are accepted" in roadmap
+    assert "`1a355107eb7a3ed7845fa3a569dbff80da2778bb`" in roadmap
+    assert (
+        "Current slice: **5E S3 evidence expansion — PLANNED; PREFLIGHT COMPLETE**" in active_plan
+    )
+    assert "5D IAM Access Analyzer evidence slices" in roadmap
+    assert "accepted on `main`" in roadmap
     assert "FOUNDATION_READY_FOR_5A" in active_plan
     assert "**5A EC2 and EBS evidence — COMPLETE**" in active_plan
     assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in active_plan
     assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
-    assert "Slice 5D is" in active_plan
-    assert "now separately authorized and in progress" in active_plan
-    assert "later collector slices remain unstarted" in active_plan
+    assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
+    assert "pull request 20" in active_plan
+    assert "5E implementation has not started" in active_plan
+    assert "5F remains unstarted" in active_plan
     assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
     assert "evidence remains supplementary and non-decisive" in active_plan
     assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
-    assert "Complete Analyzer Regional coverage requires a complete `s3_buckets`" in matrix
+    assert "complete `ListBuckets` enumeration" in matrix
     assert "honor each pending scan's persisted `requested_services`" in active_plan
     assert "resume with the accepted pre-5D collector set" in active_plan
     assert "completed pre-5D source manifests and evidence graphs valid" in active_plan
     assert "persisted readback coverage" in active_plan
     assert "explicitly triaged accepted limitations" in active_plan
     assert "must be resolved before any multi-tenant deployment" in active_plan
+    for required_5e_contract in (
+        '`("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`',
+        "Unknown tuples must fail before AWS work",
+        "`s3_evidence` operational outcome",
+        "whole `s3_buckets` rollup for new 5E scans",
+        "authoritative same-scan S3",
+        "`allows_supplemental_region` flag is not sufficient proof",
+        "validated `DescribeKey.KeyMetadata.Arn`",
+        "null `LocationConstraint` to `us-east-1`",
+        "legacy `EU` value to `eu-west-1`",
+        "An unrelated policy",
+        "must not make otherwise complete\n  `S3-900` encryption evidence unavailable",
+        "Do not register `S3-001` through `S3-004`",
+    ):
+        assert required_5e_contract in active_plan

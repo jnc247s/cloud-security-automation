@@ -1,8 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
-Status: canonical evidence-readiness plan with accepted 5A, 5B, and 5C evidence producers
-reflected. The authorized 5D IAM Access Analyzer evidence producer is implemented on the current
-feature branch for review, is not yet accepted on `main`, and does not enable any Sprint 6 rule.
+Status: canonical evidence-readiness plan with accepted 5A, 5B, 5C, and 5D evidence producers
+reflected. The bounded 5E S3 evidence preflight is complete, but its implementation has not
+started and no Sprint 6 rule is enabled.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -43,9 +43,8 @@ source is incomplete, and record a typed outcome for every promised source. A `P
 requires every source that its versioned control declares decision-required. A coherent fact may
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
-domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, and 5C IAM producers are
-integrated. The current 5D feature branch adds the approved supplementary Analyzer source
-contracts through that same boundary; no Sprint 6 rule consumes source outcomes yet.
+domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D Access
+Analyzer producers are integrated; no Sprint 6 rule consumes source outcomes yet.
 
 ## IAM controls
 
@@ -151,8 +150,10 @@ resource.
 
 Supporting S3 context uses `GetBucketLocation` (`s3:GetBucketLocation`), `GetBucketVersioning`
 (`s3:GetBucketVersioning`), and `GetBucketOwnershipControls`
-(`s3:GetBucketOwnershipControls`). These facts support investigation and future refinements even
-when they are not the minimum input to one of the four canonical results. The exposure evidence
+(`s3:GetBucketOwnershipControls`). A null S3 `LocationConstraint` means `us-east-1`, and the
+legacy `EU` value means `eu-west-1`; any contradiction with another returned Region fails closed.
+These facts support investigation and future refinements even when they are not the minimum input
+to one of the four canonical results. The exposure evidence
 must preserve normalized principals and complete policy structure required by the canonical
 [S3-002 aggregation contract](s3-002-exposure-aggregation.md). An operational Finding Exception
 never turns an exposed bucket into `PASS`. A successful expected-absence response is a normalized
@@ -229,18 +230,20 @@ source, and resource-specific detail are not inferred from a summary.
 Access Analyzer is a Regional API; `ACCOUNT` and `ORGANIZATION` describe the analyzer's zone of
 trust, not a global endpoint. Query each explicitly requested Region and each additional unique S3
 bucket-home Region. Results are deduplicated by analyzer/finding identity and related to matching
-stable resources. Complete Analyzer Regional coverage requires a complete `s3_buckets` discovery
-outcome because that source establishes the required bucket-home Region set. If bucket discovery
-is failed or partial, retain valid requested-Region Analyzer facts but mark Analyzer coverage
-incomplete and never claim complete analyzer or finding absence. An absent analyzer after complete
-Regional enumeration is an explicit fact, not proof that a resource lacks external access.
+stable resources. Accepted pre-5E scans use the validated `s3_buckets` rollup as their persisted
+bucket-Region completeness input. New 5E scans require complete `ListBuckets` enumeration and one
+complete authoritative bucket-location outcome for every discovered bucket; unrelated S3
+enrichment outcomes do not change Analyzer Region coverage. If bucket discovery or any required
+location outcome is incomplete, retain valid requested-Region Analyzer facts but mark Analyzer
+coverage incomplete and never claim complete analyzer or finding absence. An absent analyzer after
+complete Regional enumeration is an explicit fact, not proof that a resource lacks external access.
 AccessDenied, incomplete detail, or malformed pagination—including a repeated, non-progressing,
 or unconsumed token from any of the three operations—makes Analyzer evidence incomplete and can
 never itself be interpreted as `PASS` or an approval. Direct S3 policy, ACL, and BPA evidence
 remains the v1 decision surface; Analyzer facts are retained for investigation and a future
 separately versioned expansion.
 
-The current 5D feature branch implements this fact-only producer for review. It normalizes one
+The accepted 5D implementation provides this fact-only producer. It normalizes one
 Regional `access-analyzer/access_analyzer_finding` resource per retained finding using a
 collision-safe composite analyzer-ARN/finding-ID identity. Analyzer summaries stay in normalized
 source artifacts. Each finding emits a `references_resource` observation to its S3 bucket; an
@@ -415,14 +418,13 @@ detailed S3-002 aggregation, S3-004 classifier, and generic relationship represe
 approved and linked above. At the Phase 0 gate, the preflight added no collector, permission,
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
-API boundary. The accepted 5A EC2/EBS, 5B VPC/network, and 5C IAM producers supply their named
-evidence. The authorized 5D Access Analyzer producer is implemented on the current feature branch
-for review through the same graph, persistence, and generic API boundaries. Its supporting
-evidence remains supplementary and does not change the `S3-002` state. Direct 5E S3 evidence, 5F
-CloudTrail expansion, and every Sprint 6 rule consumer remain in their named slices.
+API boundary. The accepted 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D Access Analyzer producers
+supply their named evidence through the same graph, persistence, and generic API boundaries. The
+5D supporting evidence remains supplementary and does not change the `S3-002` state. Direct 5E S3
+evidence, 5F CloudTrail expansion, and every Sprint 6 rule consumer remain in their named slices.
 
-Sprint 5 is `IN PROGRESS`, 5A through 5C are accepted, 5D is the current under-review slice, and
-Sprint 6 remains `PLANNED`.
+Sprint 5 is `IN PROGRESS`, 5A through 5D are accepted, the 5E preflight is complete but 5E
+implementation has not started, and Sprint 6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

@@ -2,11 +2,12 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5D IAM Access Analyzer evidence — IN PROGRESS**
+Current slice: **5E S3 evidence expansion — PLANNED; PREFLIGHT COMPLETE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
-**5C IAM account and IAM policy evidence — COMPLETE**
+**5C IAM account and IAM policy evidence — COMPLETE**;
+**5D IAM Access Analyzer evidence — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -35,7 +36,9 @@ reviewed slice sequence is approved, and the shared 5G relationship/source-outco
 foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A passed its
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
 pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
-now separately authorized and in progress; later collector slices remain unstarted.
+accepted and merged in pull request 20. The bounded 5E preflight is complete and authorizes the
+implementation boundary below, but 5E implementation has not started; later slices remain
+unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -61,7 +64,7 @@ Before Sprint 5 began, their standalone schemas and contract tests did not imple
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
 projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
-through 5C use that boundary, and current slice 5D must use it without enabling Sprint 6 rules.
+through 5D use that boundary, and planned slice 5E must use it without enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -92,8 +95,8 @@ graph boundary would have lost evidence or forced that slice to invent a represe
 2. **COMPLETE — 5A** — EC2 and EBS evidence;
 3. **COMPLETE — 5B** — VPC, subnet, Flow Log, and network evidence;
 4. **COMPLETE — 5C** — IAM account and policy evidence;
-5. **IN PROGRESS — 5D** — IAM Access Analyzer evidence;
-6. 5E — S3 evidence expansion;
+5. **COMPLETE — 5D** — IAM Access Analyzer evidence;
+6. **PLANNED; PREFLIGHT COMPLETE — 5E** — S3 evidence expansion;
 7. 5F — CloudTrail evidence expansion; and
 8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
    validation.
@@ -105,9 +108,9 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A`, 5A through 5C accepted on `main`, and the separately authorized 5D
-slice now in progress. This does not authorize executable Sprint 6 rules, remediation, or later-
-sprint work.
+`FOUNDATION_READY_FOR_5A` and 5A through 5D accepted on `main`. The separately bounded 5E slice
+is authorized for implementation but has not started. This does not authorize executable Sprint
+6 rules, remediation, or later-sprint work.
 
 ## Accepted 5A implementation state
 
@@ -312,11 +315,10 @@ The evidence-readiness state for S3-002 does not change merely because 5D has st
 `CONTRACT_READY` until the separately accepted direct 5E evidence producer exists, and Analyzer
 evidence remains supplementary and non-decisive. Sprint 6 remains `PLANNED`.
 
-## Current 5D implementation state
+## Accepted 5D implementation state
 
-The current feature branch implements the authorized 5D boundary for review against the accepted
-5C baseline at `819f9ba3b26490ca23c69a6665b1baf9d7948975`. It is not accepted or complete until
-validation, independent review, CI, approval, and merge succeed.
+The authorized fact-only implementation was merged in pull request 20 at `main` commit
+`1a355107eb7a3ed7845fa3a569dbff80da2778bb`; the merged-main CI quality job succeeded.
 
 - One fact-only `access_analyzer_evidence` collector runs after S3 and uses the existing AWS client
   provider. It scans the requested Region plus the sorted unique Regions of exact normalized
@@ -350,10 +352,86 @@ validation, independent review, CI, approval, and merge succeed.
   `access-analyzer:ListAnalyzers`, `access-analyzer:ListFindings` (for `ListFindingsV2`), and
   `access-analyzer:GetFinding` (for `GetFindingV2`).
 - Controlled-fake collector, graph, inventory/executor, compatibility, generic read, and
-  disposable-PostgreSQL acceptance coverage belongs to this branch. No test contacts live AWS.
+  disposable-PostgreSQL acceptance coverage is part of the accepted baseline. No test contacts
+  live AWS.
 - `S3-002` remains `CONTRACT_READY` and non-decisive until direct 5E S3 evidence is separately
-  accepted. This branch does not implement 5E, 5F, a Sprint 6 rule, remediation, dashboard,
-  production deployment, or AI behavior.
+  accepted. The accepted 5D slice does not implement 5E, 5F, a Sprint 6 rule, remediation,
+  dashboard, production deployment, or AI behavior.
+
+## Authorized 5E preflight state
+
+The bounded 5E preflight completed on 2026-09-17 against the accepted 5D baseline at `main`
+commit `1a355107eb7a3ed7845fa3a569dbff80da2778bb`, with migration head `20260915_0003` and green
+merged-main CI. The canonical control catalog, S3-002 exposure aggregation, S3-004 classifier,
+and evidence-readiness matrix already define the required direct S3 and referenced-KMS factual
+superset. The existing evidence graph, generic persistence and authenticated API projections,
+AWS client provider, and relationship vocabulary can carry that evidence without a migration or
+service-specific route. Implementation has not started.
+
+The implementation is authorized only within these boundaries:
+
+- Preserve immutable pending-scan execution intent. Newly created 5E scans use exact service intent
+  `("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`; `kms` is the 5E marker and
+  also admits canonical top-level `kms_key` resources. `ScanExecutor` must retain distinct
+  supported paths for that intent, accepted 5D intent without `kms`, and accepted pre-5D intent
+  without `access-analyzer` or `kms`. Unknown tuples must fail before AWS work. Existing pending
+  scans and historical manifests must not be rewritten or silently gain AWS work, source
+  contracts, or resource types.
+- Preserve the accepted `s3_buckets` collector name, direct behavior, normalized configuration,
+  and `S3-900` completeness semantics. Full graph-aware 5E coverage belongs to a separate
+  `s3_evidence` operational outcome. Both projections must consume one shared per-scan collection
+  bundle so each AWS operation runs once and provenance is not fabricated. An unrelated policy,
+  ACL, account-BPA, versioning, ownership-control, or KMS failure must not make otherwise complete
+  `S3-900` encryption evidence unavailable.
+- Replace the 5D runtime shortcut that equates bucket-Region discovery completeness with the
+  whole `s3_buckets` rollup for new 5E scans. Access Analyzer coverage must use the exact same-scan
+  S3 discovery and authoritative bucket-location outcomes. Unrelated 5E enrichment failures must
+  not make Analyzer Region coverage incomplete; incomplete bucket discovery or location evidence
+  must. Accepted pre-5E persisted graphs retain their existing validated fallback semantics.
+- Keep supplemental-Region admission closed and proof-bound. An S3 bucket outside the requested
+  Region is admissible only in the home Region established by its authoritative same-scan S3
+  location evidence. A `kms_key` is admissible only when authoritative same-scan `DescribeKey`
+  evidence and an explicit bucket encryption reference support the canonical
+  `s3_bucket --encrypted_with--> kms_key` relationship. A general
+  `allows_supplemental_region` flag is not sufficient proof.
+- Use validated `DescribeKey.KeyMetadata.Arn` as both canonical `kms_key.aws_resource_id` and ARN.
+  Verify the returned `AWSAccountId`, partition, Region, `KeyId`, and `KeyManager`; retain the
+  12-digit resource owner even when `KeyManager == AWS`. Cache lookups by Region and supplied
+  reference, coalesce identical canonical keys, and reject conflicting metadata. ARN references
+  select their stated Region; local IDs and aliases use the bucket home Region until
+  `DescribeKey` supplies canonical identity. An incomplete lookup retains the supplied reference
+  as typed unresolved evidence but emits no invented `kms_key`. Never fabricate a key, owner,
+  Region, ARN, or manager.
+- Run paginated `ListBuckets` and account `s3control.GetPublicAccessBlock` once. Establish every
+  bucket's authoritative home Region with `GetBucketLocation` before per-bucket enrichment, then
+  normalize a null `LocationConstraint` to `us-east-1` and the legacy `EU` value to `eu-west-1`.
+  A contradiction with any independently returned bucket Region fails closed. Then collect tags,
+  bucket Public Access Block, policy, policy status, ACL, versioning, encryption, and ownership
+  controls in that Region. Keep the accepted `HeadBucket` recovery path distinct from the
+  canonical 5E source. Deduplicate `DescribeKey` for explicit KMS references only.
+- Retain independent, digest-bound source artifacts and outcomes. Expected no-policy, no-Public-
+  Access-Block, no-tags, no-encryption-configuration, no-ownership-controls, and unversioned
+  responses are explicit complete factual states. Access denial, throttling, service failure,
+  malformed or contradictory data, failed authoritative Region resolution, and resource
+  disappearance remain distinct uncertainty while valid sibling facts survive.
+- Decode bucket policies strictly, reject duplicate JSON keys and malformed structures, retain
+  complete effects, principals, actions, resources, conditions, and a deterministic digest.
+  Preserve ACL owner and every grant, all four account and bucket Public Access Block flags,
+  exact case-sensitive tags, encryption algorithm and bucket-key state, and KMS manager/ownership
+  facts. Treat policy, ACL, topology, tag, and encryption evidence as sensitive `READ` data and
+  never place it in routine logs or raw errors.
+- Keep collectors fact-only. Access Analyzer remains supplementary and non-decisive for S3-002.
+  Do not register `S3-001` through `S3-004`, change the assessment profile, implement 5F, add
+  remediation or AWS writes, or begin dashboard, deployment, or AI work. 5F remains unstarted.
+
+Acceptance requires deterministic fake-AWS coverage for pagination, source independence,
+expected absence, malformed/conflicting evidence, policy and ACL normalization, encryption
+variants, KMS deduplication and identity, resolved/unresolved relationships, exact Region
+admission including the null and legacy `EU` location mappings, Analyzer discovery completeness,
+pending-scan compatibility, and unchanged `S3-900` behavior. It also requires generic
+persistence/API readback, authenticated disposable-PostgreSQL
+HTTP acceptance, targeted and full regression tests, Ruff lint/format, container validation,
+independent review, green CI, approval, and merge. No test may contact live AWS.
 
 ## Objective and boundary
 

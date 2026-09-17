@@ -2,9 +2,9 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS, 5B network, and 5C IAM producers supply AWS graph fragments. The current 5D
-feature branch adds IAM Access Analyzer graph fragments through the same persistence boundary for
-review; it does not add a schema migration. The persistence boundary does not call AWS, run
+accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer producers supply AWS graph
+fragments through the same persistence boundary. 5D adds no schema migration. The persistence
+boundary does not call AWS, run
 controls, schedule scans, or commit transactions on behalf of its caller. The inventory command
 still prints a summary only; it does not persist anything.
 
@@ -92,9 +92,9 @@ database transaction; `persist_scan_result` then locks and verifies that exact p
 records all immutable children, and terminalizes it atomically. Direct callers can still persist
 an already finished bundle in one transaction as before.
 
-The current 5D branch also treats the pending scan's persisted `requested_services` as immutable
-execution intent. A newly created scan includes `access-analyzer` and receives the 5D collector
-and resource-type scope. A pre-5D `RUNNING` scan without that marker resumes with the accepted
+The accepted 5D implementation also treats the pending scan's persisted `requested_services` as
+immutable execution intent. A newly created scan includes `access-analyzer` and receives the 5D
+collector and resource-type scope. A pre-5D `RUNNING` scan without that marker resumes with the accepted
 pre-5D scope instead of silently adding AWS work or failing after collection. Completed pre-5D
 graphs remain valid without Analyzer contracts, outcomes, resources, or relationships; no stored
 row or source manifest is rewritten.
@@ -194,7 +194,7 @@ requested Region requires the established S3/CloudTrail exception or an explicit
 supplemental-Region source contract with a `PRESENT` outcome. These are closed evidence-admission
 rules, not expansion of scan scope or caller authorization.
 
-For the 5D feature branch, supplemental discovery is narrower than that general snapshot
+For the accepted 5D implementation, supplemental discovery is narrower than that general snapshot
 admission flag: only the canonical Access Analyzer discovery contracts may claim it, and each
 additional Region must be present on an exact same-scan normalized S3 bucket. The Analyzer
 artifact also binds the sorted required-Region set and whether the S3 discovery that supplied it
@@ -214,7 +214,7 @@ with a legacy graphless `security_groups` outcome remains readable.
 Authenticated generic services and API projections can list/read relationship observations and
 source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
 public route, and artifacts have no standalone route. The accepted 5A EC2/EBS, 5B network, and 5C
-IAM producers emit source and relationship history through this boundary. The under-review 5D
+IAM producers emit source and relationship history through this boundary. The accepted 5D
 producer uses the same tables for Regional analyzer/finding source evidence, normalized
 `access_analyzer_finding` snapshots, and finding-to-S3 `references_resource` observations.
 Analyzer summaries remain artifacts rather than top-level resources, and the normalized AWS
@@ -458,9 +458,9 @@ evidence-graph domain, transactional persistence, authenticated generic reads, a
 boundary. The accepted 5A producer emits EC2/EBS source outcomes and relationships, and the
 accepted 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow Logs.
 The accepted 5C implementation extends the same generic graph with IAM account, identity, policy,
-and relationship evidence and requires no schema migration. The current 5D feature branch extends
-that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional coverage,
-and finding-to-S3 relationships; it remains under review and also requires no migration. Direct
+and relationship evidence and requires no schema migration. The accepted 5D implementation
+extends that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional
+coverage, and finding-to-S3 relationships; it also requires no migration. Direct
 5E S3 evidence, 5F CloudTrail expansion, additional production controls, Terraform
 infrastructure, governance mutation APIs, remediation, dashboards/frontend, and AI functionality
 remain outside this slice.
