@@ -183,3 +183,9 @@ def empty_iam_client() -> FakeAWSClient:
             ]
         },
     )
+
+
+def empty_access_analyzer_client() -> FakeAWSClient:
+    """Build one Access Analyzer fake with complete empty Regional discovery evidence."""
+
+    return FakeAWSClient(paginators={"list_analyzers": FakePaginator([{"analyzers": []}])})

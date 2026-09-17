@@ -1,8 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
 Status: canonical evidence-readiness plan with accepted 5A, 5B, and 5C evidence producers
-reflected; the authorized 5D IAM Access Analyzer evidence implementation has not begun, and this
-document does not enable any Sprint 6 rule.
+reflected. The authorized 5D IAM Access Analyzer evidence producer is implemented on the current
+feature branch for review, is not yet accepted on `main`, and does not enable any Sprint 6 rule.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -44,7 +44,8 @@ requires every source that its versioned control declares decision-required. A c
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
 domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, and 5C IAM producers are
-integrated; no Sprint 6 rule consumes source outcomes yet.
+integrated. The current 5D feature branch adds the approved supplementary Analyzer source
+contracts through that same boundary; no Sprint 6 rule consumes source outcomes yet.
 
 ## IAM controls
 
@@ -239,6 +240,17 @@ never itself be interpreted as `PASS` or an approval. Direct S3 policy, ACL, and
 remains the v1 decision surface; Analyzer facts are retained for investigation and a future
 separately versioned expansion.
 
+The current 5D feature branch implements this fact-only producer for review. It normalizes one
+Regional `access-analyzer/access_analyzer_finding` resource per retained finding using a
+collision-safe composite analyzer-ARN/finding-ID identity. Analyzer summaries stay in normalized
+source artifacts. Each finding emits a `references_resource` observation to its S3 bucket; an
+exact same-scan bucket resolves, while a complete stable target or typed unresolved reference is
+retained when it does not. The collection account, analyzer owner, and
+`resourceOwnerAccount` remain separate. Analyzer discovery artifacts bind the sorted required-
+Region set and the S3 bucket-discovery completeness input so persisted coverage can be
+reconstructed. This implementation does not change the `S3-002` matrix state from
+`CONTRACT_READY`; direct 5E evidence is still absent.
+
 ## Assessment Profile planning
 
 The documentation task does not alter the immutable `AssessmentProfile` model or profile
@@ -404,11 +416,12 @@ approved and linked above. At the Phase 0 gate, the preflight added no collector
 executable rule, profile registration, database table, API route, or runtime behavior. The
 subsequently approved Sprint 5 shared foundation supplies the generic persistence and read-only
 API boundary. The accepted 5A EC2/EBS, 5B VPC/network, and 5C IAM producers supply their named
-evidence. The authorized 5D Access Analyzer producer has not begun; its supporting evidence
-remains supplementary and does not change the `S3-002` state. The 5D--5F producers and every
-Sprint 6 rule consumer remain in their named slices.
+evidence. The authorized 5D Access Analyzer producer is implemented on the current feature branch
+for review through the same graph, persistence, and generic API boundaries. Its supporting
+evidence remains supplementary and does not change the `S3-002` state. Direct 5E S3 evidence, 5F
+CloudTrail expansion, and every Sprint 6 rule consumer remain in their named slices.
 
-Sprint 5 is `IN PROGRESS`, 5A through 5C are accepted, 5D is the current authorized slice, and
+Sprint 5 is `IN PROGRESS`, 5A through 5C are accepted, 5D is the current under-review slice, and
 Sprint 6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:

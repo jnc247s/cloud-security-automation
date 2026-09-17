@@ -40,6 +40,7 @@ SessionFactory = Callable[[], Session]
 ProviderFactory = Callable[[str], AWSClientProvider]
 
 _REQUESTED_COLLECTORS = (
+    "access_analyzer_evidence",
     "cloudtrail_trails",
     "ec2_ebs_evidence",
     "iam_account_evidence",
@@ -48,7 +49,12 @@ _REQUESTED_COLLECTORS = (
     "security_groups",
     "vpc_network_evidence",
 )
+_PRE_5D_REQUESTED_SERVICES = ("cloudtrail", "ec2", "iam", "s3")
+_PRE_5D_REQUESTED_COLLECTORS = tuple(
+    collector for collector in _REQUESTED_COLLECTORS if collector != "access_analyzer_evidence"
+)
 _RESOURCE_TYPES = (
+    "access_analyzer_finding",
     "aws_account",
     "cloudtrail_trail",
     "ebs_volume",
@@ -67,6 +73,9 @@ _RESOURCE_TYPES = (
     "subnet",
     "vpc",
     "vpc_flow_log",
+)
+_PRE_5D_RESOURCE_TYPES = tuple(
+    resource_type for resource_type in _RESOURCE_TYPES if resource_type != "access_analyzer_finding"
 )
 
 
@@ -257,14 +266,27 @@ class InProcessScanExecutor:
                     "pending scan assessment profile provenance is invalid"
                 ) from error
             expected_catalog = (scan.control_catalog_id, scan.control_catalog_version)
+            requested_services = tuple(scan.requested_services)
+
+        requested_collectors, resource_types = _execution_scope_for(requested_services)
 
         provider = self._provider_factory(region)
-        snapshot = InventoryService(provider).collect(scan_id=scan_id)
+        snapshot = InventoryService(
+            provider,
+            include_access_analyzer="access-analyzer" in requested_services,
+        ).collect(scan_id=scan_id)
         catalog = build_default_control_catalog()
         if expected_catalog != (catalog.catalog_id, catalog.version):
             raise ScanPersistenceError("executor policy differs from pending scan provenance")
         assessments = RuleEngine(build_default_registry()).assess(snapshot, profile)
-        scope = _scope_for(snapshot, profile, catalog)
+        scope = _scope_for(
+            snapshot,
+            profile,
+            catalog,
+            requested_services=requested_services,
+            requested_collectors=requested_collectors,
+            resource_types=resource_types,
+        )
         with self._session_factory() as session, session.begin():
             persist_scan_result(
                 session,
@@ -293,10 +315,14 @@ def _scope_for(
     snapshot: InventorySnapshot,
     profile: AssessmentProfile,
     catalog: ControlCatalog,
+    *,
+    requested_services: tuple[str, ...] = REQUESTED_SERVICES,
+    requested_collectors: tuple[str, ...] = _REQUESTED_COLLECTORS,
+    resource_types: tuple[str, ...] = _RESOURCE_TYPES,
 ) -> ScanScopeManifestInput:
     outcomes = tuple(snapshot.collector_outcomes)
     outcome_names = {outcome.collector_name for outcome in outcomes}
-    if outcome_names != set(_REQUESTED_COLLECTORS):
+    if outcome_names != set(requested_collectors):
         raise ScanPersistenceError("executor inventory has an unexpected collector set")
     if snapshot.evidence_graph is None:
         raise ScanPersistenceError("executor inventory omitted its declared-source evidence graph")
@@ -305,10 +331,10 @@ def _scope_for(
         aws_account_id=snapshot.account_id,
         requested_regions=(snapshot.requested_region,),
         successful_regions=(snapshot.requested_region,) if complete else (),
-        requested_services=REQUESTED_SERVICES,
-        requested_collectors=_REQUESTED_COLLECTORS,
+        requested_services=requested_services,
+        requested_collectors=requested_collectors,
         collector_outcomes=outcomes,
-        resource_types=_RESOURCE_TYPES,
+        resource_types=resource_types,
         enabled_controls=profile.enabled_controls,
         assessment_profile_id=profile.profile_id,
         assessment_profile_version=profile.version,
@@ -316,6 +342,18 @@ def _scope_for(
         control_catalog_id=catalog.catalog_id,
         control_catalog_version=catalog.version,
     )
+
+
+def _execution_scope_for(
+    requested_services: tuple[str, ...],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Select the exact collector contract stored when a pending scan was created."""
+
+    if requested_services == REQUESTED_SERVICES:
+        return _REQUESTED_COLLECTORS, _RESOURCE_TYPES
+    if requested_services == _PRE_5D_REQUESTED_SERVICES:
+        return _PRE_5D_REQUESTED_COLLECTORS, _PRE_5D_RESOURCE_TYPES
+    raise ScanPersistenceError("pending scan requested-services intent is unsupported")
 
 
 def _as_utc(value: datetime) -> datetime:

@@ -29,7 +29,8 @@ evidence, accepted 5B network evidence, and accepted 5C IAM evidence)
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, and 5C IAM evidence slices are accepted on `main`.
 The separately authorized 5D IAM Access Analyzer evidence slice is now `IN PROGRESS`; no Sprint 6
-control has been enabled.
+control has been enabled. Its implementation is present only on the current feature branch for
+review and is not part of the accepted `main` baseline until approval and merge.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -59,7 +60,7 @@ its acceptance gates and was merged on 2026-09-16. Slice 5B subsequently passed 
 gates and was merged in pull request 17 at `66cadb20cd6a469d5a656628c27ae8cb569d8c69`.
 Slice 5C subsequently passed its acceptance gates and was merged in pull request 18 at
 `819f9ba3b26490ca23c69a6665b1baf9d7948975`. Slice 5D is now in progress and Sprint 6 remains
-`PLANNED`.
+`PLANNED`; the 5D feature implementation is under review, not yet accepted or complete.
 
 ## Pre-Sprint 5 attention
 

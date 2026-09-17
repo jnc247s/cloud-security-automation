@@ -32,6 +32,7 @@ from app.collectors.base import (
     graph_collection_status_for,
     graph_collection_validation_required,
     graph_collectors_for_outcomes,
+    validate_access_analyzer_s3_region_source_status,
 )
 from app.database.catalogs import ensure_assessment_profile, ensure_control_catalog
 from app.database.evidence_graph import persist_evidence_graph
@@ -156,6 +157,22 @@ def _validate_bundle(
             ):
                 continue
             try:
+                if collector_outcome.collector_name == "access_analyzer_evidence":
+                    s3_status = next(
+                        (
+                            item.status
+                            for item in snapshot.collector_outcomes
+                            if item.collector_name == "s3_buckets"
+                        ),
+                        None,
+                    )
+                    if s3_status is None:
+                        raise ValueError("Access Analyzer coverage requires an S3 outcome")
+                    validate_access_analyzer_s3_region_source_status(
+                        outcomes=snapshot.evidence_graph.source_outcomes,
+                        artifacts=snapshot.evidence_graph.artifacts,
+                        s3_status=s3_status,
+                    )
                 reconstructed = graph_collection_status_for(
                     collector_name=collector_outcome.collector_name,
                     outcomes=snapshot.evidence_graph.source_outcomes,

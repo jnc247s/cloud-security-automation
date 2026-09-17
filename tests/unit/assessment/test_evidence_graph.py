@@ -122,6 +122,54 @@ def _contract(
     )
 
 
+def _access_analyzer_contract(
+    *,
+    region: str,
+    allows_supplemental_region: bool,
+) -> ScanSourceContract:
+    return ScanSourceContract.for_scan(
+        contract_key="access-analyzer.analyzers.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=AccountEvidenceSubject(
+            aws_account_id=ACCOUNT_ID,
+            scope=ResourceScope.REGIONAL,
+            region=region,
+        ),
+        evidence_kind="access-analyzer.analyzers.discovery",
+        collector="access-analyzer.analyzers",
+        collector_version="1.0.0",
+        source_api="access-analyzer:ListAnalyzers",
+        cardinality=EvidenceCardinality.COLLECTION,
+        allows_supplemental_region=allows_supplemental_region,
+    )
+
+
+def _access_analyzer_artifact(region: str) -> SourceEvidenceArtifact:
+    return SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference=f"normalized://access-analyzer/{region}/analyzers",
+        evidence_schema="access-analyzer.analyzers.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={"region": region},
+    )
+
+
+def _s3_bucket(*, region: str) -> NormalizedResource:
+    return NormalizedResource(
+        account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id=f"bucket-{region}",
+        scope=ResourceScope.REGIONAL,
+        region=region,
+    )
+
+
 def _outcome(
     contract: ScanSourceContract,
     artifact: SourceEvidenceArtifact,
@@ -483,8 +531,88 @@ def test_regional_discovery_source_must_match_inventory_invocation_region() -> N
     with pytest.raises(ValidationError, match="inventory invocation Region"):
         _inventory(graph=graph, requested_region="us-east-1")
 
-    with pytest.raises(ValidationError, match="cannot authorize supplemental Regions"):
+    with pytest.raises(ValidationError, match="only controlled Access Analyzer"):
         _contract(allows_supplemental_region=True)
+
+
+def test_access_analyzer_supplemental_discovery_requires_exact_s3_region_proof() -> None:
+    east_contract = _access_analyzer_contract(
+        region="us-east-1",
+        allows_supplemental_region=False,
+    )
+    west_contract = _access_analyzer_contract(
+        region="us-west-2",
+        allows_supplemental_region=True,
+    )
+    east_artifact = _access_analyzer_artifact("us-east-1")
+    west_artifact = _access_analyzer_artifact("us-west-2")
+    graph = _graph(
+        source_contracts=(east_contract, west_contract),
+        artifacts=(east_artifact, west_artifact),
+        source_outcomes=(
+            _outcome(east_contract, east_artifact),
+            _outcome(west_contract, west_artifact),
+        ),
+        relationships=(),
+    )
+
+    assert east_contract.source_outcome_id != west_contract.source_outcome_id
+    with pytest.raises(ValidationError, match="same-scan S3 bucket Region"):
+        _inventory(graph=graph, resources=())
+
+    snapshot = _inventory(graph=graph, resources=(_s3_bucket(region="us-west-2"),))
+    assert snapshot.resource_count == 1
+
+
+def test_access_analyzer_requested_region_cannot_claim_supplemental_permission() -> None:
+    contract = _access_analyzer_contract(
+        region="us-east-1",
+        allows_supplemental_region=True,
+    )
+    artifact = _access_analyzer_artifact("us-east-1")
+    graph = _graph(
+        source_contracts=(contract,),
+        artifacts=(artifact,),
+        source_outcomes=(_outcome(contract, artifact),),
+        relationships=(),
+    )
+
+    with pytest.raises(ValidationError, match="cannot claim supplemental-Region"):
+        _inventory(graph=graph, resources=())
+
+
+def test_access_analyzer_regional_coverage_requires_requested_region() -> None:
+    west_contract = _access_analyzer_contract(
+        region="us-west-2",
+        allows_supplemental_region=True,
+    )
+    west_artifact = _access_analyzer_artifact("us-west-2")
+    graph = _graph(
+        source_contracts=(west_contract,),
+        artifacts=(west_artifact,),
+        source_outcomes=(_outcome(west_contract, west_artifact),),
+        relationships=(),
+    )
+
+    with pytest.raises(ValidationError, match="Regional coverage must exactly match"):
+        _inventory(graph=graph, resources=(_s3_bucket(region="us-west-2"),))
+
+
+def test_access_analyzer_regional_coverage_requires_every_bucket_region() -> None:
+    east_contract = _access_analyzer_contract(
+        region="us-east-1",
+        allows_supplemental_region=False,
+    )
+    east_artifact = _access_analyzer_artifact("us-east-1")
+    graph = _graph(
+        source_contracts=(east_contract,),
+        artifacts=(east_artifact,),
+        source_outcomes=(_outcome(east_contract, east_artifact),),
+        relationships=(),
+    )
+
+    with pytest.raises(ValidationError, match="Regional coverage must exactly match"):
+        _inventory(graph=graph, resources=(_s3_bucket(region="us-west-2"),))
 
 
 def test_graph_enabled_hash_is_deterministic_and_legacy_hash_is_unchanged() -> None:

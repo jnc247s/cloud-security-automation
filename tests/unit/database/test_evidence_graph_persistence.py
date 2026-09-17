@@ -168,6 +168,112 @@ def _network_graph_bundle() -> dict[str, object]:
     return bundle
 
 
+def _access_analyzer_graph_bundle(
+    *,
+    s3_status: CollectionStatus,
+    s3_region_discovery_complete: bool,
+) -> dict[str, object]:
+    """Extend the graph fixture with one empty requested-Region Analyzer manifest."""
+
+    bundle = graph_scan_bundle()
+    snapshot = bundle["snapshot"]
+    graph = snapshot.evidence_graph
+    assert graph is not None
+    context = CollectionContext(
+        scan_id=snapshot.scan_id,
+        collection_account_id=snapshot.account_id,
+        region=snapshot.requested_region,
+        collected_at=snapshot.collected_at,
+    )
+    observation = build_source_observation(
+        context=context,
+        contract_key="access-analyzer.analyzers.discovery",
+        contract_version="1.0.0",
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=AccountEvidenceSubject(
+            aws_account_id=snapshot.account_id,
+            scope=ResourceScope.REGIONAL,
+            region=snapshot.requested_region,
+        ),
+        evidence_kind="access-analyzer.analyzers.discovery",
+        collector="access-analyzer.analyzers",
+        collector_version="1.0.0",
+        source_api="access-analyzer:ListAnalyzers",
+        cardinality=EvidenceCardinality.COLLECTION,
+        evidence_reference=(
+            f"normalized://aws/access-analyzer/{snapshot.requested_region}/analyzers"
+        ),
+        evidence_schema="access-analyzer.analyzers.discovery",
+        evidence_schema_version="1.0.0",
+        normalized_payload={
+            "account_id": snapshot.account_id,
+            "region": snapshot.requested_region,
+            "required_regions": [snapshot.requested_region],
+            "s3_region_discovery_complete": s3_region_discovery_complete,
+            "analyzers": [],
+            "relevant_analyzer_arns": [],
+            "complete": True,
+            "failure_category": None,
+        },
+        state=EvidenceSourceState.EXPECTED_ABSENCE,
+    )
+    extended_graph = EvidenceGraph(
+        scan_id=graph.scan_id,
+        collection_account_id=graph.collection_account_id,
+        collected_at=graph.collected_at,
+        source_contracts=(*graph.source_contracts, observation.contract),
+        artifacts=(*graph.artifacts, observation.artifact),
+        source_outcomes=(*graph.source_outcomes, observation.outcome),
+        relationships=graph.relationships,
+    )
+    access_analyzer_status = (
+        CollectionStatus.SUCCEEDED if s3_region_discovery_complete else CollectionStatus.PARTIAL
+    )
+    collector_outcomes = (
+        *snapshot.collector_outcomes,
+        CollectorOutcome(
+            collector_name="access_analyzer_evidence",
+            status=access_analyzer_status,
+        ),
+        CollectorOutcome(collector_name="s3_buckets", status=s3_status),
+    )
+    extended_snapshot = InventorySnapshot.model_validate(
+        {
+            **snapshot.model_dump(mode="python"),
+            "collector_outcomes": collector_outcomes,
+            "evidence_graph": extended_graph,
+        }
+    )
+    scope = bundle["scope"]
+    extended_scope = ScanScopeManifestInput.model_validate(
+        {
+            **scope.model_dump(mode="python"),
+            "successful_regions": (
+                scope.requested_regions
+                if all(item.status is CollectionStatus.SUCCEEDED for item in collector_outcomes)
+                else ()
+            ),
+            "requested_services": (*scope.requested_services, "access-analyzer", "s3"),
+            "requested_collectors": (
+                *scope.requested_collectors,
+                "access_analyzer_evidence",
+                "s3_buckets",
+            ),
+            "collector_outcomes": collector_outcomes,
+            "resource_types": (*scope.resource_types, "access_analyzer_finding", "s3_bucket"),
+        }
+    )
+    bundle.update(
+        snapshot=extended_snapshot,
+        scope=extended_scope,
+        assessments=RuleEngine(build_default_registry()).assess(
+            extended_snapshot,
+            bundle["profile"],
+        ),
+    )
+    return bundle
+
+
 def _replace_graph(bundle: dict[str, object], graph: EvidenceGraph) -> None:
     snapshot = bundle["snapshot"]
     replacement = InventorySnapshot.model_validate(
@@ -197,6 +303,79 @@ def test_scan_persistence_round_trips_the_exact_evidence_graph(db_session: Sessi
     assert _count(db_session, SourceEvidenceArtifact) == 1
     assert _count(db_session, SourceEvidenceOutcome) == 1
     assert _count(db_session, ResourceRelationshipObservation) == 1
+
+
+def test_completed_pre_5d_graph_remains_loadable_without_access_analyzer(
+    db_session: Session,
+) -> None:
+    bundle = graph_scan_bundle()
+    scan = persist_scan_result(db_session, **bundle)
+    db_session.commit()
+
+    manifest = db_session.scalar(
+        select(ScanScopeManifest).where(ScanScopeManifest.scan_id == scan.scan_id)
+    )
+    assert manifest is not None
+    assert "access-analyzer" not in manifest.requested_services
+    assert "access_analyzer_evidence" not in manifest.requested_collectors
+
+    reconstructed = load_evidence_graph(db_session, scan.scan_id)
+
+    assert reconstructed == bundle["snapshot"].evidence_graph
+    assert all(outcome.collector != "access-analyzer" for outcome in reconstructed.source_outcomes)
+
+
+@pytest.mark.parametrize(
+    ("s3_status", "declared_complete"),
+    (
+        (CollectionStatus.SUCCEEDED, False),
+        (CollectionStatus.PARTIAL, True),
+        (CollectionStatus.FAILED, True),
+    ),
+)
+def test_write_rejects_access_analyzer_region_coverage_that_disagrees_with_s3(
+    db_session: Session,
+    s3_status: CollectionStatus,
+    declared_complete: bool,
+) -> None:
+    bundle = _access_analyzer_graph_bundle(
+        s3_status=s3_status,
+        s3_region_discovery_complete=declared_complete,
+    )
+
+    with pytest.raises(
+        ScanPersistenceError,
+        match="evidence graph cannot reconstruct collector coverage",
+    ):
+        persist_scan_result(db_session, **bundle)
+
+
+def test_graph_load_rejects_access_analyzer_region_coverage_that_disagrees_with_s3(
+    db_session: Session,
+) -> None:
+    bundle = _access_analyzer_graph_bundle(
+        s3_status=CollectionStatus.SUCCEEDED,
+        s3_region_discovery_complete=True,
+    )
+    scan = persist_scan_result(db_session, **bundle)
+    db_session.commit()
+    manifest = db_session.scalars(
+        select(ScanScopeManifest).where(ScanScopeManifest.scan_id == scan.scan_id)
+    ).one()
+    manifest.collector_outcomes = {
+        **manifest.collector_outcomes,
+        "s3_buckets": CollectionStatus.PARTIAL.value,
+    }
+
+    with (
+        db_session.no_autoflush,
+        pytest.raises(
+            EvidenceGraphPersistenceError,
+            match="persisted graph cannot reconstruct collector coverage",
+        ),
+    ):
+        load_evidence_graph(db_session, scan.scan_id)
+    db_session.rollback()
 
 
 @pytest.mark.parametrize(

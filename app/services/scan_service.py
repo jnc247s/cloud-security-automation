@@ -35,7 +35,7 @@ from app.services.errors import AssessmentProfileConflictError, EntityNotFoundEr
 if TYPE_CHECKING:
     from app.services.scan_executor import ScanExecutor
 
-REQUESTED_SERVICES = ("cloudtrail", "ec2", "iam", "s3")
+REQUESTED_SERVICES = ("access-analyzer", "cloudtrail", "ec2", "iam", "s3")
 _GENERIC_EXECUTION_FAILURE = ScanFailure(
     code="SCAN_EXECUTION_FAILED",
     message="Scan execution failed before results could be persisted.",

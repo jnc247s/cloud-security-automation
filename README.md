@@ -12,7 +12,7 @@ provide certification or claim organization-wide NIST compliance.
 Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
 `IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, and 5C IAM
 evidence slices are accepted, while the separately authorized 5D IAM Access Analyzer evidence
-slice is the current work. Sprint 6 remains `PLANNED`.
+implementation is under review. Sprint 6 remains `PLANNED`.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:
@@ -20,8 +20,8 @@ The current implementation includes:
 - FastAPI health/readiness, centralized configuration, PostgreSQL/SQLAlchemy/Alembic, Compose,
   pytest, Ruff, and GitHub Actions;
 - standard-chain boto3 authentication, STS identity, and fact-only IAM account, identity, policy,
-  security-group, VPC, subnet, VPC Flow Log, S3, CloudTrail, EC2-instance, EBS-volume, and
-  Regional EBS-default collection;
+  Access Analyzer, security-group, VPC, subnet, VPC Flow Log, S3, CloudTrail, EC2-instance,
+  EBS-volume, and Regional EBS-default collection;
 - deterministic four-state assessment with structured evidence, versioned profiles and control
   contracts, and checksum-validated NIST CSF 2.0 mapping metadata;
 - immutable resource snapshots, scan scope, assessments, evidence, deduplicated findings and
@@ -31,13 +31,15 @@ The current implementation includes:
   exceptions; and
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
 - generic immutable source-outcome/artifact and relationship history, populated by the accepted
-  5A EC2/EBS, 5B network-evidence, and 5C IAM producers.
+  5A EC2/EBS, 5B network-evidence, and 5C IAM producers and the current 5D Access Analyzer
+  implementation.
 
 Current controls are `IAM-001`, `LOG-001`, `NET-001`, `NET-002`, and legacy non-core `S3-900`.
 Canonical `S3-001` through `S3-004` are reserved for later roadmap meanings and are not
 implemented. The collected 5A/5B/5C evidence does not make `IAM-002` through `IAM-006`,
 `EC2-001` through `EC2-004`, or `NET-003` through `NET-006` executable; those rules and their
-profile policy remain Sprint 6 work.
+profile policy remain Sprint 6 work. Access Analyzer findings are supplementary facts only and do
+not implement or decide `S3-002`.
 
 No Terraform deployment, dashboard, remediation, or AI functionality exists yet. AWS resources
 are never modified.

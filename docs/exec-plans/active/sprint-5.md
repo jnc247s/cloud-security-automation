@@ -312,6 +312,49 @@ The evidence-readiness state for S3-002 does not change merely because 5D has st
 `CONTRACT_READY` until the separately accepted direct 5E evidence producer exists, and Analyzer
 evidence remains supplementary and non-decisive. Sprint 6 remains `PLANNED`.
 
+## Current 5D implementation state
+
+The current feature branch implements the authorized 5D boundary for review against the accepted
+5C baseline at `819f9ba3b26490ca23c69a6665b1baf9d7948975`. It is not accepted or complete until
+validation, independent review, CI, approval, and merge succeed.
+
+- One fact-only `access_analyzer_evidence` collector runs after S3 and uses the existing AWS client
+  provider. It scans the requested Region plus the sorted unique Regions of exact normalized
+  same-scan S3 buckets; it makes no S3 call and cannot authorize an arbitrary supplemental Region.
+- Per-Region `ListAnalyzers`, per-relevant-analyzer `ListFindingsV2`, and per-finding
+  `GetFindingV2` are fully paginated and independently represented by normalized artifacts and
+  controlled outcomes. `ACCOUNT` and `ORGANIZATION` analyzers are the only external-access types
+  used by this slice. Operational, malformed, conflicting, disappeared, or pagination-incomplete
+  evidence remains sanitized and incomplete while independently valid siblings survive.
+- Analyzer discovery artifacts bind the exact required-Region set and the completeness of the S3
+  bucket discovery that supplied it. Incomplete bucket discovery keeps Analyzer coverage
+  incomplete even when requested-Region facts were retained; complete empty enumeration is an
+  explicit absence, not an exposure decision.
+- Each retained finding is a Regional `access_analyzer_finding` owned by the verified collection
+  account with a collision-safe composite analyzer-ARN/finding-ID resource identity. Analyzer
+  summaries remain source artifacts, not top-level resources or control-plane findings.
+- A finding emits the canonical `references_resource` observation to the S3 bucket named by the
+  finding. Only an exact same-scan bucket identity and snapshot resolve; otherwise the complete
+  stable target or typed unresolved reference is retained. Collection account, analyzer owner,
+  and `resourceOwnerAccount` remain distinct.
+- Newly created scans persist `access-analyzer` service intent. Executor orchestration selects the
+  5D or pre-5D collector/resource-type set from each pending scan's immutable
+  `requested_services`, so an existing pre-5D `RUNNING` scan neither gains new AWS work nor fails
+  after collection. Completed pre-5D manifests and graphs remain valid when Analyzer evidence is
+  absent.
+- The implementation reuses generic resources, snapshots, evidence artifacts/outcomes,
+  relationships, transactional persistence, `ScanExecutor`, services, authentication,
+  authorization, and `/api/v1` reads. Revision `20260915_0003` already stores the required graph
+  fields, so 5D adds no migration and no service-specific API.
+- The scanner permission delta is read-only:
+  `access-analyzer:ListAnalyzers`, `access-analyzer:ListFindings` (for `ListFindingsV2`), and
+  `access-analyzer:GetFinding` (for `GetFindingV2`).
+- Controlled-fake collector, graph, inventory/executor, compatibility, generic read, and
+  disposable-PostgreSQL acceptance coverage belongs to this branch. No test contacts live AWS.
+- `S3-002` remains `CONTRACT_READY` and non-decisive until direct 5E S3 evidence is separately
+  accepted. This branch does not implement 5E, 5F, a Sprint 6 rule, remediation, dashboard,
+  production deployment, or AI behavior.
+
 ## Objective and boundary
 
 Collect the normalized AWS evidence required by the planned Sprint 6 production control library.

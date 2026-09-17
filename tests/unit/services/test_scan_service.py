@@ -29,6 +29,7 @@ from tests.fakes import (
     FakeAWSClient,
     FakeClientProvider,
     FakePaginator,
+    empty_access_analyzer_client,
     empty_ec2_client,
     empty_iam_client,
 )
@@ -95,6 +96,7 @@ def _empty_provider() -> FakeClientProvider:
     region = "us-west-2"
     return FakeClientProvider(
         {
+            ("accessanalyzer", region): empty_access_analyzer_client(),
             ("ec2", region): empty_ec2_client(),
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
@@ -123,6 +125,13 @@ def test_start_scan_commits_pending_identity_before_submission(db_session: Sessi
     assert result.inventory_sha256 is None
     persisted = db_session.get(Scan, result.scan_id)
     assert persisted is not None
+    assert persisted.requested_services == [
+        "access-analyzer",
+        "cloudtrail",
+        "ec2",
+        "iam",
+        "s3",
+    ]
     event = db_session.scalar(
         select(AuditEvent).where(AuditEvent.event_type == AuditEventType.SCAN_STARTED)
     )
@@ -267,6 +276,47 @@ def test_restarted_executor_uses_pending_scans_persisted_profile(
         )
     )
     assert assessment_profile_ids == {profiles[0].profile_version_id}
+
+
+def test_restarted_executor_preserves_pre_5d_pending_scan_intent(
+    db_session: Session,
+    migrated_engine: Engine,
+) -> None:
+    pending = ScanService(db_session, _settings()).start_scan(
+        ScanCreateRequest(), RecordingExecutor(), actor_id="operator"
+    )
+    scan = db_session.get(Scan, pending.scan_id)
+    assert scan is not None
+    scan.requested_services = ["cloudtrail", "ec2", "iam", "s3"]
+    db_session.commit()
+
+    provider = _empty_provider()
+    executor = InProcessScanExecutor(
+        session_factory=sessionmaker(bind=migrated_engine, expire_on_commit=False),
+        settings=_settings(),
+        provider_factory=lambda _region: provider,
+    )
+    try:
+        executor._execute(pending.scan_id)
+    finally:
+        executor.shutdown()
+
+    db_session.expire_all()
+    result = db_session.get(Scan, pending.scan_id)
+    assert result is not None
+    assert result.status is ScanStatus.COMPLETED
+    assert result.scope_manifest is not None
+    assert result.scope_manifest.requested_collectors == [
+        "cloudtrail_trails",
+        "ec2_ebs_evidence",
+        "iam_account_evidence",
+        "iam_users",
+        "s3_buckets",
+        "security_groups",
+        "vpc_network_evidence",
+    ]
+    assert result.scope_manifest.requested_services == ["cloudtrail", "ec2", "iam", "s3"]
+    assert ("accessanalyzer", "us-west-2") not in provider.client_requests
 
 
 def test_executor_rejects_profile_provenance_mismatch_before_aws(

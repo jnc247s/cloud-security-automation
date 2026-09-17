@@ -1,10 +1,11 @@
 # AWS inventory operations
 
 The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, and 5C IAM evidence
-producers provide a read-only, on-demand AWS inventory run. The standalone
-command returns a normalized in-memory snapshot and prints only an aggregate summary. It does not
-judge compliance, create findings, write to PostgreSQL, or modify AWS; the authorized scan
-executor separately persists the same snapshot through its existing transaction boundary.
+producers provide a read-only, on-demand AWS inventory run. The current feature branch adds the
+fact-only 5D IAM Access Analyzer producer for review. The standalone command returns a normalized
+in-memory snapshot and prints only an aggregate summary. It does not judge compliance, create
+control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor
+separately persists the same snapshot through its existing transaction boundary.
 
 ## Real-world operator flow
 
@@ -19,6 +20,8 @@ executor separately persists the same snapshot through its existing transaction 
    - EC2 instances, EBS volumes, and Regional EBS default settings from the configured region;
    - security groups, VPCs, subnets, and VPC Flow Logs from the configured region;
    - all account S3 buckets and selected bucket configuration;
+   - IAM Access Analyzer facts from the configured region and every additional unique Region
+     proved by a normalized same-scan S3 bucket;
    - global IAM account-summary, identity, authentication, tag, attachment, inline-policy,
      managed-policy, and default policy-version evidence;
    - account CloudTrail trails, enriched through each trail's home region.
@@ -27,7 +30,7 @@ executor separately persists the same snapshot through its existing transaction 
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`. The 5A, 5B, and 5C producers also declare source contracts and
+   returns one `InventorySnapshot`. The 5A through 5D producers also declare source contracts and
    record digest-bound artifacts, typed source outcomes, and relationship observations in the
    optional evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
@@ -39,9 +42,9 @@ inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
-The following policy is a practical baseline for the exact calls made by the current inventory,
-including 5A, 5B, and 5C. Review and scope it for your partition, account, buckets, permission
-boundaries, service control policies, and role-assumption model before production use.
+The following policy is a practical baseline for the exact calls made by the current feature
+branch, including 5A through 5D. Review and scope it for your partition, account, buckets,
+permission boundaries, service control policies, and role-assumption model before production use.
 
 ```json
 {
@@ -66,6 +69,9 @@ boundaries, service control policies, and role-assumption model before productio
         "iam:ListGroups",
         "iam:ListRoles",
         "iam:ListPolicies",
+        "access-analyzer:ListAnalyzers",
+        "access-analyzer:ListFindings",
+        "access-analyzer:GetFinding",
         "cloudtrail:ListTrails"
       ],
       "Resource": "*"
@@ -159,6 +165,7 @@ The command emits a deliberately small JSON document:
   "requested_region": "us-east-1",
   "collected_at": "2026-09-02T18:30:00+00:00",
   "collector_outcomes": {
+    "access_analyzer_evidence": "SUCCEEDED",
     "cloudtrail_trails": "SUCCEEDED",
     "ec2_ebs_evidence": "SUCCEEDED",
     "iam_account_evidence": "SUCCEEDED",
@@ -167,8 +174,9 @@ The command emits a deliberately small JSON document:
     "security_groups": "SUCCEEDED",
     "vpc_network_evidence": "SUCCEEDED"
   },
-  "resource_count": 27,
+  "resource_count": 28,
   "resources_by_service": {
+    "access-analyzer": 1,
     "cloudtrail": 2,
     "ec2": 8,
     "iam": 5,
@@ -198,10 +206,11 @@ with a sanitized identity message.
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
 rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
 are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS,
-5B network, and 5C IAM producers instead record independent outcomes for each declared discovery
-or enrichment source. They retain independently validated resources and report discarded items,
-while any incomplete source keeps the rollup `PARTIAL` unless every source is unavailable, which
-is `FAILED`. They never convert missing evidence into a clean result. The graph-aware
+5B network, 5C IAM, and under-review 5D Access Analyzer producers instead record independent
+outcomes for each declared discovery or enrichment source. They retain independently validated
+resources and report discarded items, while any incomplete source keeps the rollup `PARTIAL`
+unless every source is unavailable, which is `FAILED`. They never convert missing evidence into a
+clean result. The graph-aware
 security-group and IAM-user collectors preserve their accepted names. IAM account-summary
 evidence is isolated in its own collector so its failure cannot erase complete user/MFA evidence.
 The external-owner admission exception is described below.
@@ -229,6 +238,16 @@ synthetic resources. 5B declares independent `ec2.security-groups.discovery`,
 identity-authoritative source for every retained network resource. Raw provider exception text is
 never persisted.
 
+5D declares one `ListAnalyzers` discovery source per required Region, one `ListFindingsV2`
+discovery source per relevant `ACCOUNT` or `ORGANIZATION` analyzer, and summary/detail sources for
+each retained external-access S3 finding. It fully consumes `ListAnalyzers`, `ListFindingsV2`, and
+`GetFindingV2` pagination. A complete Region without a relevant analyzer, or a complete analyzer
+without a matching finding, is explicit expected absence. Repeated/non-progressing pagination,
+malformed evidence, denied calls, or a disappeared finding remains incomplete and sanitized while
+valid siblings survive. Incomplete `s3_buckets` collection makes Analyzer coverage incomplete
+because the required bucket-home Region set cannot be proven, even when requested-Region facts
+were retained.
+
 Expected S3 absence responses are facts, not failures:
 
 - no bucket tags becomes an empty tag map;
@@ -248,14 +267,19 @@ buckets are common.
   use global scope.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
   region.
+- IAM Access Analyzer runs in the requested Region and the sorted unique Regions of exact
+  same-scan normalized S3 buckets. Only those bucket-backed supplemental Regions are admitted;
+  this is not general multi-Region orchestration.
 - Collectors validate facts only; response validation does not assign severity or decide a
   technical assessment result.
 - Cross-account and AWS Organizations role orchestration are not implemented. Run once per
   explicitly assumed account role.
 - 5A normalizes `ec2_instance` and `ebs_volume` resources. 5B normalizes `security_group`, `vpc`,
   `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
-  policies, and managed-policy versions. IAM Access Analyzer 5D is authorized but not implemented;
-  expanded S3 and CloudTrail evidence remain later-slice work.
+  policies, and managed-policy versions. The under-review 5D producer normalizes each relevant
+  external-access finding as an `access_analyzer_finding`; analyzer summaries remain source
+  artifacts rather than resources. Expanded 5E S3 and 5F CloudTrail evidence remain later-slice
+  work.
 - Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains
@@ -265,6 +289,10 @@ buckets are common.
 - The 5B network facts are evidence only. `NET-003` through `NET-006` and network-tag use by
   `GOV-001` remain non-executable until Sprint 6 supplies separately reviewed deterministic rules
   and profile integration. Existing `NET-001` and `NET-002` behavior is unchanged.
+- The 5D Analyzer facts are supplementary investigation context only. Their
+  `references_resource` relationship resolves only to an exact same-scan S3 bucket; unresolved
+  targets are retained without fabrication. They do not decide `S3-002`, whose state remains
+  `CONTRACT_READY` until the direct 5E evidence producer is separately accepted.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host
@@ -281,3 +309,7 @@ buckets are common.
   documented reads. The S3 collector is marked incomplete, its uncertain results are discarded,
   and independent collectors continue; assessment therefore fails closed with insufficient
   evidence instead of silently omitting the bucket.
+- Access Analyzer `AccessDenied`: grant only `access-analyzer:ListAnalyzers`,
+  `access-analyzer:ListFindings`, and `access-analyzer:GetFinding` to the scanner role, then verify
+  the requested or bucket-home Region is enabled. A missing analyzer after a successful complete
+  Regional enumeration is a recorded absence; a denied or incomplete enumeration is not.

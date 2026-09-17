@@ -2,13 +2,14 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS, 5B network, and 5C IAM producers supply AWS
-graph fragments. The persistence boundary does not call AWS, run controls, schedule scans, or
-commit transactions on behalf of its caller. The inventory command still prints a summary only;
-it does not persist anything.
+accepted 5A EC2/EBS, 5B network, and 5C IAM producers supply AWS graph fragments. The current 5D
+feature branch adds IAM Access Analyzer graph fragments through the same persistence boundary for
+review; it does not add a schema migration. The persistence boundary does not call AWS, run
+controls, schedule scans, or commit transactions on behalf of its caller. The inventory command
+still prints a summary only; it does not persist anything.
 
-The five executable controls are unchanged. 5A, 5B, and 5C add documented read-only evidence
-calls but do not register a control. `S3-900` remains the legacy
+The five executable controls are unchanged. 5A through 5D add documented read-only evidence calls
+but do not register a control. `S3-900` remains the legacy
 explicit-encryption-configuration
 prototype, not a new production encryption or public-exposure control. The technical meanings
 documented in the [control catalog](controls/catalog.md) and
@@ -90,6 +91,13 @@ reconstructing it from its current environment. Collection and assessment run wi
 database transaction; `persist_scan_result` then locks and verifies that exact pending row,
 records all immutable children, and terminalizes it atomically. Direct callers can still persist
 an already finished bundle in one transaction as before.
+
+The current 5D branch also treats the pending scan's persisted `requested_services` as immutable
+execution intent. A newly created scan includes `access-analyzer` and receives the 5D collector
+and resource-type scope. A pre-5D `RUNNING` scan without that marker resumes with the accepted
+pre-5D scope instead of silently adding AWS work or failing after collection. Completed pre-5D
+graphs remain valid without Analyzer contracts, outcomes, resources, or relationships; no stored
+row or source manifest is rewritten.
 
 Scope is an explicit caller claim, not something inferred from the absence of findings. A single
 inventory invocation region does not prove account-wide or multi-region coverage. Existing S3 and
@@ -186,6 +194,14 @@ requested Region requires the established S3/CloudTrail exception or an explicit
 supplemental-Region source contract with a `PRESENT` outcome. These are closed evidence-admission
 rules, not expansion of scan scope or caller authorization.
 
+For the 5D feature branch, supplemental discovery is narrower than that general snapshot
+admission flag: only the canonical Access Analyzer discovery contracts may claim it, and each
+additional Region must be present on an exact same-scan normalized S3 bucket. The Analyzer
+artifact also binds the sorted required-Region set and whether the S3 discovery that supplied it
+was complete. Graph validation rejects an arbitrary or unproved discovery Region, and persisted
+coverage reconstruction keeps the collector incomplete when bucket-Region discovery was not
+complete.
+
 For 5B discovery schemas, a canonical non-empty `unadmitted_resources` list and
 `admission_complete = false` are digest-bound operational coverage inputs. They preserve the full
 AWS enumeration and its truthful source state while making the collector's `PARTIAL` projection
@@ -198,8 +214,12 @@ with a legacy graphless `security_groups` outcome remains readable.
 Authenticated generic services and API projections can list/read relationship observations and
 source outcomes; outcome detail includes its normalized artifact. Source contracts have no direct
 public route, and artifacts have no standalone route. The accepted 5A EC2/EBS, 5B network, and 5C
-IAM producers emit source and relationship history through this boundary; remaining legacy
-collectors remain graphless. No current technical result consumes the Sprint 5 graph.
+IAM producers emit source and relationship history through this boundary. The under-review 5D
+producer uses the same tables for Regional analyzer/finding source evidence, normalized
+`access_analyzer_finding` snapshots, and finding-to-S3 `references_resource` observations.
+Analyzer summaries remain artifacts rather than top-level resources, and the normalized AWS
+finding resource is not a control-plane `Finding`. Remaining legacy collectors remain graphless.
+No current technical result consumes the Sprint 5 graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -408,7 +428,9 @@ they verify empty-database migration upgrade/downgrade and metadata parity, JSON
 timestamps, append-only audit and evidence-graph enforcement, compatible populated downgrades,
 blocked incompatible downgrade integrity, immutable assessment-profile roll-forward and conflict
 behavior, persisted profile use after executor restart, committed pending-scan finalization,
-early failure before AWS identity, and concurrent finding/scan deduplication.
+pre-5D pending-scan and graph readback compatibility, early failure before AWS identity, and
+concurrent finding/scan deduplication. The 5D acceptance path uses deterministic fake AWS
+responses; it does not contact live AWS.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 
@@ -436,7 +458,9 @@ evidence-graph domain, transactional persistence, authenticated generic reads, a
 boundary. The accepted 5A producer emits EC2/EBS source outcomes and relationships, and the
 accepted 5B producer extends that graph with security groups, VPCs, subnets, and VPC Flow Logs.
 The accepted 5C implementation extends the same generic graph with IAM account, identity, policy,
-and relationship evidence and requires no schema migration. The authorized 5D preflight adds no
-runtime or schema change. Later collector expansion, additional
-production controls, Terraform infrastructure, governance mutation APIs, remediation,
-dashboards/frontend, and AI functionality remain outside this slice.
+and relationship evidence and requires no schema migration. The current 5D feature branch extends
+that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional coverage,
+and finding-to-S3 relationships; it remains under review and also requires no migration. Direct
+5E S3 evidence, 5F CloudTrail expansion, additional production controls, Terraform
+infrastructure, governance mutation APIs, remediation, dashboards/frontend, and AI functionality
+remain outside this slice.

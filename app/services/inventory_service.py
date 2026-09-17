@@ -1,6 +1,7 @@
 """Application service for collecting a normalized AWS resource inventory."""
 
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -25,6 +26,7 @@ from app.assessment.source_outcomes import (
     SourceEvidenceOutcome,
 )
 from app.aws.client import AWSClientProvider
+from app.collectors.access_analyzer import AccessAnalyzerCollector
 from app.collectors.base import (
     CollectionContext,
     CollectorEvidenceError,
@@ -41,19 +43,25 @@ from app.collectors.network import VPCNetworkCollector
 from app.collectors.s3 import S3BucketCollector
 from app.collectors.security_groups import SecurityGroupCollector
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
-from app.schemas.resource import NormalizedResource
+from app.schemas.resource import NormalizedResource, ResourceScope
 
 
 def build_default_collectors(
     client_provider: AWSClientProvider,
+    *,
+    include_access_analyzer: bool = True,
 ) -> tuple[ResourceCollector, ...]:
     """Build the accepted inventory collectors without making an AWS API call."""
 
-    return (
+    collectors: tuple[ResourceCollector, ...] = (
         EC2EbsCollector(client_provider),
         SecurityGroupCollector(client_provider),
         VPCNetworkCollector(client_provider),
         S3BucketCollector(client_provider),
+    )
+    if include_access_analyzer:
+        collectors += (AccessAnalyzerCollector(client_provider),)
+    return collectors + (
         IAMAccountEvidenceCollector(client_provider),
         IAMUserCollector(client_provider),
         CloudTrailCollector(client_provider),
@@ -67,10 +75,17 @@ class InventoryService:
         self,
         client_provider: AWSClientProvider,
         collectors: Sequence[ResourceCollector] | None = None,
+        *,
+        include_access_analyzer: bool = True,
     ) -> None:
         self.client_provider = client_provider
         self.collectors = tuple(
-            collectors if collectors is not None else build_default_collectors(client_provider)
+            collectors
+            if collectors is not None
+            else build_default_collectors(
+                client_provider,
+                include_access_analyzer=include_access_analyzer,
+            )
         )
 
     def collect(self, *, scan_id: UUID | None = None) -> InventorySnapshot:
@@ -90,7 +105,13 @@ class InventoryService:
         collected_results: list[tuple[str, CollectorResult]] = []
 
         for collector in self.collectors:
-            result = self._collect_from(collector, context)
+            collector_context = context
+            if collector.collector_name == "access_analyzer_evidence":
+                collector_context = _access_analyzer_context(
+                    context=context,
+                    collected_results=tuple(collected_results),
+                )
+            result = self._collect_from(collector, collector_context)
             collected_results.append((collector.collector_name, result))
 
         prepared_results = _prune_unadmitted_external_resources(
@@ -158,6 +179,43 @@ class InventoryService:
         ):
             raise ValueError("legacy collector emitted an undeclared evidence graph fragment")
         return result
+
+
+def _access_analyzer_context(
+    *,
+    context: CollectionContext,
+    collected_results: tuple[tuple[str, CollectorResult], ...],
+) -> CollectionContext:
+    """Bind 5D Regional execution to normalized S3 discovery from this exact scan."""
+
+    s3_result = next(
+        (result for name, result in collected_results if name == "s3_buckets"),
+        None,
+    )
+    if s3_result is None:
+        return replace(
+            context,
+            supplemental_regions=(),
+            supplemental_region_source_complete=False,
+        )
+    supplemental_regions = tuple(
+        sorted(
+            {
+                resource.region
+                for resource in s3_result.resources
+                if resource.service == "s3"
+                and resource.resource_type == "s3_bucket"
+                and resource.scope is ResourceScope.REGIONAL
+                and resource.region is not None
+                and resource.region != context.region
+            }
+        )
+    )
+    return replace(
+        context,
+        supplemental_regions=supplemental_regions,
+        supplemental_region_source_complete=(s3_result.status is CollectionStatus.SUCCEEDED),
+    )
 
 
 def _prune_unadmitted_external_resources(
