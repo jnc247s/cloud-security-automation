@@ -172,11 +172,13 @@ def _validate_bundle(
                         outcomes=snapshot.evidence_graph.source_outcomes,
                         artifacts=snapshot.evidence_graph.artifacts,
                         s3_status=s3_status,
+                        contracts=snapshot.evidence_graph.source_contracts,
                     )
                 reconstructed = graph_collection_status_for(
                     collector_name=collector_outcome.collector_name,
                     outcomes=snapshot.evidence_graph.source_outcomes,
                     artifacts=snapshot.evidence_graph.artifacts,
+                    contracts=snapshot.evidence_graph.source_contracts,
                 )
             except ValueError as error:
                 raise ScanPersistenceError(

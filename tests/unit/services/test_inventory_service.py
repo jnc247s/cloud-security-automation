@@ -17,13 +17,21 @@ from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.iam_account import IAMAccountEvidenceCollector
 from app.collectors.network import VPCNetworkCollector
-from app.collectors.s3 import S3BucketCollector
+from app.collectors.s3 import S3BucketCollector, S3CollectionBundle, S3EvidenceCollector
 from app.collectors.security_groups import SecurityGroupCollector
 from app.schemas.inventory import CollectionStatus
 from app.schemas.resource import NormalizedResource, ResourceScope
 from app.services.inventory_service import (
     InventoryService,
     build_default_collectors,
+)
+from tests.fakes import (
+    FakeAWSClient,
+    FakePaginator,
+    client_error,
+)
+from tests.fakes import (
+    FakeClientProvider as QueuedFakeClientProvider,
 )
 
 
@@ -121,6 +129,7 @@ def test_default_collectors_cover_accepted_inventory() -> None:
         SecurityGroupCollector,
         VPCNetworkCollector,
         S3BucketCollector,
+        S3EvidenceCollector,
         AccessAnalyzerCollector,
         IAMAccountEvidenceCollector,
         IAMUserCollector,
@@ -200,6 +209,81 @@ def test_access_analyzer_context_fails_closed_without_s3_discovery() -> None:
     assert snapshot.collection_status("failing") is CollectionStatus.FAILED
     assert analyzer.contexts[0].supplemental_regions == ()
     assert analyzer.contexts[0].supplemental_region_source_complete is False
+
+
+def test_5e_analyzer_context_uses_location_evidence_not_enrichment_rollup() -> None:
+    region = "us-west-2"
+    bucket_name = "evidence-bucket"
+    s3_client = FakeAWSClient(
+        paginators={
+            "list_buckets": FakePaginator(
+                [{"Buckets": [{"Name": bucket_name, "BucketRegion": region}]}]
+            )
+        },
+        responses={
+            "get_bucket_location": [{"LocationConstraint": region}],
+            "get_bucket_tagging": [{"TagSet": []}],
+            "get_public_access_block": [
+                {
+                    "PublicAccessBlockConfiguration": {
+                        "BlockPublicAcls": True,
+                        "IgnorePublicAcls": True,
+                        "BlockPublicPolicy": True,
+                        "RestrictPublicBuckets": True,
+                    }
+                }
+            ],
+            "get_bucket_policy": [client_error("AccessDenied", "GetBucketPolicy")],
+            "get_bucket_policy_status": [{"PolicyStatus": {"IsPublic": False}}],
+            "get_bucket_acl": [{"Owner": {"ID": "owner-id"}, "Grants": []}],
+            "get_bucket_versioning": [{}],
+            "get_bucket_encryption": [
+                client_error(
+                    "ServerSideEncryptionConfigurationNotFoundError",
+                    "GetBucketEncryption",
+                )
+            ],
+            "get_bucket_ownership_controls": [
+                client_error("OwnershipControlsNotFoundError", "GetBucketOwnershipControls")
+            ],
+        },
+    )
+    s3control_client = FakeAWSClient(
+        responses={
+            "get_public_access_block": [
+                {
+                    "PublicAccessBlockConfiguration": {
+                        "BlockPublicAcls": True,
+                        "IgnorePublicAcls": True,
+                        "BlockPublicPolicy": True,
+                        "RestrictPublicBuckets": True,
+                    }
+                }
+            ]
+        }
+    )
+    provider = QueuedFakeClientProvider(
+        {
+            ("s3", region): s3_client,
+            ("s3control", region): s3control_client,
+        },
+        region_name=region,
+    )
+    bundle = S3CollectionBundle(provider)
+    analyzer = RecordingAccessAnalyzerCollector()
+
+    snapshot = InventoryService(
+        provider,
+        collectors=(
+            S3BucketCollector(provider, collection_bundle=bundle),
+            S3EvidenceCollector(provider, collection_bundle=bundle),
+            analyzer,
+        ),
+    ).collect()
+
+    assert snapshot.collection_status("s3_buckets") is CollectionStatus.SUCCEEDED
+    assert snapshot.collection_status("s3_evidence") is CollectionStatus.PARTIAL
+    assert analyzer.contexts[0].supplemental_region_source_complete is True
 
 
 def test_aws_failure_becomes_sanitized_failed_collection_coverage() -> None:

@@ -2,7 +2,8 @@
 
 The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
 Access Analyzer evidence producers provide a read-only, on-demand AWS inventory run. The
-standalone command returns a normalized in-memory snapshot and prints only an aggregate summary.
+feature-branch 5E producer expands S3 and referenced-KMS facts pending acceptance. The standalone
+command returns a normalized in-memory snapshot and prints only an aggregate summary.
 It does not judge compliance, create
 control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor
 separately persists the same snapshot through its existing transaction boundary.
@@ -19,7 +20,8 @@ separately persists the same snapshot through its existing transaction boundary.
 7. The application asks STS for the caller account once, then collects:
    - EC2 instances, EBS volumes, and Regional EBS default settings from the configured region;
    - security groups, VPCs, subnets, and VPC Flow Logs from the configured region;
-   - all account S3 buckets and selected bucket configuration;
+   - all account S3 buckets, account Block Public Access, each bucket's authoritative home Region,
+     direct bucket configuration, and explicitly referenced KMS keys;
    - IAM Access Analyzer facts from the configured region and every additional unique Region
      proved by a normalized same-scan S3 bucket;
    - global IAM account-summary, identity, authentication, tag, attachment, inline-policy,
@@ -30,9 +32,9 @@ separately persists the same snapshot through its existing transaction boundary.
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`. The 5A through 5D producers also declare source contracts and
-   record digest-bound artifacts, typed source outcomes, and relationship observations in the
-   optional evidence graph.
+   returns one `InventorySnapshot`. The 5A through 5D producers and feature-branch 5E also declare
+   source contracts and record digest-bound artifacts, typed source outcomes, and relationship
+   observations in the optional evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
     of console logs.
 
@@ -42,8 +44,8 @@ inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
-The following policy is a practical baseline for the exact calls made by the accepted `main`
-baseline, including 5A through 5D. Review and scope it for your partition, account, buckets,
+The following policy is a practical baseline for the exact calls made by this feature branch,
+including 5A through 5E. Review and scope it for your partition, account, buckets, KMS keys,
 permission boundaries, service control policies, and role-assumption model before production use.
 
 ```json
@@ -64,6 +66,7 @@ permission boundaries, service control policies, and role-assumption model befor
         "ec2:DescribeSubnets",
         "ec2:DescribeFlowLogs",
         "s3:ListAllMyBuckets",
+        "s3:GetAccountPublicAccessBlock",
         "iam:GetAccountSummary",
         "iam:ListUsers",
         "iam:ListGroups",
@@ -81,11 +84,23 @@ permission boundaries, service control policies, and role-assumption model befor
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketTagging",
+        "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
         "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicy",
+        "s3:GetBucketPolicyStatus",
+        "s3:GetBucketAcl",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketOwnershipControls",
         "s3:ListBucket"
       ],
       "Resource": "arn:aws:s3:::*"
+    },
+    {
+      "Sid": "ReadReferencedKmsKeys",
+      "Effect": "Allow",
+      "Action": "kms:DescribeKey",
+      "Resource": "arn:aws:kms:*:*:key/*"
     },
     {
       "Sid": "ReadIamEvidence",
@@ -128,8 +143,10 @@ permission boundaries, service control policies, and role-assumption model befor
 }
 ```
 
-`s3:ListBucket` is used only by the `HeadBucket` compatibility fallback when a paginated
-`ListBuckets` response does not include the bucket region.
+`s3:ListBucket` is used only by the legacy `HeadBucket` compatibility fallback. A 5E scan instead
+uses `GetBucketLocation` as its authoritative Region source. `kms:DescribeKey` is called only for
+an explicit KMS reference returned by bucket encryption configuration; broaden or narrow its
+resource scope only after testing the intended key/alias policy in the target account.
 
 ## Credentials and configuration
 
@@ -171,6 +188,7 @@ The command emits a deliberately small JSON document:
     "iam_account_evidence": "SUCCEEDED",
     "iam_users": "SUCCEEDED",
     "s3_buckets": "SUCCEEDED",
+    "s3_evidence": "SUCCEEDED",
     "security_groups": "SUCCEEDED",
     "vpc_network_evidence": "SUCCEEDED"
   },
@@ -180,6 +198,7 @@ The command emits a deliberately small JSON document:
     "cloudtrail": 2,
     "ec2": 8,
     "iam": 5,
+    "kms": 1,
     "s3": 12
   }
 }
@@ -206,11 +225,11 @@ with a sanitized identity message.
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
 rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
 are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS,
-5B network, 5C IAM, and accepted 5D Access Analyzer producers instead record independent
-outcomes for each declared discovery or enrichment source. They retain independently validated
-resources and report discarded items, while any incomplete source keeps the rollup `PARTIAL`
-unless every source is unavailable, which is `FAILED`. They never convert missing evidence into a
-clean result. The graph-aware
+5B network, 5C IAM, accepted 5D Access Analyzer, and feature-branch 5E S3/KMS producers instead
+record independent outcomes for each declared discovery or enrichment source. They retain
+independently validated resources and report discarded items, while any incomplete source keeps
+the rollup `PARTIAL` unless every source is unavailable, which is `FAILED`. They never convert
+missing evidence into a clean result. The graph-aware
 security-group and IAM-user collectors preserve their accepted names. IAM account-summary
 evidence is isolated in its own collector so its failure cannot erase complete user/MFA evidence.
 The external-owner admission exception is described below.
@@ -244,15 +263,32 @@ each retained external-access S3 finding. It fully consumes `ListAnalyzers`, `Li
 `GetFindingV2` pagination. A complete Region without a relevant analyzer, or a complete analyzer
 without a matching finding, is explicit expected absence. Repeated/non-progressing pagination,
 malformed evidence, denied calls, or a disappeared finding remains incomplete and sanitized while
-valid siblings survive. Incomplete `s3_buckets` collection makes Analyzer coverage incomplete
-because the required bucket-home Region set cannot be proven, even when requested-Region facts
-were retained.
+valid siblings survive. A 5E scan derives Analyzer coverage from exact `ListBuckets` and one
+authoritative location outcome per bucket; unrelated policy, ACL, encryption, or tag failures do
+not make its Region set incomplete. Accepted older scans retain their `s3_buckets` rollup fallback.
+
+5E declares account-global bucket discovery and account Block Public Access sources, one
+authoritative location source and eight independent configuration sources per located bucket, and
+one dynamic `kms:DescribeKey` source per unique `(Region, supplied reference)`. A location failure
+prevents fabrication of that bucket's Regional resource while preserving discovery evidence.
+Successful `DescribeKey` metadata creates a canonical `kms_key` resource and resolved
+`encrypted_with` edge; a failed lookup preserves an unresolved typed reference.
 
 Expected S3 absence responses are facts, not failures:
 
 - no bucket tags becomes an empty tag map;
-- no bucket-level public-access-block configuration becomes `null`;
-- a legacy missing default-encryption response becomes `null`.
+- no account or bucket Public Access Block configuration becomes an explicit all-false map;
+- no bucket policy paired with either expected no-policy status or successful `IsPublic=false`
+  remains coherent explicit absence; absence paired with `IsPublic=true` is a conflict;
+- no versioning becomes explicit unversioned facts;
+- no ownership controls or default-encryption configuration remains explicit complete absence.
+
+Within a present encryption configuration, each rule retains its exact default algorithm, KMS
+reference, key-management classification, bucket-key flag, and optional
+`BlockedEncryptionTypes.EncryptionType` list. The latter is normalized as exactly one `NONE` or
+`SSE-C` value in `blocked_encryption_types`, including when that rule has no default algorithm;
+empty, multi-value, or unknown states are malformed rather than guessed. These are collected
+facts, not Sprint 6 assessment results.
 
 AWS now applies SSE-S3 as baseline encryption to new and existing general-purpose buckets.
 Before implementing the future S3 encryption control, its policy should express the desired
@@ -265,6 +301,8 @@ buckets are common.
   Logs are collected only in `AWS_REGION`. Multi-region EC2 orchestration is a later feature.
 - S3 and IAM discovery is account-wide; each bucket retains its actual region and IAM resources
   use global scope.
+- 5E follows a bucket only in the Region established by same-scan location evidence. Explicit KMS
+  references are described in their ARN Region or, for local IDs/aliases, the bucket home Region.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
   region.
 - IAM Access Analyzer runs in the requested Region and the sorted unique Regions of exact
@@ -278,8 +316,8 @@ buckets are common.
   `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
   policies, and managed-policy versions. The accepted 5D producer normalizes each relevant
   external-access finding as an `access_analyzer_finding`; analyzer summaries remain source
-  artifacts rather than resources. Expanded 5E S3 and 5F CloudTrail evidence remain later-slice
-  work.
+  artifacts rather than resources. Feature-branch 5E expands `s3_bucket` snapshots and normalizes
+  validated referenced keys as `kms_key`; 5F CloudTrail evidence remains later-slice work.
 - Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains
@@ -291,8 +329,8 @@ buckets are common.
   and profile integration. Existing `NET-001` and `NET-002` behavior is unchanged.
 - The 5D Analyzer facts are supplementary investigation context only. Their
   `references_resource` relationship resolves only to an exact same-scan S3 bucket; unresolved
-  targets are retained without fabrication. They do not decide `S3-002`, whose state remains
-  `CONTRACT_READY` until the direct 5E evidence producer is separately accepted.
+  targets are retained without fabrication. They do not decide `S3-002`. Feature-branch 5E
+  supplies its direct evidence but still does not register or execute the control.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host
@@ -306,9 +344,9 @@ buckets are common.
   permission boundary or organization SCP.
 - Endpoint or region errors: verify `AWS_REGION` is enabled for the account and partition.
 - One inaccessible S3 bucket: confirm both the identity policy and bucket policy permit the
-  documented reads. The S3 collector is marked incomplete, its uncertain results are discarded,
-  and independent collectors continue; assessment therefore fails closed with insufficient
-  evidence instead of silently omitting the bucket.
+  documented reads. The graph-aware S3 collector records the affected source as incomplete,
+  retains independently valid sibling facts, and never converts the denied source into absence;
+  later assessment therefore fails closed where that fact is required.
 - Access Analyzer `AccessDenied`: grant only `access-analyzer:ListAnalyzers`,
   `access-analyzer:ListFindings`, and `access-analyzer:GetFinding` to the scanner role, then verify
   the requested or bucket-home Region is enabled. A missing analyzer after a successful complete

@@ -11,6 +11,7 @@ from app.assessment.evidence_graph import (
     EvidenceGraph,
     ScanSourceContract,
     SourceEvidenceArtifact,
+    reconstruct_s3_bucket_region_evidence,
 )
 from app.assessment.relationships import (
     RelationshipEndpoint,
@@ -40,7 +41,7 @@ from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.iam_account import IAMAccountEvidenceCollector
 from app.collectors.network import VPCNetworkCollector
-from app.collectors.s3 import S3BucketCollector
+from app.collectors.s3 import S3BucketCollector, S3CollectionBundle, S3EvidenceCollector
 from app.collectors.security_groups import SecurityGroupCollector
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
 from app.schemas.resource import NormalizedResource, ResourceScope
@@ -50,6 +51,7 @@ def build_default_collectors(
     client_provider: AWSClientProvider,
     *,
     include_access_analyzer: bool = True,
+    include_s3_evidence: bool = True,
 ) -> tuple[ResourceCollector, ...]:
     """Build the accepted inventory collectors without making an AWS API call."""
 
@@ -57,8 +59,15 @@ def build_default_collectors(
         EC2EbsCollector(client_provider),
         SecurityGroupCollector(client_provider),
         VPCNetworkCollector(client_provider),
-        S3BucketCollector(client_provider),
     )
+    if include_s3_evidence:
+        s3_bundle = S3CollectionBundle(client_provider)
+        collectors += (
+            S3BucketCollector(client_provider, collection_bundle=s3_bundle),
+            S3EvidenceCollector(client_provider, collection_bundle=s3_bundle),
+        )
+    else:
+        collectors += (S3BucketCollector(client_provider),)
     if include_access_analyzer:
         collectors += (AccessAnalyzerCollector(client_provider),)
     return collectors + (
@@ -77,6 +86,7 @@ class InventoryService:
         collectors: Sequence[ResourceCollector] | None = None,
         *,
         include_access_analyzer: bool = True,
+        include_s3_evidence: bool = True,
     ) -> None:
         self.client_provider = client_provider
         self.collectors = tuple(
@@ -85,6 +95,7 @@ class InventoryService:
             else build_default_collectors(
                 client_provider,
                 include_access_analyzer=include_access_analyzer,
+                include_s3_evidence=include_s3_evidence,
             )
         )
 
@@ -167,6 +178,7 @@ class InventoryService:
                 collector_name=collector.collector_name,
                 outcomes=result.source_outcomes,
                 artifacts=result.artifacts,
+                contracts=result.source_contracts,
             ):
                 raise ValueError("graph-aware collector rollup disagrees with source outcomes")
         elif any(
@@ -187,6 +199,29 @@ def _access_analyzer_context(
     collected_results: tuple[tuple[str, CollectorResult], ...],
 ) -> CollectionContext:
     """Bind 5D Regional execution to normalized S3 discovery from this exact scan."""
+
+    s3_evidence_result = next(
+        (result for name, result in collected_results if name == "s3_evidence"),
+        None,
+    )
+    if s3_evidence_result is not None:
+        region_evidence = reconstruct_s3_bucket_region_evidence(
+            contracts=s3_evidence_result.source_contracts,
+            outcomes=s3_evidence_result.source_outcomes,
+            artifacts=s3_evidence_result.artifacts,
+        )
+        if region_evidence is None:
+            raise ValueError("5E S3 evidence omitted its bucket Region manifest")
+        supplemental_regions = tuple(
+            sorted(
+                {region for _, region in region_evidence.bucket_regions if region != context.region}
+            )
+        )
+        return replace(
+            context,
+            supplemental_regions=supplemental_regions,
+            supplemental_region_source_complete=region_evidence.complete,
+        )
 
     s3_result = next(
         (result for name, result in collected_results if name == "s3_buckets"),
@@ -327,10 +362,16 @@ def _prune_unadmitted_external_resources(
             source_outcomes=retained_outcomes,
             removed_by_source=removed_by_source,
         )
+        retained_contracts = tuple(
+            contract
+            for contract in result.source_contracts
+            if contract.source_outcome_id not in removed_outcome_ids
+        )
         status = graph_collection_status_for(
             collector_name=collector_name,
             outcomes=retained_outcomes,
             artifacts=retained_artifacts,
+            contracts=retained_contracts,
         )
         prepared.append(
             (
@@ -342,11 +383,7 @@ def _prune_unadmitted_external_resources(
                         if resource.identity not in removed_identities
                     ),
                     status=status,
-                    source_contracts=tuple(
-                        contract
-                        for contract in result.source_contracts
-                        if contract.source_outcome_id not in removed_outcome_ids
-                    ),
+                    source_contracts=retained_contracts,
                     artifacts=retained_artifacts,
                     source_outcomes=retained_outcomes,
                     relationships=tuple(
@@ -367,6 +404,7 @@ def _prune_unadmitted_external_resources(
             collector_name=collector_name,
             outcomes=result.source_outcomes,
             artifacts=result.artifacts,
+            contracts=result.source_contracts,
         ):
             raise ValueError(
                 f"graph-aware collector {collector_name} rollup disagrees with source outcomes"

@@ -184,9 +184,10 @@ def test_s3_002_contract_is_fail_closed_and_analyzer_is_supplementary() -> None:
     assert "access point and Multi-Region Access Point policies" in contract
 
 
-def test_s3_002_contract_does_not_claim_runtime_implementation() -> None:
+def test_s3_002_contract_separates_5e_evidence_from_rule_implementation() -> None:
     contract = _contract()
 
     assert "not implemented or enabled" in contract
     assert "does not add" in contract
-    assert "an AWS collector or executable rule" in contract
+    assert "an executable rule" in contract
+    assert "producer now collects its direct AWS evidence" in contract

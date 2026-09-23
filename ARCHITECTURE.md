@@ -3,8 +3,9 @@
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access
 Analyzer evidence producers. The accepted baseline is `main` commit
-`1a355107eb7a3ed7845fa3a569dbff80da2778bb`. The 5E S3 evidence preflight is complete, but no
-5E--5F collector or Sprint 6 control is presented as implemented.
+`8c6122e440cb427685a26ff80c3d83ee88885882`. The fact-only 5E S3 and referenced-KMS producer is
+implemented on its feature branch pending acceptance; 5F and every Sprint 6 control remain
+unimplemented.
 
 ## System context
 
@@ -161,7 +162,7 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence graph and 5A/5B/5C/5D producers
+## Sprint 5 evidence graph and 5A--5E producers
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:
@@ -275,7 +276,25 @@ account stay distinct. A finding emits a canonical `references_resource` edge to
 bucket; only an exact same-scan bucket resolves, while other complete identities remain typed
 unresolved references. The implementation reuses generic persistence and authenticated reads,
 adds no schema or service-specific route, and does not interpret Analyzer evidence as an S3-002
-result. Slices 5E--5F and all Sprint 6 rule execution remain unimplemented.
+result.
+
+The feature-branch 5E implementation adds a shared per-scan S3 bundle projected through the
+accepted `s3_buckets` collector and a new graph-aware `s3_evidence` collector. One account-global
+enumeration and account Block Public Access call feed independent authoritative bucket-location,
+tag, bucket Block Public Access, policy/status, ACL, versioning, encryption, and ownership-control
+observations in each bucket's home Region. The legacy projection retains its existing
+configuration and `S3-900` completeness contract; unrelated 5E source failures affect only the
+new graph-aware rollup.
+
+Explicit KMS references are looked up once per `(Region, supplied reference)`. A `kms_key`
+resource exists only after `DescribeKey` proves its returned canonical ARN, 12-digit owner,
+partition, Region, key ID, and manager. The bucket-to-key `encrypted_with` edge carries encryption
+source provenance; unavailable lookups remain typed unresolved references. S3 bucket admission
+outside the requested Region is bound to exact same-scan location evidence, and Access Analyzer
+Region coverage consumes discovery/location completeness rather than unrelated S3 enrichment
+status. Older pending scans are selected by their persisted service tuple and make no new 5E
+calls. This branch adds no migration or service-specific route. Slice 5F and all Sprint 6 rule
+execution remain unimplemented.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -348,8 +367,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A through 5D producers emit graph records; 5E--5F collectors do not yet
-  do so.
+  traversal. The merged 5A through 5D producers emit graph records, and the feature-branch 5E
+  producer adds S3/KMS records; 5F does not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

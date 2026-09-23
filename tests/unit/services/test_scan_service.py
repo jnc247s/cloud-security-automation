@@ -101,6 +101,20 @@ def _empty_provider() -> FakeClientProvider:
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
+            ("s3control", region): FakeAWSClient(
+                responses={
+                    "get_public_access_block": [
+                        {
+                            "PublicAccessBlockConfiguration": {
+                                "BlockPublicAcls": True,
+                                "IgnorePublicAcls": True,
+                                "BlockPublicPolicy": True,
+                                "RestrictPublicBuckets": True,
+                            }
+                        }
+                    ]
+                }
+            ),
             ("iam", region): empty_iam_client(),
             ("cloudtrail", region): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}
@@ -130,6 +144,7 @@ def test_start_scan_commits_pending_identity_before_submission(db_session: Sessi
         "cloudtrail",
         "ec2",
         "iam",
+        "kms",
         "s3",
     ]
     event = db_session.scalar(
@@ -317,6 +332,94 @@ def test_restarted_executor_preserves_pre_5d_pending_scan_intent(
     ]
     assert result.scope_manifest.requested_services == ["cloudtrail", "ec2", "iam", "s3"]
     assert ("accessanalyzer", "us-west-2") not in provider.client_requests
+    assert ("s3control", "us-west-2") not in provider.client_requests
+    assert not any(service == "kms" for service, _ in provider.client_requests)
+
+
+def test_restarted_executor_preserves_pre_5e_pending_scan_intent(
+    db_session: Session,
+    migrated_engine: Engine,
+) -> None:
+    pending = ScanService(db_session, _settings()).start_scan(
+        ScanCreateRequest(), RecordingExecutor(), actor_id="operator"
+    )
+    scan = db_session.get(Scan, pending.scan_id)
+    assert scan is not None
+    scan.requested_services = ["access-analyzer", "cloudtrail", "ec2", "iam", "s3"]
+    db_session.commit()
+
+    provider = _empty_provider()
+    executor = InProcessScanExecutor(
+        session_factory=sessionmaker(bind=migrated_engine, expire_on_commit=False),
+        settings=_settings(),
+        provider_factory=lambda _region: provider,
+    )
+    try:
+        executor._execute(pending.scan_id)
+    finally:
+        executor.shutdown()
+
+    db_session.expire_all()
+    result = db_session.get(Scan, pending.scan_id)
+    assert result is not None
+    assert result.status is ScanStatus.COMPLETED
+    assert result.scope_manifest is not None
+    assert result.scope_manifest.requested_collectors == [
+        "access_analyzer_evidence",
+        "cloudtrail_trails",
+        "ec2_ebs_evidence",
+        "iam_account_evidence",
+        "iam_users",
+        "s3_buckets",
+        "security_groups",
+        "vpc_network_evidence",
+    ]
+    assert result.scope_manifest.requested_services == [
+        "access-analyzer",
+        "cloudtrail",
+        "ec2",
+        "iam",
+        "s3",
+    ]
+    assert ("accessanalyzer", "us-west-2") in provider.client_requests
+    assert ("s3control", "us-west-2") not in provider.client_requests
+    assert not any(service == "kms" for service, _ in provider.client_requests)
+
+
+def test_executor_rejects_unknown_pending_intent_before_aws(
+    db_session: Session,
+    migrated_engine: Engine,
+) -> None:
+    pending = ScanService(db_session, _settings()).start_scan(
+        ScanCreateRequest(), RecordingExecutor(), actor_id="operator"
+    )
+    scan = db_session.get(Scan, pending.scan_id)
+    assert scan is not None
+    scan.requested_services = ["cloudtrail", "ec2", "iam", "kms", "s3"]
+    db_session.commit()
+
+    provider_requests: list[str] = []
+
+    def provider_factory(region: str) -> FakeClientProvider:
+        provider_requests.append(region)
+        return _empty_provider()
+
+    executor = InProcessScanExecutor(
+        session_factory=sessionmaker(bind=migrated_engine, expire_on_commit=False),
+        settings=_settings(),
+        provider_factory=provider_factory,
+    )
+    try:
+        executor._run(pending.scan_id)
+    finally:
+        executor.shutdown()
+
+    assert provider_requests == []
+    db_session.expire_all()
+    result = ScanService(db_session, _settings()).get_scan(pending.scan_id)
+    assert result.status is ScanStatus.FAILED
+    assert result.failure is not None
+    assert result.failure.code == "SCAN_PERSISTENCE_FAILED"
 
 
 def test_executor_rejects_profile_provenance_mismatch_before_aws(
@@ -405,6 +508,16 @@ def test_executor_resolves_account_and_finalizes_precreated_scan(
     assert scan.inventory_sha256 is not None
     assert scan.result_checksum is not None
     assert scan.scope_manifest is not None
+    assert scan.scope_manifest.requested_services == [
+        "access-analyzer",
+        "cloudtrail",
+        "ec2",
+        "iam",
+        "kms",
+        "s3",
+    ]
+    assert "s3_evidence" in scan.scope_manifest.requested_collectors
+    assert "kms_key" in scan.scope_manifest.resource_types
     assert scan.completed_at.replace(tzinfo=UTC).tzinfo is not None
     scan_events = tuple(
         db_session.scalars(

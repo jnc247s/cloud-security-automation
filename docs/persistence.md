@@ -202,6 +202,15 @@ was complete. Graph validation rejects an arbitrary or unproved discovery Region
 coverage reconstruction keeps the collector incomplete when bucket-Region discovery was not
 complete.
 
+The feature-branch 5E path further closes S3 and KMS admission. A collection-account S3 bucket
+represented by the 5E manifest is accepted outside the requested Region only when its exact
+same-scan `GetBucketLocation` observation is `PRESENT` and identity-authoritative. A `kms_key`
+snapshot requires a `PRESENT`, identity-authoritative `DescribeKey` contract and an exact resolved
+same-scan `s3_bucket --encrypted_with--> kms_key` relationship. The returned KMS ARN is the
+stable AWS resource ID, and the separately retained collection account never replaces the key's
+validated 12-digit owner. These proofs are reconstructed from persisted contracts, outcomes,
+artifacts, and relationships rather than from a permissive supplemental-Region flag.
+
 For 5B discovery schemas, a canonical non-empty `unadmitted_resources` list and
 `admission_complete = false` are digest-bound operational coverage inputs. They preserve the full
 AWS enumeration and its truthful source state while making the collector's `PARTIAL` projection
@@ -218,8 +227,10 @@ IAM producers emit source and relationship history through this boundary. The ac
 producer uses the same tables for Regional analyzer/finding source evidence, normalized
 `access_analyzer_finding` snapshots, and finding-to-S3 `references_resource` observations.
 Analyzer summaries remain artifacts rather than top-level resources, and the normalized AWS
-finding resource is not a control-plane `Finding`. Remaining legacy collectors remain graphless.
-No current technical result consumes the Sprint 5 graph.
+finding resource is not a control-plane `Finding`. Feature-branch 5E adds direct S3 source
+history, `kms_key` snapshots, and bucket-to-key `encrypted_with` observations without a schema
+migration or service-specific table. Remaining legacy collectors remain graphless. No current
+technical result consumes the Sprint 5 graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -429,8 +440,9 @@ timestamps, append-only audit and evidence-graph enforcement, compatible populat
 blocked incompatible downgrade integrity, immutable assessment-profile roll-forward and conflict
 behavior, persisted profile use after executor restart, committed pending-scan finalization,
 pre-5D pending-scan and graph readback compatibility, early failure before AWS identity, and
-concurrent finding/scan deduplication. The 5D acceptance path uses deterministic fake AWS
-responses; it does not contact live AWS.
+concurrent finding/scan deduplication. The acceptance path uses deterministic fake AWS responses
+and now covers the feature-branch 5E S3/KMS graph when PostgreSQL is configured; it does not
+contact live AWS.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
 
@@ -460,7 +472,7 @@ accepted 5B producer extends that graph with security groups, VPCs, subnets, and
 The accepted 5C implementation extends the same generic graph with IAM account, identity, policy,
 and relationship evidence and requires no schema migration. The accepted 5D implementation
 extends that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional
-coverage, and finding-to-S3 relationships; it also requires no migration. Direct
-5E S3 evidence, 5F CloudTrail expansion, additional production controls, Terraform
-infrastructure, governance mutation APIs, remediation, dashboards/frontend, and AI functionality
-remain outside this slice.
+coverage, and finding-to-S3 relationships; it also requires no migration. Feature-branch 5E adds
+fact-only direct S3 and referenced-KMS evidence through the same schema. 5F CloudTrail expansion,
+additional production controls, Terraform infrastructure, governance mutation APIs, remediation,
+dashboards/frontend, and AI functionality remain outside this slice.

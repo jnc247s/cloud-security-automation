@@ -23,6 +23,15 @@ from app.assessment.evidence_graph import (
     ResourceOwnerMode,
     ScanSourceContract,
     SourceEvidenceArtifact,
+    kms_reference_matches_key_identity,
+    normalize_s3_legacy_encryption_value,
+    reconstruct_s3_bucket_region_evidence,
+    s3_encryption_kms_references,
+    validate_kms_key_evidence_value,
+    validate_s3_acl_source_coherence,
+    validate_s3_bucket_evidence_value,
+    validate_s3_policy_source_coherence,
+    validate_s3_source_contract_manifest,
 )
 from app.assessment.relationships import (
     RelationshipEndpoint,
@@ -78,6 +87,64 @@ _UNSUPPORTED_CODES = frozenset(
         "UnsupportedOperation",
     }
 )
+_S3_PUBLIC_ACCESS_BLOCK_FIELDS = frozenset(
+    {
+        "BlockPublicAcls",
+        "IgnorePublicAcls",
+        "BlockPublicPolicy",
+        "RestrictPublicBuckets",
+    }
+)
+_S3_INCOMPLETE_SOURCE_STATES = frozenset(
+    {
+        EvidenceSourceState.UNAVAILABLE,
+        EvidenceSourceState.MALFORMED,
+        EvidenceSourceState.RESOURCE_DISAPPEARED,
+    }
+)
+_S3_ACCOUNT_PUBLIC_ACCESS_BLOCK_STATES = frozenset(
+    {
+        EvidenceSourceState.PRESENT,
+        EvidenceSourceState.EXPECTED_ABSENCE,
+        *_S3_INCOMPLETE_SOURCE_STATES,
+    }
+)
+_S3_PER_BUCKET_SOURCE_STATES = {
+    "s3.bucket-acl": frozenset(
+        {
+            EvidenceSourceState.PRESENT,
+            EvidenceSourceState.CONFLICT,
+            *_S3_INCOMPLETE_SOURCE_STATES,
+        }
+    ),
+    **{
+        collector: frozenset(
+            {
+                EvidenceSourceState.PRESENT,
+                EvidenceSourceState.EXPECTED_ABSENCE,
+                *_S3_INCOMPLETE_SOURCE_STATES,
+            }
+        )
+        for collector in (
+            "s3.bucket-encryption",
+            "s3.bucket-ownership-controls",
+            "s3.bucket-public-access-block",
+            "s3.bucket-tags",
+            "s3.bucket-versioning",
+        )
+    },
+    **{
+        collector: frozenset(
+            {
+                EvidenceSourceState.PRESENT,
+                EvidenceSourceState.EXPECTED_ABSENCE,
+                EvidenceSourceState.CONFLICT,
+                *_S3_INCOMPLETE_SOURCE_STATES,
+            }
+        )
+        for collector in ("s3.bucket-policy", "s3.bucket-policy-status")
+    },
+}
 
 _GRAPH_COLLECTOR_SOURCES = {
     "access_analyzer_evidence": frozenset(
@@ -90,6 +157,22 @@ _GRAPH_COLLECTOR_SOURCES = {
     "ec2_ebs_evidence": frozenset({"ec2.instances", "ec2.volumes", "ec2.ebs-defaults"}),
     "iam_account_evidence": frozenset({"iam.account-summary"}),
     "iam_users": frozenset({"iam.users", "iam.groups", "iam.roles", "iam.policies"}),
+    "s3_evidence": frozenset(
+        {
+            "kms.keys",
+            "s3.account-public-access-block",
+            "s3.bucket-acl",
+            "s3.bucket-encryption",
+            "s3.bucket-location",
+            "s3.bucket-ownership-controls",
+            "s3.bucket-policy",
+            "s3.bucket-policy-status",
+            "s3.bucket-public-access-block",
+            "s3.bucket-tags",
+            "s3.bucket-versioning",
+            "s3.buckets",
+        }
+    ),
     "security_groups": frozenset({"ec2.security-groups"}),
     "vpc_network_evidence": frozenset({"ec2.vpcs", "ec2.subnets", "ec2.flow-logs"}),
 }
@@ -158,6 +241,8 @@ _REQUIRED_GRAPH_DISCOVERY_SOURCES = {
             ),
         }
     ),
+    # S3 has a dynamic per-bucket/per-reference manifest validated separately.
+    "s3_evidence": frozenset(),
     "vpc_network_evidence": frozenset(
         {
             ("ec2.vpcs.discovery", "ec2.vpcs", "1.0.0", "ec2:DescribeVpcs"),
@@ -428,6 +513,7 @@ def graph_collection_status_for(
     collector_name: str,
     outcomes: Iterable[SourceEvidenceOutcome],
     artifacts: Iterable[SourceEvidenceArtifact],
+    contracts: Iterable[ScanSourceContract] = (),
 ) -> CollectionStatus:
     """Reconstruct one graph collector's coverage from persisted evidence only."""
 
@@ -439,6 +525,7 @@ def graph_collection_status_for(
     selected_outcomes = tuple(
         outcome for outcome in outcomes if outcome.collector in source_collectors
     )
+    contracts_tuple = tuple(contracts)
     if not selected_outcomes:
         raise ValueError("graph-aware collector has no source outcomes")
     artifacts_by_reference: dict[str, SourceEvidenceArtifact] = {}
@@ -451,6 +538,24 @@ def graph_collection_status_for(
         discovery_incomplete = _access_analyzer_coverage_is_incomplete(
             outcomes=selected_outcomes,
             artifacts_by_reference=artifacts_by_reference,
+        )
+    elif collector_name == "s3_evidence":
+        validate_s3_source_contract_manifest(
+            outcomes=selected_outcomes,
+            contracts=contracts_tuple,
+        )
+        region_evidence = reconstruct_s3_bucket_region_evidence(
+            outcomes=selected_outcomes,
+            artifacts=artifacts_by_reference.values(),
+            contracts=contracts_tuple,
+        )
+        if region_evidence is None:  # pragma: no cover - selected source invariant
+            raise ValueError("S3 evidence has no bucket discovery manifest")
+        discovery_incomplete = not region_evidence.complete
+        _validate_s3_evidence_manifest(
+            outcomes=selected_outcomes,
+            artifacts_by_reference=artifacts_by_reference,
+            bucket_regions=dict(region_evidence.bucket_regions),
         )
     else:
         required_discovery_sources = _REQUIRED_GRAPH_DISCOVERY_SOURCES[collector_name]
@@ -513,14 +618,16 @@ def validate_access_analyzer_s3_region_source_status(
     outcomes: Iterable[SourceEvidenceOutcome],
     artifacts: Iterable[SourceEvidenceArtifact],
     s3_status: CollectionStatus,
+    contracts: Iterable[ScanSourceContract] = (),
 ) -> bool:
-    """Bind persisted Analyzer Region coverage to the outer S3 discovery result."""
+    """Bind Analyzer coverage to exact 5E Region evidence or the pre-5E rollup."""
 
     if not isinstance(s3_status, CollectionStatus):
         raise TypeError("S3 collector status must use the canonical collection status")
+    all_outcomes = tuple(outcomes)
     selected_outcomes = tuple(
         outcome
-        for outcome in outcomes
+        for outcome in all_outcomes
         if outcome.collector in _GRAPH_COLLECTOR_SOURCES["access_analyzer_evidence"]
     )
     if not selected_outcomes:
@@ -534,7 +641,17 @@ def validate_access_analyzer_s3_region_source_status(
         outcomes=selected_outcomes,
         artifacts_by_reference=artifacts_by_reference,
     )
-    if source_complete is not (s3_status is CollectionStatus.SUCCEEDED):
+    region_evidence = reconstruct_s3_bucket_region_evidence(
+        outcomes=all_outcomes,
+        artifacts=artifacts_by_reference.values(),
+        contracts=contracts,
+    )
+    expected_complete = (
+        region_evidence.complete
+        if region_evidence is not None
+        else s3_status is CollectionStatus.SUCCEEDED
+    )
+    if source_complete is not expected_complete:
         raise ValueError("Access Analyzer Region coverage disagrees with S3 discovery status")
     return source_complete
 
@@ -583,12 +700,408 @@ def graph_collection_validation_required(
         "access_analyzer_evidence",
         "ec2_ebs_evidence",
         "iam_account_evidence",
+        "s3_evidence",
         "vpc_network_evidence",
     }:
         return collector_name in requested
     if collector_name == "iam_users":
         return "iam_account_evidence" in requested
     return collector_name == "security_groups" and "vpc_network_evidence" in requested
+
+
+def _validate_s3_evidence_manifest(
+    *,
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+    bucket_regions: Mapping[str, str],
+) -> None:
+    """Validate the dynamic 5E source set without coupling it to the outer rollup."""
+
+    account_sources = tuple(
+        item for item in outcomes if item.collector == "s3.account-public-access-block"
+    )
+    if len(account_sources) != 1:
+        raise ValueError("S3 evidence requires exactly one account Public Access Block source")
+    account_source = account_sources[0]
+    if (
+        account_source.phase is not EvidenceCollectionPhase.DISCOVERY
+        or not isinstance(account_source.subject, AccountEvidenceSubject)
+        or account_source.subject.aws_account_id != account_source.collection_account_id
+        or account_source.subject.scope is not ResourceScope.GLOBAL
+        or account_source.evidence_kind != "s3.account-public-access-block"
+        or account_source.collector_version != "1.0.0"
+        or account_source.source_api != "s3:GetAccountPublicAccessBlock"
+        or account_source.state not in _S3_ACCOUNT_PUBLIC_ACCESS_BLOCK_STATES
+    ):
+        raise ValueError("S3 account Public Access Block source identity is invalid")
+    account_artifact = _require_matching_source_artifact(
+        outcome=account_source,
+        artifacts_by_reference=artifacts_by_reference,
+        expected_schema="s3.account-public-access-block",
+    )
+    account_payload = account_artifact.model_dump(mode="json")["normalized_payload"]
+    if not isinstance(account_payload, dict):  # pragma: no cover - artifact invariant
+        raise ValueError("S3 account Public Access Block metadata is malformed")
+    _validate_source_completion_metadata(outcome=account_source, payload=account_payload)
+    account_block = account_payload.get("public_access_block")
+    expected_absence = account_source.state is EvidenceSourceState.EXPECTED_ABSENCE
+    if (
+        account_payload.get("account_id") != account_source.collection_account_id
+        or account_payload.get("configured")
+        is not (account_source.state is EvidenceSourceState.PRESENT)
+        or account_payload.get("expected_absence") is not expected_absence
+        or (
+            account_source.state
+            in {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}
+            and (
+                not isinstance(account_block, dict)
+                or set(account_block) != _S3_PUBLIC_ACCESS_BLOCK_FIELDS
+                or not all(isinstance(value, bool) for value in account_block.values())
+                or (expected_absence and any(account_block.values()))
+            )
+        )
+        or (
+            account_source.state
+            not in {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}
+            and account_block is not None
+        )
+    ):
+        raise ValueError("S3 account Public Access Block evidence is malformed")
+
+    per_bucket_sources = {
+        "s3.bucket-acl": "s3:GetBucketAcl",
+        "s3.bucket-encryption": "s3:GetEncryptionConfiguration",
+        "s3.bucket-ownership-controls": "s3:GetBucketOwnershipControls",
+        "s3.bucket-policy": "s3:GetBucketPolicy",
+        "s3.bucket-policy-status": "s3:GetBucketPolicyStatus",
+        "s3.bucket-public-access-block": "s3:GetBucketPublicAccessBlock",
+        "s3.bucket-tags": "s3:GetBucketTagging",
+        "s3.bucket-versioning": "s3:GetBucketVersioning",
+    }
+    actual_sources: list[tuple[str, str]] = []
+    sources_by_bucket: dict[
+        str,
+        dict[str, tuple[SourceEvidenceOutcome, object]],
+    ] = {}
+    bucket_subjects: dict[str, ResourceEvidenceSubject] = {}
+    for outcome in outcomes:
+        expected_api = per_bucket_sources.get(outcome.collector)
+        if expected_api is None:
+            continue
+        subject = outcome.subject
+        if (
+            outcome.phase is not EvidenceCollectionPhase.ENRICHMENT
+            or not isinstance(subject, ResourceEvidenceSubject)
+            or subject.aws_account_id != outcome.collection_account_id
+            or subject.service != "s3"
+            or subject.resource_type != "s3_bucket"
+            or subject.scope is not ResourceScope.REGIONAL
+            or bucket_regions.get(subject.aws_resource_id) != subject.region
+            or outcome.evidence_kind != outcome.collector
+            or outcome.collector_version != "1.0.0"
+            or outcome.source_api != expected_api
+            or outcome.state not in _S3_PER_BUCKET_SOURCE_STATES[outcome.collector]
+        ):
+            raise ValueError("S3 per-bucket source identity is invalid")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+            expected_schema=outcome.evidence_kind,
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact invariant
+            raise ValueError("S3 per-bucket evidence metadata is malformed")
+        _validate_source_completion_metadata(outcome=outcome, payload=payload)
+        bucket_arn = payload.get("bucket_arn")
+        bucket_arn_parts = bucket_arn.split(":", maxsplit=5) if isinstance(bucket_arn, str) else []
+        if (
+            payload.get("account_id") != subject.aws_account_id
+            or payload.get("bucket_name") != subject.aws_resource_id
+            or payload.get("bucket_region") != subject.region
+            or len(bucket_arn_parts) != 6
+            or bucket_arn_parts[0] != "arn"
+            or not bucket_arn_parts[1]
+            or any(
+                not (
+                    character.isascii()
+                    and (character.islower() or character.isdigit() or character == "-")
+                )
+                for character in bucket_arn_parts[1]
+            )
+            or bucket_arn_parts[2:] != ["s3", "", "", subject.aws_resource_id]
+            or payload.get("expected_absence")
+            is not (outcome.state is EvidenceSourceState.EXPECTED_ABSENCE)
+        ):
+            raise ValueError("S3 per-bucket evidence identity is inconsistent")
+        try:
+            projected_value = validate_s3_bucket_evidence_value(
+                evidence_kind=outcome.evidence_kind,
+                state=outcome.state,
+                value=payload.get("value"),
+            )
+        except ValueError as error:
+            raise ValueError("S3 per-bucket evidence value is malformed") from error
+        if "legacy_projection" not in payload:
+            raise ValueError("S3 per-bucket evidence omitted its legacy projection")
+        legacy_projection = payload["legacy_projection"]
+        if outcome.evidence_kind not in {
+            "s3.bucket-encryption",
+            "s3.bucket-public-access-block",
+        }:
+            if legacy_projection is not None:
+                raise ValueError("S3 per-bucket evidence has an unknown legacy projection")
+        elif outcome.state is EvidenceSourceState.EXPECTED_ABSENCE:
+            if legacy_projection is not None:
+                raise ValueError("S3 expected absence cannot retain a legacy projection")
+        elif outcome.state is EvidenceSourceState.PRESENT:
+            if outcome.evidence_kind == "s3.bucket-encryption":
+                try:
+                    normalized_legacy = normalize_s3_legacy_encryption_value(legacy_projection)
+                except ValueError as error:
+                    raise ValueError("S3 legacy encryption projection is malformed") from error
+                if normalized_legacy != projected_value:
+                    raise ValueError("S3 encryption projections are inconsistent")
+            elif not isinstance(legacy_projection, dict) or any(
+                legacy_projection.get(field) != projected_value[field]
+                for field in _S3_PUBLIC_ACCESS_BLOCK_FIELDS
+            ):
+                raise ValueError("S3 Public Access Block projections are inconsistent")
+        elif outcome.state is not EvidenceSourceState.MALFORMED and legacy_projection is not None:
+            raise ValueError("failed S3 evidence cannot retain a legacy projection")
+        actual_sources.append((outcome.collector, subject.aws_resource_id))
+        sources_by_bucket.setdefault(subject.aws_resource_id, {})[outcome.collector] = (
+            outcome,
+            projected_value,
+        )
+        bucket_subjects[subject.aws_resource_id] = subject
+
+    expected_sources = {
+        (collector, bucket_name)
+        for collector in per_bucket_sources
+        for bucket_name in bucket_regions
+    }
+    if len(actual_sources) != len(set(actual_sources)) or set(actual_sources) != expected_sources:
+        raise ValueError("S3 per-bucket evidence manifest is incomplete or unknown")
+    for bucket_name in bucket_regions:
+        sources = sources_by_bucket[bucket_name]
+        policy_outcome, policy_value = sources["s3.bucket-policy"]
+        status_outcome, status_value = sources["s3.bucket-policy-status"]
+        validate_s3_policy_source_coherence(
+            policy_outcome=policy_outcome,
+            policy_value=policy_value,
+            status_outcome=status_outcome,
+            status_value=status_value,
+        )
+        acl_outcome, acl_value = sources["s3.bucket-acl"]
+        bucket_block_outcome, bucket_block = sources["s3.bucket-public-access-block"]
+        ownership_outcome, ownership_value = sources["s3.bucket-ownership-controls"]
+        if acl_value is not None:
+            validate_s3_acl_source_coherence(
+                acl_outcome=acl_outcome,
+                acl_value=acl_value,
+                account_public_access_block_outcome=account_source,
+                account_public_access_block_value=account_block,
+                bucket_public_access_block_outcome=bucket_block_outcome,
+                bucket_public_access_block_value=bucket_block,
+                ownership_controls_outcome=ownership_outcome,
+                ownership_controls_value=ownership_value,
+            )
+
+    expected_kms_sources: dict[str, set[str]] = {}
+    expected_kms_partitions: dict[str, set[str]] = {}
+    for outcome in outcomes:
+        if outcome.collector != "s3.bucket-encryption":
+            continue
+        subject = outcome.subject
+        if not isinstance(subject, ResourceEvidenceSubject):  # pragma: no cover - checked above
+            raise ValueError("S3 encryption evidence requires a bucket subject")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+            expected_schema="s3.bucket-encryption",
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact invariant
+            raise ValueError("S3 encryption metadata is malformed")
+        bucket_arn = payload.get("bucket_arn")
+        bucket_arn_parts = bucket_arn.split(":", maxsplit=5) if isinstance(bucket_arn, str) else []
+        if (
+            len(bucket_arn_parts) != 6
+            or bucket_arn_parts[0] != "arn"
+            or not bucket_arn_parts[1]
+            or any(
+                not (
+                    character.isascii()
+                    and (character.islower() or character.isdigit() or character == "-")
+                )
+                for character in bucket_arn_parts[1]
+            )
+            or bucket_arn_parts[2:] != ["s3", "", "", subject.aws_resource_id]
+        ):
+            raise ValueError("S3 encryption bucket ARN is malformed")
+        partition = bucket_arn_parts[1]
+        value = payload.get("value")
+        if outcome.state is not EvidenceSourceState.PRESENT:
+            continue
+        try:
+            references = s3_encryption_kms_references(value)
+        except ValueError as error:
+            raise ValueError("S3 encryption metadata is malformed") from error
+        for reference in references:
+            lookup_region = subject.region
+            if reference.startswith("arn:"):
+                arn_parts = reference.split(":", maxsplit=5)
+                resource_parts = arn_parts[5].split("/", maxsplit=1) if len(arn_parts) == 6 else []
+                if (
+                    len(arn_parts) != 6
+                    or arn_parts[:3] != ["arn", partition, "kms"]
+                    or not arn_parts[3]
+                    or len(arn_parts[4]) != 12
+                    or not arn_parts[4].isascii()
+                    or not arn_parts[4].isdigit()
+                    or len(resource_parts) != 2
+                    or resource_parts[0] not in {"alias", "key"}
+                    or not resource_parts[1]
+                ):
+                    raise ValueError("S3 encryption KMS reference is malformed")
+                lookup_region = arn_parts[3]
+            if lookup_region is None:  # pragma: no cover - Regional subject invariant
+                raise ValueError("S3 encryption KMS reference has no Region")
+            if any(separator in lookup_region for separator in ("\x00", "\x1f", "\r", "\n")):
+                raise ValueError("S3 encryption KMS reference has an invalid Region")
+            digest = hashlib.sha256(f"{lookup_region}\x00{reference}".encode()).hexdigest()
+            evidence_kind = f"kms.key.{digest}"
+            expected_kms_sources.setdefault(evidence_kind, set()).add(subject.aws_resource_id)
+            expected_kms_partitions.setdefault(evidence_kind, set()).add(partition)
+
+    kms_sources: dict[str, set[str]] = {}
+    canonical_kms_values: dict[tuple[str, str], dict[str, object]] = {}
+    for outcome in outcomes:
+        if outcome.collector != "kms.keys":
+            continue
+        digest = outcome.evidence_kind.removeprefix("kms.key.")
+        if (
+            outcome.phase is not EvidenceCollectionPhase.ENRICHMENT
+            or outcome.state
+            not in {
+                EvidenceSourceState.PRESENT,
+                EvidenceSourceState.UNAVAILABLE,
+                EvidenceSourceState.MALFORMED,
+                EvidenceSourceState.CONFLICT,
+            }
+            or not isinstance(outcome.subject, ResourceEvidenceSubject)
+            or not outcome.evidence_kind.startswith("kms.key.")
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+            or outcome.collector_version != "1.0.0"
+            or outcome.source_api != "kms:DescribeKey"
+            or outcome.evidence_kind in kms_sources
+        ):
+            raise ValueError("KMS DescribeKey source identity is invalid")
+        artifact = _require_matching_source_artifact(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+            expected_schema="kms.key",
+        )
+        payload = artifact.model_dump(mode="json")["normalized_payload"]
+        if not isinstance(payload, dict):  # pragma: no cover - artifact invariant
+            raise ValueError("KMS DescribeKey evidence metadata is malformed")
+        _validate_source_completion_metadata(outcome=outcome, payload=payload)
+        region = payload.get("region")
+        supplied_reference = payload.get("supplied_reference")
+        source_bucket_names = payload.get("source_bucket_names")
+        if (
+            not isinstance(region, str)
+            or not region
+            or any(separator in region for separator in ("\x00", "\x1f", "\r", "\n"))
+            or not isinstance(supplied_reference, str)
+            or not supplied_reference
+            or any(separator in supplied_reference for separator in ("\x00", "\x1f", "\r", "\n"))
+            or not isinstance(source_bucket_names, list)
+            or not source_bucket_names
+            or not all(isinstance(item, str) and item for item in source_bucket_names)
+            or source_bucket_names != sorted(set(source_bucket_names))
+            or any(item not in bucket_regions for item in source_bucket_names)
+            or outcome.evidence_kind
+            != "kms.key." + hashlib.sha256(f"{region}\x00{supplied_reference}".encode()).hexdigest()
+        ):
+            raise ValueError("KMS DescribeKey evidence metadata is malformed")
+        subject = outcome.subject
+        try:
+            key = validate_kms_key_evidence_value(
+                state=outcome.state,
+                value=payload.get("key"),
+            )
+        except ValueError as error:
+            raise ValueError("KMS DescribeKey evidence metadata is malformed") from error
+        if outcome.state is EvidenceSourceState.PRESENT:
+            if (
+                not isinstance(subject, ResourceEvidenceSubject)
+                or subject.service != "kms"
+                or subject.resource_type != "kms_key"
+                or subject.scope is not ResourceScope.REGIONAL
+                or subject.region != region
+                or key is None
+            ):
+                raise ValueError("successful KMS DescribeKey identity is invalid")
+            key_arn = key.get("arn")
+            key_id = key.get("key_id")
+            key_account_id = key.get("aws_account_id")
+            key_arn_parts = key_arn.split(":", maxsplit=5) if isinstance(key_arn, str) else []
+            if (
+                not isinstance(key_id, str)
+                or not key_id
+                or any(separator in key_id for separator in ("\x1f", "\r", "\n"))
+                or not isinstance(key_account_id, str)
+                or len(key_account_id) != 12
+                or not key_account_id.isascii()
+                or not key_account_id.isdigit()
+                or key.get("region") != region
+                or key.get("key_manager") not in {"AWS", "CUSTOMER"}
+                or len(key_arn_parts) != 6
+                or key_arn_parts[0] != "arn"
+                or not key_arn_parts[1]
+                or any(separator in key_arn for separator in ("\x1f", "\r", "\n"))
+                or expected_kms_partitions.get(outcome.evidence_kind) != {key_arn_parts[1]}
+                or key_arn_parts[2:] != ["kms", region, key_account_id, f"key/{key_id}"]
+                or subject.aws_account_id != key_account_id
+                or subject.aws_resource_id != key_arn
+                or not kms_reference_matches_key_identity(
+                    supplied_reference=supplied_reference,
+                    lookup_region=region,
+                    collection_account_id=outcome.collection_account_id,
+                    partition=key_arn_parts[1] if len(key_arn_parts) == 6 else None,
+                    key_arn=key_arn,
+                    key_id=key_id,
+                    key_account_id=key_account_id,
+                )
+            ):
+                raise ValueError("successful KMS DescribeKey metadata is inconsistent")
+            canonical_identity = (region, key_arn)
+            existing_key = canonical_kms_values.get(canonical_identity)
+            if existing_key is not None and existing_key != key:
+                raise ValueError("canonical KMS DescribeKey evidence is conflicting")
+            canonical_kms_values[canonical_identity] = key
+        elif (
+            not isinstance(subject, ResourceEvidenceSubject)
+            or subject != bucket_subjects.get(source_bucket_names[0])
+            or key is not None
+        ):
+            raise ValueError("failed KMS DescribeKey subject is invalid")
+        kms_sources[outcome.evidence_kind] = set(source_bucket_names)
+
+    if kms_sources != expected_kms_sources:
+        raise ValueError("KMS DescribeKey evidence manifest is incomplete or unknown")
+
+    recognized_collectors = {
+        "kms.keys",
+        "s3.account-public-access-block",
+        "s3.bucket-location",
+        "s3.buckets",
+        *per_bucket_sources,
+    }
+    if any(outcome.collector not in recognized_collectors for outcome in outcomes):
+        raise ValueError("S3 evidence manifest contains an unknown source")
 
 
 def _access_analyzer_coverage_is_incomplete(
