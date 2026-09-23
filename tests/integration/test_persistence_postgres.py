@@ -1588,7 +1588,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5f_graph(
             assert terminal["aws_account_id"] == "123456789012"
             assert terminal["requested_regions"] == ["us-east-1"]
             assert terminal["successful_regions"] == ["us-east-1"]
-            assert terminal["scope"]["requested_services"] == [
+            assert terminal["requested_services"] == [
                 "access-analyzer",
                 "cloudtrail",
                 "cloudtrail-evidence",
