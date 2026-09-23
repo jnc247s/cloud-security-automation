@@ -2,13 +2,14 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer producers supply AWS graph
-fragments through the same persistence boundary. 5D adds no schema migration. The persistence
+accepted 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS
+producers supply AWS graph fragments through the same persistence boundary. 5D and 5E add no
+schema migration. The persistence
 boundary does not call AWS, run
 controls, schedule scans, or commit transactions on behalf of its caller. The inventory command
 still prints a summary only; it does not persist anything.
 
-The five executable controls are unchanged. 5A through 5D add documented read-only evidence calls
+The five executable controls are unchanged. 5A through 5E add documented read-only evidence calls
 but do not register a control. `S3-900` remains the legacy
 explicit-encryption-configuration
 prototype, not a new production encryption or public-exposure control. The technical meanings
@@ -98,6 +99,12 @@ collector and resource-type scope. A pre-5D `RUNNING` scan without that marker r
 pre-5D scope instead of silently adding AWS work or failing after collection. Completed pre-5D
 graphs remain valid without Analyzer contracts, outcomes, resources, or relationships; no stored
 row or source manifest is rewritten.
+
+Accepted 5E similarly uses `kms` in its exact tuple to select the S3/KMS graph while preserving
+5D and pre-5D paths. The authorized but unimplemented 5F path adds
+`cloudtrail-evidence` to the accepted 5E tuple. That marker is execution intent, not an AWS
+service. It ensures a pre-5F `RUNNING` scan cannot silently gain selectors, CloudTrail graph
+contracts, or new API calls; no existing scan or source manifest is rewritten.
 
 Scope is an explicit caller claim, not something inferred from the absence of findings. A single
 inventory invocation region does not prove account-wide or multi-region coverage. Existing S3 and
@@ -202,7 +209,7 @@ was complete. Graph validation rejects an arbitrary or unproved discovery Region
 coverage reconstruction keeps the collector incomplete when bucket-Region discovery was not
 complete.
 
-The feature-branch 5E path further closes S3 and KMS admission. A collection-account S3 bucket
+The accepted 5E path further closes S3 and KMS admission. A collection-account S3 bucket
 represented by the 5E manifest is accepted outside the requested Region only when its exact
 same-scan `GetBucketLocation` observation is `PRESENT` and identity-authoritative. A `kms_key`
 snapshot requires a `PRESENT`, identity-authoritative `DescribeKey` contract and an exact resolved
@@ -227,10 +234,14 @@ IAM producers emit source and relationship history through this boundary. The ac
 producer uses the same tables for Regional analyzer/finding source evidence, normalized
 `access_analyzer_finding` snapshots, and finding-to-S3 `references_resource` observations.
 Analyzer summaries remain artifacts rather than top-level resources, and the normalized AWS
-finding resource is not a control-plane `Finding`. Feature-branch 5E adds direct S3 source
+finding resource is not a control-plane `Finding`. Accepted 5E adds direct S3 source
 history, `kms_key` snapshots, and bucket-to-key `encrypted_with` observations without a schema
-migration or service-specific table. Remaining legacy collectors remain graphless. No current
-technical result consumes the Sprint 5 graph.
+migration or service-specific table. The authorized 5F design reuses these tables for CloudTrail
+sources and S3/KMS relationships. An external-owner organization trail remains only in its
+digest-bound source artifact and is omitted from both 5F resource projections with incomplete
+coverage unless it satisfies the existing exact resource-admission proof. Remaining legacy
+collectors remain graphless. No current technical
+result consumes the Sprint 5 graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
@@ -441,7 +452,7 @@ blocked incompatible downgrade integrity, immutable assessment-profile roll-forw
 behavior, persisted profile use after executor restart, committed pending-scan finalization,
 pre-5D pending-scan and graph readback compatibility, early failure before AWS identity, and
 concurrent finding/scan deduplication. The acceptance path uses deterministic fake AWS responses
-and now covers the feature-branch 5E S3/KMS graph when PostgreSQL is configured; it does not
+and now covers the accepted 5E S3/KMS graph when PostgreSQL is configured; it does not
 contact live AWS.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
@@ -472,7 +483,8 @@ accepted 5B producer extends that graph with security groups, VPCs, subnets, and
 The accepted 5C implementation extends the same generic graph with IAM account, identity, policy,
 and relationship evidence and requires no schema migration. The accepted 5D implementation
 extends that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional
-coverage, and finding-to-S3 relationships; it also requires no migration. Feature-branch 5E adds
-fact-only direct S3 and referenced-KMS evidence through the same schema. 5F CloudTrail expansion,
-additional production controls, Terraform infrastructure, governance mutation APIs, remediation,
+coverage, and finding-to-S3 relationships; it also requires no migration. Accepted 5E adds
+fact-only direct S3 and referenced-KMS evidence through the same schema. The 5F CloudTrail
+preflight is complete and requires no migration, but implementation remains unstarted. Sprint 6
+production controls, Terraform infrastructure, governance mutation APIs, remediation,
 dashboards/frontend, and AI functionality remain outside this slice.

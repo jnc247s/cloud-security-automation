@@ -169,7 +169,7 @@ resource routes and its `references_resource` edge to the exact S3 bucket is ava
 the relationship routes. The normalized AWS finding resource is not a control-plane `Finding` and
 does not decide `S3-002`.
 
-On the feature-branch 5E path, scan detail includes the `kms` service-intent marker and
+On the accepted 5E path, scan detail includes the `kms` service-intent marker and
 `s3_evidence` collector. Direct S3 discovery, authoritative bucket location, independent bucket
 facts, account Block Public Access, and referenced-KMS observations use the same generic
 source-outcome routes. Validated KMS keys are generic `kms/kms_key` resources, and bucket-to-key
@@ -177,6 +177,13 @@ source-outcome routes. Validated KMS keys are generic `kms/kms_key` resources, a
 route is added, raw policy content is returned only inside the authorized normalized artifact or
 snapshot projections, and these facts are not executable `S3-001` through `S3-004` results.
 Sprint 0--4 collectors that have not been upgraded remain graphless.
+
+The authorized but unimplemented 5F path will add the exact `cloudtrail-evidence` persisted
+intent marker and a `cloudtrail_evidence` collector outcome to these same generic projections.
+“Account to trails” remains source-manifest coverage attached to the verified scan account, not a
+new account-resource endpoint or API shape. CloudTrail resources, source outcomes/artifacts, and
+S3/KMS relationship observations will use the existing generic endpoints; 5F adds no
+service-specific route.
 
 ## Starting and following a scan
 
@@ -229,12 +236,14 @@ to `REQUIRED_TAGS` or `STALE_ACCESS_KEY_DAYS`, must be deployed with a reviewed 
 existing `RUNNING` scan is unaffected by later configuration: the executor loads the exact profile
 stored for that scan instead of selecting current or latest policy.
 
-The executor also honors the exact `requested_services` persisted for that pending scan. A new 5E
-scan uses `("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`; `kms` selects the
-5E collector/resource-type set. An accepted 5D scan without `kms` resumes without S3 Control,
-expanded S3, or KMS work, while a pre-5D scan without `access-analyzer` or `kms` retains its older
-collector set. Unknown tuples fail before AWS collection. Historical manifests remain readable
-without synthesizing later-slice evidence.
+The executor also honors the exact `requested_services` persisted for that pending scan. An
+accepted 5E scan uses `("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`; `kms`
+selects the 5E collector/resource-type set. An accepted 5D scan without `kms` resumes without S3
+Control, expanded S3, or KMS work, while a pre-5D scan without `access-analyzer` or `kms` retains
+its older collector set. Unknown tuples fail before AWS collection. Historical manifests remain
+readable without synthesizing later-slice evidence. The authorized 5F implementation will add
+`cloudtrail-evidence` to the exact 5E tuple as an execution-version marker; until 5F is
+implemented, newly created scans continue to use the accepted 5E tuple.
 
 ## Error behavior
 

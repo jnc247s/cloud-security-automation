@@ -394,18 +394,21 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5e_implementation_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
     matrix = _read(MATRIX_PATH)
+    runtime = "\n".join(
+        path.read_text(encoding="utf-8") for path in sorted((ROOT / "app").rglob("*.py"))
+    )
 
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "`8c6122e440cb427685a26ff80c3d83ee88885882`" in roadmap
+    assert "`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`" in roadmap
     assert (
-        "Current slice: **5E S3 evidence expansion — IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE**"
+        "Current slice: **5F CloudTrail evidence expansion — PLANNED; PREFLIGHT COMPLETE**"
         in active_plan
     )
     assert "5D IAM Access Analyzer evidence slices" in roadmap
@@ -415,9 +418,9 @@ def test_5e_implementation_does_not_enable_planned_controls_or_later_slices() ->
     assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in active_plan
     assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
     assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
-    assert "pull request 20" in active_plan
-    assert "implemented on its feature branch" in active_plan
-    assert "5F remains unstarted" in active_plan
+    assert "**5E S3 evidence expansion — COMPLETE**" in active_plan
+    assert "pull request 22" in active_plan
+    assert "This preflight adds no\ncollector and does not start 5F" in active_plan
     assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
     assert "evidence remains supplementary and non-decisive" in active_plan
     assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
@@ -443,3 +446,28 @@ def test_5e_implementation_does_not_enable_planned_controls_or_later_slices() ->
         "Do not register `S3-001` through `S3-004`",
     ):
         assert required_5e_contract in active_plan
+
+    for required_5f_contract in (
+        '`("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`',
+        "persisted execution-version marker, not an AWS service or permission",
+        "accepted 5E tuple without that marker remains a distinct pre-5F path",
+        "Preserve the accepted `cloudtrail_trails` collector name",
+        "separate `cloudtrail_evidence` operational outcome",
+        "direct\n  pre-5F collector path remains unchanged",
+        "omitted from both resource projections",
+        "`ListTrails(IncludeShadowTrails=False)`",
+        "non-paginated\n  `GetEventSelectors` outcomes",
+        "submit no more than 20 ARNs",
+        "collection account separate from actual trail ownership",
+        "It is not a new persisted\n  generic resource relationship",
+        "mark the affected account coverage incomplete",
+        "accepted 5E bucket identity and snapshot",
+        "does not add a\n  second unconditional `DescribeKey` producer",
+        "Do not register `LOG-002` through `LOG-004`",
+    ):
+        assert required_5f_contract in active_plan
+
+    assert "complete collection-account trail coverage set (not a persisted relationship)" in matrix
+    assert "5F preflight complete; implementation unstarted / `EXPAND`" in matrix
+    assert '"cloudtrail-evidence"' not in runtime
+    assert 'collector_name = "cloudtrail_evidence"' not in runtime

@@ -401,8 +401,10 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
   retain every `FieldSelectors` entry and its `Field`, `Equals`, `StartsWith`, `EndsWith`,
   `NotEquals`, `NotStartsWith`, and `NotEndsWith` operators, including `eventCategory` and
   `readOnly` filters. Evidence also retains common provenance/completeness.
-- **Relationships:** account -> trails; trail destinations are context but do not determine this
-  coverage result.
+- **Relationships:** the account-to-trails phrase denotes the complete collection-account coverage
+  set bound by the scan, discovery source, and source manifest; it is not a persisted resource
+  relationship or synthetic account resource. Trail destinations are context but do not
+  determine this coverage result.
 - **Assessment Profile:** `enabled_controls` only.
 - **PASS:** at least one qualifying trail is logging, is multi-Region, and complete selectors
   prove both read and write management-event coverage under the truth table below.
@@ -644,6 +646,10 @@ privileged. Evidence records that privilege assessment is unavailable.
 `LOG-001` assesses the AWS account once. It passes when any normalized `cloudtrail_trail` has
 `configuration.is_logging` explicitly set to `true`. Zero trails or only inactive trails fails.
 A returned trail with a missing or non-boolean status produces insufficient evidence.
+
+The account-level association is established by the verified scan account and complete trail
+discovery outcome. It is not a generic relationship edge. Collection account identity does not
+replace the owner encoded by a trail ARN, including for a member-visible organization trail.
 
 The current definition does not require multi-Region coverage, global service events, management
 event coverage, log-file validation, KMS encryption, CloudWatch Logs delivery, organization-trail

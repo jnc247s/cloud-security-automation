@@ -2,12 +2,12 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5E S3 evidence expansion — IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE**
+Current slice: **5F CloudTrail evidence expansion — PLANNED; PREFLIGHT COMPLETE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
 **5C IAM account and IAM policy evidence — COMPLETE**;
-**5D IAM Access Analyzer evidence — COMPLETE**
+**5D IAM Access Analyzer evidence — COMPLETE**; **5E S3 evidence expansion — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -36,9 +36,9 @@ reviewed slice sequence is approved, and the shared 5G relationship/source-outco
 foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A passed its
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
 pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
-accepted and merged in pull request 20. The bounded 5E implementation now exists on its feature
-branch within the authorized boundary below and is pending review, CI, approval, and merge; later
-slices remain unstarted.
+accepted and merged in pull request 20. Slice 5E passed its acceptance gates and merged in pull
+request 22. The bounded 5F preflight is complete within the authorized boundary below, but its
+implementation and later slices remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -64,7 +64,8 @@ Before Sprint 5 began, their standalone schemas and contract tests did not imple
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
 projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
-through 5D use that boundary, and planned slice 5E must use it without enabling Sprint 6 rules.
+through 5E use that boundary, and the authorized but unstarted 5F slice must use it without
+enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -96,8 +97,8 @@ graph boundary would have lost evidence or forced that slice to invent a represe
 3. **COMPLETE — 5B** — VPC, subnet, Flow Log, and network evidence;
 4. **COMPLETE — 5C** — IAM account and policy evidence;
 5. **COMPLETE — 5D** — IAM Access Analyzer evidence;
-6. **IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE — 5E** — S3 evidence expansion;
-7. 5F — CloudTrail evidence expansion; and
+6. **COMPLETE — 5E** — S3 evidence expansion;
+7. **PLANNED; PREFLIGHT COMPLETE — 5F** — CloudTrail evidence expansion; and
 8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
    validation.
 
@@ -108,9 +109,9 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A` and 5A through 5D accepted on `main`. The separately bounded 5E slice
-is implemented on its feature branch and awaits review, CI, approval, and merge. This does not
-authorize executable Sprint 6 rules, remediation, or later-sprint work.
+`FOUNDATION_READY_FOR_5A` and 5A through 5E accepted on `main`. The separately bounded 5F
+preflight is complete, but implementation has not started and requires an explicit request. This
+does not authorize executable Sprint 6 rules, remediation, or later-sprint work.
 
 ## Accepted 5A implementation state
 
@@ -354,9 +355,9 @@ The authorized fact-only implementation was merged in pull request 20 at `main` 
 - Controlled-fake collector, graph, inventory/executor, compatibility, generic read, and
   disposable-PostgreSQL acceptance coverage is part of the accepted baseline. No test contacts
   live AWS.
-- `S3-002` remains `CONTRACT_READY` and non-decisive until direct 5E S3 evidence is separately
-  accepted. The accepted 5D slice does not implement 5E, 5F, a Sprint 6 rule, remediation,
-  dashboard, production deployment, or AI behavior.
+- At 5D acceptance, `S3-002` remained `CONTRACT_READY` and non-decisive until direct 5E S3
+  evidence was separately accepted. The accepted 5D slice did not implement 5E, 5F, a Sprint 6
+  rule, remediation, dashboard, production deployment, or AI behavior.
 
 ## Authorized 5E preflight state
 
@@ -365,9 +366,8 @@ commit `1a355107eb7a3ed7845fa3a569dbff80da2778bb`, with migration head `20260915
 merged-main CI. The canonical control catalog, S3-002 exposure aggregation, S3-004 classifier,
 and evidence-readiness matrix already define the required direct S3 and referenced-KMS factual
 superset. The existing evidence graph, generic persistence and authenticated API projections,
-AWS client provider, and relationship vocabulary can carry that evidence without a migration or
-service-specific route. The implementation described below now exists on the feature branch and
-is not yet accepted on `main`.
+AWS client provider, and relationship vocabulary carry that evidence without a migration or
+service-specific route. The implementation described below is accepted on `main`.
 
 The implementation is authorized only within these boundaries:
 
@@ -435,9 +435,9 @@ persistence/API readback, authenticated disposable-PostgreSQL
 HTTP acceptance, targeted and full regression tests, Ruff lint/format, container validation,
 independent review, green CI, approval, and merge. No test may contact live AWS.
 
-## Sprint 5E implementation state pending acceptance
+## Accepted 5E implementation state
 
-The feature branch adds one shared per-scan S3 collection bundle with two projections: the
+The accepted implementation adds one shared per-scan S3 collection bundle with two projections: the
 accepted `s3_buckets` collector retains its name, `S3-900` input shape, and independent rollup,
 while `s3_evidence` emits the 5E source graph and referenced `kms_key` resources. The bundle calls
 `ListBuckets` and account Block Public Access once, establishes each bucket's authoritative home
@@ -462,8 +462,99 @@ completeness; accepted pre-5E graphs retain their original `s3_buckets` fallback
 service-specific API, assessment-profile change, executable Sprint 6 rule, finding policy, AWS
 write permission, 5F collector, remediation, dashboard, deployment, or AI behavior is included.
 
-This section records feature-branch reality only. Slice 5E remains `IN PROGRESS` until all
-acceptance gates above pass and the change is approved and merged.
+Slice 5E passed its acceptance gates and was merged in pull request 22 at `main` commit
+`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`. Pull-request CI succeeded. No Sprint 6 rule was
+enabled.
+
+## Authorized 5F preflight state
+
+The bounded 5F preflight completed on 2026-09-22 against the accepted 5E baseline at `main`
+commit `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with migration head `20260915_0003` and green
+pull-request CI. The control catalog and evidence-readiness matrix already define the CloudTrail
+facts required by `LOG-001` through `LOG-004` and the CloudTrail portion of `GOV-001`. The
+existing AWS client provider, evidence graph, generic persistence and authenticated API
+projections, executor, and relationship vocabulary can carry this evidence without a migration,
+new dependency, service-specific route, or authentication change. This preflight adds no
+collector and does not start 5F.
+
+Implementation is authorized only after an explicit request and only within these boundaries:
+
+- Preserve immutable pending-scan execution intent. Newly created 5F scans use exact service
+  intent `("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`.
+  `cloudtrail-evidence` is a persisted execution-version marker, not an AWS service or permission.
+  The accepted 5E tuple without that marker remains a distinct pre-5F path and must make no new
+  `GetEventSelectors` call or gain a CloudTrail graph manifest. Accepted 5D and pre-5D paths also
+  remain supported. Unknown tuples fail before AWS work; existing scan rows and historical
+  manifests are never rewritten.
+- Preserve the accepted `cloudtrail_trails` collector name, direct behavior, normalized
+  configuration, and `LOG-001` input semantics. Full graph-aware 5F coverage belongs to a
+  separate `cloudtrail_evidence` operational outcome. Both projections consume one shared
+  per-scan collection bundle so the accepted sources are not called twice and a selector-only or
+  tag-only failure cannot erase independently complete legacy logging evidence. The direct
+  pre-5F collector path remains unchanged. On the 5F path, both projections use the validated ARN
+  owner; an unadmitted external-owner trail is omitted from both resource projections and makes
+  `cloudtrail_trails` and `cloudtrail_evidence` incomplete, so unchanged `LOG-001` semantics yield
+  `INSUFFICIENT_EVIDENCE` rather than evaluating a fabricated collection-account owner.
+- Run paginated `ListTrails(IncludeShadowTrails=False)` once for the collection account so
+  Regional shadow copies cannot become duplicate resources. Deduplicate exact records by trail
+  ARN and reject conflicting duplicates. Validate the trail ARN partition, CloudTrail service,
+  home Region, 12-digit owner, and name consistently. Enrich each admitted trail in its actual
+  home Region with independent `GetTrail`, `GetTrailStatus`, and non-paginated
+  `GetEventSelectors` outcomes. Group `ListTags` calls by home Region, submit no more than 20 ARNs
+  per request, paginate each batch, and preserve deterministic per-trail attribution.
+- Keep the verified collection account separate from actual trail ownership. A member-visible
+  organization trail keeps the management-account owner parsed from its validated ARN and its
+  organization context; it never pretends to belong to the collecting member or proves
+  organization-wide coverage. An externally owned trail becomes a top-level resource only when
+  it satisfies the existing ADR 0001 exceptional-owner admission rule, including
+  identity-authoritative evidence and an exact resolved same-scan relationship. Otherwise retain
+  its complete normalized source artifact, mark the affected account coverage incomplete, and do
+  not fabricate, delete, or silently relabel the trail.
+- Treat “account to trails” in `LOG-001` and `LOG-002` as the complete collection-account coverage
+  set established by the scan, source manifest, and discovery outcome. It is not a new persisted
+  generic resource relationship. Do not invent a synthetic AWS account resource or add a new
+  relationship type.
+- Normalize facts without evaluating them. Retain explicit logging, multi-Region,
+  organization-trail, global-service-event, log-file-validation, CloudWatch Logs, KMS, S3
+  destination/prefix, sanitized status, and complete case-sensitive tag facts. Exactly one
+  non-empty event-selector form is valid. Basic selectors retain raw field presence, documented
+  defaults, every data-resource value, and only the supported management-event exclusions.
+  Advanced selectors retain every field selector and all six operator arrays. Mixed, empty,
+  malformed, contradictory, or unsupported response structures remain explicit uncertainty;
+  the collector does not decide `PASS` or `FAIL`.
+- Emit `cloudtrail_trail --delivers_to_bucket--> s3_bucket` only from complete `GetTrail`
+  evidence. Resolve it only through the exact same-scan accepted 5E bucket identity and snapshot;
+  otherwise retain the supplied bucket name as a typed identity-incomplete reference without
+  inventing owner or Region. Source and destination Regions may differ.
+- Retain a validated full `KmsKeyId` ARN and emit
+  `cloudtrail_trail --encrypted_with--> kms_key` from complete `GetTrail` evidence. Resolve it only
+  when an exact canonical 5E KMS resource and snapshot already exist; otherwise retain the
+  complete canonical target with an appropriate unresolved resolution state. 5F does not add a
+  second unconditional `DescribeKey` producer, fabricate a key, or broaden the accepted KMS
+  admission contract.
+- Declare an exact dynamic source manifest with one account discovery source and independent
+  per-trail identity, configuration, status, selector, and tag outcomes. Bind every admitted
+  normalized fact and relationship to digest-verified artifacts so graph replay and persistence
+  readback reject omission, substitution, or mutation. A completely unavailable discovery is
+  `FAILED`; partial enumeration or per-trail failures retain valid siblings with incomplete
+  coverage. A disappeared trail, malformed identity, conflict, denial, throttling, and service
+  failure remain distinct sanitized outcomes.
+- Use only read actions: `cloudtrail:ListTrails`, `cloudtrail:GetTrail`,
+  `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors`, and `cloudtrail:ListTags`. Do not
+  broaden scanner credentials or contact live AWS in tests.
+- Keep collectors fact-only. Do not register `LOG-002` through `LOG-004`, change `LOG-001`, extend
+  the assessment profile, create findings, add a migration or service-specific API, implement
+  remediation or AWS writes, or begin dashboard, deployment, AI, Sprint 6, or 5G-closure work.
+
+Acceptance requires deterministic fake-AWS coverage for pagination, shadow-trail exclusion,
+duplicate handling,
+home-Region routing, tag batching and attribution, selector forms and defaults, malformed and
+conflicting evidence, independent source failures, organization-trail ownership, exact account
+coverage, resolved/unresolved S3 and KMS relationships, immutable pending-scan compatibility, and
+unchanged `LOG-001` behavior. It also requires exact graph replay and tamper tests, generic
+persistence/API readback, authenticated disposable-PostgreSQL HTTP acceptance, targeted and full
+regression tests, Ruff lint/format, container validation, independent review, green CI, approval,
+and merge. No test may contact live AWS.
 
 ## Objective and boundary
 
