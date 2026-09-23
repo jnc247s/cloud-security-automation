@@ -454,11 +454,13 @@ def load_evidence_graph(session: Session, scan_id: UUID) -> EvidenceGraph | None
                     outcomes=graph.source_outcomes,
                     artifacts=graph.artifacts,
                     s3_status=CollectionStatus(s3_status),
+                    contracts=graph.source_contracts,
                 )
             reconstructed_status = graph_collection_status_for(
                 collector_name=collector_name,
                 outcomes=graph.source_outcomes,
                 artifacts=graph.artifacts,
+                contracts=graph.source_contracts,
             )
         except ValueError as error:
             raise EvidenceGraphPersistenceError(

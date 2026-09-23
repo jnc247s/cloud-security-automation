@@ -46,12 +46,19 @@ _REQUESTED_COLLECTORS = (
     "iam_account_evidence",
     "iam_users",
     "s3_buckets",
+    "s3_evidence",
     "security_groups",
     "vpc_network_evidence",
 )
+_PRE_5E_REQUESTED_SERVICES = ("access-analyzer", "cloudtrail", "ec2", "iam", "s3")
+_PRE_5E_REQUESTED_COLLECTORS = tuple(
+    collector for collector in _REQUESTED_COLLECTORS if collector != "s3_evidence"
+)
 _PRE_5D_REQUESTED_SERVICES = ("cloudtrail", "ec2", "iam", "s3")
 _PRE_5D_REQUESTED_COLLECTORS = tuple(
-    collector for collector in _REQUESTED_COLLECTORS if collector != "access_analyzer_evidence"
+    collector
+    for collector in _PRE_5E_REQUESTED_COLLECTORS
+    if collector != "access_analyzer_evidence"
 )
 _RESOURCE_TYPES = (
     "access_analyzer_finding",
@@ -68,14 +75,20 @@ _RESOURCE_TYPES = (
     "iam_mfa_device",
     "iam_role",
     "iam_user",
+    "kms_key",
     "s3_bucket",
     "security_group",
     "subnet",
     "vpc",
     "vpc_flow_log",
 )
+_PRE_5E_RESOURCE_TYPES = tuple(
+    resource_type for resource_type in _RESOURCE_TYPES if resource_type != "kms_key"
+)
 _PRE_5D_RESOURCE_TYPES = tuple(
-    resource_type for resource_type in _RESOURCE_TYPES if resource_type != "access_analyzer_finding"
+    resource_type
+    for resource_type in _PRE_5E_RESOURCE_TYPES
+    if resource_type != "access_analyzer_finding"
 )
 
 
@@ -274,6 +287,7 @@ class InProcessScanExecutor:
         snapshot = InventoryService(
             provider,
             include_access_analyzer="access-analyzer" in requested_services,
+            include_s3_evidence="kms" in requested_services,
         ).collect(scan_id=scan_id)
         catalog = build_default_control_catalog()
         if expected_catalog != (catalog.catalog_id, catalog.version):
@@ -351,6 +365,8 @@ def _execution_scope_for(
 
     if requested_services == REQUESTED_SERVICES:
         return _REQUESTED_COLLECTORS, _RESOURCE_TYPES
+    if requested_services == _PRE_5E_REQUESTED_SERVICES:
+        return _PRE_5E_REQUESTED_COLLECTORS, _PRE_5E_RESOURCE_TYPES
     if requested_services == _PRE_5D_REQUESTED_SERVICES:
         return _PRE_5D_REQUESTED_COLLECTORS, _PRE_5D_RESOURCE_TYPES
     raise ScanPersistenceError("pending scan requested-services intent is unsupported")

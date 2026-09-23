@@ -132,6 +132,20 @@ def _empty_provider(region: str = "us-east-1") -> FakeClientProvider:
             ("s3", region): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
+            ("s3control", region): FakeAWSClient(
+                responses={
+                    "get_public_access_block": [
+                        {
+                            "PublicAccessBlockConfiguration": {
+                                "BlockPublicAcls": True,
+                                "IgnorePublicAcls": True,
+                                "BlockPublicPolicy": True,
+                                "RestrictPublicBuckets": True,
+                            }
+                        }
+                    ]
+                }
+            ),
             ("iam", region): empty_iam_client(),
             ("cloudtrail", region): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}
@@ -1030,7 +1044,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1260,6 +1274,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             ]
         )
         bucket_name = "acceptance-analyzer-bucket"
+        kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/acceptance-key"
         s3_pages = FakePaginator(
             [
                 {
@@ -1276,12 +1291,19 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
         s3_client = FakeAWSClient(
             paginators={"list_buckets": s3_pages},
             responses={
+                "get_bucket_location": [{"LocationConstraint": None}],
                 "get_bucket_tagging": [{"TagSet": [{"Key": "Owner", "Value": "security"}]}],
                 "get_bucket_encryption": [
                     {
                         "ServerSideEncryptionConfiguration": {
                             "Rules": [
-                                {"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}
+                                {
+                                    "ApplyServerSideEncryptionByDefault": {
+                                        "SSEAlgorithm": "aws:kms",
+                                        "KMSMasterKeyID": kms_key_arn,
+                                    },
+                                    "BucketKeyEnabled": True,
+                                }
                             ]
                         }
                     }
@@ -1296,7 +1318,80 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                         }
                     }
                 ],
+                "get_bucket_policy": [
+                    {
+                        "Policy": json.dumps(
+                            {
+                                "Version": "2012-10-17",
+                                "Statement": [
+                                    {
+                                        "Sid": "DenyInsecureTransport",
+                                        "Effect": "Deny",
+                                        "Principal": "*",
+                                        "Action": "s3:*",
+                                        "Resource": [
+                                            f"arn:aws:s3:::{bucket_name}",
+                                            f"arn:aws:s3:::{bucket_name}/*",
+                                        ],
+                                        "Condition": {"Bool": {"aws:SecureTransport": "false"}},
+                                    }
+                                ],
+                            },
+                            separators=(",", ":"),
+                        )
+                    }
+                ],
+                "get_bucket_policy_status": [{"PolicyStatus": {"IsPublic": False}}],
+                "get_bucket_acl": [
+                    {
+                        "Owner": {
+                            "DisplayName": "acceptance-owner",
+                            "ID": "acceptance-canonical-owner-id",
+                        },
+                        "Grants": [
+                            {
+                                "Grantee": {
+                                    "Type": "CanonicalUser",
+                                    "ID": "acceptance-canonical-owner-id",
+                                },
+                                "Permission": "FULL_CONTROL",
+                            }
+                        ],
+                    }
+                ],
+                "get_bucket_versioning": [{"Status": "Enabled", "MFADelete": "Disabled"}],
+                "get_bucket_ownership_controls": [
+                    {"OwnershipControls": {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]}}
+                ],
             },
+        )
+        s3control_client = FakeAWSClient(
+            responses={
+                "get_public_access_block": [
+                    {
+                        "PublicAccessBlockConfiguration": {
+                            "BlockPublicAcls": True,
+                            "IgnorePublicAcls": True,
+                            "BlockPublicPolicy": True,
+                            "RestrictPublicBuckets": True,
+                        }
+                    }
+                ]
+            }
+        )
+        kms_client = FakeAWSClient(
+            responses={
+                "describe_key": [
+                    {
+                        "KeyMetadata": {
+                            "AWSAccountId": "123456789012",
+                            "KeyId": "acceptance-key",
+                            "Arn": kms_key_arn,
+                            "KeyManager": "CUSTOMER",
+                        }
+                    }
+                ]
+            }
         )
         analyzer_name = "acceptance-external-access"
         analyzer_arn = f"arn:aws:access-analyzer:us-east-1:123456789012:analyzer/{analyzer_name}"
@@ -1377,6 +1472,8 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                     flow_logs=flow_log_pages,
                 ),
                 ("s3", "us-east-1"): s3_client,
+                ("s3control", "us-east-1"): s3control_client,
+                ("kms", "us-east-1"): kms_client,
                 ("iam", "us-east-1"): iam_client,
                 ("cloudtrail", "us-east-1"): FakeAWSClient(
                     paginators={"list_trails": cloudtrail_pages}
@@ -1432,6 +1529,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                 "iam_account_evidence",
                 "iam_users",
                 "s3_buckets",
+                "s3_evidence",
                 "security_groups",
                 "vpc_network_evidence",
             ]
@@ -1442,6 +1540,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                 "iam_account_evidence",
                 "iam_users",
                 "s3_buckets",
+                "s3_evidence",
                 "security_groups",
                 "vpc_network_evidence",
             }
@@ -1462,7 +1561,9 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                 ("ec2", "us-east-1"),
                 ("ec2", "us-east-1"),
                 ("s3", "us-east-1"),
+                ("s3control", "us-east-1"),
                 ("s3", "us-east-1"),
+                ("kms", "us-east-1"),
                 ("accessanalyzer", "us-east-1"),
                 ("iam", "us-east-1"),
                 ("iam", "us-east-1"),
@@ -1475,6 +1576,27 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             assert subnet_pages.calls == [{}]
             assert flow_log_pages.calls == [{}]
             assert s3_pages.calls == [{"PaginationConfig": {"PageSize": 1000}}]
+            assert [call.operation_name for call in s3_client.calls] == [
+                "get_bucket_location",
+                "get_bucket_tagging",
+                "get_bucket_encryption",
+                "get_public_access_block",
+                "get_bucket_policy",
+                "get_bucket_policy_status",
+                "get_bucket_acl",
+                "get_bucket_versioning",
+                "get_bucket_ownership_controls",
+            ]
+            assert s3_client.calls[0].parameters == {
+                "Bucket": bucket_name,
+                "ExpectedBucketOwner": "123456789012",
+            }
+            assert [call.operation_name for call in s3control_client.calls] == [
+                "get_public_access_block"
+            ]
+            assert s3control_client.calls[0].parameters == {"AccountId": "123456789012"}
+            assert [call.operation_name for call in kms_client.calls] == ["describe_key"]
+            assert kms_client.calls[0].parameters == {"KeyId": kms_key_arn}
             assert analyzer_pages.calls == [{}]
             assert analyzer_finding_pages.calls == [
                 {
@@ -1677,8 +1799,26 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                     bucket_snapshot.normalized_configuration["default_encryption"]["Rules"][0][
                         "ApplyServerSideEncryptionByDefault"
                     ]["SSEAlgorithm"]
-                    == "AES256"
+                    == "aws:kms"
                 )
+
+                kms_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "kms",
+                        Resource.resource_type == "kms_key",
+                        Resource.aws_resource_id == kms_key_arn,
+                    )
+                ).one()
+                kms_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == kms_resource.resource_id,
+                    )
+                ).one()
+                assert kms_resource.arn == kms_key_arn
+                assert kms_resource.region == "us-east-1"
+                assert kms_snapshot.normalized_configuration["key_manager"] == "CUSTOMER"
 
                 analyzer_resource = session.scalars(
                     select(Resource).where(
@@ -1855,6 +1995,17 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                     "iam.user.profile",
                     "iam.user.tags",
                     "iam.users.discovery",
+                    "s3.account-public-access-block",
+                    "s3.bucket-acl",
+                    "s3.bucket-encryption",
+                    "s3.bucket-location",
+                    "s3.bucket-ownership-controls",
+                    "s3.bucket-policy",
+                    "s3.bucket-policy-status",
+                    "s3.bucket-public-access-block",
+                    "s3.bucket-tags",
+                    "s3.bucket-versioning",
+                    "s3.buckets.discovery",
                 }
                 expected_present_twice = {
                     "iam.inline-policy.document",
@@ -1875,12 +2026,16 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                         ("iam.access-key.last-used", "EXPECTED_ABSENCE"): 1,
                     }
                 )
+                kms_evidence_kind = (
+                    "kms.key." + hashlib.sha256(f"us-east-1\0{kms_key_arn}".encode()).hexdigest()
+                )
+                expected_source_states[(kms_evidence_kind, "PRESENT")] = 1
                 expected_kind_counts = Counter()
                 for (evidence_kind, _state), count in expected_source_states.items():
                     expected_kind_counts[evidence_kind] += count
-                assert len(source_graph.source_contracts) == 55
-                assert len(source_graph.artifacts) == 55
-                assert len(source_graph.source_outcomes) == 55
+                assert len(source_graph.source_contracts) == 67
+                assert len(source_graph.artifacts) == 67
+                assert len(source_graph.source_outcomes) == 67
                 assert (
                     Counter(contract.contract_key for contract in source_graph.source_contracts)
                     == expected_kind_counts
@@ -1981,7 +2136,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                     is True
                 )
 
-                assert len(source_graph.relationships) == 20
+                assert len(source_graph.relationships) == 21
                 source_relationships = {
                     (
                         relationship.relationship_type,
@@ -2031,6 +2186,20 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                 )
                 assert analyzer_relationship.target.resource_snapshot_id == (
                     bucket_snapshot.snapshot_id
+                )
+                kms_relationship = next(
+                    relationship
+                    for relationship in source_graph.relationships
+                    if relationship.source.service == "s3"
+                    and relationship.relationship_type is RelationshipType.ENCRYPTED_WITH
+                )
+                assert kms_relationship.resolution is RelationshipResolution.RESOLVED
+                assert kms_relationship.source.stable_resource_id == bucket_resource.resource_id
+                assert kms_relationship.source.resource_snapshot_id == bucket_snapshot.snapshot_id
+                assert kms_relationship.target.stable_resource_id == kms_resource.resource_id
+                assert kms_relationship.target.resource_snapshot_id == kms_snapshot.snapshot_id
+                assert kms_relationship.provenance.evidence_reference == (
+                    source_outcomes_by_kind["s3.bucket-encryption"].evidence_reference
                 )
                 volume_relationship = source_relationships[
                     (RelationshipType.USES_VOLUME, "ec2_instance", "i-acceptance")
@@ -2323,6 +2492,8 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                 flow_log_snapshot_id = flow_log_snapshot.snapshot_id
                 bucket_resource_id = bucket_resource.resource_id
                 bucket_snapshot_id = bucket_snapshot.snapshot_id
+                kms_resource_id = kms_resource.resource_id
+                kms_snapshot_id = kms_snapshot.snapshot_id
                 analyzer_resource_uuid = analyzer_resource.resource_id
                 analyzer_snapshot_id = analyzer_snapshot.snapshot_id
                 iam_resource_ids = {
@@ -2510,6 +2681,13 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
                     analyzer_resource_uuid,
                     analyzer_snapshot_id,
                 ),
+                (
+                    "kms",
+                    "kms_key",
+                    kms_key_arn,
+                    kms_resource_id,
+                    kms_snapshot_id,
+                ),
             ):
                 evidence_page = client.get(
                     "/api/v1/resources",
@@ -2598,7 +2776,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             )
             assert source_outcome_page.status_code == 200
             source_outcome_document = source_outcome_page.json()
-            assert source_outcome_document["total"] == 55
+            assert source_outcome_document["total"] == 67
             assert {
                 UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
             } == source_outcome_ids
@@ -2729,6 +2907,25 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             assert finding_detail["artifact"]["normalized_payload"]["finding_id"] == (
                 analyzer_finding_id
             )
+            bucket_location_detail = source_outcome_details_by_kind["s3.bucket-location"]
+            assert bucket_location_detail["subject"]["stable_resource_id"] == str(
+                bucket_resource_id
+            )
+            assert bucket_location_detail["subject"]["resource_snapshot_id"] == str(
+                bucket_snapshot_id
+            )
+            assert bucket_location_detail["artifact"]["normalized_payload"]["bucket_region"] == (
+                "us-east-1"
+            )
+            bucket_policy_detail = source_outcome_details_by_kind["s3.bucket-policy"]
+            assert bucket_policy_detail["subject"]["stable_resource_id"] == str(bucket_resource_id)
+            assert bucket_policy_detail["artifact"]["normalized_payload"]["complete"] is True
+            kms_detail = source_outcome_details_by_kind[kms_evidence_kind]
+            assert kms_detail["subject"]["stable_resource_id"] == str(kms_resource_id)
+            assert kms_detail["subject"]["resource_snapshot_id"] == str(kms_snapshot_id)
+            assert kms_detail["artifact"]["normalized_payload"]["supplied_reference"] == (
+                kms_key_arn
+            )
 
             relationship_page = client.get(
                 "/api/v1/relationships",
@@ -2737,7 +2934,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             )
             assert relationship_page.status_code == 200
             relationship_document = relationship_page.json()
-            assert relationship_document["total"] == 20
+            assert relationship_document["total"] == 21
             assert {
                 UUID(item["observation_id"]) for item in relationship_document["items"]
             } == relationship_observation_ids
@@ -2768,6 +2965,21 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5d_graph(
             assert analyzer_reference["source"]["resource_snapshot_id"] == str(analyzer_snapshot_id)
             assert analyzer_reference["target"]["stable_resource_id"] == str(bucket_resource_id)
             assert analyzer_reference["target"]["resource_snapshot_id"] == str(bucket_snapshot_id)
+            kms_reference = next(
+                item
+                for item in relationship_document["items"]
+                if item["source"]["service"] == "s3"
+                and item["relationship_type"] == "encrypted_with"
+            )
+            assert kms_reference["resolution"] == "RESOLVED"
+            assert kms_reference["source"]["stable_resource_id"] == str(bucket_resource_id)
+            assert kms_reference["source"]["resource_snapshot_id"] == str(bucket_snapshot_id)
+            assert kms_reference["target"]["stable_resource_id"] == str(kms_resource_id)
+            assert kms_reference["target"]["resource_snapshot_id"] == str(kms_snapshot_id)
+            assert (
+                kms_reference["provenance"]["evidence_reference"]
+                == (source_outcome_details_by_kind["s3.bucket-encryption"]["evidence_reference"])
+            )
             for item in relationship_document["items"]:
                 relationship_detail = client.get(
                     f"/api/v1/relationships/{item['observation_id']}",

@@ -15,6 +15,7 @@ from app.assessment.evidence_graph import (
     ScanSourceContract,
     SourceEvidenceArtifact,
     calculate_evidence_sha256,
+    reconstruct_s3_bucket_region_evidence,
 )
 from app.assessment.identities import inventory_sha256
 from app.assessment.relationships import (
@@ -23,6 +24,7 @@ from app.assessment.relationships import (
     RelationshipResolution,
     RelationshipType,
     ResourceRelationship,
+    UnresolvedRelationshipTarget,
 )
 from app.assessment.source_outcomes import (
     AccountEvidenceSubject,
@@ -170,6 +172,568 @@ def _s3_bucket(*, region: str) -> NormalizedResource:
     )
 
 
+def _empty_s3_discovery() -> tuple[
+    ScanSourceContract,
+    SourceEvidenceArtifact,
+    SourceEvidenceOutcome,
+]:
+    subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key="s3.buckets.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=subject,
+        evidence_kind="s3.buckets.discovery",
+        collector="s3.buckets",
+        collector_version="1.0.0",
+        source_api="s3:ListAllMyBuckets",
+        cardinality=EvidenceCardinality.COLLECTION,
+    )
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/empty-buckets",
+        evidence_schema="s3.buckets.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "buckets": [],
+            "bucket_names": [],
+            "resource_count": 0,
+            "discarded_item_count": 0,
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    return contract, artifact, _outcome(contract, artifact)
+
+
+def _s3_account_public_access_block() -> tuple[
+    ScanSourceContract,
+    SourceEvidenceArtifact,
+    SourceEvidenceOutcome,
+]:
+    subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key="s3.account-public-access-block",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=subject,
+        evidence_kind="s3.account-public-access-block",
+        collector="s3.account-public-access-block",
+        collector_version="1.0.0",
+        source_api="s3:GetAccountPublicAccessBlock",
+        cardinality=EvidenceCardinality.SINGLE,
+    )
+    block = {
+        "BlockPublicAcls": True,
+        "IgnorePublicAcls": True,
+        "BlockPublicPolicy": True,
+        "RestrictPublicBuckets": True,
+    }
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/public-access-block",
+        evidence_schema="s3.account-public-access-block",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "configured": True,
+            "public_access_block": block,
+            "complete": True,
+            "expected_absence": False,
+            "failure_category": None,
+        },
+    )
+    return contract, artifact, _outcome(contract, artifact)
+
+
+def _legacy_encryption_projection(value: dict[str, object]) -> dict[str, object]:
+    rules: list[dict[str, object]] = []
+    for normalized_rule in value["rules"]:
+        if not isinstance(normalized_rule, dict):  # pragma: no cover - fixture invariant
+            raise TypeError("fixture encryption rule must be a mapping")
+        legacy_rule: dict[str, object] = {}
+        algorithm = normalized_rule["sse_algorithm"]
+        reference = normalized_rule["kms_key_reference"]
+        if algorithm is not None:
+            defaults = {"SSEAlgorithm": algorithm}
+            if reference is not None:
+                defaults["KMSMasterKeyID"] = reference
+            legacy_rule["ApplyServerSideEncryptionByDefault"] = defaults
+        if normalized_rule["bucket_key_enabled"] is not None:
+            legacy_rule["BucketKeyEnabled"] = normalized_rule["bucket_key_enabled"]
+        blocked_types = normalized_rule["blocked_encryption_types"]
+        if blocked_types:
+            legacy_rule["BlockedEncryptionTypes"] = {"EncryptionType": blocked_types}
+        rules.append(legacy_rule)
+    return {"Rules": rules}
+
+
+def _complete_s3_manifest_parts(
+    *,
+    bucket_names: tuple[str, ...] = (),
+    region: str = REGION,
+    encryption_values: dict[str, dict[str, object]] | None = None,
+) -> tuple[
+    tuple[ScanSourceContract, ...],
+    tuple[SourceEvidenceArtifact, ...],
+    tuple[SourceEvidenceOutcome, ...],
+]:
+    """Build the exact live-reachable S3 source family used by graph contract tests."""
+
+    account_subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    discovery_contract = ScanSourceContract.for_scan(
+        contract_key="s3.buckets.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=account_subject,
+        evidence_kind="s3.buckets.discovery",
+        collector="s3.buckets",
+        collector_version="1.0.0",
+        source_api="s3:ListAllMyBuckets",
+        cardinality=EvidenceCardinality.COLLECTION,
+    )
+    discovery_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/complete-buckets",
+        evidence_schema="s3.buckets.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "buckets": [
+                {
+                    "bucket_name": bucket_name,
+                    "bucket_arn": f"arn:aws:s3:::{bucket_name}",
+                    "creation_date": None,
+                    "list_bucket_region": region,
+                }
+                for bucket_name in sorted(bucket_names)
+            ],
+            "bucket_names": sorted(bucket_names),
+            "resource_count": len(bucket_names),
+            "discarded_item_count": 0,
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    contracts = [discovery_contract]
+    artifacts = [discovery_artifact]
+    outcomes = [_outcome(discovery_contract, discovery_artifact)]
+    account_contract, account_artifact, account_outcome = _s3_account_public_access_block()
+    contracts.append(account_contract)
+    artifacts.append(account_artifact)
+    outcomes.append(account_outcome)
+
+    default_encryption: dict[str, object] = {
+        "rules": [
+            {
+                "sse_algorithm": "AES256",
+                "kms_key_reference": None,
+                "kms_reference_explicit": False,
+                "key_management": "S3_MANAGED",
+                "bucket_key_enabled": None,
+                "blocked_encryption_types": [],
+            }
+        ]
+    }
+    source_definitions: dict[
+        str,
+        tuple[str, EvidenceSourceState, object, object],
+    ] = {
+        "s3.bucket-acl": (
+            "s3:GetBucketAcl",
+            EvidenceSourceState.PRESENT,
+            {"owner": {"id": "owner-id", "display_name": None}, "grants": []},
+            None,
+        ),
+        "s3.bucket-ownership-controls": (
+            "s3:GetBucketOwnershipControls",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            None,
+            None,
+        ),
+        "s3.bucket-policy": (
+            "s3:GetBucketPolicy",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            None,
+            None,
+        ),
+        "s3.bucket-policy-status": (
+            "s3:GetBucketPolicyStatus",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            {"policy_present": False, "is_public": False},
+            None,
+        ),
+        "s3.bucket-public-access-block": (
+            "s3:GetBucketPublicAccessBlock",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            {
+                "BlockPublicAcls": False,
+                "IgnorePublicAcls": False,
+                "BlockPublicPolicy": False,
+                "RestrictPublicBuckets": False,
+            },
+            None,
+        ),
+        "s3.bucket-tags": (
+            "s3:GetBucketTagging",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            [],
+            None,
+        ),
+        "s3.bucket-versioning": (
+            "s3:GetBucketVersioning",
+            EvidenceSourceState.EXPECTED_ABSENCE,
+            {"status": None, "mfa_delete": None},
+            None,
+        ),
+    }
+    for bucket_name in sorted(bucket_names):
+        subject = ResourceEvidenceSubject.for_aws_resource(
+            scan_id=SCAN_ID,
+            aws_account_id=ACCOUNT_ID,
+            service="s3",
+            resource_type="s3_bucket",
+            aws_resource_id=bucket_name,
+            scope=ResourceScope.REGIONAL,
+            region=region,
+        )
+        location_contract = ScanSourceContract.for_scan(
+            contract_key="s3.bucket-location",
+            contract_version="1.0.0",
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            phase=EvidenceCollectionPhase.ENRICHMENT,
+            subject=subject,
+            evidence_kind="s3.bucket-location",
+            collector="s3.bucket-location",
+            collector_version="1.0.0",
+            source_api="s3:GetBucketLocation",
+            cardinality=EvidenceCardinality.SINGLE,
+            identity_authoritative=True,
+        )
+        location_artifact = SourceEvidenceArtifact.for_payload(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            evidence_reference=f"normalized://s3/{bucket_name}/location",
+            evidence_schema="s3.bucket-location",
+            evidence_schema_version="1.0.0",
+            collected_at=COLLECTED_AT,
+            normalized_payload={
+                "account_id": ACCOUNT_ID,
+                "bucket_name": bucket_name,
+                "bucket_arn": f"arn:aws:s3:::{bucket_name}",
+                "list_bucket_region": region,
+                "legacy_bucket_region": region,
+                "location_constraint": None if region == "us-east-1" else region,
+                "bucket_region": region,
+                "resource_not_found": False,
+                "complete": True,
+                "failure_category": None,
+            },
+        )
+        contracts.append(location_contract)
+        artifacts.append(location_artifact)
+        outcomes.append(_outcome(location_contract, location_artifact))
+
+        encryption = (encryption_values or {}).get(bucket_name, default_encryption)
+        definitions = {
+            **source_definitions,
+            "s3.bucket-encryption": (
+                "s3:GetEncryptionConfiguration",
+                EvidenceSourceState.PRESENT,
+                encryption,
+                _legacy_encryption_projection(encryption),
+            ),
+        }
+        for evidence_kind, (source_api, state, value, legacy_projection) in definitions.items():
+            contract = ScanSourceContract.for_scan(
+                contract_key=evidence_kind,
+                contract_version="1.0.0",
+                scan_id=SCAN_ID,
+                collection_account_id=ACCOUNT_ID,
+                phase=EvidenceCollectionPhase.ENRICHMENT,
+                subject=subject,
+                evidence_kind=evidence_kind,
+                collector=evidence_kind,
+                collector_version="1.0.0",
+                source_api=source_api,
+                cardinality=EvidenceCardinality.SINGLE,
+            )
+            artifact = SourceEvidenceArtifact.for_payload(
+                scan_id=SCAN_ID,
+                collection_account_id=ACCOUNT_ID,
+                evidence_reference=f"normalized://s3/{bucket_name}/{evidence_kind}",
+                evidence_schema=evidence_kind,
+                evidence_schema_version="1.0.0",
+                collected_at=COLLECTED_AT,
+                normalized_payload={
+                    "account_id": ACCOUNT_ID,
+                    "bucket_name": bucket_name,
+                    "bucket_arn": f"arn:aws:s3:::{bucket_name}",
+                    "bucket_region": region,
+                    "value": value,
+                    "legacy_projection": legacy_projection,
+                    "complete": True,
+                    "expected_absence": state is EvidenceSourceState.EXPECTED_ABSENCE,
+                    "failure_category": None,
+                },
+            )
+            contracts.append(contract)
+            artifacts.append(artifact)
+            outcomes.append(_outcome(contract, artifact, state=state))
+    return tuple(contracts), tuple(artifacts), tuple(outcomes)
+
+
+def _failed_s3_location(
+    bucket: NormalizedResource,
+) -> tuple[ScanSourceContract, SourceEvidenceArtifact, SourceEvidenceOutcome]:
+    digest = hashlib.sha256(bucket.aws_resource_id.encode()).hexdigest()
+    evidence_kind = f"s3.bucket-location.{digest}"
+    subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key=evidence_kind,
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=subject,
+        evidence_kind=evidence_kind,
+        collector="s3.bucket-location",
+        collector_version="1.0.0",
+        source_api="s3:GetBucketLocation",
+        cardinality=EvidenceCardinality.SINGLE,
+    )
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference=f"normalized://s3/{bucket.aws_resource_id}/location",
+        evidence_schema="s3.bucket-location",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "bucket_name": bucket.aws_resource_id,
+            "bucket_arn": f"arn:aws:s3:::{bucket.aws_resource_id}",
+            "list_bucket_region": bucket.region,
+            "legacy_bucket_region": bucket.region,
+            "location_constraint": None,
+            "bucket_region": None,
+            "resource_not_found": False,
+            "complete": False,
+            "failure_category": "ACCESS_DENIED",
+        },
+    )
+    outcome = _outcome(
+        contract,
+        artifact,
+        state=EvidenceSourceState.UNAVAILABLE,
+        failure_category=EvidenceFailureCategory.ACCESS_DENIED,
+    )
+    return contract, artifact, outcome
+
+
+def _s3_kms_graph_parts(
+    *,
+    bucket_names: tuple[str, ...] = ("bucket-a", "bucket-b"),
+    lookup_present: bool = True,
+    kms_references: tuple[str, ...] = ("alias/example",),
+) -> tuple[
+    tuple[ScanSourceContract, ...],
+    tuple[SourceEvidenceArtifact, ...],
+    tuple[SourceEvidenceOutcome, ...],
+    tuple[ResourceRelationship, ...],
+]:
+    encryption_value = {
+        "rules": [
+            {
+                "sse_algorithm": "aws:kms",
+                "kms_key_reference": kms_reference,
+                "kms_reference_explicit": True,
+                "key_management": "EXPLICIT_KMS_REFERENCE",
+                "bucket_key_enabled": None,
+                "blocked_encryption_types": [],
+            }
+            for kms_reference in sorted(kms_references)
+        ]
+    }
+    base_contracts, base_artifacts, base_outcomes = _complete_s3_manifest_parts(
+        bucket_names=bucket_names,
+        encryption_values={bucket_name: encryption_value for bucket_name in bucket_names},
+    )
+    contracts = list(base_contracts)
+    artifacts = list(base_artifacts)
+    outcomes = list(base_outcomes)
+    encryption_parts: list[
+        tuple[ResourceEvidenceSubject, SourceEvidenceArtifact, SourceEvidenceOutcome]
+    ] = []
+    if not lookup_present and len(kms_references) != 1:
+        raise ValueError("the failed-lookup fixture supports one reference")
+    artifacts_by_reference = {item.evidence_reference: item for item in artifacts}
+    for outcome in outcomes:
+        if outcome.collector != "s3.bucket-encryption":
+            continue
+        if not isinstance(outcome.subject, ResourceEvidenceSubject):  # pragma: no cover
+            raise TypeError("fixture encryption source must have a resource subject")
+        encryption_parts.append(
+            (
+                outcome.subject,
+                artifacts_by_reference[outcome.evidence_reference],
+                outcome,
+            )
+        )
+
+    key_arn = f"arn:aws:kms:{REGION}:{ACCOUNT_ID}:key/key-123"
+    if lookup_present:
+        kms_subject = ResourceEvidenceSubject.for_aws_resource(
+            scan_id=SCAN_ID,
+            aws_account_id=ACCOUNT_ID,
+            service="kms",
+            resource_type="kms_key",
+            aws_resource_id=key_arn,
+            scope=ResourceScope.REGIONAL,
+            region=REGION,
+        )
+    else:
+        kms_subject = encryption_parts[0][0]
+    for kms_reference in kms_references:
+        kms_kind = "kms.key." + hashlib.sha256(f"{REGION}\0{kms_reference}".encode()).hexdigest()
+        kms_contract = ScanSourceContract.for_scan(
+            contract_key=kms_kind,
+            contract_version="1.0.0",
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            phase=EvidenceCollectionPhase.ENRICHMENT,
+            subject=kms_subject,
+            evidence_kind=kms_kind,
+            collector="kms.keys",
+            collector_version="1.0.0",
+            source_api="kms:DescribeKey",
+            cardinality=EvidenceCardinality.SINGLE,
+            identity_authoritative=lookup_present,
+        )
+        kms_artifact = SourceEvidenceArtifact.for_payload(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            evidence_reference=f"normalized://kms/{REGION}/{kms_kind}",
+            evidence_schema="kms.key",
+            evidence_schema_version="1.0.0",
+            collected_at=COLLECTED_AT,
+            normalized_payload={
+                "region": REGION,
+                "supplied_reference": kms_reference,
+                "source_bucket_names": sorted(bucket_names),
+                "key": (
+                    {
+                        "aws_account_id": ACCOUNT_ID,
+                        "region": REGION,
+                        "key_id": "key-123",
+                        "arn": key_arn,
+                        "key_manager": "CUSTOMER",
+                        "enabled": None,
+                        "multi_region": None,
+                        "creation_date": None,
+                        "key_state": None,
+                        "origin": None,
+                        "key_usage": None,
+                        "key_spec": None,
+                    }
+                    if lookup_present
+                    else None
+                ),
+                "complete": lookup_present,
+                "failure_category": None if lookup_present else "ACCESS_DENIED",
+            },
+        )
+        kms_outcome = _outcome(
+            kms_contract,
+            kms_artifact,
+            state=(
+                EvidenceSourceState.PRESENT if lookup_present else EvidenceSourceState.UNAVAILABLE
+            ),
+            failure_category=(None if lookup_present else EvidenceFailureCategory.ACCESS_DENIED),
+        )
+        contracts.append(kms_contract)
+        artifacts.append(kms_artifact)
+        outcomes.append(kms_outcome)
+
+    relationships: list[ResourceRelationship] = []
+    for bucket_subject, encryption_artifact, encryption_outcome in encryption_parts:
+        source = RelationshipEndpoint.for_aws_resource(
+            aws_account_id=bucket_subject.aws_account_id,
+            service=bucket_subject.service,
+            resource_type=bucket_subject.resource_type,
+            aws_resource_id=bucket_subject.aws_resource_id,
+            scope=bucket_subject.scope,
+            region=bucket_subject.region,
+            observed_in_scan_id=SCAN_ID,
+        )
+        if lookup_present:
+            target: RelationshipEndpoint | UnresolvedRelationshipTarget = (
+                RelationshipEndpoint.for_aws_resource(
+                    aws_account_id=ACCOUNT_ID,
+                    service="kms",
+                    resource_type="kms_key",
+                    aws_resource_id=key_arn,
+                    scope=ResourceScope.REGIONAL,
+                    region=REGION,
+                    observed_in_scan_id=SCAN_ID,
+                )
+            )
+            resolution = RelationshipResolution.RESOLVED
+        else:
+            target = UnresolvedRelationshipTarget.for_aws_reference(
+                service="kms",
+                resource_type="kms_key",
+                aws_resource_id=kms_references[0],
+                scope=ResourceScope.REGIONAL,
+                region=REGION,
+            )
+            resolution = RelationshipResolution.TARGET_IDENTITY_INCOMPLETE
+        relationships.append(
+            ResourceRelationship.for_observation(
+                scan_id=SCAN_ID,
+                collection_account_id=ACCOUNT_ID,
+                relationship_type=RelationshipType.ENCRYPTED_WITH,
+                source=source,
+                target=target,
+                resolution=resolution,
+                provenance=RelationshipProvenance(
+                    collector=encryption_outcome.collector,
+                    collector_version=encryption_outcome.collector_version,
+                    source_api=encryption_outcome.source_api,
+                    evidence_reference=encryption_artifact.evidence_reference,
+                    collected_at=COLLECTED_AT,
+                ),
+            )
+        )
+    return tuple(contracts), tuple(artifacts), tuple(outcomes), tuple(relationships)
+
+
 def _outcome(
     contract: ScanSourceContract,
     artifact: SourceEvidenceArtifact,
@@ -191,6 +755,63 @@ def _outcome(
         collected_at=artifact.collected_at,
         evidence_reference=artifact.evidence_reference,
         evidence_sha256=artifact.evidence_sha256,
+    )
+
+
+def _rebind_graph_artifact(
+    *,
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    evidence_kind: str,
+    payload: dict[str, object],
+) -> tuple[tuple[SourceEvidenceArtifact, ...], tuple[SourceEvidenceOutcome, ...]]:
+    outcome = next(item for item in outcomes if item.evidence_kind == evidence_kind)
+    artifact = next(
+        item for item in artifacts if item.evidence_reference == outcome.evidence_reference
+    )
+    rebound_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=artifact.scan_id,
+        collection_account_id=artifact.collection_account_id,
+        evidence_reference=artifact.evidence_reference,
+        evidence_schema=artifact.evidence_schema,
+        evidence_schema_version=artifact.evidence_schema_version,
+        collected_at=artifact.collected_at,
+        normalized_payload=payload,
+    )
+    rebound_outcome = outcome.model_copy(
+        update={"evidence_sha256": rebound_artifact.evidence_sha256}
+    )
+    return (
+        tuple(rebound_artifact if item is artifact else item for item in artifacts),
+        tuple(rebound_outcome if item is outcome else item for item in outcomes),
+    )
+
+
+def _rebind_graph_source(
+    *,
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    evidence_kind: str,
+    payload: dict[str, object],
+    state: EvidenceSourceState,
+    failure_category: EvidenceFailureCategory | None = None,
+) -> tuple[tuple[SourceEvidenceArtifact, ...], tuple[SourceEvidenceOutcome, ...]]:
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind=evidence_kind,
+        payload=payload,
+    )
+    rebound = next(item for item in rebound_outcomes if item.evidence_kind == evidence_kind)
+    restated = rebound.model_copy(
+        update={
+            "state": state,
+            "failure_category": failure_category,
+        }
+    )
+    return (
+        rebound_artifacts,
+        tuple(restated if item is rebound else item for item in rebound_outcomes),
     )
 
 
@@ -778,3 +1399,1214 @@ def test_external_owner_requires_exact_resource_proof_and_resolved_relationship(
         relationships=(relationship,),
     )
     assert _inventory(graph=complete, resources=(finding, external_bucket)).resource_count == 2
+
+    s3_contracts, s3_artifacts, s3_outcomes = _complete_s3_manifest_parts()
+    graph_with_5e_manifest = _graph(
+        source_contracts=(contract, *s3_contracts),
+        artifacts=(artifact, *s3_artifacts),
+        source_outcomes=(outcome, *s3_outcomes),
+        relationships=(relationship,),
+    )
+    assert (
+        _inventory(
+            graph=graph_with_5e_manifest,
+            resources=(finding, external_bucket),
+        ).resource_count
+        == 2
+    )
+
+
+def test_kms_resource_requires_describe_key_proof_and_s3_encryption_edge() -> None:
+    bucket = _s3_bucket(region=REGION)
+    key_arn = f"arn:aws:kms:{REGION}:{ACCOUNT_ID}:key/key-123"
+    kms_key = NormalizedResource(
+        account_id=ACCOUNT_ID,
+        service="kms",
+        resource_type="kms_key",
+        aws_resource_id=key_arn,
+        arn=key_arn,
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+    )
+    kms_subject = ResourceEvidenceSubject.for_aws_resource(
+        scan_id=SCAN_ID,
+        aws_account_id=ACCOUNT_ID,
+        service="kms",
+        resource_type="kms_key",
+        aws_resource_id=key_arn,
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+    )
+    kms_kind = "kms.key." + hashlib.sha256(f"{REGION}\0alias/example".encode()).hexdigest()
+    kms_contract = ScanSourceContract.for_scan(
+        contract_key=kms_kind,
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.ENRICHMENT,
+        subject=kms_subject,
+        evidence_kind=kms_kind,
+        collector="kms.keys",
+        collector_version="1.0.0",
+        source_api="kms:DescribeKey",
+        cardinality=EvidenceCardinality.SINGLE,
+        identity_authoritative=True,
+    )
+    kms_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://kms/us-east-1/key/key-123",
+        evidence_schema="kms.key",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "region": REGION,
+            "supplied_reference": "alias/example",
+            "source_bucket_names": [bucket.aws_resource_id],
+            "key": {
+                "aws_account_id": ACCOUNT_ID,
+                "region": REGION,
+                "key_id": "key-123",
+                "arn": key_arn,
+                "key_manager": "CUSTOMER",
+            },
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    kms_outcome = _outcome(kms_contract, kms_artifact)
+
+    bucket_subject = ResourceEvidenceSubject.for_aws_resource(
+        scan_id=SCAN_ID,
+        aws_account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id=bucket.aws_resource_id,
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+    )
+    encryption_contract = ScanSourceContract.for_scan(
+        contract_key="s3.bucket-encryption",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.ENRICHMENT,
+        subject=bucket_subject,
+        evidence_kind="s3.bucket-encryption",
+        collector="s3.bucket-encryption",
+        collector_version="1.0.0",
+        source_api="s3:GetEncryptionConfiguration",
+        cardinality=EvidenceCardinality.SINGLE,
+    )
+    encryption_artifact = _artifact(
+        reference="normalized://s3/bucket/encryption",
+        payload={"kms_reference": "alias/example"},
+    )
+    encryption_outcome = _outcome(encryption_contract, encryption_artifact)
+    relationship = ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.ENCRYPTED_WITH,
+        source=_endpoint(bucket),
+        target=_endpoint(kms_key),
+        resolution=RelationshipResolution.RESOLVED,
+        provenance=RelationshipProvenance(
+            collector=encryption_contract.collector,
+            collector_version=encryption_contract.collector_version,
+            source_api=encryption_contract.source_api,
+            evidence_reference=encryption_artifact.evidence_reference,
+            collected_at=COLLECTED_AT,
+        ),
+    )
+    graph_without_edge = _graph(
+        source_contracts=(kms_contract, encryption_contract),
+        artifacts=(kms_artifact, encryption_artifact),
+        source_outcomes=(kms_outcome, encryption_outcome),
+        relationships=(),
+    )
+    with pytest.raises(ValidationError, match="S3 encryption relationship"):
+        _inventory(graph=graph_without_edge, resources=(bucket, kms_key))
+
+    complete = _graph(
+        source_contracts=(kms_contract, encryption_contract),
+        artifacts=(kms_artifact, encryption_artifact),
+        source_outcomes=(kms_outcome, encryption_outcome),
+        relationships=(relationship,),
+    )
+    assert _inventory(graph=complete, resources=(bucket, kms_key)).resource_count == 2
+
+    unrelated_bucket = NormalizedResource(
+        account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id="unrelated-bucket",
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+    )
+    wrong_source = ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.ENCRYPTED_WITH,
+        source=_endpoint(unrelated_bucket),
+        target=_endpoint(kms_key),
+        resolution=RelationshipResolution.RESOLVED,
+        provenance=relationship.provenance,
+    )
+    wrong_source_graph = _graph(
+        source_contracts=(kms_contract, encryption_contract),
+        artifacts=(kms_artifact, encryption_artifact),
+        source_outcomes=(kms_outcome, encryption_outcome),
+        relationships=(wrong_source,),
+    )
+    with pytest.raises(ValidationError, match="S3 encryption relationship"):
+        _inventory(
+            graph=wrong_source_graph,
+            resources=(bucket, unrelated_bucket, kms_key),
+        )
+
+    wrong_provenance = relationship.model_copy(
+        update={
+            "provenance": RelationshipProvenance(
+                collector=kms_contract.collector,
+                collector_version=kms_contract.collector_version,
+                source_api=kms_contract.source_api,
+                evidence_reference=kms_artifact.evidence_reference,
+                collected_at=COLLECTED_AT,
+            )
+        }
+    )
+    wrong_graph = _graph(
+        source_contracts=(kms_contract, encryption_contract),
+        artifacts=(kms_artifact, encryption_artifact),
+        source_outcomes=(kms_outcome, encryption_outcome),
+        relationships=(wrong_provenance,),
+    )
+    with pytest.raises(ValidationError, match="S3 encryption relationship"):
+        _inventory(graph=wrong_graph, resources=(bucket, kms_key))
+
+
+def test_complete_s3_manifest_cannot_omit_account_or_per_bucket_sources() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+
+    for omitted_collector in ("s3.account-public-access-block", "s3.bucket-tags"):
+        omitted_outcome_ids = {
+            outcome.source_outcome_id
+            for outcome in outcomes
+            if outcome.collector == omitted_collector
+        }
+        omitted_references = {
+            outcome.evidence_reference
+            for outcome in outcomes
+            if outcome.collector == omitted_collector
+        }
+        with pytest.raises(ValidationError, match="S3 evidence requires|manifest is incomplete"):
+            _graph(
+                source_contracts=tuple(
+                    item for item in contracts if item.source_outcome_id not in omitted_outcome_ids
+                ),
+                artifacts=tuple(
+                    item for item in artifacts if item.evidence_reference not in omitted_references
+                ),
+                source_outcomes=tuple(
+                    item for item in outcomes if item.source_outcome_id not in omitted_outcome_ids
+                ),
+                relationships=(),
+            )
+
+
+def test_s3_replay_rejects_absent_policy_with_public_status() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    status_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-policy-status"
+    )
+    status_artifact = next(
+        item for item in artifacts if item.evidence_reference == status_outcome.evidence_reference
+    )
+    payload = status_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-policy-status",
+        payload={
+            **payload,
+            "value": {"policy_present": True, "is_public": True},
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+
+    with pytest.raises(ValidationError, match="contradictory S3 policy sources"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_detects_case_insensitive_unconditional_public_policy() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    document = {
+        "Version": None,
+        "Id": None,
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "S3:GetObject",
+                "Resource": "arn:aws:s3:::bucket-a/*",
+            }
+        ],
+    }
+    digest = hashlib.sha256(
+        json.dumps(
+            document,
+            allow_nan=False,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode()
+    ).hexdigest()
+    policy_outcome = next(item for item in outcomes if item.evidence_kind == "s3.bucket-policy")
+    policy_artifact = next(
+        item for item in artifacts if item.evidence_reference == policy_outcome.evidence_reference
+    )
+    policy_payload = policy_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(policy_payload, dict)
+    artifacts, outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-policy",
+        payload={
+            **policy_payload,
+            "value": {"document": document, "sha256": digest},
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+    status_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-policy-status"
+    )
+    status_artifact = next(
+        item for item in artifacts if item.evidence_reference == status_outcome.evidence_reference
+    )
+    status_payload = status_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(status_payload, dict)
+    artifacts, outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-policy-status",
+        payload={
+            **status_payload,
+            "value": {"policy_present": True, "is_public": False},
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+
+    with pytest.raises(ValidationError, match="contradictory S3 policy sources"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_rejects_public_acl_with_effective_ignore_public_acls() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    acl_outcome = next(item for item in outcomes if item.evidence_kind == "s3.bucket-acl")
+    acl_artifact = next(
+        item for item in artifacts if item.evidence_reference == acl_outcome.evidence_reference
+    )
+    payload = acl_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-acl",
+        payload={
+            **payload,
+            "value": {
+                "owner": {"id": "owner-id", "display_name": None},
+                "grants": [
+                    {
+                        "grantee": {
+                            "type": "Group",
+                            "uri": "http://acs.amazonaws.com/groups/global/AllUsers",
+                        },
+                        "permission": "READ",
+                    }
+                ],
+            },
+        },
+    )
+
+    with pytest.raises(ValidationError, match="contradictory S3 ACL evidence"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_rejects_bucket_owner_enforced_acl_mismatch() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    ownership_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-ownership-controls"
+    )
+    ownership_artifact = next(
+        item
+        for item in artifacts
+        if item.evidence_reference == ownership_outcome.evidence_reference
+    )
+    ownership_payload = ownership_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(ownership_payload, dict)
+    artifacts, outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-ownership-controls",
+        payload={
+            **ownership_payload,
+            "value": {"rules": [{"object_ownership": "BucketOwnerEnforced"}]},
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+    acl_outcome = next(item for item in outcomes if item.evidence_kind == "s3.bucket-acl")
+    acl_artifact = next(
+        item for item in artifacts if item.evidence_reference == acl_outcome.evidence_reference
+    )
+    acl_payload = acl_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(acl_payload, dict)
+    artifacts, outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-acl",
+        payload={
+            **acl_payload,
+            "value": {
+                "owner": {"id": "owner-id", "display_name": None},
+                "grants": [
+                    {
+                        "grantee": {"type": "CanonicalUser", "id": "external-owner"},
+                        "permission": "FULL_CONTROL",
+                    }
+                ],
+            },
+        },
+    )
+
+    with pytest.raises(ValidationError, match="contradictory S3 ACL evidence"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_rejects_acl_grantee_with_conflicting_identity_fields() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    acl_outcome = next(item for item in outcomes if item.evidence_kind == "s3.bucket-acl")
+    acl_artifact = next(
+        item for item in artifacts if item.evidence_reference == acl_outcome.evidence_reference
+    )
+    payload = acl_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-acl",
+        payload={
+            **payload,
+            "value": {
+                "owner": {"id": "owner-id", "display_name": None},
+                "grants": [
+                    {
+                        "grantee": {
+                            "type": "CanonicalUser",
+                            "id": "owner-id",
+                            "uri": "http://acs.amazonaws.com/groups/global/AllUsers",
+                        },
+                        "permission": "FULL_CONTROL",
+                    }
+                ],
+            },
+        },
+    )
+
+    with pytest.raises(ValidationError, match="S3 per-bucket artifact value is malformed"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_rejects_multiple_bucket_ownership_rules() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    ownership_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-ownership-controls"
+    )
+    ownership_artifact = next(
+        item
+        for item in artifacts
+        if item.evidence_reference == ownership_outcome.evidence_reference
+    )
+    payload = ownership_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-ownership-controls",
+        payload={
+            **payload,
+            "value": {
+                "rules": [
+                    {"object_ownership": "BucketOwnerEnforced"},
+                    {"object_ownership": "BucketOwnerPreferred"},
+                ]
+            },
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+
+    with pytest.raises(ValidationError, match="S3 per-bucket artifact value is malformed"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_accepts_blocked_encryption_type_without_default() -> None:
+    blocked_only = {
+        "rules": [
+            {
+                "sse_algorithm": None,
+                "kms_key_reference": None,
+                "kms_reference_explicit": False,
+                "key_management": None,
+                "bucket_key_enabled": None,
+                "blocked_encryption_types": ["SSE-C"],
+            }
+        ]
+    }
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(
+        bucket_names=("bucket-a",),
+        encryption_values={"bucket-a": blocked_only},
+    )
+
+    graph = _graph(
+        source_contracts=contracts,
+        artifacts=artifacts,
+        source_outcomes=outcomes,
+        relationships=(),
+    )
+
+    assert EvidenceGraph.model_validate(graph.model_dump(mode="python")) == graph
+
+
+@pytest.mark.parametrize(
+    "rule_update",
+    [
+        {"bucket_key_enabled": True},
+        {"blocked_encryption_types": ["NONE", "SSE-C"]},
+    ],
+)
+def test_s3_replay_rejects_invalid_encryption_semantics(
+    rule_update: dict[str, object],
+) -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    encryption_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-encryption"
+    )
+    encryption_artifact = next(
+        item
+        for item in artifacts
+        if item.evidence_reference == encryption_outcome.evidence_reference
+    )
+    payload = encryption_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    value = payload["value"]
+    assert isinstance(value, dict)
+    rules = value["rules"]
+    assert isinstance(rules, list)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-encryption",
+        payload={
+            **payload,
+            "value": {"rules": [{**rules[0], **rule_update}]},
+        },
+    )
+
+    with pytest.raises(ValidationError, match="S3 per-bucket artifact value is malformed"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_replay_rejects_mfa_delete_without_versioning_status() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    versioning_outcome = next(
+        item for item in outcomes if item.evidence_kind == "s3.bucket-versioning"
+    )
+    versioning_artifact = next(
+        item
+        for item in artifacts
+        if item.evidence_reference == versioning_outcome.evidence_reference
+    )
+    payload = versioning_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="s3.bucket-versioning",
+        payload={
+            **payload,
+            "value": {"status": None, "mfa_delete": "Enabled"},
+            "expected_absence": False,
+        },
+        state=EvidenceSourceState.PRESENT,
+    )
+
+    with pytest.raises(ValidationError, match="S3 per-bucket artifact value is malformed"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_discovery_and_location_artifacts_require_exact_live_shapes() -> None:
+    contracts, artifacts, outcomes = _complete_s3_manifest_parts(bucket_names=("bucket-a",))
+    discovery_outcome = next(item for item in outcomes if item.collector == "s3.buckets")
+    discovery_artifact = next(
+        item
+        for item in artifacts
+        if item.evidence_reference == discovery_outcome.evidence_reference
+    )
+    discovery_payload = discovery_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(discovery_payload, dict)
+    location_outcome = next(item for item in outcomes if item.collector == "s3.bucket-location")
+    location_artifact = next(
+        item for item in artifacts if item.evidence_reference == location_outcome.evidence_reference
+    )
+    location_payload = location_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(location_payload, dict)
+
+    invalid_discovery_payloads = [
+        {**discovery_payload, "unknown": True},
+        {
+            **discovery_payload,
+            "buckets": [{**discovery_payload["buckets"][0], "unknown": True}],
+        },
+        {
+            **discovery_payload,
+            "buckets": [{**discovery_payload["buckets"][0], "creation_date": "not-a-date"}],
+        },
+    ]
+    for payload in invalid_discovery_payloads:
+        rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+            artifacts=artifacts,
+            outcomes=outcomes,
+            evidence_kind=discovery_outcome.evidence_kind,
+            payload=payload,
+        )
+        with pytest.raises(ValidationError, match="ListBuckets manifest is malformed"):
+            _graph(
+                source_contracts=contracts,
+                artifacts=rebound_artifacts,
+                source_outcomes=rebound_outcomes,
+                relationships=(),
+            )
+
+    missing_not_found = dict(location_payload)
+    missing_not_found.pop("resource_not_found")
+    invalid_location_payloads = [
+        {**location_payload, "unknown": True},
+        missing_not_found,
+        {**location_payload, "legacy_bucket_region": None},
+        {**location_payload, "location_constraint": "us-east-1"},
+    ]
+    for payload in invalid_location_payloads:
+        rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+            artifacts=artifacts,
+            outcomes=outcomes,
+            evidence_kind=location_outcome.evidence_kind,
+            payload=payload,
+        )
+        with pytest.raises(
+            ValidationError,
+            match=(
+                "bucket-location evidence is malformed|legacy identity is invalid|"
+                "successful S3 bucket-location identity is invalid"
+            ),
+        ):
+            _graph(
+                source_contracts=contracts,
+                artifacts=rebound_artifacts,
+                source_outcomes=rebound_outcomes,
+                relationships=(),
+            )
+
+
+def test_s3_kms_manifest_requires_each_bucket_edge_for_one_coalesced_key() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts()
+    assert len(relationships) == 2
+    _graph(
+        source_contracts=contracts,
+        artifacts=artifacts,
+        source_outcomes=outcomes,
+        relationships=relationships,
+    )
+
+    with pytest.raises(ValidationError, match="relationship manifest"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=relationships[:1],
+        )
+
+
+def test_s3_kms_manifest_preserves_valid_aliases_coalesced_to_one_key_edge() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        kms_references=("alias/first", "alias/second"),
+    )
+    assert len(relationships) == 1
+    graph = _graph(
+        source_contracts=contracts,
+        artifacts=artifacts,
+        source_outcomes=outcomes,
+        relationships=(relationships[0], relationships[0]),
+    )
+    assert graph.relationships == relationships
+    assert EvidenceGraph.model_validate(graph.model_dump(mode="python")) == graph
+
+
+def test_s3_kms_manifest_rejects_key_arn_resolving_to_a_different_key() -> None:
+    expected_arn = f"arn:aws:kms:{REGION}:{ACCOUNT_ID}:key/key-expected"
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        kms_references=(expected_arn,),
+    )
+
+    with pytest.raises(ValidationError, match="successful DescribeKey relationship identity"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=relationships,
+        )
+
+
+def test_s3_kms_manifest_requires_failed_lookup_unresolved_edge() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        lookup_present=False,
+    )
+    assert len(relationships) == 1
+    assert relationships[0].resolution is RelationshipResolution.TARGET_IDENTITY_INCOMPLETE
+    _graph(
+        source_contracts=contracts,
+        artifacts=artifacts,
+        source_outcomes=outcomes,
+        relationships=relationships,
+    )
+
+    with pytest.raises(ValidationError, match="relationship manifest"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(),
+        )
+
+
+def test_s3_kms_failed_lookup_subject_must_be_first_source_bucket() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a", "bucket-b"),
+        lookup_present=False,
+    )
+    kms_outcome = next(item for item in outcomes if item.collector == "kms.keys")
+    kms_contract = next(
+        item for item in contracts if item.source_outcome_id == kms_outcome.source_outcome_id
+    )
+    kms_artifact = next(
+        item for item in artifacts if item.evidence_reference == kms_outcome.evidence_reference
+    )
+    wrong_subject = next(
+        item.subject
+        for item in outcomes
+        if item.collector == "s3.bucket-encryption"
+        and isinstance(item.subject, ResourceEvidenceSubject)
+        and item.subject.aws_resource_id == "bucket-b"
+    )
+    wrong_contract = ScanSourceContract.for_scan(
+        contract_key=kms_contract.contract_key,
+        contract_version=kms_contract.contract_version,
+        scan_id=kms_contract.scan_id,
+        collection_account_id=kms_contract.collection_account_id,
+        phase=kms_contract.phase,
+        subject=wrong_subject,
+        evidence_kind=kms_contract.evidence_kind,
+        collector=kms_contract.collector,
+        collector_version=kms_contract.collector_version,
+        source_api=kms_contract.source_api,
+        cardinality=kms_contract.cardinality,
+    )
+    wrong_outcome = _outcome(
+        wrong_contract,
+        kms_artifact,
+        state=EvidenceSourceState.UNAVAILABLE,
+        failure_category=EvidenceFailureCategory.ACCESS_DENIED,
+    )
+
+    with pytest.raises(ValidationError, match="canonical source bucket"):
+        _graph(
+            source_contracts=tuple(
+                wrong_contract if item is kms_contract else item for item in contracts
+            ),
+            artifacts=artifacts,
+            source_outcomes=tuple(
+                wrong_outcome if item is kms_outcome else item for item in outcomes
+            ),
+            relationships=relationships,
+        )
+
+
+@pytest.mark.parametrize(
+    "key_update",
+    [
+        {"enabled": True, "key_state": "Disabled"},
+        {"key_state": "BOGUS"},
+        {"origin": "BOGUS"},
+        {"key_usage": "BOGUS"},
+        {"key_spec": "BOGUS"},
+        {"key_spec": "HMAC_256", "key_usage": "ENCRYPT_DECRYPT"},
+    ],
+)
+def test_s3_kms_replay_rejects_invalid_or_contradictory_metadata(
+    key_update: dict[str, object],
+) -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+    )
+    kms_outcome = next(item for item in outcomes if item.collector == "kms.keys")
+    kms_artifact = next(
+        item for item in artifacts if item.evidence_reference == kms_outcome.evidence_reference
+    )
+    payload = kms_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    key = payload["key"]
+    assert isinstance(key, dict)
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind=kms_outcome.evidence_kind,
+        payload={**payload, "key": {**key, **key_update}},
+    )
+
+    with pytest.raises(ValidationError, match="KMS DescribeKey evidence metadata"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=relationships,
+        )
+
+
+def test_kms_outer_artifact_is_exact_and_bound_to_referencing_buckets() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+    )
+    kms_outcome = next(item for item in outcomes if item.collector == "kms.keys")
+    kms_artifact = next(
+        item for item in artifacts if item.evidence_reference == kms_outcome.evidence_reference
+    )
+    payload = kms_artifact.model_dump(mode="json")["normalized_payload"]
+    assert isinstance(payload, dict)
+    invalid_payloads = [
+        {**payload, "unknown": True},
+        {**payload, "complete": False},
+        {**payload, "failure_category": "MALFORMED_RESPONSE"},
+        {**payload, "source_bucket_names": ["other-bucket"]},
+    ]
+
+    for invalid_payload in invalid_payloads:
+        rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+            artifacts=artifacts,
+            outcomes=outcomes,
+            evidence_kind=kms_outcome.evidence_kind,
+            payload=invalid_payload,
+        )
+        with pytest.raises(ValidationError, match="KMS DescribeKey evidence metadata"):
+            _graph(
+                source_contracts=contracts,
+                artifacts=rebound_artifacts,
+                source_outcomes=rebound_outcomes,
+                relationships=relationships,
+            )
+
+
+def test_s3_kms_manifest_rejects_duplicate_extra_and_mismatched_edges() -> None:
+    contracts, artifacts, outcomes, relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+    )
+    relationship = relationships[0]
+    with pytest.raises(ValidationError, match="contains duplicates"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(relationship, relationship),
+        )
+
+    extra_source = RelationshipEndpoint.for_aws_resource(
+        aws_account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id="extra-bucket",
+        scope=ResourceScope.REGIONAL,
+        region=REGION,
+        observed_in_scan_id=SCAN_ID,
+    )
+    extra = ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.ENCRYPTED_WITH,
+        source=extra_source,
+        target=relationship.target,
+        resolution=RelationshipResolution.RESOLVED,
+        provenance=relationship.provenance,
+    )
+    with pytest.raises(ValidationError, match="relationship manifest"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(relationship, extra),
+        )
+
+    mismatched = ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.ENCRYPTED_WITH,
+        source=relationship.source,
+        target=UnresolvedRelationshipTarget.for_aws_reference(
+            service="kms",
+            resource_type="kms_key",
+            aws_resource_id="alias/wrong",
+            scope=ResourceScope.REGIONAL,
+            region=REGION,
+        ),
+        resolution=RelationshipResolution.TARGET_IDENTITY_INCOMPLETE,
+        provenance=relationship.provenance,
+    )
+    with pytest.raises(ValidationError, match="relationship manifest"):
+        _graph(
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(mismatched,),
+        )
+
+
+def test_off_region_s3_bucket_requires_exact_authoritative_location_evidence() -> None:
+    bucket = _s3_bucket(region="us-west-2")
+    account_subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    discovery_contract = ScanSourceContract.for_scan(
+        contract_key="s3.buckets.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=account_subject,
+        evidence_kind="s3.buckets.discovery",
+        collector="s3.buckets",
+        collector_version="1.0.0",
+        source_api="s3:ListAllMyBuckets",
+        cardinality=EvidenceCardinality.COLLECTION,
+    )
+    discovery_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/buckets",
+        evidence_schema="s3.buckets.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "buckets": [
+                {
+                    "bucket_name": bucket.aws_resource_id,
+                    "bucket_arn": f"arn:aws:s3:::{bucket.aws_resource_id}",
+                    "creation_date": None,
+                    "list_bucket_region": "us-west-2",
+                }
+            ],
+            "bucket_names": [bucket.aws_resource_id],
+            "resource_count": 1,
+            "discarded_item_count": 0,
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    discovery_outcome = _outcome(discovery_contract, discovery_artifact)
+    bucket_subject = ResourceEvidenceSubject.for_aws_resource(
+        scan_id=SCAN_ID,
+        aws_account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id=bucket.aws_resource_id,
+        scope=ResourceScope.REGIONAL,
+        region="us-west-2",
+    )
+    location_contract = ScanSourceContract.for_scan(
+        contract_key="s3.bucket-location",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.ENRICHMENT,
+        subject=bucket_subject,
+        evidence_kind="s3.bucket-location",
+        collector="s3.bucket-location",
+        collector_version="1.0.0",
+        source_api="s3:GetBucketLocation",
+        cardinality=EvidenceCardinality.SINGLE,
+        identity_authoritative=True,
+    )
+    location_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/bucket-us-west-2/location",
+        evidence_schema="s3.bucket-location",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "bucket_name": bucket.aws_resource_id,
+            "bucket_arn": f"arn:aws:s3:::{bucket.aws_resource_id}",
+            "list_bucket_region": "us-west-2",
+            "location_constraint": "us-west-2",
+            "bucket_region": "us-west-2",
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    location_outcome = _outcome(location_contract, location_artifact)
+    account_contract, account_artifact, account_outcome = _s3_account_public_access_block()
+
+    with pytest.raises(ValidationError, match="location manifest is incomplete"):
+        _graph(
+            source_contracts=(discovery_contract, account_contract),
+            artifacts=(discovery_artifact, account_artifact),
+            source_outcomes=(discovery_outcome, account_outcome),
+            relationships=(),
+        )
+
+    non_authoritative_location = ScanSourceContract.for_scan(
+        contract_key="s3.bucket-location",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.ENRICHMENT,
+        subject=bucket_subject,
+        evidence_kind="s3.bucket-location",
+        collector="s3.bucket-location",
+        collector_version="1.0.0",
+        source_api="s3:GetBucketLocation",
+        cardinality=EvidenceCardinality.SINGLE,
+    )
+    with pytest.raises(ValidationError, match="source contract manifest"):
+        _graph(
+            source_contracts=(
+                discovery_contract,
+                non_authoritative_location,
+                account_contract,
+            ),
+            artifacts=(discovery_artifact, location_artifact, account_artifact),
+            source_outcomes=(discovery_outcome, location_outcome, account_outcome),
+            relationships=(),
+        )
+
+    complete_contracts, complete_artifacts, complete_outcomes = _complete_s3_manifest_parts(
+        bucket_names=(bucket.aws_resource_id,),
+        region="us-west-2",
+    )
+    complete = _graph(
+        source_contracts=complete_contracts,
+        artifacts=complete_artifacts,
+        source_outcomes=complete_outcomes,
+        relationships=(),
+    )
+    region_evidence = reconstruct_s3_bucket_region_evidence(
+        contracts=complete.source_contracts,
+        outcomes=complete.source_outcomes,
+        artifacts=complete.artifacts,
+    )
+    assert region_evidence is not None
+    assert region_evidence.complete
+    assert region_evidence.region_for(bucket.aws_resource_id) == "us-west-2"
+
+
+def test_legacy_s3_bucket_survives_failed_5e_location_without_expanding_analyzer() -> None:
+    bucket = _s3_bucket(region="us-west-2")
+    account_subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    discovery_contract = ScanSourceContract.for_scan(
+        contract_key="s3.buckets.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=account_subject,
+        evidence_kind="s3.buckets.discovery",
+        collector="s3.buckets",
+        collector_version="1.0.0",
+        source_api="s3:ListAllMyBuckets",
+        cardinality=EvidenceCardinality.COLLECTION,
+    )
+    discovery_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/legacy-location-bucket",
+        evidence_schema="s3.buckets.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "buckets": [
+                {
+                    "bucket_name": bucket.aws_resource_id,
+                    "bucket_arn": f"arn:aws:s3:::{bucket.aws_resource_id}",
+                    "creation_date": None,
+                    "list_bucket_region": bucket.region,
+                }
+            ],
+            "bucket_names": [bucket.aws_resource_id],
+            "resource_count": 1,
+            "discarded_item_count": 0,
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    discovery_outcome = _outcome(discovery_contract, discovery_artifact)
+    location_contract, location_artifact, location_outcome = _failed_s3_location(bucket)
+    analyzer_contract = _access_analyzer_contract(
+        region=REGION,
+        allows_supplemental_region=False,
+    )
+    analyzer_artifact = _access_analyzer_artifact(REGION)
+    analyzer_outcome = _outcome(analyzer_contract, analyzer_artifact)
+    account_contract, account_artifact, account_outcome = _s3_account_public_access_block()
+    graph = _graph(
+        source_contracts=(
+            discovery_contract,
+            location_contract,
+            account_contract,
+            analyzer_contract,
+        ),
+        artifacts=(
+            discovery_artifact,
+            location_artifact,
+            account_artifact,
+            analyzer_artifact,
+        ),
+        source_outcomes=(
+            discovery_outcome,
+            location_outcome,
+            account_outcome,
+            analyzer_outcome,
+        ),
+        relationships=(),
+    )
+
+    assert _inventory(graph=graph, resources=(bucket,), requested_region=REGION).resource_count == 1
+
+    bucket_subject = ResourceEvidenceSubject.for_aws_resource(
+        scan_id=SCAN_ID,
+        aws_account_id=ACCOUNT_ID,
+        service="s3",
+        resource_type="s3_bucket",
+        aws_resource_id=bucket.aws_resource_id,
+        scope=ResourceScope.REGIONAL,
+        region=bucket.region,
+    )
+    tags_contract = ScanSourceContract.for_scan(
+        contract_key="s3.bucket-tags",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.ENRICHMENT,
+        subject=bucket_subject,
+        evidence_kind="s3.bucket-tags",
+        collector="s3.bucket-tags",
+        collector_version="1.0.0",
+        source_api="s3:GetBucketTagging",
+        cardinality=EvidenceCardinality.SINGLE,
+    )
+    tags_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/legacy-location-bucket/tags",
+        evidence_schema="s3.bucket-tags",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "bucket_name": bucket.aws_resource_id,
+            "bucket_arn": f"arn:aws:s3:::{bucket.aws_resource_id}",
+            "bucket_region": bucket.region,
+            "value": [],
+            "legacy_projection": None,
+            "complete": True,
+            "expected_absence": False,
+            "failure_category": None,
+        },
+    )
+    tags_outcome = _outcome(tags_contract, tags_artifact)
+    with pytest.raises(ValidationError, match="artifact identity is inconsistent"):
+        _graph(
+            source_contracts=(
+                discovery_contract,
+                location_contract,
+                account_contract,
+                analyzer_contract,
+                tags_contract,
+            ),
+            artifacts=(
+                discovery_artifact,
+                location_artifact,
+                account_artifact,
+                analyzer_artifact,
+                tags_artifact,
+            ),
+            source_outcomes=(
+                discovery_outcome,
+                location_outcome,
+                account_outcome,
+                analyzer_outcome,
+                tags_outcome,
+            ),
+            relationships=(),
+        )

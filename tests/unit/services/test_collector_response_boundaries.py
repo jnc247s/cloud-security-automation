@@ -182,6 +182,20 @@ def test_all_collectors_preserve_valid_empty_inventory_semantics() -> None:
             ("s3", "us-east-1"): FakeAWSClient(
                 paginators={"list_buckets": FakePaginator([{"Buckets": []}])}
             ),
+            ("s3control", "us-east-1"): FakeAWSClient(
+                responses={
+                    "get_public_access_block": [
+                        {
+                            "PublicAccessBlockConfiguration": {
+                                "BlockPublicAcls": True,
+                                "IgnorePublicAcls": True,
+                                "BlockPublicPolicy": True,
+                                "RestrictPublicBuckets": True,
+                            }
+                        }
+                    ]
+                }
+            ),
             ("iam", "us-east-1"): empty_iam_client(),
             ("cloudtrail", "us-east-1"): FakeAWSClient(
                 paginators={"list_trails": FakePaginator([{"Trails": []}])}

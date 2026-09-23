@@ -3,8 +3,8 @@
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
 the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
 IAM, and 5D IAM Access Analyzer evidence producers at `main` commit
-`1a355107eb7a3ed7845fa3a569dbff80da2778bb`. The 5E S3 evidence preflight is complete, but its
-collector implementation has not started. Threats and residual risks are tracked in
+`8c6122e440cb427685a26ff80c3d83ee88885882`. The fact-only 5E S3 and referenced-KMS producer is
+implemented on its feature branch pending acceptance. Threats and residual risks are tracked in
 [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
@@ -112,18 +112,26 @@ normalized S3 bucket identity, records the S3 Region-discovery completeness inpu
 `ListAnalyzers`, `ListFindingsV2`, and `GetFindingV2` artifacts and outcomes. Malformed,
 inaccessible, conflicting, or pagination-incomplete data remains sanitized and incomplete while
 valid siblings are retained. Analyzer findings are investigation facts only: they do not decide
-`S3-002`, create a control-plane `Finding`, or substitute for the direct S3 evidence planned for
-5E.
+`S3-002`, create a control-plane `Finding`, or substitute for direct S3 evidence.
+
+The feature-branch 5E collector treats bucket policy, ACL, tags, Block Public Access, encryption,
+topology, source artifacts, and KMS metadata as sensitive `READ` data. It validates exact bucket
+home Regions before enrichment, strictly decodes policy JSON with duplicate-key rejection,
+separates expected absence from provider failure, and never places raw evidence or AWS error text
+in routine logs. Referenced KMS resources require validated returned identity plus an exact
+same-scan `encrypted_with` relationship; incomplete lookups retain only a typed unresolved
+reference and cannot invent a key, owner, ARN, Region, or manager. These facts do not authorize
+AWS writes or make an S3 compliance decision.
 
 Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
 artifact to a canonical digest, rejects known credential/authorization key names, and exposes
 controlled source failure categories instead of raw provider exceptions. Relationship provenance
 must identify exactly one `PRESENT` source outcome. These controls reduce accidental secret and
 fabricated-edge exposure; they do not make normalized cloud configuration non-sensitive.
-Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A and 5B artifacts
-rather than becoming artifact object keys, so untrusted metadata cannot alter the artifact's
-structural field vocabulary or be mistaken for a credential-bearing structural field. Tag values
-remain sensitive evidence.
+Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A, 5B, and 5E
+artifacts rather than becoming artifact object keys, so untrusted metadata cannot alter the
+artifact's structural field vocabulary or be mistaken for a credential-bearing structural field.
+Tag values remain sensitive evidence.
 
 Audit events are append-only evidence, not a general log sink. Record the verified actor context
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
@@ -182,13 +190,14 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B, 5C, and 5D collectors preserve facts and provenance
-only. They do not decide whether a default group, Flow Log, public-IP setting, network permission,
-IAM policy, root-account flag, tag, or external-access finding passes a planned control, and they
-do not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
+The accepted 5B, 5C, and 5D collectors and the feature-branch 5E collector preserve facts and
+provenance only. They do not decide whether a default group, Flow Log, public-IP setting, network
+permission, IAM policy, root-account flag, tag, external-access finding, bucket policy, ACL,
+Block Public Access setting, or encryption configuration passes a planned control, and they do
+not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
 failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5D are
-accepted on `main`, and 5E--5F are not implemented.
+accepted on `main`, 5E is pending acceptance on its feature branch, and 5F is not implemented.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

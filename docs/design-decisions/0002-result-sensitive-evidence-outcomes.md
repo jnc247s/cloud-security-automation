@@ -229,8 +229,9 @@ append-only schema without rewriting an accepted migration or historical row.
 
 Collector integration remains slice-specific work in 5A--5F. It must construct the complete
 declared-source manifest atomically. The accepted 5A through 5D producers construct their complete
-manifests; 5E--5F collectors and every deterministic Sprint 6 rule remain unimplemented merely
-because the storage and read boundary exists.
+manifests; feature-branch 5E adds the direct S3/KMS manifest pending acceptance. The 5F collector
+and every deterministic Sprint 6 rule remain unimplemented merely because the storage and read
+boundary exists.
 
 ## Validation
 

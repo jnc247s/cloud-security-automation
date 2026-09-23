@@ -11,6 +11,7 @@ from app.assessment.evidence_graph import SourceEvidenceArtifact
 from app.assessment.source_outcomes import (
     AccountEvidenceSubject,
     EvidenceCollectionPhase,
+    EvidenceFailureCategory,
     EvidenceSourceState,
     SourceEvidenceOutcome,
 )
@@ -104,6 +105,50 @@ def _access_analyzer_source(
         collector=collector,
         collector_version="1.0.0",
         source_api=source_api,
+        collected_at=COLLECTED_AT,
+        evidence_reference=artifact.evidence_reference,
+        evidence_sha256=artifact.evidence_sha256,
+    )
+    return artifact, outcome
+
+
+def _s3_discovery_source(
+    *,
+    state: EvidenceSourceState = EvidenceSourceState.PRESENT,
+    failure_category: EvidenceFailureCategory | None = None,
+) -> tuple[SourceEvidenceArtifact, SourceEvidenceOutcome]:
+    complete = state is EvidenceSourceState.PRESENT
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/buckets",
+        evidence_schema="s3.buckets.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "buckets": [],
+            "bucket_names": [],
+            "resource_count": 0,
+            "discarded_item_count": 0,
+            "complete": complete,
+            "failure_category": (failure_category.value if failure_category is not None else None),
+        },
+    )
+    outcome = SourceEvidenceOutcome.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=AccountEvidenceSubject(
+            aws_account_id=ACCOUNT_ID,
+            scope=ResourceScope.GLOBAL,
+        ),
+        evidence_kind="s3.buckets.discovery",
+        state=state,
+        failure_category=failure_category,
+        collector="s3.buckets",
+        collector_version="1.0.0",
+        source_api="s3:ListAllMyBuckets",
         collected_at=COLLECTED_AT,
         evidence_reference=artifact.evidence_reference,
         evidence_sha256=artifact.evidence_sha256,
@@ -443,6 +488,90 @@ def test_access_analyzer_region_source_flag_matches_outer_s3_status(
             outcomes=(incomplete_outcome,),
             artifacts=(incomplete_artifact,),
             s3_status=CollectionStatus.SUCCEEDED,
+        )
+
+
+def test_5e_analyzer_coverage_uses_exact_s3_discovery_not_outer_rollup() -> None:
+    analyzer_artifact, analyzer_outcome = _access_analyzer_source(
+        region="us-east-1",
+        required_regions=("us-east-1",),
+        s3_region_discovery_complete=True,
+    )
+    s3_artifact, s3_outcome = _s3_discovery_source()
+
+    assert validate_access_analyzer_s3_region_source_status(
+        outcomes=(analyzer_outcome, s3_outcome),
+        artifacts=(analyzer_artifact, s3_artifact),
+        s3_status=CollectionStatus.PARTIAL,
+    )
+
+    failed_artifact, failed_outcome = _s3_discovery_source(
+        state=EvidenceSourceState.UNAVAILABLE,
+        failure_category=EvidenceFailureCategory.ACCESS_DENIED,
+    )
+    with pytest.raises(ValueError, match="disagrees with S3 discovery status"):
+        validate_access_analyzer_s3_region_source_status(
+            outcomes=(analyzer_outcome, failed_outcome),
+            artifacts=(analyzer_artifact, failed_artifact),
+            s3_status=CollectionStatus.SUCCEEDED,
+        )
+
+
+def test_s3_account_public_access_block_subject_must_match_collection_account() -> None:
+    discovery_artifact, discovery_outcome = _s3_discovery_source()
+    account_artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://s3/account/public-access-block",
+        evidence_schema="s3.account-public-access-block",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "account_id": ACCOUNT_ID,
+            "configured": True,
+            "public_access_block": {
+                "BlockPublicAcls": True,
+                "IgnorePublicAcls": True,
+                "BlockPublicPolicy": True,
+                "RestrictPublicBuckets": True,
+            },
+            "complete": True,
+            "expected_absence": False,
+            "failure_category": None,
+        },
+    )
+    account_outcome = SourceEvidenceOutcome.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=AccountEvidenceSubject(
+            aws_account_id=ACCOUNT_ID,
+            scope=ResourceScope.GLOBAL,
+        ),
+        evidence_kind="s3.account-public-access-block",
+        state=EvidenceSourceState.PRESENT,
+        failure_category=None,
+        collector="s3.account-public-access-block",
+        collector_version="1.0.0",
+        source_api="s3:GetAccountPublicAccessBlock",
+        collected_at=COLLECTED_AT,
+        evidence_reference=account_artifact.evidence_reference,
+        evidence_sha256=account_artifact.evidence_sha256,
+    )
+    tampered = account_outcome.model_copy(
+        update={
+            "subject": AccountEvidenceSubject(
+                aws_account_id="210987654321",
+                scope=ResourceScope.GLOBAL,
+            )
+        }
+    )
+
+    with pytest.raises(ValueError, match="S3 source contract manifest"):
+        graph_collection_status_for(
+            collector_name="s3_evidence",
+            outcomes=(discovery_outcome, tampered),
+            artifacts=(discovery_artifact, account_artifact),
         )
 
 

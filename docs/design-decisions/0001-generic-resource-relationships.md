@@ -237,7 +237,8 @@ The preflight intentionally deferred migration and runtime integration to Sprint
 foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
 5A supplied the first AWS relationship producer, and 5B extended it with the accepted network
 graph. The accepted 5C producer extended it with IAM relationships, and the accepted 5D producer
-added Access Analyzer-to-S3 references. The 5E--5F producers remain unimplemented and may not
+added Access Analyzer-to-S3 references. Feature-branch 5E reuses the same contract for resolved
+and unresolved S3-to-KMS `encrypted_with` observations; 5F remains unimplemented and may not
 invent another representation.
 
 ## Alternatives considered

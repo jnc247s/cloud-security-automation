@@ -1,13 +1,14 @@
 # S3-002 public and external exposure aggregation
 
-Status: **canonical planned contract; not implemented or enabled**
+Status: **canonical planned evaluator contract; not implemented or enabled**
 
 This document is the authoritative detailed contract for the immutable control meaning
 `S3-002 = Unapproved public/external bucket exposure`. The
 [control catalog](catalog.md) owns the identifier and title. The
 [Sprint 5 evidence-readiness matrix](sprint-5-evidence-readiness.md) owns collection planning.
 This contract defines the later deterministic evaluator's inputs and result, but it does not add
-an AWS collector or executable rule.
+an executable rule. The feature-branch Sprint 5E producer now collects its direct AWS evidence
+pending acceptance without evaluating this contract.
 
 ## Assessment scope and vocabulary
 
@@ -127,8 +128,8 @@ values, the approval profile version/checksum, and the normalization/evaluator v
 The normalized completeness/outcome record uses the accepted
 [result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md).
 This is why one valid channel can remain assessable when another API fails without pretending the
-whole collector succeeded; the current Sprint 0--4 runtime is not changed by this planned
-contract.
+whole collector succeeded. Feature-branch 5E implements that source boundary without changing the
+planned evaluator.
 
 The minimum evidence is result-sensitive. A `PASS` requires both channels to be complete and safe
 or approved. A `FAIL` may be returned when one channel proves `CONFIRMED_UNAPPROVED` even if the
@@ -202,9 +203,11 @@ A status of public can independently prove unapproved public exposure when
 `RestrictPublicBuckets = false` and `allow_public = false`, even if the policy body lookup failed;
 the failed body remains cited. It cannot produce `PASS` without the body because supported
 external grants and coherence remain unknown. A body that looks public cannot replace a missing
-or malformed authoritative status. A detected impossible pair—such as declared policy absence
-with a successful status, or a complete unconditional public wildcard grant with
-`IsPublic = false`—is a concurrent-mutation/normalization conflict and is `UNKNOWN`.
+or malformed authoritative status. Declared policy absence paired with a successful
+`IsPublic = false` status is coherent: no policy grants exist and the authoritative status is
+non-public. A detected impossible pair—declared policy absence with `IsPublic = true`, or a
+complete unconditional public wildcard grant with `IsPublic = false`—is a
+concurrent-mutation/normalization conflict and is `UNKNOWN`.
 
 ## Bucket-ACL channel
 
@@ -262,8 +265,8 @@ bucket, an inaccessible bucket, or a bucket that disappeared during follow-up.
 | Calls refer to different owner, bucket, Region, scan, or incompatible observed states | Coherence conflict | Bucket `INSUFFICIENT_EVIDENCE` unless a separately coherent channel already proves an unapproved exposure; deletion invalidates the bucket snapshot itself |
 | Partial evidence with one separately coherent confirmed unapproved channel | Unknown plus confirmed violation | `FAIL`, with both facts cited |
 
-Arbitrary sleeps are not a coherence strategy. The future collector records all calls within the
-scan and rejects detected contradictions; it never rewrites an AWS failure into a negative fact.
+Arbitrary sleeps are not a coherence strategy. The 5E collector records all calls within the scan
+and rejects detected contradictions; it never rewrites an AWS failure into a negative fact.
 
 ## Representative contract cases
 

@@ -73,9 +73,9 @@ Use an exact bucket identity for an exact decision. For example, `regulated-*-ar
 
 Each rule is one exact key/value pair. Rules use OR semantics: any exact pair is a sensitive
 signal. Key and value comparisons preserve case and whitespace. Duplicate tag keys in observed
-evidence are ambiguous and rejected; the future normalization boundary must represent malformed
-or incomplete tag evidence as unavailable, not silently select one value. An empty returned tag
-set is complete evidence and differs from unavailable tags.
+evidence are ambiguous and rejected; the 5E normalization boundary represents malformed or
+incomplete tag evidence as unavailable rather than silently selecting one value. An empty
+returned tag set is complete evidence and differs from unavailable tags.
 
 ## Deterministic decision table
 
@@ -139,12 +139,16 @@ decide the exact technical result when it is false.
 ### Sprint 5 evidence boundary
 
 This preflight approves the classifier required by its explicit workstream; it does not invent the
-future Sprint 6 evaluator's organization-specific KMS policy. Sprint 5 can collect sufficient
-facts without making that decision. Its normalization must preserve, rather than collapse:
+future Sprint 6 evaluator's organization-specific KMS policy. Feature-branch 5E collects
+sufficient facts without making that decision. Its normalization must preserve, rather than
+collapse:
 
 - complete default-encryption rules and each exact `SSEAlgorithm`;
 - SSE-S3 (`AES256`), SSE-KMS (`aws:kms`), and DSSE-KMS (`aws:kms:dsse`) as distinct factual
   states;
+- each rule's optional `BlockedEncryptionTypes.EncryptionType` list as exactly one `NONE` or
+  `SSE-C` value retained in `blocked_encryption_types`, including a rule with no default
+  algorithm;
 - an absent explicit KMS key reference, which for SSE-KMS means AWS's S3 managed KMS key path,
   separately from an explicit key reference;
 - the resolved key ARN/Region and `KeyManager` value (`AWS` or `CUSTOMER`) when `DescribeKey`
@@ -152,15 +156,16 @@ facts without making that decision. Its normalization must preserve, rather than
 - a typed unavailable, malformed, conflicting, or resource-disappeared source outcome instead of
   a guessed key type or encryption state.
 
-Neither `AES256`, an AWS-managed KMS key, nor a customer-managed KMS key is converted to `PASS` or
-`FAIL` by a collector or this classifier. This preflight intentionally does not decide whether
-AWS-managed KMS satisfies the organization requirement, whether only customer-managed KMS does,
-or whether a false `restricted_data_requires_kms` setting yields `NOT_APPLICABLE` or another
-future policy result. The current boolean does not encode a customer-managed-key requirement. A
-reviewed, versioned Sprint 6 evaluator contract—and a new profile field if more policy is
-needed—must make those choices before S3-004 is registered. Because Sprint 5 retains the complete
-distinctions above, that later decision does not require recollection or a collector-policy
-branch.
+Neither `AES256`, an AWS-managed KMS key, a customer-managed KMS key, nor a `NONE`/`SSE-C`
+blocked-encryption-type fact is converted to `PASS` or `FAIL` by a collector or this classifier.
+This preflight intentionally does not decide whether AWS-managed KMS satisfies the organization
+requirement, whether only customer-managed KMS does, or whether a
+false `restricted_data_requires_kms` setting yields `NOT_APPLICABLE` or another future policy
+result.
+The current boolean does not encode a customer-managed-key requirement. A reviewed, versioned
+Sprint 6 evaluator contract—and a new profile field if more policy is needed—must make those
+choices before S3-004 is registered. Because Sprint 5 retains the complete distinctions above,
+that later decision does not require recollection or a collector-policy branch.
 
 ## Operational and security notes
 

@@ -2,7 +2,7 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5E S3 evidence expansion — PLANNED; PREFLIGHT COMPLETE**
+Current slice: **5E S3 evidence expansion — IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
@@ -36,9 +36,9 @@ reviewed slice sequence is approved, and the shared 5G relationship/source-outco
 foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A passed its
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
 pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
-accepted and merged in pull request 20. The bounded 5E preflight is complete and authorizes the
-implementation boundary below, but 5E implementation has not started; later slices remain
-unstarted.
+accepted and merged in pull request 20. The bounded 5E implementation now exists on its feature
+branch within the authorized boundary below and is pending review, CI, approval, and merge; later
+slices remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -96,7 +96,7 @@ graph boundary would have lost evidence or forced that slice to invent a represe
 3. **COMPLETE — 5B** — VPC, subnet, Flow Log, and network evidence;
 4. **COMPLETE — 5C** — IAM account and policy evidence;
 5. **COMPLETE — 5D** — IAM Access Analyzer evidence;
-6. **PLANNED; PREFLIGHT COMPLETE — 5E** — S3 evidence expansion;
+6. **IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE — 5E** — S3 evidence expansion;
 7. 5F — CloudTrail evidence expansion; and
 8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
    validation.
@@ -109,8 +109,8 @@ is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
 `FOUNDATION_READY_FOR_5A` and 5A through 5D accepted on `main`. The separately bounded 5E slice
-is authorized for implementation but has not started. This does not authorize executable Sprint
-6 rules, remediation, or later-sprint work.
+is implemented on its feature branch and awaits review, CI, approval, and merge. This does not
+authorize executable Sprint 6 rules, remediation, or later-sprint work.
 
 ## Accepted 5A implementation state
 
@@ -366,7 +366,8 @@ merged-main CI. The canonical control catalog, S3-002 exposure aggregation, S3-0
 and evidence-readiness matrix already define the required direct S3 and referenced-KMS factual
 superset. The existing evidence graph, generic persistence and authenticated API projections,
 AWS client provider, and relationship vocabulary can carry that evidence without a migration or
-service-specific route. Implementation has not started.
+service-specific route. The implementation described below now exists on the feature branch and
+is not yet accepted on `main`.
 
 The implementation is authorized only within these boundaries:
 
@@ -417,7 +418,8 @@ The implementation is authorized only within these boundaries:
 - Decode bucket policies strictly, reject duplicate JSON keys and malformed structures, retain
   complete effects, principals, actions, resources, conditions, and a deterministic digest.
   Preserve ACL owner and every grant, all four account and bucket Public Access Block flags,
-  exact case-sensitive tags, encryption algorithm and bucket-key state, and KMS manager/ownership
+  exact case-sensitive tags, encryption algorithm and bucket-key state, each rule's optional exact
+  `BlockedEncryptionTypes.EncryptionType` value (`NONE` or `SSE-C`), and KMS manager/ownership
   facts. Treat policy, ACL, topology, tag, and encryption evidence as sensitive `READ` data and
   never place it in routine logs or raw errors.
 - Keep collectors fact-only. Access Analyzer remains supplementary and non-decisive for S3-002.
@@ -432,6 +434,36 @@ pending-scan compatibility, and unchanged `S3-900` behavior. It also requires ge
 persistence/API readback, authenticated disposable-PostgreSQL
 HTTP acceptance, targeted and full regression tests, Ruff lint/format, container validation,
 independent review, green CI, approval, and merge. No test may contact live AWS.
+
+## Sprint 5E implementation state pending acceptance
+
+The feature branch adds one shared per-scan S3 collection bundle with two projections: the
+accepted `s3_buckets` collector retains its name, `S3-900` input shape, and independent rollup,
+while `s3_evidence` emits the 5E source graph and referenced `kms_key` resources. The bundle calls
+`ListBuckets` and account Block Public Access once, establishes each bucket's authoritative home
+Region, independently collects tags, bucket Block Public Access, policy and status, ACL,
+versioning, encryption, and ownership controls, and deduplicates `DescribeKey` by Region plus the
+supplied explicit reference.
+
+Every source has a digest-bound normalized artifact and typed outcome. Expected absence remains a
+complete factual state; malformed, conflicting, denied, throttled, disappeared, and unavailable
+sources stay distinct without erasing valid siblings. Bucket policy parsing rejects duplicate
+keys and invalid structures, bucket and account Block Public Access retain all four flags, and
+encryption rules retain an optional single `NONE` or `SSE-C` blocked-encryption-type fact. KMS
+resources use only validated returned `KeyMetadata.Arn`, account, partition, Region, key ID, and
+manager. A successful explicit key reference emits the canonical resolved
+`s3_bucket --encrypted_with--> kms_key` edge; a failed lookup retains a typed unresolved
+reference and never fabricates a key.
+
+New scans use the `kms` service-intent marker. The executor separately recognizes the accepted
+5D and pre-5D intent tuples, and those paths retain the legacy S3 collector without any 5E S3
+Control or KMS calls. New Access Analyzer coverage uses exact 5E `ListBuckets` and bucket-location
+completeness; accepted pre-5E graphs retain their original `s3_buckets` fallback. No migration,
+service-specific API, assessment-profile change, executable Sprint 6 rule, finding policy, AWS
+write permission, 5F collector, remediation, dashboard, deployment, or AI behavior is included.
+
+This section records feature-branch reality only. Slice 5E remains `IN PROGRESS` until all
+acceptance gates above pass and the change is approved and merged.
 
 ## Objective and boundary
 

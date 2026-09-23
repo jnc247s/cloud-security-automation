@@ -115,8 +115,12 @@ CURRENT_CONTROL_IDS = {
     "NET-004",
     "NET-005",
     "NET-006",
+    "S3-001",
+    "S3-002",
+    "S3-003",
+    "S3-004",
 }
-CONTRACT_READY_CONTROL_IDS = {"LOG-004", "S3-002", "S3-004"}
+CONTRACT_READY_CONTROL_IDS = {"LOG-004"}
 EXPECTED_MATRIX_STATES = {
     control_id: (
         "CURRENT"
@@ -390,7 +394,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5e_preflight_does_not_enable_planned_controls_or_later_slices() -> None:
+def test_5e_implementation_does_not_enable_planned_controls_or_later_slices() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -399,9 +403,10 @@ def test_5e_preflight_does_not_enable_planned_controls_or_later_slices() -> None
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "`1a355107eb7a3ed7845fa3a569dbff80da2778bb`" in roadmap
+    assert "`8c6122e440cb427685a26ff80c3d83ee88885882`" in roadmap
     assert (
-        "Current slice: **5E S3 evidence expansion — PLANNED; PREFLIGHT COMPLETE**" in active_plan
+        "Current slice: **5E S3 evidence expansion — IN PROGRESS; IMPLEMENTED PENDING ACCEPTANCE**"
+        in active_plan
     )
     assert "5D IAM Access Analyzer evidence slices" in roadmap
     assert "accepted on `main`" in roadmap
@@ -411,7 +416,7 @@ def test_5e_preflight_does_not_enable_planned_controls_or_later_slices() -> None
     assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
     assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
     assert "pull request 20" in active_plan
-    assert "5E implementation has not started" in active_plan
+    assert "implemented on its feature branch" in active_plan
     assert "5F remains unstarted" in active_plan
     assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
     assert "evidence remains supplementary and non-decisive" in active_plan
