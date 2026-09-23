@@ -7,8 +7,8 @@ This document is the authoritative detailed contract for the immutable control m
 [control catalog](catalog.md) owns the identifier and title. The
 [Sprint 5 evidence-readiness matrix](sprint-5-evidence-readiness.md) owns collection planning.
 This contract defines the later deterministic evaluator's inputs and result, but it does not add
-an executable rule. The feature-branch Sprint 5E producer now collects its direct AWS evidence
-pending acceptance without evaluating this contract.
+an executable rule. The accepted Sprint 5E producer now collects its direct AWS evidence without
+evaluating this contract.
 
 ## Assessment scope and vocabulary
 
@@ -128,7 +128,7 @@ values, the approval profile version/checksum, and the normalization/evaluator v
 The normalized completeness/outcome record uses the accepted
 [result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md).
 This is why one valid channel can remain assessable when another API fails without pretending the
-whole collector succeeded. Feature-branch 5E implements that source boundary without changing the
+whole collector succeeded. Accepted 5E implements that source boundary without changing the
 planned evaluator.
 
 The minimum evidence is result-sensitive. A `PASS` requires both channels to be complete and safe

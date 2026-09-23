@@ -139,7 +139,7 @@ decide the exact technical result when it is false.
 ### Sprint 5 evidence boundary
 
 This preflight approves the classifier required by its explicit workstream; it does not invent the
-future Sprint 6 evaluator's organization-specific KMS policy. Feature-branch 5E collects
+future Sprint 6 evaluator's organization-specific KMS policy. Accepted 5E collects
 sufficient facts without making that decision. Its normalization must preserve, rather than
 collapse:
 

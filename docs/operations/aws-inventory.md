@@ -1,9 +1,9 @@
 # AWS inventory operations
 
-The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
-Access Analyzer evidence producers provide a read-only, on-demand AWS inventory run. The
-feature-branch 5E producer expands S3 and referenced-KMS facts pending acceptance. The standalone
-command returns a normalized in-memory snapshot and prints only an aggregate summary.
+The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C IAM, 5D IAM
+Access Analyzer, and 5E S3/referenced-KMS evidence producers provide a read-only, on-demand AWS
+inventory run. The 5F CloudTrail preflight is complete, but its collector is not implemented. The
+standalone command returns a normalized in-memory snapshot and prints only an aggregate summary.
 It does not judge compliance, create
 control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor
 separately persists the same snapshot through its existing transaction boundary.
@@ -32,7 +32,7 @@ separately persists the same snapshot through its existing transaction boundary.
    converted to JSON-safe values.
 9. The inventory service records each requested collector as `SUCCEEDED`, `FAILED`, or `PARTIAL`,
    then sorts available resources by stable account/service/scope/region/resource identity and
-   returns one `InventorySnapshot`. The 5A through 5D producers and feature-branch 5E also declare
+    returns one `InventorySnapshot`. The 5A through 5E producers also declare
    source contracts and record digest-bound artifacts, typed source outcomes, and relationship
    observations in the optional evidence graph.
 10. The command prints collection outcomes and counts by service. Raw resource data is kept out
@@ -44,7 +44,7 @@ inventory-only diagnostic and does not evaluate or persist results.
 
 ## Read-only policy baseline
 
-The following policy is a practical baseline for the exact calls made by this feature branch,
+The following policy is a practical baseline for the exact calls made by the accepted runtime,
 including 5A through 5E. Review and scope it for your partition, account, buckets, KMS keys,
 permission boundaries, service control policies, and role-assumption model before production use.
 
@@ -225,7 +225,7 @@ with a sanitized identity message.
 Validation errors contain only the AWS operation and a structural fact path; they do not echo the
 rejected value, response, resource identifier, or credentials. Most Sprint 0--4 legacy collectors
 are collector-granular: one malformed item discards results from that collector. The 5A EC2/EBS,
-5B network, 5C IAM, accepted 5D Access Analyzer, and feature-branch 5E S3/KMS producers instead
+5B network, 5C IAM, accepted 5D Access Analyzer, and accepted 5E S3/KMS producers instead
 record independent outcomes for each declared discovery or enrichment source. They retain
 independently validated resources and report discarded items, while any incomplete source keeps
 the rollup `PARTIAL` unless every source is unavailable, which is `FAILED`. They never convert
@@ -274,6 +274,15 @@ prevents fabrication of that bucket's Regional resource while preserving discove
 Successful `DescribeKey` metadata creates a canonical `kms_key` resource and resolved
 `encrypted_with` edge; a failed lookup preserves an unresolved typed reference.
 
+The authorized but unimplemented 5F path will declare one account
+`ListTrails(IncludeShadowTrails=False)` source and
+independent per-trail `GetTrail`, `GetTrailStatus`, `GetEventSelectors`, and tag outcomes in each
+validated home Region. `ListTags` will be grouped by Region and limited to 20 ARNs per request.
+The exact new scan intent adds `cloudtrail-evidence`; accepted pending scans without that marker
+make no new call. Implementation will require the additional read permission
+`cloudtrail:GetEventSelectors`; the current policy JSON above intentionally continues to describe
+only calls made by the accepted runtime.
+
 Expected S3 absence responses are facts, not failures:
 
 - no bucket tags becomes an empty tag map;
@@ -304,7 +313,14 @@ buckets are common.
 - 5E follows a bucket only in the Region established by same-scan location evidence. Explicit KMS
   references are described in their ARN Region or, for local IDs/aliases, the bucket home Region.
 - CloudTrail discovery is account-wide. Status and tags are requested from each trail's home
-  region.
+  region. The authorized 5F implementation will add selector evidence in that same home Region;
+  it will not duplicate trails once per Region.
+- CloudTrail account coverage is carried by the verified scan account, source manifest, and
+  discovery outcome, not a synthetic account resource. A member-visible organization trail keeps
+  its ARN owner distinct from the collection account. Without the existing exact external-owner
+  admission proof, its source artifact remains available but its top-level resource is excluded
+  from both 5F projections and coverage remains incomplete; unchanged `LOG-001` semantics then
+  return `INSUFFICIENT_EVIDENCE`.
 - IAM Access Analyzer runs in the requested Region and the sorted unique Regions of exact
   same-scan normalized S3 buckets. Only those bucket-backed supplemental Regions are admitted;
   this is not general multi-Region orchestration.
@@ -316,8 +332,9 @@ buckets are common.
   `subnet`, and `vpc_flow_log` resources. 5C normalizes IAM users, groups, roles, managed
   policies, and managed-policy versions. The accepted 5D producer normalizes each relevant
   external-access finding as an `access_analyzer_finding`; analyzer summaries remain source
-  artifacts rather than resources. Feature-branch 5E expands `s3_bucket` snapshots and normalizes
-  validated referenced keys as `kms_key`; 5F CloudTrail evidence remains later-slice work.
+  artifacts rather than resources. Accepted 5E expands `s3_bucket` snapshots and normalizes
+  validated referenced keys as `kms_key`; the 5F CloudTrail preflight is complete but its runtime
+  evidence remains unimplemented.
 - Same-scan, identity-authoritative network evidence can resolve instance-to-security-group,
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains
@@ -329,7 +346,7 @@ buckets are common.
   and profile integration. Existing `NET-001` and `NET-002` behavior is unchanged.
 - The 5D Analyzer facts are supplementary investigation context only. Their
   `references_resource` relationship resolves only to an exact same-scan S3 bucket; unresolved
-  targets are retained without fabrication. They do not decide `S3-002`. Feature-branch 5E
+  targets are retained without fabrication. They do not decide `S3-002`. Accepted 5E
   supplies its direct evidence but still does not register or execute the control.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.

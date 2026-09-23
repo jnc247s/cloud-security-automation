@@ -2,10 +2,9 @@
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access
-Analyzer evidence producers. The accepted baseline is `main` commit
-`8c6122e440cb427685a26ff80c3d83ee88885882`. The fact-only 5E S3 and referenced-KMS producer is
-implemented on its feature branch pending acceptance; 5F and every Sprint 6 control remain
-unimplemented.
+Analyzer evidence producers, plus the merged 5E S3 and referenced-KMS producer. The accepted
+baseline is `main` commit `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`. The 5F CloudTrail
+preflight is complete, but 5F and every Sprint 6 control remain unimplemented.
 
 ## System context
 
@@ -278,7 +277,7 @@ unresolved references. The implementation reuses generic persistence and authent
 adds no schema or service-specific route, and does not interpret Analyzer evidence as an S3-002
 result.
 
-The feature-branch 5E implementation adds a shared per-scan S3 bundle projected through the
+The accepted 5E implementation adds a shared per-scan S3 bundle projected through the
 accepted `s3_buckets` collector and a new graph-aware `s3_evidence` collector. One account-global
 enumeration and account Block Public Access call feed independent authoritative bucket-location,
 tag, bucket Block Public Access, policy/status, ACL, versioning, encryption, and ownership-control
@@ -293,8 +292,28 @@ source provenance; unavailable lookups remain typed unresolved references. S3 bu
 outside the requested Region is bound to exact same-scan location evidence, and Access Analyzer
 Region coverage consumes discovery/location completeness rather than unrelated S3 enrichment
 status. Older pending scans are selected by their persisted service tuple and make no new 5E
-calls. This branch adds no migration or service-specific route. Slice 5F and all Sprint 6 rule
+calls. The slice adds no migration or service-specific route. Slice 5F and all Sprint 6 rule
 execution remain unimplemented.
+
+The authorized 5F design preserves the accepted graphless `cloudtrail_trails` projection and adds
+a separate graph-aware `cloudtrail_evidence` projection over one shared per-scan collection
+bundle. One account discovery is enriched in each trail's validated home Region through
+independent configuration, status, event-selector, and tag sources. A new persisted
+`cloudtrail-evidence` intent marker selects this path without changing accepted pending 5E scans.
+“Account to trails” is a coverage association carried by the scan, source manifest, and discovery
+outcome—not a generic resource edge or synthetic account resource.
+
+Collection account identity remains distinct from the owner encoded by a validated trail ARN.
+Member-visible organization trails retain management-account ownership and organization context;
+they never imply organization-wide collection. An externally owned trail is admitted as a
+top-level resource only through the existing exceptional-owner proof, otherwise its source
+artifact is retained, both 5F resource projections omit it, and coverage remains incomplete.
+The unchanged `LOG-001` rule therefore receives incomplete collection instead of a fabricated
+same-account trail. Complete `GetTrail` evidence may emit the
+accepted `delivers_to_bucket` and `encrypted_with` observations. S3 resolution uses exact
+same-scan 5E bucket evidence; KMS resolution reuses an exact already-collected 5E key and 5F does
+not add a second `DescribeKey` producer. The design adds no schema, route, authentication change,
+or Sprint 6 rule.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -367,8 +386,7 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A through 5D producers emit graph records, and the feature-branch 5E
-  producer adds S3/KMS records; 5F does not yet do so.
+  traversal. The merged 5A through 5E producers emit graph records; 5F does not yet do so.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

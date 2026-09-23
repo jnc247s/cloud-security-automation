@@ -140,6 +140,16 @@ resource types. Customer-owned resources require a 12-digit owner account. Disco
 authorization remain bound to the collection account even when a relationship endpoint has a
 different owner.
 
+For the authorized 5F CloudTrail slice, “account to trails” means source-manifest coverage bound
+to `collection_account_id`; it is not a relationship in this vocabulary and does not create a
+synthetic AWS account resource. A member-visible organization trail retains the management-account
+owner parsed from its validated ARN. If that external-owner trail cannot satisfy the existing
+identity-authoritative and exact-resolved-edge admission rule, its digest-bound source artifact is
+retained, both 5F resource projections omit it, and coverage remains incomplete, but no top-level
+resource or fabricated owner is created. Existing `LOG-001` semantics therefore fail closed as
+`INSUFFICIENT_EVIDENCE`. `GetTrail` may establish `delivers_to_bucket` and `encrypted_with`; S3 resolution requires
+an exact same-scan 5E bucket, and KMS resolution may reuse only an exact same-scan 5E key.
+
 Every string used by the accepted delimiter-based stable-resource and snapshot-ID helpers rejects
 the U+001F unit separator before identifier calculation. This standalone preflight validation
 closes delimiter-collision aliases without changing the accepted Sprint 0--4 helper or existing
@@ -237,9 +247,9 @@ The preflight intentionally deferred migration and runtime integration to Sprint
 foundation now supplies the reviewed end-to-end writer/read path rather than an empty table.
 5A supplied the first AWS relationship producer, and 5B extended it with the accepted network
 graph. The accepted 5C producer extended it with IAM relationships, and the accepted 5D producer
-added Access Analyzer-to-S3 references. Feature-branch 5E reuses the same contract for resolved
-and unresolved S3-to-KMS `encrypted_with` observations; 5F remains unimplemented and may not
-invent another representation.
+added Access Analyzer-to-S3 references. Accepted 5E reuses the same contract for resolved and
+unresolved S3-to-KMS `encrypted_with` observations. The 5F relationship preflight is complete,
+but implementation remains unstarted and may not invent another representation.
 
 ## Alternatives considered
 

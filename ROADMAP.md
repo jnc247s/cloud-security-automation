@@ -3,11 +3,11 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-17
-Accepted baseline: `main` at `8c6122e440cb427685a26ff80c3d83ee88885882` (Sprints 0--4,
+Last verified: 2026-09-22
+Accepted baseline: `main` at `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
-Analyzer evidence)
+Analyzer evidence, and accepted 5E S3 and referenced-KMS evidence)
 
 ## Current state
 
@@ -29,9 +29,9 @@ Analyzer evidence)
 
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
-accepted on `main`. The bounded fact-only 5E S3 and referenced-KMS evidence slice is implemented
-on its feature branch and is pending review, CI, approval, and merge. No Sprint 6 control has been
-enabled.
+accepted on `main`, as is the bounded fact-only 5E S3 and referenced-KMS evidence slice. The 5F
+CloudTrail preflight is complete and authorizes a later implementation request, but 5F has not
+started. No Sprint 6 control has been enabled.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -44,10 +44,12 @@ The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`.
 preflight and reviewable execution sequence are complete. The shared 5G
 relationship/source-outcome evidence foundation passed its acceptance gate as
 `FOUNDATION_READY_FOR_5A`; 5A was accepted and merged in pull request 16, 5B in pull request 17,
-5C in pull request 18, and 5D in pull request 20. Slice 5E now implements on its feature branch
-only the approved direct S3 and referenced-KMS facts, source outcomes, provenance, and resource
-relationships while preserving accepted pending-scan, Access Analyzer, and `S3-900` behavior;
-acceptance still requires review, CI, approval, and merge.
+5C in pull request 18, and 5D in pull request 20. Slice 5E was accepted and merged in pull request
+22 with only the approved direct S3 and referenced-KMS facts, source outcomes, provenance, and
+resource relationships while preserving accepted pending-scan, Access Analyzer, and `S3-900`
+behavior. The bounded 5F preflight records the immutable scan
+intent, CloudTrail ownership/admission, account-coverage, source, and relationship contracts needed
+for implementation without adding a collector or Sprint 6 rule.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -64,8 +66,10 @@ gates and was merged in pull request 17 at `66cadb20cd6a469d5a656628c27ae8cb569d
 Slice 5C subsequently passed its acceptance gates and was merged in pull request 18 at
 `819f9ba3b26490ca23c69a6665b1baf9d7948975`. Slice 5D was merged in pull request 20 at
 `1a355107eb7a3ed7845fa3a569dbff80da2778bb`, and the merged-main CI quality job succeeded. The
-bounded 5E implementation is pending review and acceptance on its feature branch. Sprint 6
-remains `PLANNED`.
+bounded 5E implementation was accepted and merged in pull request 22 at
+`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with green pull-request CI. The bounded 5F preflight
+is complete; implementation remains unstarted pending an explicit request. Sprint 6 remains
+`PLANNED`.
 
 ## Pre-Sprint 5 attention
 

@@ -2,9 +2,9 @@
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
 the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
-IAM, and 5D IAM Access Analyzer evidence producers at `main` commit
-`8c6122e440cb427685a26ff80c3d83ee88885882`. The fact-only 5E S3 and referenced-KMS producer is
-implemented on its feature branch pending acceptance. Threats and residual risks are tracked in
+IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS evidence producers at `main` commit
+`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`. The 5F CloudTrail preflight is complete, but its
+collector is not implemented. Threats and residual risks are tracked in
 [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
@@ -114,7 +114,7 @@ inaccessible, conflicting, or pagination-incomplete data remains sanitized and i
 valid siblings are retained. Analyzer findings are investigation facts only: they do not decide
 `S3-002`, create a control-plane `Finding`, or substitute for direct S3 evidence.
 
-The feature-branch 5E collector treats bucket policy, ACL, tags, Block Public Access, encryption,
+The accepted 5E collector treats bucket policy, ACL, tags, Block Public Access, encryption,
 topology, source artifacts, and KMS metadata as sensitive `READ` data. It validates exact bucket
 home Regions before enrichment, strictly decodes policy JSON with duplicate-key rejection,
 separates expected absence from provider failure, and never places raw evidence or AWS error text
@@ -122,6 +122,16 @@ in routine logs. Referenced KMS resources require validated returned identity pl
 same-scan `encrypted_with` relationship; incomplete lookups retain only a typed unresolved
 reference and cannot invent a key, owner, ARN, Region, or manager. These facts do not authorize
 AWS writes or make an S3 compliance decision.
+
+The authorized 5F design preserves the same fail-closed boundary for CloudTrail. A persisted
+`cloudtrail-evidence` execution marker prevents accepted pending scans from silently gaining new
+AWS calls. Trail ARNs must prove owner and home Region; the verified collection account never
+substitutes for a management-account owner on an organization trail. An external-owner trail
+without the existing exact admission proof is retained only in its digest-bound discovery
+artifact, omitted from both 5F resource projections, and makes coverage incomplete. Existing
+`LOG-001` semantics then fail closed as `INSUFFICIENT_EVIDENCE`. Selector, destination, KMS,
+status, and tag evidence is
+sensitive `READ` data; raw provider payloads and failures must remain out of routine logs.
 
 Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
 artifact to a canonical digest, rejects known credential/authorization key names, and exposes
@@ -190,14 +200,14 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B, 5C, and 5D collectors and the feature-branch 5E collector preserve facts and
+The accepted 5B through 5E collectors preserve facts and
 provenance only. They do not decide whether a default group, Flow Log, public-IP setting, network
 permission, IAM policy, root-account flag, tag, external-access finding, bucket policy, ACL,
 Block Public Access setting, or encryption configuration passes a planned control, and they do
 not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
-failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5D are
-accepted on `main`, 5E is pending acceptance on its feature branch, and 5F is not implemented.
+failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5E are
+accepted on `main`, the 5F preflight is complete, and 5F is not implemented.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

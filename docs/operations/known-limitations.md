@@ -233,12 +233,16 @@ STS identity also fails closed without coercing null fields or printing response
 Collection remains all-or-nothing for most Sprint 0--4 collectors. One malformed or inaccessible
 item discards that collector's otherwise valid in-memory resources, marks its coverage incomplete,
 and leaves independent collectors running. The 5A EC2/EBS, 5B network, 5C IAM, 5D Access
-Analyzer, and feature-branch 5E S3/KMS producers validate, persist, and return source-level
+Analyzer, and accepted 5E S3/KMS producers validate, persist, and return source-level
 outcomes and artifacts while retaining independently valid sibling facts; no current rule
 consumes that new evidence. Each later collector slice must integrate its declared source
 manifest atomically, and Sprint 6 must
 add separately reviewed result-sensitive rule behavior. Existing graph support is never
 permission to reinterpret `PARTIAL` as complete.
+
+The 5F CloudTrail preflight defines matching per-source behavior, but no 5F collector exists yet.
+The accepted legacy CloudTrail collector therefore remains collector-granular until that bounded
+slice is implemented and merged.
 
 ### Single-region request model — PLANNED LIMIT
 

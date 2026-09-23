@@ -228,10 +228,9 @@ collector rollups, AWS calls, and rules remain unchanged. Revision `20260915_000
 append-only schema without rewriting an accepted migration or historical row.
 
 Collector integration remains slice-specific work in 5A--5F. It must construct the complete
-declared-source manifest atomically. The accepted 5A through 5D producers construct their complete
-manifests; feature-branch 5E adds the direct S3/KMS manifest pending acceptance. The 5F collector
-and every deterministic Sprint 6 rule remain unimplemented merely because the storage and read
-boundary exists.
+declared-source manifest atomically. The accepted 5A through 5E producers construct their complete
+manifests. The 5F source-manifest preflight is complete, but its collector and every deterministic
+Sprint 6 rule remain unimplemented merely because the storage and read boundary exists.
 
 ## Validation
 
