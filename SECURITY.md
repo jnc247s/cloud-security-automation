@@ -2,9 +2,10 @@
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
 the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
-IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS evidence producers at `main` commit
-`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`. The 5F CloudTrail preflight is complete, but its
-collector is not implemented. Threats and residual risks are tracked in
+IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS evidence producers at the accepted `main`
+baseline `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The 5F CloudTrail implementation exists on the
+feature branch and is pending acceptance; it is not yet accepted or merged. Threats and residual
+risks are tracked in
 [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
@@ -123,22 +124,24 @@ same-scan `encrypted_with` relationship; incomplete lookups retain only a typed 
 reference and cannot invent a key, owner, ARN, Region, or manager. These facts do not authorize
 AWS writes or make an S3 compliance decision.
 
-The authorized 5F design preserves the same fail-closed boundary for CloudTrail. A persisted
-`cloudtrail-evidence` execution marker prevents accepted pending scans from silently gaining new
-AWS calls. Trail ARNs must prove owner and home Region; the verified collection account never
-substitutes for a management-account owner on an organization trail. An external-owner trail
-without the existing exact admission proof is retained only in its digest-bound discovery
-artifact, omitted from both 5F resource projections, and makes coverage incomplete. Existing
-`LOG-001` semantics then fail closed as `INSUFFICIENT_EVIDENCE`. Selector, destination, KMS,
-status, and tag evidence is
-sensitive `READ` data; raw provider payloads and failures must remain out of routine logs.
+The 5F feature-branch implementation preserves the same fail-closed boundary for CloudTrail. A
+persisted `cloudtrail-evidence` execution marker prevents accepted pending scans from silently
+gaining new AWS calls. Trail ARNs must prove owner and home Region; the verified collection
+account never substitutes for a management-account owner on an organization trail. An
+external-owner trail without the existing exact admission proof is retained only in its
+digest-bound discovery artifact, omitted from both 5F resource projections, and makes coverage
+incomplete. Existing `LOG-001` semantics then fail closed as `INSUFFICIENT_EVIDENCE`. Selector,
+destination, KMS,
+status, and tag evidence is sensitive `READ` data; raw provider payloads and failures must remain
+out of routine logs. Its only permission delta is read-only
+`cloudtrail:GetEventSelectors`; `cloudtrail-evidence` is not an AWS service name or permission.
 
 Evidence-graph persistence accepts only normalized object-shaped JSON artifacts, binds each
 artifact to a canonical digest, rejects known credential/authorization key names, and exposes
 controlled source failure categories instead of raw provider exceptions. Relationship provenance
 must identify exactly one `PRESENT` source outcome. These controls reduce accidental secret and
 fabricated-edge exposure; they do not make normalized cloud configuration non-sensitive.
-Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A, 5B, and 5E
+Arbitrary AWS tag names are encoded as sorted `key`/`value` entries inside 5A, 5B, 5E, and 5F
 artifacts rather than becoming artifact object keys, so untrusted metadata cannot alter the
 artifact's structural field vocabulary or be mistaken for a credential-bearing structural field.
 Tag values remain sensitive evidence.
@@ -200,14 +203,16 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B through 5E collectors preserve facts and
+The accepted 5B through 5E collectors and the pending-acceptance 5F collector preserve facts and
 provenance only. They do not decide whether a default group, Flow Log, public-IP setting, network
 permission, IAM policy, root-account flag, tag, external-access finding, bucket policy, ACL,
-Block Public Access setting, or encryption configuration passes a planned control, and they do
+Block Public Access setting, encryption configuration, or CloudTrail configuration passes a
+planned control, and they do
 not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
 failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5E are
-accepted on `main`, the 5F preflight is complete, and 5F is not implemented.
+accepted on `main`, while 5F is **IMPLEMENTED; PENDING ACCEPTANCE** on the feature branch. Sprint
+6 remains `PLANNED`.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

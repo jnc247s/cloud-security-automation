@@ -18,6 +18,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.aws.client import AWSIdentityEvidenceError
 from app.config import Settings
+from app.database.evidence_graph import load_evidence_graph
 from app.database.persistence import fail_pending_scan
 from app.models import AuditEvent, ControlAssessment, PersistedAssessmentProfile, Scan
 from app.models.enums import AuditEventType, ScanStatus
@@ -142,6 +143,7 @@ def test_start_scan_commits_pending_identity_before_submission(db_session: Sessi
     assert persisted.requested_services == [
         "access-analyzer",
         "cloudtrail",
+        "cloudtrail-evidence",
         "ec2",
         "iam",
         "kms",
@@ -386,6 +388,72 @@ def test_restarted_executor_preserves_pre_5e_pending_scan_intent(
     assert not any(service == "kms" for service, _ in provider.client_requests)
 
 
+def test_restarted_executor_preserves_pre_5f_pending_scan_intent(
+    db_session: Session,
+    migrated_engine: Engine,
+) -> None:
+    pending = ScanService(db_session, _settings()).start_scan(
+        ScanCreateRequest(), RecordingExecutor(), actor_id="operator"
+    )
+    scan = db_session.get(Scan, pending.scan_id)
+    assert scan is not None
+    scan.requested_services = [
+        "access-analyzer",
+        "cloudtrail",
+        "ec2",
+        "iam",
+        "kms",
+        "s3",
+    ]
+    db_session.commit()
+
+    provider = _empty_provider()
+    cloudtrail_client = provider.client("cloudtrail", region_name="us-west-2")
+    provider.client_requests.clear()
+    executor = InProcessScanExecutor(
+        session_factory=sessionmaker(bind=migrated_engine, expire_on_commit=False),
+        settings=_settings(),
+        provider_factory=lambda _region: provider,
+    )
+    try:
+        executor._execute(pending.scan_id)
+    finally:
+        executor.shutdown()
+
+    db_session.expire_all()
+    result = db_session.get(Scan, pending.scan_id)
+    assert result is not None
+    assert result.status is ScanStatus.COMPLETED
+    assert result.scope_manifest is not None
+    assert result.scope_manifest.requested_collectors == [
+        "access_analyzer_evidence",
+        "cloudtrail_trails",
+        "ec2_ebs_evidence",
+        "iam_account_evidence",
+        "iam_users",
+        "s3_buckets",
+        "s3_evidence",
+        "security_groups",
+        "vpc_network_evidence",
+    ]
+    assert result.scope_manifest.requested_services == [
+        "access-analyzer",
+        "cloudtrail",
+        "ec2",
+        "iam",
+        "kms",
+        "s3",
+    ]
+    assert "cloudtrail_evidence" not in result.scope_manifest.requested_collectors
+    assert cloudtrail_client.paginator_requests == ["list_trails"]
+    assert all(call.operation_name != "get_event_selectors" for call in cloudtrail_client.calls)
+    graph = load_evidence_graph(db_session, pending.scan_id)
+    assert graph is not None
+    assert not any(
+        outcome.evidence_kind.startswith("cloudtrail.") for outcome in graph.source_outcomes
+    )
+
+
 def test_executor_rejects_unknown_pending_intent_before_aws(
     db_session: Session,
     migrated_engine: Engine,
@@ -511,12 +579,15 @@ def test_executor_resolves_account_and_finalizes_precreated_scan(
     assert scan.scope_manifest.requested_services == [
         "access-analyzer",
         "cloudtrail",
+        "cloudtrail-evidence",
         "ec2",
         "iam",
         "kms",
         "s3",
     ]
+    assert "cloudtrail_evidence" in scan.scope_manifest.requested_collectors
     assert "s3_evidence" in scan.scope_manifest.requested_collectors
+    assert scan.scope_manifest.resource_types.count("cloudtrail_trail") == 1
     assert "kms_key" in scan.scope_manifest.resource_types
     assert scan.completed_at.replace(tzinfo=UTC).tzinfo is not None
     scan_events = tuple(

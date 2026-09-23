@@ -928,6 +928,981 @@ def _inventory(
     )
 
 
+def _cloudtrail_source(
+    *,
+    evidence_kind: str,
+    collector: str,
+    source_api: str,
+    subject: AccountEvidenceSubject | ResourceEvidenceSubject,
+    payload: dict[str, object],
+    index: int,
+    identity_authoritative: bool = False,
+) -> tuple[ScanSourceContract, SourceEvidenceArtifact, SourceEvidenceOutcome]:
+    phase = (
+        EvidenceCollectionPhase.DISCOVERY
+        if isinstance(subject, AccountEvidenceSubject)
+        else EvidenceCollectionPhase.ENRICHMENT
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key=evidence_kind,
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=phase,
+        subject=subject,
+        evidence_kind=evidence_kind,
+        collector=collector,
+        collector_version="1.0.0",
+        source_api=source_api,
+        cardinality=(
+            EvidenceCardinality.COLLECTION
+            if phase is EvidenceCollectionPhase.DISCOVERY
+            else EvidenceCardinality.SINGLE
+        ),
+        owner_mode=(
+            ResourceOwnerMode.EXTERNAL_ACCOUNT
+            if isinstance(subject, ResourceEvidenceSubject) and subject.aws_account_id != ACCOUNT_ID
+            else ResourceOwnerMode.COLLECTION_ACCOUNT
+        ),
+        identity_authoritative=identity_authoritative,
+    )
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference=f"normalized://cloudtrail/source/{index}",
+        evidence_schema=evidence_kind,
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload=payload,
+    )
+    return contract, artifact, _outcome(contract, artifact)
+
+
+def _cloudtrail_graph_parts(
+    *,
+    owner_account_id: str = ACCOUNT_ID,
+    home_region: str = "us-west-2",
+    invocation_region: str = REGION,
+    destination_region: str | None = None,
+    kms_key_resource_id: str = "12345678-1234-1234-1234-123456789012",
+    with_destinations: bool = False,
+) -> tuple[
+    EvidenceGraph,
+    NormalizedResource,
+    tuple[ScanSourceContract, ...],
+    tuple[SourceEvidenceArtifact, ...],
+    tuple[SourceEvidenceOutcome, ...],
+]:
+    trail_name = "audit-trail"
+    trail_arn = f"arn:aws:cloudtrail:{home_region}:{owner_account_id}:trail/{trail_name}"
+    account_subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    trail_subject = ResourceEvidenceSubject.for_aws_resource(
+        scan_id=SCAN_ID,
+        aws_account_id=owner_account_id,
+        service="cloudtrail",
+        resource_type="cloudtrail_trail",
+        aws_resource_id=trail_arn,
+        scope=ResourceScope.REGIONAL,
+        region=home_region,
+    )
+    s3_bucket_name = "audit-logs" if with_destinations else None
+    kms_region = destination_region or home_region
+    kms_key_id = (
+        f"arn:aws:kms:{kms_region}:{ACCOUNT_ID}:key/{kms_key_resource_id}"
+        if with_destinations
+        else None
+    )
+    configuration: dict[str, object] = {
+        "name": trail_name,
+        "s3_bucket_name": s3_bucket_name,
+        "s3_key_prefix": None,
+        "include_global_service_events": True,
+        "is_multi_region_trail": True,
+        "log_file_validation_enabled": True,
+        "cloudwatch_logs_log_group_arn": None,
+        "cloudwatch_logs_role_arn": None,
+        "kms_key_id": kms_key_id,
+        "is_organization_trail": owner_account_id != ACCOUNT_ID,
+    }
+    status: dict[str, object] = {
+        "is_logging": True,
+        "status": {"IsLogging": True},
+    }
+    selectors: dict[str, object] = {
+        "selector_form": "BASIC",
+        "basic_selectors": [
+            {
+                "raw_presence": {
+                    "include_management_events": False,
+                    "read_write_type": False,
+                    "exclude_management_event_sources": False,
+                    "data_resources": False,
+                },
+                "include_management_events": True,
+                "read_write_type": "All",
+                "exclude_management_event_sources": [],
+                "data_resources": [],
+            }
+        ],
+        "advanced_selectors": [],
+    }
+    definitions = (
+        (
+            "cloudtrail.trails.discovery",
+            "cloudtrail.trails",
+            "cloudtrail:ListTrails",
+            account_subject,
+            {
+                "collection_account_id": ACCOUNT_ID,
+                "invocation_region": invocation_region,
+                "trail_arns": [trail_arn],
+                "trail_count": 1,
+                "discarded_item_count": 0,
+                "admission_complete": True,
+                "unadmitted_resources": [],
+                "complete": True,
+                "failure_category": None,
+            },
+            False,
+        ),
+        (
+            "cloudtrail.trail.identity",
+            "cloudtrail.trails",
+            "cloudtrail:ListTrails",
+            trail_subject,
+            {
+                "collection_account_id": ACCOUNT_ID,
+                "owner_account_id": owner_account_id,
+                "partition": "aws",
+                "trail_arn": trail_arn,
+                "name": trail_name,
+                "home_region": home_region,
+                "complete": True,
+                "failure_category": None,
+            },
+            True,
+        ),
+        (
+            "cloudtrail.trail.configuration",
+            "cloudtrail.trail-configuration",
+            "cloudtrail:GetTrail",
+            trail_subject,
+            {
+                "trail_arn": trail_arn,
+                "home_region": home_region,
+                "value": configuration,
+                "complete": True,
+                "failure_category": None,
+            },
+            False,
+        ),
+        (
+            "cloudtrail.trail.status",
+            "cloudtrail.trail-status",
+            "cloudtrail:GetTrailStatus",
+            trail_subject,
+            {
+                "trail_arn": trail_arn,
+                "home_region": home_region,
+                "value": status,
+                "complete": True,
+                "failure_category": None,
+            },
+            False,
+        ),
+        (
+            "cloudtrail.trail.event-selectors",
+            "cloudtrail.trail-event-selectors",
+            "cloudtrail:GetEventSelectors",
+            trail_subject,
+            {
+                "trail_arn": trail_arn,
+                "home_region": home_region,
+                "value": selectors,
+                "complete": True,
+                "failure_category": None,
+            },
+            False,
+        ),
+        (
+            "cloudtrail.trail.tags",
+            "cloudtrail.trail-tags",
+            "cloudtrail:ListTags",
+            trail_subject,
+            {
+                "trail_arn": trail_arn,
+                "home_region": home_region,
+                "value": [{"key": "Environment", "value": "test"}],
+                "complete": True,
+                "failure_category": None,
+            },
+            False,
+        ),
+    )
+    built = tuple(
+        _cloudtrail_source(
+            evidence_kind=evidence_kind,
+            collector=collector,
+            source_api=source_api,
+            subject=subject,
+            payload=payload,
+            index=index,
+            identity_authoritative=authoritative,
+        )
+        for index, (
+            evidence_kind,
+            collector,
+            source_api,
+            subject,
+            payload,
+            authoritative,
+        ) in enumerate(definitions)
+    )
+    contracts = tuple(item[0] for item in built)
+    artifacts = tuple(item[1] for item in built)
+    outcomes = tuple(item[2] for item in built)
+    resource = NormalizedResource(
+        account_id=owner_account_id,
+        service="cloudtrail",
+        resource_type="cloudtrail_trail",
+        aws_resource_id=trail_arn,
+        arn=trail_arn,
+        name=trail_name,
+        scope=ResourceScope.REGIONAL,
+        region=home_region,
+        tags={"Environment": "test"},
+        configuration={
+            "home_region": home_region,
+            **{key: configuration[key] for key in configuration if key != "name"},
+            "is_logging": True,
+            "status": status["status"],
+            "event_selectors": selectors,
+            "source_states": {
+                "identity": "PRESENT",
+                "configuration": "PRESENT",
+                "status": "PRESENT",
+                "event_selectors": "PRESENT",
+                "tags": "PRESENT",
+            },
+        },
+        raw_configuration={
+            "summary": {
+                "TrailARN": trail_arn,
+                "Name": trail_name,
+                "HomeRegion": home_region,
+            },
+            "trail": configuration,
+            "status": status["status"],
+            "event_selectors": selectors,
+        },
+    )
+    relationships: list[ResourceRelationship] = []
+    provenance = RelationshipProvenance(
+        collector="cloudtrail.trail-configuration",
+        collector_version="1.0.0",
+        source_api="cloudtrail:GetTrail",
+        evidence_reference=artifacts[2].evidence_reference,
+        collected_at=COLLECTED_AT,
+    )
+    if s3_bucket_name is not None:
+        relationships.append(
+            ResourceRelationship.for_observation(
+                scan_id=SCAN_ID,
+                collection_account_id=ACCOUNT_ID,
+                relationship_type=RelationshipType.DELIVERS_TO_BUCKET,
+                source=_endpoint(resource),
+                target=UnresolvedRelationshipTarget.for_aws_reference(
+                    service="s3",
+                    resource_type="s3_bucket",
+                    aws_resource_id=s3_bucket_name,
+                    scope=ResourceScope.REGIONAL,
+                ),
+                resolution=RelationshipResolution.TARGET_IDENTITY_INCOMPLETE,
+                provenance=provenance,
+            )
+        )
+    if kms_key_id is not None:
+        relationships.append(
+            ResourceRelationship.for_observation(
+                scan_id=SCAN_ID,
+                collection_account_id=ACCOUNT_ID,
+                relationship_type=RelationshipType.ENCRYPTED_WITH,
+                source=_endpoint(resource),
+                target=RelationshipEndpoint.for_aws_resource(
+                    aws_account_id=ACCOUNT_ID,
+                    service="kms",
+                    resource_type="kms_key",
+                    aws_resource_id=kms_key_id,
+                    scope=ResourceScope.REGIONAL,
+                    region=kms_region,
+                    observed_in_scan_id=None,
+                ),
+                resolution=RelationshipResolution.TARGET_NOT_COLLECTED,
+                provenance=provenance,
+            )
+        )
+    graph = EvidenceGraph(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        collected_at=COLLECTED_AT,
+        source_contracts=contracts,
+        artifacts=artifacts,
+        source_outcomes=outcomes,
+        relationships=tuple(relationships),
+    )
+    return graph, resource, contracts, artifacts, outcomes
+
+
+def _cloudtrail_kms_relationship_with_resolution(
+    graph: EvidenceGraph,
+    resolution: RelationshipResolution,
+) -> ResourceRelationship:
+    relationship = next(
+        item
+        for item in graph.relationships
+        if item.relationship_type is RelationshipType.ENCRYPTED_WITH
+    )
+    target = relationship.target
+    if not isinstance(target, RelationshipEndpoint):  # pragma: no cover - fixture invariant
+        raise TypeError("CloudTrail KMS fixture target must have a stable identity")
+    rebound_target = RelationshipEndpoint.for_aws_resource(
+        aws_account_id=target.aws_account_id,
+        service=target.service,
+        resource_type=target.resource_type,
+        aws_resource_id=target.aws_resource_id,
+        scope=target.scope,
+        region=target.region,
+        observed_in_scan_id=(SCAN_ID if resolution is RelationshipResolution.RESOLVED else None),
+    )
+    return ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.ENCRYPTED_WITH,
+        source=relationship.source,
+        target=rebound_target,
+        resolution=resolution,
+        provenance=relationship.provenance,
+    )
+
+
+def _replace_cloudtrail_kms_relationship(
+    graph: EvidenceGraph,
+    replacement: ResourceRelationship,
+) -> tuple[ResourceRelationship, ...]:
+    return tuple(
+        replacement
+        if item.relationship_type is RelationshipType.ENCRYPTED_WITH
+        and item.source.service == "cloudtrail"
+        else item
+        for item in graph.relationships
+    )
+
+
+def test_cloudtrail_manifest_replays_resource_and_proof_bound_home_region() -> None:
+    graph, resource, *_ = _cloudtrail_graph_parts()
+
+    snapshot = _inventory(graph=graph, resources=(resource,), requested_region=REGION)
+
+    assert snapshot.resource_count == 1
+
+
+def test_cloudtrail_manifest_preserves_cross_region_destination_key_identity() -> None:
+    graph, resource, *_ = _cloudtrail_graph_parts(
+        home_region="eu-west-1",
+        destination_region="eu-central-1",
+        with_destinations=True,
+    )
+
+    snapshot = _inventory(graph=graph, resources=(resource,), requested_region=REGION)
+
+    kms_relationship = next(
+        relationship
+        for relationship in snapshot.evidence_graph.relationships
+        if relationship.relationship_type is RelationshipType.ENCRYPTED_WITH
+    )
+    assert kms_relationship.target.region == "eu-central-1"
+
+
+def test_cloudtrail_manifest_binds_destination_relationships_to_configuration() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(with_destinations=True)
+
+    with pytest.raises(ValidationError, match="relationship observation is duplicated"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=(*graph.relationships, graph.relationships[0]),
+        )
+
+
+def test_cloudtrail_kms_replay_rejects_unproved_resolution_substitution() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(with_destinations=True)
+    substituted = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE,
+    )
+
+    with pytest.raises(ValidationError, match="KMS relationship resolution"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=_replace_cloudtrail_kms_relationship(graph, substituted),
+        )
+
+
+def test_cloudtrail_kms_replay_resolves_exact_key_collected_through_alias() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        destination_region=REGION,
+        kms_key_resource_id="key-123",
+        with_destinations=True,
+    )
+    s3_contracts, s3_artifacts, s3_outcomes, s3_relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        kms_references=("alias/example",),
+    )
+    resolved = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.RESOLVED,
+    )
+    kms_outcome = next(
+        outcome
+        for outcome in s3_outcomes
+        if outcome.collector == "kms.keys" and outcome.state is EvidenceSourceState.PRESENT
+    )
+    assert isinstance(kms_outcome.subject, ResourceEvidenceSubject)
+    assert resolved.target.resource_snapshot_id == kms_outcome.subject.resource_snapshot_id
+
+    combined = EvidenceGraph(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        collected_at=COLLECTED_AT,
+        source_contracts=(*contracts, *s3_contracts),
+        artifacts=(*artifacts, *s3_artifacts),
+        source_outcomes=(*outcomes, *s3_outcomes),
+        relationships=(
+            *_replace_cloudtrail_kms_relationship(graph, resolved),
+            *s3_relationships,
+        ),
+    )
+    assert (
+        next(
+            item
+            for item in combined.relationships
+            if item.source.service == "cloudtrail"
+            and item.relationship_type is RelationshipType.ENCRYPTED_WITH
+        ).resolution
+        is RelationshipResolution.RESOLVED
+    )
+
+    substituted = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_NOT_COLLECTED,
+    )
+    with pytest.raises(ValidationError, match="KMS relationship resolution"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=(*contracts, *s3_contracts),
+            artifacts=(*artifacts, *s3_artifacts),
+            source_outcomes=(*outcomes, *s3_outcomes),
+            relationships=(
+                *_replace_cloudtrail_kms_relationship(graph, substituted),
+                *s3_relationships,
+            ),
+        )
+
+
+def test_cloudtrail_kms_replay_rejects_orphan_describe_key_evidence() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        destination_region=REGION,
+        kms_key_resource_id="key-123",
+        with_destinations=True,
+    )
+    s3_contracts, s3_artifacts, s3_outcomes, _ = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        kms_references=("alias/example",),
+    )
+    kms_outcome = next(item for item in s3_outcomes if item.collector == "kms.keys")
+    kms_contract = next(
+        item for item in s3_contracts if item.source_outcome_id == kms_outcome.source_outcome_id
+    )
+    kms_artifact = next(
+        item for item in s3_artifacts if item.evidence_reference == kms_outcome.evidence_reference
+    )
+    resolved = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.RESOLVED,
+    )
+
+    with pytest.raises(ValidationError, match="valid S3 collection manifest"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=(*contracts, kms_contract),
+            artifacts=(*artifacts, kms_artifact),
+            source_outcomes=(*outcomes, kms_outcome),
+            relationships=_replace_cloudtrail_kms_relationship(graph, resolved),
+        )
+
+
+def test_cloudtrail_kms_replay_uses_exact_access_denied_outcome() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        destination_region=REGION,
+        kms_key_resource_id="key-123",
+        with_destinations=True,
+    )
+    kms_arn = next(
+        item.target.aws_resource_id
+        for item in graph.relationships
+        if item.relationship_type is RelationshipType.ENCRYPTED_WITH
+    )
+    s3_contracts, s3_artifacts, s3_outcomes, s3_relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        lookup_present=False,
+        kms_references=(kms_arn,),
+    )
+    access_denied = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_ACCESS_DENIED,
+    )
+
+    EvidenceGraph(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        collected_at=COLLECTED_AT,
+        source_contracts=(*contracts, *s3_contracts),
+        artifacts=(*artifacts, *s3_artifacts),
+        source_outcomes=(*outcomes, *s3_outcomes),
+        relationships=(
+            *_replace_cloudtrail_kms_relationship(graph, access_denied),
+            *s3_relationships,
+        ),
+    )
+
+    substituted = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_NOT_COLLECTED,
+    )
+    with pytest.raises(ValidationError, match="KMS relationship resolution"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=(*contracts, *s3_contracts),
+            artifacts=(*artifacts, *s3_artifacts),
+            source_outcomes=(*outcomes, *s3_outcomes),
+            relationships=(
+                *_replace_cloudtrail_kms_relationship(graph, substituted),
+                *s3_relationships,
+            ),
+        )
+
+
+def test_cloudtrail_kms_replay_uses_not_collected_for_complete_s3_rollup() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        destination_region=REGION,
+        kms_key_resource_id="key-123",
+        with_destinations=True,
+    )
+    s3_contracts, s3_artifacts, s3_outcomes = _complete_s3_manifest_parts(
+        bucket_names=("bucket-a",),
+    )
+
+    EvidenceGraph(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        collected_at=COLLECTED_AT,
+        source_contracts=(*contracts, *s3_contracts),
+        artifacts=(*artifacts, *s3_artifacts),
+        source_outcomes=(*outcomes, *s3_outcomes),
+        relationships=graph.relationships,
+    )
+
+    substituted = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE,
+    )
+    with pytest.raises(ValidationError, match="KMS relationship resolution"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=(*contracts, *s3_contracts),
+            artifacts=(*artifacts, *s3_artifacts),
+            source_outcomes=(*outcomes, *s3_outcomes),
+            relationships=_replace_cloudtrail_kms_relationship(graph, substituted),
+        )
+
+
+def test_cloudtrail_kms_replay_uses_incomplete_s3_rollup_without_exact_outcome() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        destination_region=REGION,
+        kms_key_resource_id="key-123",
+        with_destinations=True,
+    )
+    s3_contracts, s3_artifacts, s3_outcomes, s3_relationships = _s3_kms_graph_parts(
+        bucket_names=("bucket-a",),
+        lookup_present=False,
+        kms_references=("alias/unrelated",),
+    )
+    incomplete = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE,
+    )
+
+    EvidenceGraph(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        collected_at=COLLECTED_AT,
+        source_contracts=(*contracts, *s3_contracts),
+        artifacts=(*artifacts, *s3_artifacts),
+        source_outcomes=(*outcomes, *s3_outcomes),
+        relationships=(
+            *_replace_cloudtrail_kms_relationship(graph, incomplete),
+            *s3_relationships,
+        ),
+    )
+
+    substituted = _cloudtrail_kms_relationship_with_resolution(
+        graph,
+        RelationshipResolution.TARGET_NOT_COLLECTED,
+    )
+    with pytest.raises(ValidationError, match="KMS relationship resolution"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=(*contracts, *s3_contracts),
+            artifacts=(*artifacts, *s3_artifacts),
+            source_outcomes=(*outcomes, *s3_outcomes),
+            relationships=(
+                *_replace_cloudtrail_kms_relationship(graph, substituted),
+                *s3_relationships,
+            ),
+        )
+
+
+def test_cloudtrail_manifest_rejects_omitted_destination_relationship() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(with_destinations=True)
+
+    with pytest.raises(ValidationError, match="relationship manifest is incomplete"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=graph.relationships[1:],
+        )
+
+
+def test_cloudtrail_manifest_rejects_substituted_destination_target() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(with_destinations=True)
+    bucket_relationship = next(
+        relationship
+        for relationship in graph.relationships
+        if relationship.relationship_type is RelationshipType.DELIVERS_TO_BUCKET
+    )
+    wrong_target = ResourceRelationship.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        relationship_type=RelationshipType.DELIVERS_TO_BUCKET,
+        source=bucket_relationship.source,
+        target=UnresolvedRelationshipTarget.for_aws_reference(
+            service="s3",
+            resource_type="s3_bucket",
+            aws_resource_id="substituted-bucket",
+            scope=ResourceScope.REGIONAL,
+        ),
+        resolution=RelationshipResolution.TARGET_IDENTITY_INCOMPLETE,
+        provenance=bucket_relationship.provenance,
+    )
+
+    with pytest.raises(ValidationError, match="bucket relationship target is invalid"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=tuple(
+                wrong_target if relationship is bucket_relationship else relationship
+                for relationship in graph.relationships
+            ),
+        )
+
+
+def test_cloudtrail_manifest_rejects_substituted_destination_provenance() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(with_destinations=True)
+    bucket_relationship = next(
+        relationship
+        for relationship in graph.relationships
+        if relationship.relationship_type is RelationshipType.DELIVERS_TO_BUCKET
+    )
+    wrong_provenance = bucket_relationship.model_copy(
+        update={
+            "provenance": RelationshipProvenance(
+                collector="cloudtrail.trail-status",
+                collector_version="1.0.0",
+                source_api="cloudtrail:GetTrailStatus",
+                evidence_reference=artifacts[3].evidence_reference,
+                collected_at=COLLECTED_AT,
+            )
+        }
+    )
+
+    with pytest.raises(ValidationError, match="relationship provenance is invalid"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=artifacts,
+            source_outcomes=outcomes,
+            relationships=tuple(
+                wrong_provenance if relationship is bucket_relationship else relationship
+                for relationship in graph.relationships
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    "tampered_field",
+    ("tags", "configuration", "source_states", "raw_configuration"),
+)
+def test_cloudtrail_resource_replay_rejects_projection_tampering(
+    tampered_field: str,
+) -> None:
+    graph, resource, *_ = _cloudtrail_graph_parts()
+    if tampered_field == "tags":
+        tampered = resource.model_copy(update={"tags": {"Environment": "tampered"}})
+    elif tampered_field == "configuration":
+        configuration = dict(resource.configuration)
+        configuration["is_logging"] = False
+        tampered = resource.model_copy(update={"configuration": configuration})
+    elif tampered_field == "source_states":
+        configuration = dict(resource.configuration)
+        source_states = dict(configuration["source_states"])
+        source_states["tags"] = "UNAVAILABLE"
+        configuration["source_states"] = source_states
+        tampered = resource.model_copy(update={"configuration": configuration})
+    else:
+        raw_configuration = dict(resource.raw_configuration)
+        raw_configuration["summary"] = {
+            "TrailARN": resource.aws_resource_id,
+            "Name": "substituted-name",
+            "HomeRegion": resource.region,
+        }
+        tampered = resource.model_copy(update={"raw_configuration": raw_configuration})
+
+    with pytest.raises(ValidationError, match="canonical resource contradicts"):
+        _inventory(graph=graph, resources=(tampered,), requested_region=REGION)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("name", "other-trail", "configuration name"),
+        (
+            "kms_key_id",
+            "arn:aws-us-gov:kms:us-gov-west-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+            "KMS key identity",
+        ),
+        (
+            "cloudwatch_logs_log_group_arn",
+            "arn:aws:logs:us-west-2:123456789012:log-group:audit",
+            "CloudWatch delivery",
+        ),
+    ),
+)
+def test_cloudtrail_manifest_rejects_redigested_configuration_tampering(
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts()
+    payload = artifacts[2].model_dump(mode="json")["normalized_payload"]
+    payload["value"][field] = value
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.configuration",
+        payload=payload,
+    )
+
+    with pytest.raises(ValidationError, match=message):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_cloudtrail_manifest_rejects_redigested_unsafe_tag_key() -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts()
+    payload = artifacts[5].model_dump(mode="json")["normalized_payload"]
+    payload["value"] = [{"key": "Environment\nInjected", "value": "test"}]
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.tags",
+        payload=payload,
+    )
+
+    with pytest.raises(ValidationError, match="tag evidence is malformed"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_cloudtrail_manifest_binds_discovery_invocation_region_to_scan() -> None:
+    graph, resource, *_ = _cloudtrail_graph_parts(invocation_region="eu-west-1")
+
+    with pytest.raises(ValidationError, match="invocation Region"):
+        _inventory(graph=graph, resources=(resource,), requested_region=REGION)
+
+
+def test_cloudtrail_external_enrichment_requires_paired_identity() -> None:
+    graph, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(
+        owner_account_id="210987654321"
+    )
+    identity = outcomes[1]
+
+    with pytest.raises(ValidationError, match="manifest is incomplete"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=tuple(
+                item for item in contracts if item.source_outcome_id != identity.source_outcome_id
+            ),
+            artifacts=tuple(
+                item for item in artifacts if item.evidence_reference != identity.evidence_reference
+            ),
+            source_outcomes=tuple(item for item in outcomes if item is not identity),
+            relationships=graph.relationships,
+        )
+
+
+def test_cloudtrail_external_enrichment_rejects_nonpresent_identity() -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(owner_account_id="210987654321")
+    payload = artifacts[1].model_dump(mode="json")["normalized_payload"]
+    payload["complete"] = False
+    payload["failure_category"] = "ACCESS_DENIED"
+    rebound_artifacts, rebound_outcomes = _rebind_graph_source(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.identity",
+        payload=payload,
+        state=EvidenceSourceState.UNAVAILABLE,
+        failure_category=EvidenceFailureCategory.ACCESS_DENIED,
+    )
+
+    with pytest.raises(ValidationError, match="PRESENT authoritative identity"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_cloudtrail_external_enrichment_rejects_mismatched_identity() -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(owner_account_id="210987654321")
+    payload = artifacts[1].model_dump(mode="json")["normalized_payload"]
+    payload["owner_account_id"] = "999999999999"
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.identity",
+        payload=payload,
+    )
+
+    with pytest.raises(ValidationError, match="identity evidence is malformed"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_cloudtrail_external_owner_replay_requires_organization_context() -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts(owner_account_id="210987654321")
+    payload = artifacts[2].model_dump(mode="json")["normalized_payload"]
+    payload["value"]["is_organization_trail"] = False
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.configuration",
+        payload=payload,
+    )
+
+    with pytest.raises(ValidationError, match="requires organization context"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
+def test_cloudtrail_selector_defaults_are_digest_bound() -> None:
+    _, _, contracts, artifacts, outcomes = _cloudtrail_graph_parts()
+    payload = artifacts[4].model_dump(mode="json")["normalized_payload"]
+    payload["value"]["basic_selectors"][0]["read_write_type"] = "ReadOnly"
+    rebound_artifacts, rebound_outcomes = _rebind_graph_artifact(
+        artifacts=artifacts,
+        outcomes=outcomes,
+        evidence_kind="cloudtrail.trail.event-selectors",
+        payload=payload,
+    )
+
+    with pytest.raises(ValidationError, match="default provenance"):
+        EvidenceGraph(
+            scan_id=SCAN_ID,
+            collection_account_id=ACCOUNT_ID,
+            collected_at=COLLECTED_AT,
+            source_contracts=contracts,
+            artifacts=rebound_artifacts,
+            source_outcomes=rebound_outcomes,
+            relationships=(),
+        )
+
+
 def test_graph_round_trip_is_canonical_and_deeply_immutable() -> None:
     contract, artifact, outcome, relationship, _ = _valid_parts()
     graph = _graph(

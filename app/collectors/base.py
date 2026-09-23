@@ -27,6 +27,7 @@ from app.assessment.evidence_graph import (
     normalize_s3_legacy_encryption_value,
     reconstruct_s3_bucket_region_evidence,
     s3_encryption_kms_references,
+    validate_cloudtrail_source_contract_manifest,
     validate_kms_key_evidence_value,
     validate_s3_acl_source_coherence,
     validate_s3_bucket_evidence_value,
@@ -85,6 +86,7 @@ _UNSUPPORTED_CODES = frozenset(
         "InvalidAction",
         "NotImplemented",
         "UnsupportedOperation",
+        "UnsupportedOperationException",
     }
 )
 _S3_PUBLIC_ACCESS_BLOCK_FIELDS = frozenset(
@@ -154,6 +156,15 @@ _GRAPH_COLLECTOR_SOURCES = {
             "access-analyzer.findings",
         }
     ),
+    "cloudtrail_evidence": frozenset(
+        {
+            "cloudtrail.trails",
+            "cloudtrail.trail-configuration",
+            "cloudtrail.trail-status",
+            "cloudtrail.trail-event-selectors",
+            "cloudtrail.trail-tags",
+        }
+    ),
     "ec2_ebs_evidence": frozenset({"ec2.instances", "ec2.volumes", "ec2.ebs-defaults"}),
     "iam_account_evidence": frozenset({"iam.account-summary"}),
     "iam_users": frozenset({"iam.users", "iam.groups", "iam.roles", "iam.policies"}),
@@ -180,6 +191,8 @@ _REQUIRED_GRAPH_DISCOVERY_SOURCES = {
     # Access Analyzer has one declaration per bucket-backed Region and one per analyzer. Its
     # dynamic manifest is validated separately by _access_analyzer_coverage_is_incomplete.
     "access_analyzer_evidence": frozenset(),
+    # CloudTrail has one global discovery plus a dynamic five-source manifest per trail.
+    "cloudtrail_evidence": frozenset(),
     "ec2_ebs_evidence": frozenset(
         {
             (
@@ -539,6 +552,12 @@ def graph_collection_status_for(
             outcomes=selected_outcomes,
             artifacts_by_reference=artifacts_by_reference,
         )
+    elif collector_name == "cloudtrail_evidence":
+        discovery_incomplete = validate_cloudtrail_source_contract_manifest(
+            outcomes=selected_outcomes,
+            contracts=contracts_tuple,
+            artifacts=artifacts_by_reference.values(),
+        )
     elif collector_name == "s3_evidence":
         validate_s3_source_contract_manifest(
             outcomes=selected_outcomes,
@@ -698,6 +717,7 @@ def graph_collection_validation_required(
     requested = frozenset(requested_collectors)
     if collector_name in {
         "access_analyzer_evidence",
+        "cloudtrail_evidence",
         "ec2_ebs_evidence",
         "iam_account_evidence",
         "s3_evidence",

@@ -12,7 +12,11 @@ from app.collectors.base import (
     CollectorResult,
     ResourceCollector,
 )
-from app.collectors.cloudtrail import CloudTrailCollector
+from app.collectors.cloudtrail import (
+    CloudTrailCollectionBundle,
+    CloudTrailCollector,
+    CloudTrailEvidenceCollector,
+)
 from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.iam_account import IAMAccountEvidenceCollector
@@ -134,7 +138,28 @@ def test_default_collectors_cover_accepted_inventory() -> None:
         IAMAccountEvidenceCollector,
         IAMUserCollector,
         CloudTrailCollector,
+        CloudTrailEvidenceCollector,
     )
+    legacy = collectors[-2]
+    evidence = collectors[-1]
+    assert isinstance(legacy, CloudTrailCollector)
+    assert isinstance(evidence, CloudTrailEvidenceCollector)
+    assert isinstance(legacy.collection_bundle, CloudTrailCollectionBundle)
+    assert legacy.collection_bundle is evidence.collection_bundle
+
+
+def test_pre_5f_default_collectors_omit_cloudtrail_evidence_bundle() -> None:
+    provider = FakeClientProvider()
+
+    collectors = build_default_collectors(provider, include_cloudtrail_evidence=False)
+
+    assert tuple(type(collector) for collector in collectors[-2:]) == (
+        IAMUserCollector,
+        CloudTrailCollector,
+    )
+    cloudtrail = collectors[-1]
+    assert isinstance(cloudtrail, CloudTrailCollector)
+    assert cloudtrail.collection_bundle is None
 
 
 def test_collect_returns_deterministically_sorted_snapshot() -> None:

@@ -41,6 +41,7 @@ ProviderFactory = Callable[[str], AWSClientProvider]
 
 _REQUESTED_COLLECTORS = (
     "access_analyzer_evidence",
+    "cloudtrail_evidence",
     "cloudtrail_trails",
     "ec2_ebs_evidence",
     "iam_account_evidence",
@@ -50,9 +51,13 @@ _REQUESTED_COLLECTORS = (
     "security_groups",
     "vpc_network_evidence",
 )
+_PRE_5F_REQUESTED_SERVICES = ("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")
+_PRE_5F_REQUESTED_COLLECTORS = tuple(
+    collector for collector in _REQUESTED_COLLECTORS if collector != "cloudtrail_evidence"
+)
 _PRE_5E_REQUESTED_SERVICES = ("access-analyzer", "cloudtrail", "ec2", "iam", "s3")
 _PRE_5E_REQUESTED_COLLECTORS = tuple(
-    collector for collector in _REQUESTED_COLLECTORS if collector != "s3_evidence"
+    collector for collector in _PRE_5F_REQUESTED_COLLECTORS if collector != "s3_evidence"
 )
 _PRE_5D_REQUESTED_SERVICES = ("cloudtrail", "ec2", "iam", "s3")
 _PRE_5D_REQUESTED_COLLECTORS = tuple(
@@ -82,8 +87,9 @@ _RESOURCE_TYPES = (
     "vpc",
     "vpc_flow_log",
 )
+_PRE_5F_RESOURCE_TYPES = _RESOURCE_TYPES
 _PRE_5E_RESOURCE_TYPES = tuple(
-    resource_type for resource_type in _RESOURCE_TYPES if resource_type != "kms_key"
+    resource_type for resource_type in _PRE_5F_RESOURCE_TYPES if resource_type != "kms_key"
 )
 _PRE_5D_RESOURCE_TYPES = tuple(
     resource_type
@@ -287,6 +293,7 @@ class InProcessScanExecutor:
         snapshot = InventoryService(
             provider,
             include_access_analyzer="access-analyzer" in requested_services,
+            include_cloudtrail_evidence="cloudtrail-evidence" in requested_services,
             include_s3_evidence="kms" in requested_services,
         ).collect(scan_id=scan_id)
         catalog = build_default_control_catalog()
@@ -365,6 +372,8 @@ def _execution_scope_for(
 
     if requested_services == REQUESTED_SERVICES:
         return _REQUESTED_COLLECTORS, _RESOURCE_TYPES
+    if requested_services == _PRE_5F_REQUESTED_SERVICES:
+        return _PRE_5F_REQUESTED_COLLECTORS, _PRE_5F_RESOURCE_TYPES
     if requested_services == _PRE_5E_REQUESTED_SERVICES:
         return _PRE_5E_REQUESTED_COLLECTORS, _PRE_5E_RESOURCE_TYPES
     if requested_services == _PRE_5D_REQUESTED_SERVICES:

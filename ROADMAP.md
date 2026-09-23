@@ -3,11 +3,11 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-22
-Accepted baseline: `main` at `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393` (Sprints 0--4,
+Last verified: 2026-09-23
+Accepted baseline: `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
-Analyzer evidence, and accepted 5E S3 and referenced-KMS evidence)
+Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and the merged 5F preflight)
 
 ## Current state
 
@@ -30,8 +30,9 @@ Analyzer evidence, and accepted 5E S3 and referenced-KMS evidence)
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as is the bounded fact-only 5E S3 and referenced-KMS evidence slice. The 5F
-CloudTrail preflight is complete and authorizes a later implementation request, but 5F has not
-started. No Sprint 6 control has been enabled.
+CloudTrail preflight is merged, and its fact-only implementation exists on the feature branch but
+is **IMPLEMENTED; PENDING ACCEPTANCE**. It is not yet accepted or merged. No Sprint 6 control has
+been enabled.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -47,9 +48,10 @@ relationship/source-outcome evidence foundation passed its acceptance gate as
 5C in pull request 18, and 5D in pull request 20. Slice 5E was accepted and merged in pull request
 22 with only the approved direct S3 and referenced-KMS facts, source outcomes, provenance, and
 resource relationships while preserving accepted pending-scan, Access Analyzer, and `S3-900`
-behavior. The bounded 5F preflight records the immutable scan
-intent, CloudTrail ownership/admission, account-coverage, source, and relationship contracts needed
-for implementation without adding a collector or Sprint 6 rule.
+behavior. The merged 5F preflight records the immutable scan intent, CloudTrail
+ownership/admission, account-coverage, source, and relationship contracts. The feature branch now
+implements those contracts without adding a Sprint 6 rule; acceptance, CI, approval, and merge are
+still required.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -68,8 +70,9 @@ Slice 5C subsequently passed its acceptance gates and was merged in pull request
 `1a355107eb7a3ed7845fa3a569dbff80da2778bb`, and the merged-main CI quality job succeeded. The
 bounded 5E implementation was accepted and merged in pull request 22 at
 `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with green pull-request CI. The bounded 5F preflight
-is complete; implementation remains unstarted pending an explicit request. Sprint 6 remains
-`PLANNED`.
+was merged into `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The feature branch
+implements 5F and is pending its acceptance gates; this is not completion or merge. Sprint 6
+remains `PLANNED`.
 
 ## Pre-Sprint 5 attention
 
