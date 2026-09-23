@@ -1,8 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
 Status: canonical evidence-readiness plan with accepted 5A through 5E evidence producers
-reflected. The bounded 5F CloudTrail preflight is complete, its implementation has not started,
-and no Sprint 6 rule is enabled.
+reflected. The bounded 5F CloudTrail implementation is present on the feature branch and is
+**IMPLEMENTED; PENDING ACCEPTANCE**; no Sprint 6 rule is enabled.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -44,8 +44,9 @@ requires every source that its versioned control declares decision-required. A c
 produce `FAIL` despite a different unknown source only when the control's exact aggregation
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
 domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D Access
-Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source graph; no
-Sprint 6 rule consumes source outcomes yet.
+Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source graph, and the 5F
+feature branch adds the CloudTrail source graph pending acceptance. No Sprint 6 rule consumes
+source outcomes yet.
 
 ## IAM controls
 
@@ -177,9 +178,9 @@ S3 contract enables a rule or changes an existing control.
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `LOG-001` | `ListTrails`, `GetTrail`, `GetTrailStatus`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus` | Account discovery with per-trail home-Region enrichment | trail ARN/home Region and explicit `is_logging`; complete collection-account trail coverage set (not a persisted relationship) | Incomplete enumeration/status -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
-| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F preflight complete; implementation unstarted / `EXPAND` |
-| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F preflight complete; implementation unstarted / `EXPAND` |
-| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E accepted + 5F preflight complete + 5G foundation / `CONTRACT_READY` |
+| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F implemented; pending acceptance / `CURRENT` |
+| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F implemented; pending acceptance / `CURRENT` |
+| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E accepted + 5F implemented pending acceptance + 5G foundation / `CONTRACT_READY` |
 
 “Account to trails” in this matrix means the complete discovery set bound to the verified
 collection account by the scan, source manifest, and account-level outcome. It does not authorize
@@ -191,7 +192,7 @@ is never rewritten to the collecting member. Existing `LOG-001` semantics theref
 `INSUFFICIENT_EVIDENCE` rather than consume a fabricated same-account resource.
 
 CloudTrail-to-KMS evidence uses trail `KmsKeyId` and, where inspected, cached
-`kms:DescribeKey` evidence. The authorized 5F path does not add a second unconditional
+`kms:DescribeKey` evidence. The 5F path does not add a second unconditional
 `DescribeKey` producer: it resolves an exact key already collected by 5E or retains the canonical
 target with a typed unresolved state;
 CloudTrail-to-S3 uses the exact bucket identity discovered by S3. Organization trails visible from
@@ -203,7 +204,7 @@ batched by the API's `ResourceIdList` limit and the result remains attributable 
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, and 5E S3 tags current; 5F CloudTrail preflight complete but implementation and Sprint 6 rule/profile extension pending / `CURRENT` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, and 5E S3 tags accepted; 5F CloudTrail tags implemented pending acceptance; Sprint 6 rule/profile extension pending / `CURRENT` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -435,11 +436,11 @@ subsequently approved Sprint 5 shared foundation supplies the generic persistenc
 API boundary. The accepted 5A through 5E producers supply their named evidence through the same
 graph, persistence, and generic API boundaries. The 5D supporting evidence remains supplementary
 and does not decide `S3-002`. Accepted 5E supplies the direct S3 and referenced-KMS facts. The 5F
-preflight is complete, while its CloudTrail implementation and every Sprint 6 rule consumer remain
-in their named slices.
+feature branch supplies the planned CloudTrail factual graph and remains pending acceptance; every
+Sprint 6 rule consumer remains in its named slice.
 
-Sprint 5 is `IN PROGRESS`, 5A through 5E are accepted, 5F is authorized but unstarted, and Sprint
-6 remains `PLANNED`.
+Sprint 5 is `IN PROGRESS`, 5A through 5E are accepted, 5F is **IMPLEMENTED; PENDING ACCEPTANCE**,
+and Sprint 6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

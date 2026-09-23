@@ -1044,7 +1044,7 @@ def _poll_terminal_scan(
     )
 
 
-def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
+def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5f_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1459,7 +1459,75 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             ).encode("utf-8")
         ).decode("ascii").rstrip("=")
         iam_client, iam_paginators = _iam_acceptance_client()
-        cloudtrail_pages = FakePaginator([{"Trails": []}])
+        trail_arn = "arn:aws:cloudtrail:us-east-1:123456789012:trail/acceptance-audit"
+        cloudtrail_pages = FakePaginator(
+            [
+                {
+                    "Trails": [
+                        {
+                            "TrailARN": trail_arn,
+                            "HomeRegion": "us-east-1",
+                            "Name": "acceptance-audit",
+                        }
+                    ]
+                }
+            ]
+        )
+        cloudtrail_tag_pages = FakePaginator(
+            [
+                {
+                    "ResourceTagList": [
+                        {
+                            "ResourceId": trail_arn,
+                            "TagsList": [{"Key": "Owner", "Value": "security"}],
+                        }
+                    ]
+                }
+            ]
+        )
+        cloudtrail_client = FakeAWSClient(
+            paginators={
+                "list_trails": cloudtrail_pages,
+                "list_tags": cloudtrail_tag_pages,
+            },
+            responses={
+                "get_trail": [
+                    {
+                        "Trail": {
+                            "Name": "acceptance-audit",
+                            "TrailARN": trail_arn,
+                            "HomeRegion": "us-east-1",
+                            "S3BucketName": bucket_name,
+                            "S3KeyPrefix": "cloudtrail",
+                            "IncludeGlobalServiceEvents": True,
+                            "IsMultiRegionTrail": True,
+                            "LogFileValidationEnabled": True,
+                            "KmsKeyId": kms_key_arn,
+                            "IsOrganizationTrail": False,
+                        }
+                    }
+                ],
+                "get_trail_status": [
+                    {
+                        "IsLogging": True,
+                        "LatestDeliveryTime": datetime(2026, 9, 16, 16, 15, tzinfo=UTC),
+                    }
+                ],
+                "get_event_selectors": [
+                    {
+                        "TrailARN": trail_arn,
+                        "EventSelectors": [
+                            {
+                                "IncludeManagementEvents": True,
+                                "ReadWriteType": "All",
+                                "ExcludeManagementEventSources": [],
+                                "DataResources": [],
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
         provider = FakeClientProvider(
             {
                 ("accessanalyzer", "us-east-1"): analyzer_client,
@@ -1475,9 +1543,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 ("s3control", "us-east-1"): s3control_client,
                 ("kms", "us-east-1"): kms_client,
                 ("iam", "us-east-1"): iam_client,
-                ("cloudtrail", "us-east-1"): FakeAWSClient(
-                    paginators={"list_trails": cloudtrail_pages}
-                ),
+                ("cloudtrail", "us-east-1"): cloudtrail_client,
             },
             region_name="us-east-1",
             account_id="123456789012",
@@ -1522,8 +1588,18 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             assert terminal["aws_account_id"] == "123456789012"
             assert terminal["requested_regions"] == ["us-east-1"]
             assert terminal["successful_regions"] == ["us-east-1"]
+            assert terminal["requested_services"] == [
+                "access-analyzer",
+                "cloudtrail",
+                "cloudtrail-evidence",
+                "ec2",
+                "iam",
+                "kms",
+                "s3",
+            ]
             assert terminal["scope"]["requested_collectors"] == [
                 "access_analyzer_evidence",
+                "cloudtrail_evidence",
                 "cloudtrail_trails",
                 "ec2_ebs_evidence",
                 "iam_account_evidence",
@@ -1535,6 +1611,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             ]
             assert set(terminal["successful_collectors"]) == {
                 "access_analyzer_evidence",
+                "cloudtrail_evidence",
                 "cloudtrail_trails",
                 "ec2_ebs_evidence",
                 "iam_account_evidence",
@@ -1643,6 +1720,12 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 "get_policy_version",
             ]
             assert cloudtrail_pages.calls == [{}]
+            assert cloudtrail_tag_pages.calls == [{"ResourceIdList": [trail_arn]}]
+            assert [call.operation_name for call in cloudtrail_client.calls] == [
+                "get_trail",
+                "get_trail_status",
+                "get_event_selectors",
+            ]
 
             with Session(postgres_engine) as session:
                 persisted_scan = session.get(Scan, scan_id)
@@ -1820,6 +1903,28 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 assert kms_resource.region == "us-east-1"
                 assert kms_snapshot.normalized_configuration["key_manager"] == "CUSTOMER"
 
+                trail_resource = session.scalars(
+                    select(Resource).where(
+                        Resource.aws_account_id == "123456789012",
+                        Resource.service == "cloudtrail",
+                        Resource.resource_type == "cloudtrail_trail",
+                        Resource.aws_resource_id == trail_arn,
+                    )
+                ).one()
+                trail_snapshot = session.scalars(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == scan_id,
+                        ResourceSnapshot.resource_id == trail_resource.resource_id,
+                    )
+                ).one()
+                assert trail_resource.arn == trail_arn
+                assert trail_resource.region == "us-east-1"
+                assert trail_snapshot.tags == {"Owner": "security"}
+                assert trail_snapshot.normalized_configuration["is_logging"] is True
+                assert trail_snapshot.normalized_configuration["is_multi_region_trail"] is True
+                assert trail_snapshot.normalized_configuration["s3_bucket_name"] == bucket_name
+                assert trail_snapshot.normalized_configuration["kms_key_id"] == kms_key_arn
+
                 analyzer_resource = session.scalars(
                     select(Resource).where(
                         Resource.aws_account_id == "123456789012",
@@ -1956,6 +2061,12 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                     "access-analyzer.finding-details",
                     "access-analyzer.finding-summary",
                     analyzer_finding_kind,
+                    "cloudtrail.trail.configuration",
+                    "cloudtrail.trail.event-selectors",
+                    "cloudtrail.trail.identity",
+                    "cloudtrail.trail.status",
+                    "cloudtrail.trail.tags",
+                    "cloudtrail.trails.discovery",
                     "ec2.ebs-encryption-default",
                     "ec2.flow-logs.discovery",
                     "ec2.instance",
@@ -2033,9 +2144,9 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 expected_kind_counts = Counter()
                 for (evidence_kind, _state), count in expected_source_states.items():
                     expected_kind_counts[evidence_kind] += count
-                assert len(source_graph.source_contracts) == 67
-                assert len(source_graph.artifacts) == 67
-                assert len(source_graph.source_outcomes) == 67
+                assert len(source_graph.source_contracts) == 73
+                assert len(source_graph.artifacts) == 73
+                assert len(source_graph.source_outcomes) == 73
                 assert (
                     Counter(contract.contract_key for contract in source_graph.source_contracts)
                     == expected_kind_counts
@@ -2136,7 +2247,31 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                     is True
                 )
 
-                assert len(source_graph.relationships) == 21
+                trail_identity_outcome = source_outcomes_by_kind["cloudtrail.trail.identity"]
+                trail_configuration_outcome = source_outcomes_by_kind[
+                    "cloudtrail.trail.configuration"
+                ]
+                trail_selector_outcome = source_outcomes_by_kind["cloudtrail.trail.event-selectors"]
+                assert trail_identity_outcome.subject.stable_resource_id == (
+                    trail_resource.resource_id
+                )
+                assert trail_identity_outcome.subject.resource_snapshot_id == (
+                    trail_snapshot.snapshot_id
+                )
+                assert (
+                    source_artifacts_by_reference[
+                        trail_configuration_outcome.evidence_reference
+                    ].normalized_payload["value"]["s3_bucket_name"]
+                    == bucket_name
+                )
+                assert (
+                    source_artifacts_by_reference[
+                        trail_selector_outcome.evidence_reference
+                    ].normalized_payload["value"]["basic_selectors"][0]["read_write_type"]
+                    == "All"
+                )
+
+                assert len(source_graph.relationships) == 23
                 source_relationships = {
                     (
                         relationship.relationship_type,
@@ -2200,6 +2335,35 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 assert kms_relationship.target.resource_snapshot_id == kms_snapshot.snapshot_id
                 assert kms_relationship.provenance.evidence_reference == (
                     source_outcomes_by_kind["s3.bucket-encryption"].evidence_reference
+                )
+                trail_relationships = {
+                    relationship.relationship_type: relationship
+                    for relationship in source_graph.relationships
+                    if relationship.source.service == "cloudtrail"
+                }
+                assert set(trail_relationships) == {
+                    RelationshipType.DELIVERS_TO_BUCKET,
+                    RelationshipType.ENCRYPTED_WITH,
+                }
+                trail_bucket_relationship = trail_relationships[RelationshipType.DELIVERS_TO_BUCKET]
+                assert trail_bucket_relationship.resolution is RelationshipResolution.RESOLVED
+                assert trail_bucket_relationship.source.stable_resource_id == (
+                    trail_resource.resource_id
+                )
+                assert trail_bucket_relationship.source.resource_snapshot_id == (
+                    trail_snapshot.snapshot_id
+                )
+                assert trail_bucket_relationship.target.stable_resource_id == (
+                    bucket_resource.resource_id
+                )
+                assert trail_bucket_relationship.target.resource_snapshot_id == (
+                    bucket_snapshot.snapshot_id
+                )
+                trail_kms_relationship = trail_relationships[RelationshipType.ENCRYPTED_WITH]
+                assert trail_kms_relationship.resolution is RelationshipResolution.RESOLVED
+                assert trail_kms_relationship.target.stable_resource_id == kms_resource.resource_id
+                assert trail_kms_relationship.target.resource_snapshot_id == (
+                    kms_snapshot.snapshot_id
                 )
                 volume_relationship = source_relationships[
                     (RelationshipType.USES_VOLUME, "ec2_instance", "i-acceptance")
@@ -2494,6 +2658,8 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                 bucket_snapshot_id = bucket_snapshot.snapshot_id
                 kms_resource_id = kms_resource.resource_id
                 kms_snapshot_id = kms_snapshot.snapshot_id
+                trail_resource_id = trail_resource.resource_id
+                trail_snapshot_id = trail_snapshot.snapshot_id
                 analyzer_resource_uuid = analyzer_resource.resource_id
                 analyzer_snapshot_id = analyzer_snapshot.snapshot_id
                 iam_resource_ids = {
@@ -2688,6 +2854,13 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
                     kms_resource_id,
                     kms_snapshot_id,
                 ),
+                (
+                    "cloudtrail",
+                    "cloudtrail_trail",
+                    trail_arn,
+                    trail_resource_id,
+                    trail_snapshot_id,
+                ),
             ):
                 evidence_page = client.get(
                     "/api/v1/resources",
@@ -2776,7 +2949,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             )
             assert source_outcome_page.status_code == 200
             source_outcome_document = source_outcome_page.json()
-            assert source_outcome_document["total"] == 67
+            assert source_outcome_document["total"] == 73
             assert {
                 UUID(item["source_outcome_id"]) for item in source_outcome_document["items"]
             } == source_outcome_ids
@@ -2926,6 +3099,15 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             assert kms_detail["artifact"]["normalized_payload"]["supplied_reference"] == (
                 kms_key_arn
             )
+            trail_identity_detail = source_outcome_details_by_kind["cloudtrail.trail.identity"]
+            assert trail_identity_detail["subject"]["stable_resource_id"] == str(trail_resource_id)
+            assert trail_identity_detail["subject"]["resource_snapshot_id"] == str(
+                trail_snapshot_id
+            )
+            trail_selector_detail = source_outcome_details_by_kind[
+                "cloudtrail.trail.event-selectors"
+            ]
+            assert trail_selector_detail["artifact"]["normalized_payload"]["complete"] is True
 
             relationship_page = client.get(
                 "/api/v1/relationships",
@@ -2934,7 +3116,7 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             )
             assert relationship_page.status_code == 200
             relationship_document = relationship_page.json()
-            assert relationship_document["total"] == 21
+            assert relationship_document["total"] == 23
             assert {
                 UUID(item["observation_id"]) for item in relationship_document["items"]
             } == relationship_observation_ids
@@ -2979,6 +3161,21 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph(
             assert (
                 kms_reference["provenance"]["evidence_reference"]
                 == (source_outcome_details_by_kind["s3.bucket-encryption"]["evidence_reference"])
+            )
+            cloudtrail_references = {
+                item["relationship_type"]: item
+                for item in relationship_document["items"]
+                if item["source"]["service"] == "cloudtrail"
+            }
+            assert set(cloudtrail_references) == {"delivers_to_bucket", "encrypted_with"}
+            assert cloudtrail_references["delivers_to_bucket"]["source"][
+                "stable_resource_id"
+            ] == str(trail_resource_id)
+            assert cloudtrail_references["delivers_to_bucket"]["target"][
+                "stable_resource_id"
+            ] == str(bucket_resource_id)
+            assert cloudtrail_references["encrypted_with"]["target"]["stable_resource_id"] == str(
+                kms_resource_id
             )
             for item in relationship_document["items"]:
                 relationship_detail = client.get(

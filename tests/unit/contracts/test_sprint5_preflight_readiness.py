@@ -109,6 +109,8 @@ CURRENT_CONTROL_IDS = {
     "IAM-005",
     "IAM-006",
     "LOG-001",
+    "LOG-002",
+    "LOG-003",
     "NET-001",
     "NET-002",
     "NET-003",
@@ -193,7 +195,7 @@ def test_every_matrix_row_has_api_permission_scope_evidence_failure_and_state() 
 def test_matrix_uses_closed_and_exact_per_control_state_vocabulary() -> None:
     states = {control_id: _matrix_state(cells[-1]) for control_id, cells in _matrix_rows().items()}
 
-    assert set(states.values()) == ALLOWED_MATRIX_STATES
+    assert set(states.values()) <= ALLOWED_MATRIX_STATES
     assert states == EXPECTED_MATRIX_STATES
     with pytest.raises(ValueError, match="invalid matrix state cell"):
         _matrix_state("5Z / `GIBBERISH`")
@@ -394,7 +396,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() -> None:
+def test_5f_implementation_preserves_accepted_5e_and_sprint6_boundary() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -404,11 +406,12 @@ def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() ->
     )
 
     assert executable_ids == EXECUTABLE_CONTROL_IDS
+    assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "`8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`" in roadmap
+    assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in roadmap
     assert (
-        "Current slice: **5F CloudTrail evidence expansion — PLANNED; PREFLIGHT COMPLETE**"
+        "Current slice: **5F CloudTrail evidence expansion — IMPLEMENTED; PENDING ACCEPTANCE**"
         in active_plan
     )
     assert "5D IAM Access Analyzer evidence slices" in roadmap
@@ -420,7 +423,12 @@ def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() ->
     assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
     assert "**5E S3 evidence expansion — COMPLETE**" in active_plan
     assert "pull request 22" in active_plan
-    assert "This preflight adds no\ncollector and does not start 5F" in active_plan
+    assert "## Implemented 5F state — pending acceptance" in active_plan
+    assert (
+        "Implementation started from the merged preflight baseline at `main` commit" in active_plan
+    )
+    assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in active_plan
+    assert "This state is **IMPLEMENTED; PENDING ACCEPTANCE**, not `COMPLETE`" in active_plan
     assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
     assert "evidence remains supplementary and non-decisive" in active_plan
     assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
@@ -455,7 +463,7 @@ def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() ->
         "separate `cloudtrail_evidence` operational outcome",
         "direct\n  pre-5F collector path remains unchanged",
         "omitted from both resource projections",
-        "`ListTrails(IncludeShadowTrails=False)`",
+        "no unsupported shadow-trail filter is supplied",
         "non-paginated\n  `GetEventSelectors` outcomes",
         "submit no more than 20 ARNs",
         "collection account separate from actual trail ownership",
@@ -468,6 +476,11 @@ def test_5f_preflight_preserves_accepted_5e_and_does_not_start_runtime_work() ->
         assert required_5f_contract in active_plan
 
     assert "complete collection-account trail coverage set (not a persisted relationship)" in matrix
-    assert "5F preflight complete; implementation unstarted / `EXPAND`" in matrix
-    assert '"cloudtrail-evidence"' not in runtime
-    assert 'collector_name = "cloudtrail_evidence"' not in runtime
+    assert "5F implemented; pending acceptance / `CURRENT`" in matrix
+    assert "5F is **IMPLEMENTED; PENDING ACCEPTANCE**" in matrix
+    assert "`ListTrails(IncludeShadowTrails=False)`" not in active_plan
+    assert "accepted 5E tuple remains a distinct path and makes no new selector call" in active_plan
+    assert "Direct and persisted pre-5F paths retain their accepted" in active_plan
+    assert '"cloudtrail-evidence"' in runtime
+    assert 'collector_name = "cloudtrail_evidence"' in runtime
+    assert "class CloudTrailCollectionBundle" in runtime

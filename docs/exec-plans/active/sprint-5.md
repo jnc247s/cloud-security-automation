@@ -2,7 +2,7 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5F CloudTrail evidence expansion — PLANNED; PREFLIGHT COMPLETE**
+Current slice: **5F CloudTrail evidence expansion — IMPLEMENTED; PENDING ACCEPTANCE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
@@ -37,8 +37,9 @@ foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
 pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
 accepted and merged in pull request 20. Slice 5E passed its acceptance gates and merged in pull
-request 22. The bounded 5F preflight is complete within the authorized boundary below, but its
-implementation and later slices remain unstarted.
+request 22. The bounded 5F preflight is merged. Its implementation is present on the feature
+branch and awaits the required validation, independent review, CI, approval, and merge gates.
+The 5G closure and later sprints remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -64,8 +65,8 @@ Before Sprint 5 began, their standalone schemas and contract tests did not imple
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
 projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
-through 5E use that boundary, and the authorized but unstarted 5F slice must use it without
-enabling Sprint 6 rules.
+through 5E use that boundary, and the implemented-but-unaccepted 5F slice uses it without enabling
+Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -98,7 +99,7 @@ graph boundary would have lost evidence or forced that slice to invent a represe
 4. **COMPLETE — 5C** — IAM account and policy evidence;
 5. **COMPLETE — 5D** — IAM Access Analyzer evidence;
 6. **COMPLETE — 5E** — S3 evidence expansion;
-7. **PLANNED; PREFLIGHT COMPLETE — 5F** — CloudTrail evidence expansion; and
+7. **IMPLEMENTED; PENDING ACCEPTANCE — 5F** — CloudTrail evidence expansion; and
 8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
    validation.
 
@@ -110,8 +111,8 @@ is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
 `FOUNDATION_READY_FOR_5A` and 5A through 5E accepted on `main`. The separately bounded 5F
-preflight is complete, but implementation has not started and requires an explicit request. This
-does not authorize executable Sprint 6 rules, remediation, or later-sprint work.
+preflight is merged, and its implementation is present on the feature branch pending acceptance.
+This does not authorize executable Sprint 6 rules, remediation, or later-sprint work.
 
 ## Accepted 5A implementation state
 
@@ -424,7 +425,8 @@ The implementation is authorized only within these boundaries:
   never place it in routine logs or raw errors.
 - Keep collectors fact-only. Access Analyzer remains supplementary and non-decisive for S3-002.
   Do not register `S3-001` through `S3-004`, change the assessment profile, implement 5F, add
-  remediation or AWS writes, or begin dashboard, deployment, or AI work. 5F remains unstarted.
+  remediation or AWS writes, or begin dashboard, deployment, or AI work. At the 5E acceptance
+  boundary, 5F remained unstarted.
 
 Acceptance requires deterministic fake-AWS coverage for pagination, source independence,
 expected absence, malformed/conflicting evidence, policy and ACL normalization, encryption
@@ -477,7 +479,8 @@ projections, executor, and relationship vocabulary can carry this evidence witho
 new dependency, service-specific route, or authentication change. This preflight adds no
 collector and does not start 5F.
 
-Implementation is authorized only after an explicit request and only within these boundaries:
+The explicit implementation request has been received. The implementation remains bounded by
+these contracts:
 
 - Preserve immutable pending-scan execution intent. Newly created 5F scans use exact service
   intent `("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`.
@@ -495,9 +498,10 @@ Implementation is authorized only after an explicit request and only within thes
   owner; an unadmitted external-owner trail is omitted from both resource projections and makes
   `cloudtrail_trails` and `cloudtrail_evidence` incomplete, so unchanged `LOG-001` semantics yield
   `INSUFFICIENT_EVIDENCE` rather than evaluating a fabricated collection-account owner.
-- Run paginated `ListTrails(IncludeShadowTrails=False)` once for the collection account so
-  Regional shadow copies cannot become duplicate resources. Deduplicate exact records by trail
-  ARN and reject conflicting duplicates. Validate the trail ARN partition, CloudTrail service,
+- Run paginated `ListTrails` once for the collection account. The API accepts only its pagination
+  token and returns stable trail summaries rather than a per-Region `DescribeTrails` shadow-copy
+  view, so no unsupported shadow-trail filter is supplied. Deduplicate exact records by trail ARN
+  and reject conflicting duplicates. Validate the trail ARN partition, CloudTrail service,
   home Region, 12-digit owner, and name consistently. Enrich each admitted trail in its actual
   home Region with independent `GetTrail`, `GetTrailStatus`, and non-paginated
   `GetEventSelectors` outcomes. Group `ListTags` calls by home Region, submit no more than 20 ARNs
@@ -546,7 +550,8 @@ Implementation is authorized only after an explicit request and only within thes
   the assessment profile, create findings, add a migration or service-specific API, implement
   remediation or AWS writes, or begin dashboard, deployment, AI, Sprint 6, or 5G-closure work.
 
-Acceptance requires deterministic fake-AWS coverage for pagination, shadow-trail exclusion,
+Acceptance requires deterministic fake-AWS coverage for pagination, duplicate shadow/home-record
+exclusion through stable-ARN deduplication,
 duplicate handling,
 home-Region routing, tag batching and attribution, selector forms and defaults, malformed and
 conflicting evidence, independent source failures, organization-trail ownership, exact account
@@ -555,6 +560,42 @@ unchanged `LOG-001` behavior. It also requires exact graph replay and tamper tes
 persistence/API readback, authenticated disposable-PostgreSQL HTTP acceptance, targeted and full
 regression tests, Ruff lint/format, container validation, independent review, green CI, approval,
 and merge. No test may contact live AWS.
+
+## Implemented 5F state — pending acceptance
+
+Implementation started from the merged preflight baseline at `main` commit
+`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The feature branch adds the bounded fact-only
+CloudTrail expansion described above:
+
+- New scans persist the exact service intent
+  `("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`.
+  `cloudtrail-evidence` is an execution-version marker, not an AWS service or permission. The
+  accepted 5E tuple remains a distinct path and makes no new selector call or CloudTrail graph.
+- The accepted `cloudtrail_trails` projection and the graph-aware `cloudtrail_evidence` projection
+  share one per-scan collection bundle. Direct and persisted pre-5F paths retain their accepted
+  behavior, while selector- or tag-only uncertainty cannot erase independently complete legacy
+  logging evidence.
+- The bundle calls paginated `ListTrails` once without an unsupported shadow-trail argument,
+  validates and deduplicates stable ARNs, and routes `GetTrail`, `GetTrailStatus`,
+  `GetEventSelectors`, and batched/paginated `ListTags` to each trail's validated home Region.
+- The graph declares account discovery plus per-trail identity, configuration, status,
+  event-selector, and tag source families. Artifacts and outcomes remain digest-bound, facts-only,
+  and independently incomplete when an AWS response is denied, malformed, contradictory,
+  unavailable, or disappears.
+- A trail retains the owner parsed from its validated ARN; collection account, organization
+  context, and resource ownership remain separate. Unadmitted external-owner trails stay in
+  source evidence, are omitted from both resource projections, and make coverage incomplete.
+- Complete configuration evidence may emit `delivers_to_bucket` and `encrypted_with`
+  observations. S3 resolution uses exact same-scan 5E bucket evidence; KMS resolution reuses an
+  exact already-collected 5E key. Missing matches remain typed unresolved references, and 5F adds
+  no `DescribeKey` producer.
+- The only permission delta is read-only `cloudtrail:GetEventSelectors`. The slice adds no
+  dependency, migration, route, authentication/authorization change, assessment-profile change,
+  executable Sprint 6 rule, finding behavior, AWS write, or later-sprint implementation.
+
+This state is **IMPLEMENTED; PENDING ACCEPTANCE**, not `COMPLETE`. Exact validation results,
+independent-review disposition, CI, approval, and merge must be recorded only after those gates
+finish. Sprint 5 remains `IN PROGRESS`; Sprint 6 remains `PLANNED`, and 5G closure has not started.
 
 ## Objective and boundary
 

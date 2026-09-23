@@ -1,10 +1,11 @@
 # Architecture
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
-evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access
-Analyzer evidence producers, plus the merged 5E S3 and referenced-KMS producer. The accepted
-baseline is `main` commit `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`. The 5F CloudTrail
-preflight is complete, but 5F and every Sprint 6 control remain unimplemented.
+evidence-graph foundation, the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, and
+5E S3/referenced-KMS producers, and the 5F CloudTrail feature-branch implementation pending
+acceptance. The accepted baseline is `main` commit
+`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`; 5F is not yet accepted or merged, and every Sprint
+6 control remains unimplemented.
 
 ## System context
 
@@ -161,7 +162,7 @@ contract; it requires no new migration. A `(profile_id, version)` pair names exa
 definition. New content requires an operator-selected new numeric version, while old profiles,
 scans, and assessments remain unchanged.
 
-## Sprint 5 evidence graph and 5A--5E producers
+## Sprint 5 evidence graph and 5A--5F producers
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:
@@ -292,16 +293,30 @@ source provenance; unavailable lookups remain typed unresolved references. S3 bu
 outside the requested Region is bound to exact same-scan location evidence, and Access Analyzer
 Region coverage consumes discovery/location completeness rather than unrelated S3 enrichment
 status. Older pending scans are selected by their persisted service tuple and make no new 5E
-calls. The slice adds no migration or service-specific route. Slice 5F and all Sprint 6 rule
-execution remain unimplemented.
+calls. The slice adds no migration or service-specific route. All Sprint 6 rule execution remains
+unimplemented.
 
-The authorized 5F design preserves the accepted graphless `cloudtrail_trails` projection and adds
-a separate graph-aware `cloudtrail_evidence` projection over one shared per-scan collection
-bundle. One account discovery is enriched in each trail's validated home Region through
-independent configuration, status, event-selector, and tag sources. A new persisted
-`cloudtrail-evidence` intent marker selects this path without changing accepted pending 5E scans.
+The feature-branch 5F implementation preserves the accepted `cloudtrail_trails` projection and
+adds a separate graph-aware `cloudtrail_evidence` projection over one shared per-scan collection
+bundle. One paginated account `ListTrails` discovery, called without an unsupported shadow-trail
+argument, is validated and deduplicated by stable ARN. Each admitted trail is enriched in its
+validated home Region through independent identity, configuration, status, event-selector, and
+batched tag sources. A new persisted `cloudtrail-evidence` intent marker selects this path without
+changing accepted pending 5E scans.
 “Account to trails” is a coverage association carried by the scan, source manifest, and discovery
 outcome—not a generic resource edge or synthetic account resource.
+
+The exact source families are `cloudtrail.trails.discovery`, `cloudtrail.trail.identity`,
+`cloudtrail.trail.configuration`, `cloudtrail.trail.status`,
+`cloudtrail.trail.event-selectors`, and `cloudtrail.trail.tags`. They preserve independent,
+digest-bound outcomes so one selector or tag failure does not erase complete configuration or
+status evidence.
+
+New scan intent is exactly
+`("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`.
+The marker is an execution version, not an AWS service or permission. The executor retains the
+accepted 5E tuple without the marker as a separate path, so retained pending scans neither call
+`GetEventSelectors` nor gain a CloudTrail source manifest.
 
 Collection account identity remains distinct from the owner encoded by a validated trail ARN.
 Member-visible organization trails retain management-account ownership and organization context;
@@ -312,8 +327,10 @@ The unchanged `LOG-001` rule therefore receives incomplete collection instead of
 same-account trail. Complete `GetTrail` evidence may emit the
 accepted `delivers_to_bucket` and `encrypted_with` observations. S3 resolution uses exact
 same-scan 5E bucket evidence; KMS resolution reuses an exact already-collected 5E key and 5F does
-not add a second `DescribeKey` producer. The design adds no schema, route, authentication change,
-or Sprint 6 rule.
+not add a second `DescribeKey` producer. All 5F sources produce normalized facts and provenance,
+not assessment results. The implementation adds no schema, dependency, route, authentication
+change, assessment-profile change, or Sprint 6 rule. It is **IMPLEMENTED; PENDING ACCEPTANCE** on
+the feature branch rather than accepted architecture on `main`.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -386,7 +403,8 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A through 5E producers emit graph records; 5F does not yet do so.
+  traversal. The merged 5A through 5E producers emit graph records; the 5F feature branch adds its
+  records but remains pending acceptance.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

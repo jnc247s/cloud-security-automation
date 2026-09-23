@@ -2,8 +2,9 @@
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
 Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
-Access Analyzer evidence producers. The 5D evidence is projected through those same generic
-interfaces without adding a service-specific route.
+Access Analyzer and 5E S3/referenced-KMS evidence producers. The pending-acceptance 5F CloudTrail
+feature branch projects through those same generic interfaces without adding a service-specific
+route.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
 All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and
@@ -178,12 +179,16 @@ route is added, raw policy content is returned only inside the authorized normal
 snapshot projections, and these facts are not executable `S3-001` through `S3-004` results.
 Sprint 0--4 collectors that have not been upgraded remain graphless.
 
-The authorized but unimplemented 5F path will add the exact `cloudtrail-evidence` persisted
-intent marker and a `cloudtrail_evidence` collector outcome to these same generic projections.
+The 5F feature branch adds the exact `cloudtrail-evidence` persisted intent marker and a
+`cloudtrail_evidence` collector outcome to these same generic projections.
 “Account to trails” remains source-manifest coverage attached to the verified scan account, not a
 new account-resource endpoint or API shape. CloudTrail resources, source outcomes/artifacts, and
-S3/KMS relationship observations will use the existing generic endpoints; 5F adds no
-service-specific route.
+S3/KMS relationship observations use the existing generic endpoints; 5F adds no service-specific
+route, API schema, or authorization behavior.
+The source-outcome routes expose account discovery and independent per-trail identity,
+configuration, status, event-selector, and tag observations. Relationship reads expose
+`delivers_to_bucket` and `encrypted_with` observations with the existing resolved or typed
+unresolved target contract.
 
 ## Starting and following a scan
 
@@ -236,14 +241,15 @@ to `REQUIRED_TAGS` or `STALE_ACCESS_KEY_DAYS`, must be deployed with a reviewed 
 existing `RUNNING` scan is unaffected by later configuration: the executor loads the exact profile
 stored for that scan instead of selecting current or latest policy.
 
-The executor also honors the exact `requested_services` persisted for that pending scan. An
-accepted 5E scan uses `("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`; `kms`
-selects the 5E collector/resource-type set. An accepted 5D scan without `kms` resumes without S3
-Control, expanded S3, or KMS work, while a pre-5D scan without `access-analyzer` or `kms` retains
-its older collector set. Unknown tuples fail before AWS collection. Historical manifests remain
-readable without synthesizing later-slice evidence. The authorized 5F implementation will add
-`cloudtrail-evidence` to the exact 5E tuple as an execution-version marker; until 5F is
-implemented, newly created scans continue to use the accepted 5E tuple.
+The executor also honors the exact `requested_services` persisted for that pending scan. A new 5F
+scan uses
+`("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`;
+`cloudtrail-evidence` selects the 5F CloudTrail graph path but is not an AWS service or permission.
+An accepted 5E scan without that marker resumes without `GetEventSelectors` or a CloudTrail graph.
+An accepted 5D scan without `kms` resumes without S3 Control, expanded S3, or KMS work, while a
+pre-5D scan without `access-analyzer` or `kms` retains its older collector set. Unknown tuples fail
+before AWS collection. Historical manifests remain readable without synthesizing later-slice
+evidence. The new 5F path remains pending acceptance and merge.
 
 ## Error behavior
 

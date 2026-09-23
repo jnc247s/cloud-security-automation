@@ -240,9 +240,9 @@ manifest atomically, and Sprint 6 must
 add separately reviewed result-sensitive rule behavior. Existing graph support is never
 permission to reinterpret `PARTIAL` as complete.
 
-The 5F CloudTrail preflight defines matching per-source behavior, but no 5F collector exists yet.
-The accepted legacy CloudTrail collector therefore remains collector-granular until that bounded
-slice is implemented and merged.
+The 5F feature branch adds matching per-source CloudTrail behavior through a shared bundle while
+preserving the accepted direct and pending pre-5F paths. It remains pending acceptance and merge;
+the accepted `main` runtime is still collector-granular for CloudTrail.
 
 ### Single-region request model — PLANNED LIMIT
 
@@ -252,7 +252,7 @@ assume-role and full multi-region orchestration are not implemented.
 
 ## Verification and reproducibility
 
-### Sprint 0–5E HTTP acceptance coverage
+### Sprint 0–5F HTTP acceptance coverage
 
 The PostgreSQL integration suite contains one authoritative acceptance test that starts with real
 development bearer authentication and authorization, drives `POST /api/v1/scans` through the real
@@ -261,11 +261,14 @@ persisted graph through the public read API. Run it against a dedicated disposab
 database with:
 
 ```text
-python -m pytest tests/integration/test_persistence_postgres.py::test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5e_graph
+python -m pytest tests/integration/test_persistence_postgres.py::test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5f_graph
 ```
 
 `TEST_DATABASE_URL` must be set as described in the repository test instructions; CI supplies
 PostgreSQL 16. This coverage remains an integration regression test, not live-AWS validation.
+The 5F branch extends the same authenticated PostgreSQL boundary through CloudTrail source and
+relationship readback. The implementation remains pending acceptance until that test and CI pass;
+this document does not claim those pending results before the gate runs.
 
 ### Build provenance and dependency reproducibility — LOW
 

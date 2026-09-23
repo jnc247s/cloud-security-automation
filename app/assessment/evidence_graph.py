@@ -39,6 +39,7 @@ from app.assessment.relationships import (
 from app.assessment.source_outcomes import (
     AccountEvidenceSubject,
     EvidenceCollectionPhase,
+    EvidenceFailureCategory,
     EvidenceSourceState,
     EvidenceSubject,
     ResourceEvidenceSubject,
@@ -56,6 +57,11 @@ SOURCE_CONTRACT_SCHEMA_VERSION = "1.0.0"
 SOURCE_ARTIFACT_SCHEMA_VERSION = "1.0.0"
 
 _AWS_REGION_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)+-[0-9]+$", re.ASCII)
+_CLOUDTRAIL_NAME_PATTERN = re.compile(
+    r"^[A-Za-z0-9](?:[A-Za-z0-9]|[._-](?=[A-Za-z0-9])){1,126}[A-Za-z0-9]$",
+    re.ASCII,
+)
+_IP_SHAPED_NAME_PATTERN = re.compile(r"^[0-9]+(?:\.[0-9]+){3}$", re.ASCII)
 _S3_ACL_GRANTEE_TYPES = frozenset({"CanonicalUser", "AmazonCustomerByEmail", "Group"})
 _S3_ACL_PERMISSIONS = frozenset({"FULL_CONTROL", "WRITE", "WRITE_ACP", "READ", "READ_ACP"})
 _S3_ACL_GRANTEE_FIELD_SETS = {
@@ -156,6 +162,26 @@ _S3_5E_COLLECTORS = frozenset(
     }
 )
 
+_CLOUDTRAIL_ALLOWED_STATES = frozenset(
+    {
+        EvidenceSourceState.PRESENT,
+        EvidenceSourceState.UNAVAILABLE,
+        EvidenceSourceState.MALFORMED,
+        EvidenceSourceState.CONFLICT,
+        EvidenceSourceState.RESOURCE_DISAPPEARED,
+    }
+)
+_CLOUDTRAIL_BASIC_READ_WRITE_TYPES = frozenset({"All", "ReadOnly", "WriteOnly"})
+_CLOUDTRAIL_MANAGEMENT_EVENT_EXCLUSIONS = frozenset({"kms.amazonaws.com", "rdsdata.amazonaws.com"})
+_CLOUDTRAIL_ADVANCED_OPERATOR_FIELDS = (
+    "equals",
+    "starts_with",
+    "ends_with",
+    "not_equals",
+    "not_starts_with",
+    "not_ends_with",
+)
+
 _SOURCE_ARTIFACT_NAMESPACE = UUID("a524b9a2-bd87-57f0-8317-03e43a36e260")
 
 CollectionAccountId = Annotated[str, Field(pattern=r"^[0-9]{12}$")]
@@ -179,11 +205,74 @@ class S3BucketRegionEvidence:
         return dict(self.bucket_regions).get(bucket_name)
 
 
+@dataclass(frozen=True, slots=True)
+class _CloudTrailManifest:
+    """Validated 5F source family used by graph and resource replay checks."""
+
+    discovery: SourceEvidenceOutcome
+    invocation_region: str
+    admitted_arns: tuple[str, ...]
+    sources_by_arn: Mapping[str, Mapping[str, tuple[SourceEvidenceOutcome, object]]]
+    admission_incomplete: bool
+
+
 class EvidenceCardinality(StrEnum):
     """Shape of the normalized response promised by a declared evidence source."""
 
     SINGLE = "SINGLE"
     COLLECTION = "COLLECTION"
+
+
+_CLOUDTRAIL_SOURCE_IDENTITIES = {
+    "cloudtrail.trails.discovery": (
+        "cloudtrail.trails",
+        "cloudtrail:ListTrails",
+        EvidenceCollectionPhase.DISCOVERY,
+        EvidenceCardinality.COLLECTION,
+        False,
+    ),
+    "cloudtrail.trail.identity": (
+        "cloudtrail.trails",
+        "cloudtrail:ListTrails",
+        EvidenceCollectionPhase.ENRICHMENT,
+        EvidenceCardinality.SINGLE,
+        True,
+    ),
+    "cloudtrail.trail.configuration": (
+        "cloudtrail.trail-configuration",
+        "cloudtrail:GetTrail",
+        EvidenceCollectionPhase.ENRICHMENT,
+        EvidenceCardinality.SINGLE,
+        False,
+    ),
+    "cloudtrail.trail.status": (
+        "cloudtrail.trail-status",
+        "cloudtrail:GetTrailStatus",
+        EvidenceCollectionPhase.ENRICHMENT,
+        EvidenceCardinality.SINGLE,
+        False,
+    ),
+    "cloudtrail.trail.event-selectors": (
+        "cloudtrail.trail-event-selectors",
+        "cloudtrail:GetEventSelectors",
+        EvidenceCollectionPhase.ENRICHMENT,
+        EvidenceCardinality.SINGLE,
+        False,
+    ),
+    "cloudtrail.trail.tags": (
+        "cloudtrail.trail-tags",
+        "cloudtrail:ListTags",
+        EvidenceCollectionPhase.ENRICHMENT,
+        EvidenceCardinality.SINGLE,
+        False,
+    ),
+}
+_CLOUDTRAIL_RESOURCE_KINDS = frozenset(_CLOUDTRAIL_SOURCE_IDENTITIES) - {
+    "cloudtrail.trails.discovery"
+}
+_CLOUDTRAIL_NON_AUTHORITATIVE_EXTERNAL_KINDS = _CLOUDTRAIL_RESOURCE_KINDS - {
+    "cloudtrail.trail.identity"
+}
 
 
 class ResourceOwnerMode(StrEnum):
@@ -605,6 +694,7 @@ class ScanSourceContract(BaseModel):
         if (
             self.owner_mode is not ResourceOwnerMode.COLLECTION_ACCOUNT
             and not self.identity_authoritative
+            and not _is_cloudtrail_non_authoritative_external_enrichment_source(self)
         ):
             raise ValueError("exceptional owner modes require identity-authoritative evidence")
         if (
@@ -956,6 +1046,33 @@ def _is_access_analyzer_discovery_source(contract: ScanSourceContract) -> bool:
     )
 
 
+def _is_cloudtrail_non_authoritative_external_enrichment_source(
+    contract: ScanSourceContract,
+) -> bool:
+    """Recognize the closed 5F sources whose identity is proved by paired ListTrails evidence."""
+
+    subject = contract.subject
+    expected = _CLOUDTRAIL_SOURCE_IDENTITIES.get(contract.evidence_kind)
+    return bool(
+        contract.evidence_kind in _CLOUDTRAIL_NON_AUTHORITATIVE_EXTERNAL_KINDS
+        and expected is not None
+        and contract.phase is expected[2]
+        and contract.cardinality is expected[3]
+        and contract.collector == expected[0]
+        and contract.collector_version == "1.0.0"
+        and contract.source_api == expected[1]
+        and contract.contract_key == contract.evidence_kind
+        and contract.contract_version == "1.0.0"
+        and isinstance(subject, ResourceEvidenceSubject)
+        and subject.service == "cloudtrail"
+        and subject.resource_type == "cloudtrail_trail"
+        and subject.scope is ResourceScope.REGIONAL
+        and contract.owner_mode is ResourceOwnerMode.EXTERNAL_ACCOUNT
+        and not contract.identity_authoritative
+        and not contract.allows_supplemental_region
+    )
+
+
 class SourceEvidenceArtifact(BaseModel):
     """One immutable normalized JSON artifact referenced by a source outcome."""
 
@@ -1154,6 +1271,18 @@ class EvidenceGraph(BaseModel):
                 artifacts=artifacts,
             )
 
+        cloudtrail_manifest: _CloudTrailManifest | None = None
+        if any(
+            outcome.collector
+            in {identity[0] for identity in _CLOUDTRAIL_SOURCE_IDENTITIES.values()}
+            for outcome in outcomes
+        ):
+            cloudtrail_manifest = _validate_cloudtrail_manifest(
+                outcomes=outcomes,
+                contracts=contracts,
+                artifacts=artifacts,
+            )
+
         for relationship in relationships:
             self._validate_common_observation(relationship)
             matches = [
@@ -1176,6 +1305,17 @@ class EvidenceGraph(BaseModel):
             relationships=relationships,
             raw_relationships=raw_relationships,
         )
+        if cloudtrail_manifest is not None:
+            _validate_cloudtrail_relationship_manifest(
+                scan_id=self.scan_id,
+                collection_account_id=self.collection_account_id,
+                manifest=cloudtrail_manifest,
+                contracts=contracts,
+                artifacts=artifacts,
+                outcomes=outcomes,
+                relationships=relationships,
+                raw_relationships=raw_relationships,
+            )
         return self
 
     def _validate_common_observation(self, item: object) -> None:
@@ -1256,6 +1396,595 @@ class EvidenceGraph(BaseModel):
             for contract in self.source_contracts
             if contract.source_outcome_id in outcome_ids
         )
+
+
+def validate_cloudtrail_source_contract_manifest(
+    *,
+    outcomes: Iterable[SourceEvidenceOutcome],
+    contracts: Iterable[ScanSourceContract],
+    artifacts: Iterable[SourceEvidenceArtifact],
+) -> bool:
+    """Validate the exact dynamic 5F manifest and return whether admission was incomplete."""
+
+    return _validate_cloudtrail_manifest(
+        outcomes=tuple(outcomes),
+        contracts=tuple(contracts),
+        artifacts=tuple(artifacts),
+    ).admission_incomplete
+
+
+def _validate_cloudtrail_manifest(
+    *,
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    contracts: tuple[ScanSourceContract, ...],
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+) -> _CloudTrailManifest:
+    selected = tuple(
+        outcome
+        for outcome in outcomes
+        if outcome.collector in {identity[0] for identity in _CLOUDTRAIL_SOURCE_IDENTITIES.values()}
+    )
+    discovery_sources = tuple(
+        outcome for outcome in selected if outcome.evidence_kind == "cloudtrail.trails.discovery"
+    )
+    if len(discovery_sources) != 1:
+        raise ValueError("CloudTrail evidence requires exactly one global discovery source")
+    discovery = discovery_sources[0]
+    contract_by_id = {contract.source_outcome_id: contract for contract in contracts}
+    artifacts_by_reference = _artifacts_by_reference(artifacts)
+    discovery_contract = contract_by_id.get(discovery.source_outcome_id)
+    if discovery_contract is None:
+        raise ValueError("CloudTrail discovery has no declared source contract")
+    _validate_cloudtrail_source_identity(
+        outcome=discovery,
+        contract=discovery_contract,
+        collection_account_id=discovery.collection_account_id,
+    )
+    if not isinstance(discovery.subject, AccountEvidenceSubject) or (
+        discovery.subject.scope is not ResourceScope.GLOBAL
+    ):
+        raise ValueError("CloudTrail discovery must use the global collection account")
+    discovery_payload = _cloudtrail_payload(
+        outcome=discovery,
+        artifacts_by_reference=artifacts_by_reference,
+    )
+    expected_discovery_keys = {
+        "collection_account_id",
+        "invocation_region",
+        "trail_arns",
+        "trail_count",
+        "discarded_item_count",
+        "admission_complete",
+        "unadmitted_resources",
+        "complete",
+        "failure_category",
+    }
+    trail_arns = discovery_payload.get("trail_arns")
+    discarded_item_count = discovery_payload.get("discarded_item_count")
+    unadmitted_resources = discovery_payload.get("unadmitted_resources")
+    if (
+        set(discovery_payload) != expected_discovery_keys
+        or discovery_payload.get("collection_account_id") != discovery.collection_account_id
+        or not _valid_normalized_region(discovery_payload.get("invocation_region"))
+        or not isinstance(trail_arns, list)
+        or not all(_is_safe_non_empty_string(item) for item in trail_arns)
+        or trail_arns != sorted(set(trail_arns))
+        or discovery_payload.get("trail_count") != len(trail_arns)
+        or not isinstance(discarded_item_count, int)
+        or isinstance(discarded_item_count, bool)
+        or discarded_item_count < 0
+        or not isinstance(discovery_payload.get("admission_complete"), bool)
+        or not isinstance(unadmitted_resources, list)
+    ):
+        raise ValueError("CloudTrail discovery evidence is malformed")
+    _validate_cloudtrail_completion(outcome=discovery, payload=discovery_payload)
+    if discovery.state is EvidenceSourceState.PRESENT and discarded_item_count != 0:
+        raise ValueError("successful CloudTrail discovery cannot discard malformed items")
+    parsed_arns = {arn: _parse_cloudtrail_trail_arn(arn) for arn in trail_arns}
+    unadmitted_arns: set[str] = set()
+    canonical_unadmitted: list[dict[str, object]] = []
+    for item in unadmitted_resources:
+        if not isinstance(item, Mapping) or set(item) != {
+            "account_id",
+            "service",
+            "resource_type",
+            "scope",
+            "region",
+            "resource_id",
+        }:
+            raise ValueError("CloudTrail unadmitted-resource evidence is malformed")
+        arn = item["resource_id"]
+        if not isinstance(arn, str) or arn not in parsed_arns:
+            raise ValueError("CloudTrail unadmitted resource was not discovered")
+        _, region, owner, _ = parsed_arns[arn]
+        expected_item = {
+            "account_id": owner,
+            "service": "cloudtrail",
+            "resource_type": "cloudtrail_trail",
+            "scope": ResourceScope.REGIONAL.value,
+            "region": region,
+            "resource_id": arn,
+        }
+        if dict(item) != expected_item or owner == discovery.collection_account_id:
+            raise ValueError("CloudTrail unadmitted resource identity is invalid")
+        if arn in unadmitted_arns:
+            raise ValueError("CloudTrail unadmitted resource is duplicated")
+        unadmitted_arns.add(arn)
+        canonical_unadmitted.append(expected_item)
+    if canonical_unadmitted != sorted(
+        canonical_unadmitted,
+        key=lambda item: (
+            str(item["account_id"]),
+            str(item["service"]),
+            str(item["resource_type"]),
+            str(item["scope"]),
+            str(item["region"]),
+            str(item["resource_id"]),
+        ),
+    ) or discovery_payload["admission_complete"] is bool(unadmitted_arns):
+        raise ValueError("CloudTrail admission metadata is inconsistent")
+
+    admitted_arns = tuple(arn for arn in trail_arns if arn not in unadmitted_arns)
+    sources_by_arn: dict[str, dict[str, tuple[SourceEvidenceOutcome, object]]] = {}
+    for outcome in selected:
+        if outcome is discovery:
+            continue
+        contract = contract_by_id.get(outcome.source_outcome_id)
+        if contract is None:
+            raise ValueError("CloudTrail outcome has no declared source contract")
+        _validate_cloudtrail_source_identity(
+            outcome=outcome,
+            contract=contract,
+            collection_account_id=discovery.collection_account_id,
+        )
+        subject = outcome.subject
+        if not isinstance(subject, ResourceEvidenceSubject):
+            raise ValueError("CloudTrail enrichment requires a resource subject")
+        trail_arn = subject.aws_resource_id
+        if trail_arn not in admitted_arns:
+            raise ValueError("CloudTrail source is not admitted by discovery")
+        _, region, owner, _ = parsed_arns[trail_arn]
+        if (
+            subject.aws_account_id != owner
+            or subject.service != "cloudtrail"
+            or subject.resource_type != "cloudtrail_trail"
+            or subject.scope is not ResourceScope.REGIONAL
+            or subject.region != region
+        ):
+            raise ValueError("CloudTrail source subject contradicts its trail ARN")
+        payload = _cloudtrail_payload(
+            outcome=outcome,
+            artifacts_by_reference=artifacts_by_reference,
+        )
+        trail_sources = sources_by_arn.setdefault(trail_arn, {})
+        if outcome.evidence_kind in trail_sources:
+            raise ValueError("CloudTrail per-trail source is duplicated")
+        trail_sources[outcome.evidence_kind] = (outcome, payload)
+
+    if set(sources_by_arn) != set(admitted_arns):
+        raise ValueError("CloudTrail per-trail source manifest is incomplete")
+    for trail_arn in admitted_arns:
+        sources = sources_by_arn[trail_arn]
+        if set(sources) != _CLOUDTRAIL_RESOURCE_KINDS:
+            raise ValueError("CloudTrail per-trail source manifest is incomplete or unknown")
+        identity_outcome, identity_payload = sources["cloudtrail.trail.identity"]
+        if identity_outcome.state is not EvidenceSourceState.PRESENT:
+            raise ValueError("CloudTrail admitted trails require PRESENT authoritative identity")
+        partition, region, owner, arn_name = parsed_arns[trail_arn]
+        if (
+            not isinstance(identity_payload, Mapping)
+            or set(identity_payload)
+            != {
+                "collection_account_id",
+                "owner_account_id",
+                "partition",
+                "trail_arn",
+                "name",
+                "home_region",
+                "complete",
+                "failure_category",
+            }
+            or identity_payload.get("collection_account_id") != discovery.collection_account_id
+            or identity_payload.get("owner_account_id") != owner
+            or identity_payload.get("partition") != partition
+            or identity_payload.get("trail_arn") != trail_arn
+            or identity_payload.get("name") != arn_name
+            or identity_payload.get("home_region") != region
+        ):
+            raise ValueError("CloudTrail identity evidence is malformed")
+        _validate_cloudtrail_completion(outcome=identity_outcome, payload=identity_payload)
+        for evidence_kind in _CLOUDTRAIL_NON_AUTHORITATIVE_EXTERNAL_KINDS:
+            source_outcome, payload = sources[evidence_kind]
+            _validate_cloudtrail_enrichment_payload(
+                evidence_kind=evidence_kind,
+                outcome=source_outcome,
+                payload=payload,
+                trail_arn=trail_arn,
+                home_region=region,
+            )
+        if owner != discovery.collection_account_id:
+            configuration_outcome, configuration_payload = sources["cloudtrail.trail.configuration"]
+            if configuration_outcome.state is EvidenceSourceState.PRESENT:
+                configuration = (
+                    configuration_payload.get("value")
+                    if isinstance(configuration_payload, Mapping)
+                    else None
+                )
+                if (
+                    not isinstance(configuration, Mapping)
+                    or configuration.get("is_organization_trail") is not True
+                ):
+                    raise ValueError(
+                        "CloudTrail external-owner configuration requires organization context"
+                    )
+            for evidence_kind in _CLOUDTRAIL_NON_AUTHORITATIVE_EXTERNAL_KINDS:
+                contract = contract_by_id[sources[evidence_kind][0].source_outcome_id]
+                if contract.identity_authoritative:
+                    raise ValueError(
+                        "CloudTrail external enrichment must rely on paired identity evidence"
+                    )
+
+    return _CloudTrailManifest(
+        discovery=discovery,
+        invocation_region=str(discovery_payload["invocation_region"]),
+        admitted_arns=admitted_arns,
+        sources_by_arn=sources_by_arn,
+        admission_incomplete=bool(unadmitted_arns),
+    )
+
+
+def _validate_cloudtrail_source_identity(
+    *,
+    outcome: SourceEvidenceOutcome,
+    contract: ScanSourceContract,
+    collection_account_id: str,
+) -> None:
+    expected = _CLOUDTRAIL_SOURCE_IDENTITIES.get(outcome.evidence_kind)
+    if expected is None:
+        raise ValueError("CloudTrail source identity is unknown")
+    collector, source_api, phase, cardinality, identity_authoritative = expected
+    allowed_states = _CLOUDTRAIL_ALLOWED_STATES
+    if outcome.evidence_kind == "cloudtrail.trails.discovery":
+        allowed_states = allowed_states - {EvidenceSourceState.RESOURCE_DISAPPEARED}
+    if (
+        contract.contract_key != outcome.evidence_kind
+        or contract.contract_version != "1.0.0"
+        or contract.evidence_kind != outcome.evidence_kind
+        or contract.collector != collector
+        or contract.collector_version != "1.0.0"
+        or contract.source_api != source_api
+        or contract.phase is not phase
+        or contract.cardinality is not cardinality
+        or contract.identity_authoritative is not identity_authoritative
+        or contract.allows_supplemental_region
+        or outcome.collector != collector
+        or outcome.collector_version != "1.0.0"
+        or outcome.source_api != source_api
+        or outcome.phase is not phase
+        or outcome.collection_account_id != collection_account_id
+        or outcome.state not in allowed_states
+    ):
+        raise ValueError("CloudTrail source identity is invalid")
+
+
+def _cloudtrail_payload(
+    *,
+    outcome: SourceEvidenceOutcome,
+    artifacts_by_reference: Mapping[str, SourceEvidenceArtifact],
+) -> dict[str, object]:
+    artifact = artifacts_by_reference.get(outcome.evidence_reference)
+    if (
+        artifact is None
+        or artifact.evidence_schema != outcome.evidence_kind
+        or artifact.evidence_schema_version != "1.0.0"
+        or artifact.scan_id != outcome.scan_id
+        or artifact.collection_account_id != outcome.collection_account_id
+        or artifact.collected_at != outcome.collected_at
+        or artifact.evidence_sha256 != outcome.evidence_sha256
+    ):
+        raise ValueError("CloudTrail source artifact does not match its outcome")
+    payload = artifact.model_dump(mode="json")["normalized_payload"]
+    if not isinstance(payload, dict):  # pragma: no cover - artifact root invariant
+        raise ValueError("CloudTrail source artifact payload is malformed")
+    return payload
+
+
+def _validate_cloudtrail_completion(
+    *, outcome: SourceEvidenceOutcome, payload: Mapping[str, object]
+) -> None:
+    expected_complete = outcome.state is EvidenceSourceState.PRESENT
+    expected_failure = (
+        outcome.failure_category.value if outcome.failure_category is not None else None
+    )
+    if (
+        payload.get("complete") is not expected_complete
+        or payload.get("failure_category") != expected_failure
+    ):
+        raise ValueError("CloudTrail source completion metadata is inconsistent")
+
+
+def _validate_cloudtrail_enrichment_payload(
+    *,
+    evidence_kind: str,
+    outcome: SourceEvidenceOutcome,
+    payload: object,
+    trail_arn: str,
+    home_region: str,
+) -> None:
+    if (
+        not isinstance(payload, Mapping)
+        or set(payload) != {"trail_arn", "home_region", "value", "complete", "failure_category"}
+        or payload.get("trail_arn") != trail_arn
+        or payload.get("home_region") != home_region
+    ):
+        raise ValueError("CloudTrail enrichment evidence is malformed")
+    _validate_cloudtrail_completion(outcome=outcome, payload=payload)
+    value = payload["value"]
+    if outcome.state is not EvidenceSourceState.PRESENT:
+        if value is not None:
+            raise ValueError("incomplete CloudTrail evidence must not retain a value")
+        return
+    if value is None:
+        raise ValueError("PRESENT CloudTrail evidence requires a value")
+    validators = {
+        "cloudtrail.trail.configuration": _validate_cloudtrail_configuration_value,
+        "cloudtrail.trail.status": _validate_cloudtrail_status_value,
+        "cloudtrail.trail.event-selectors": _validate_cloudtrail_selector_value,
+        "cloudtrail.trail.tags": _validate_cloudtrail_tags_value,
+    }
+    normalized = validators[evidence_kind](value)
+    if evidence_kind == "cloudtrail.trail.configuration":
+        _, _, _, trail_name = _parse_cloudtrail_trail_arn(trail_arn)
+        if normalized["name"] != trail_name:
+            raise ValueError("CloudTrail configuration name contradicts its trail identity")
+        log_group = normalized["cloudwatch_logs_log_group_arn"]
+        log_role = normalized["cloudwatch_logs_role_arn"]
+        if (
+            (log_group is None) != (log_role is None)
+            or (log_group is not None and not _is_safe_non_empty_string(log_group))
+            or (log_role is not None and not _is_safe_non_empty_string(log_role))
+        ):
+            raise ValueError("CloudTrail CloudWatch delivery evidence is inconsistent")
+        kms_key_id = normalized["kms_key_id"]
+        if kms_key_id is not None:
+            trail_partition, _, _, _ = _parse_cloudtrail_trail_arn(trail_arn)
+            key_partition, _, _, _ = _parse_kms_key_arn(kms_key_id)
+            if key_partition != trail_partition:
+                raise ValueError("CloudTrail KMS key identity contradicts its trail identity")
+
+
+def _validate_cloudtrail_configuration_value(value: object) -> dict[str, object]:
+    keys = {
+        "name",
+        "s3_bucket_name",
+        "s3_key_prefix",
+        "include_global_service_events",
+        "is_multi_region_trail",
+        "log_file_validation_enabled",
+        "cloudwatch_logs_log_group_arn",
+        "cloudwatch_logs_role_arn",
+        "kms_key_id",
+        "is_organization_trail",
+    }
+    if not isinstance(value, Mapping) or set(value) != keys:
+        raise ValueError("CloudTrail configuration evidence is malformed")
+    if value["name"] is not None and not _is_safe_non_empty_string(value["name"]):
+        raise ValueError("CloudTrail configuration evidence is malformed")
+    for field in {
+        "s3_bucket_name",
+        "s3_key_prefix",
+        "cloudwatch_logs_log_group_arn",
+        "cloudwatch_logs_role_arn",
+        "kms_key_id",
+    }:
+        if value[field] is not None and not isinstance(value[field], str):
+            raise ValueError("CloudTrail configuration evidence is malformed")
+    for field in {
+        "include_global_service_events",
+        "is_multi_region_trail",
+        "log_file_validation_enabled",
+        "is_organization_trail",
+    }:
+        if value[field] is not None and not isinstance(value[field], bool):
+            raise ValueError("CloudTrail configuration evidence is malformed")
+    if value["s3_bucket_name"] is not None and not _is_safe_non_empty_string(
+        value["s3_bucket_name"]
+    ):
+        raise ValueError("CloudTrail destination bucket must be non-empty")
+    if value["kms_key_id"] is not None:
+        _parse_kms_key_arn(value["kms_key_id"])
+    return dict(value)
+
+
+def _validate_cloudtrail_status_value(value: object) -> dict[str, object]:
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != {"is_logging", "status"}
+        or not isinstance(value["is_logging"], bool)
+        or not isinstance(value["status"], Mapping)
+        or "ResponseMetadata" in value["status"]
+        or value["status"].get("IsLogging") is not value["is_logging"]
+    ):
+        raise ValueError("CloudTrail status evidence is malformed")
+    return {"is_logging": value["is_logging"], "status": dict(value["status"])}
+
+
+def _validate_cloudtrail_selector_value(value: object) -> dict[str, object]:
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != {"selector_form", "basic_selectors", "advanced_selectors"}
+        or value["selector_form"] not in {"BASIC", "ADVANCED"}
+        or not isinstance(value["basic_selectors"], list)
+        or not isinstance(value["advanced_selectors"], list)
+    ):
+        raise ValueError("CloudTrail event-selector evidence is malformed")
+    basic = value["basic_selectors"]
+    advanced = value["advanced_selectors"]
+    if (value["selector_form"] == "BASIC") != bool(basic) or bool(basic) == bool(advanced):
+        raise ValueError("CloudTrail event-selector form is inconsistent")
+    normalized_basic = [_validate_cloudtrail_basic_selector(item) for item in basic]
+    normalized_advanced = [_validate_cloudtrail_advanced_selector(item) for item in advanced]
+    for values in (normalized_basic, normalized_advanced):
+        documents = [_canonical_json(item) for item in values]
+        if documents != sorted(set(documents)):
+            raise ValueError("CloudTrail event selectors are not canonical")
+    return dict(value)
+
+
+def _validate_cloudtrail_basic_selector(value: object) -> dict[str, object]:
+    fields = {
+        "raw_presence",
+        "include_management_events",
+        "read_write_type",
+        "exclude_management_event_sources",
+        "data_resources",
+    }
+    presence_fields = {
+        "include_management_events",
+        "read_write_type",
+        "exclude_management_event_sources",
+        "data_resources",
+    }
+    if not isinstance(value, Mapping) or set(value) != fields:
+        raise ValueError("CloudTrail basic selector is malformed")
+    raw_presence = value["raw_presence"]
+    exclusions = value["exclude_management_event_sources"]
+    data_resources = value["data_resources"]
+    if (
+        not isinstance(raw_presence, Mapping)
+        or set(raw_presence) != presence_fields
+        or not all(isinstance(item, bool) for item in raw_presence.values())
+        or not isinstance(value["include_management_events"], bool)
+        or value["read_write_type"] not in _CLOUDTRAIL_BASIC_READ_WRITE_TYPES
+        or not isinstance(exclusions, list)
+        or exclusions != sorted(set(exclusions))
+        or not all(item in _CLOUDTRAIL_MANAGEMENT_EVENT_EXCLUSIONS for item in exclusions)
+        or not isinstance(data_resources, list)
+    ):
+        raise ValueError("CloudTrail basic selector is malformed")
+    defaults = {
+        "include_management_events": True,
+        "read_write_type": "All",
+        "exclude_management_event_sources": [],
+        "data_resources": [],
+    }
+    if any(
+        not raw_presence[field] and value[field] != default for field, default in defaults.items()
+    ):
+        raise ValueError("CloudTrail basic selector default provenance is inconsistent")
+    normalized_data = []
+    for item in data_resources:
+        if (
+            not isinstance(item, Mapping)
+            or set(item) != {"type", "values"}
+            or not _is_safe_non_empty_string(item["type"])
+            or not isinstance(item["values"], list)
+            or not item["values"]
+            or item["values"] != sorted(set(item["values"]))
+            or not all(_is_safe_non_empty_string(entry) for entry in item["values"])
+        ):
+            raise ValueError("CloudTrail data-resource selector is malformed")
+        normalized_data.append(dict(item))
+    documents = [_canonical_json(item) for item in normalized_data]
+    if documents != sorted(set(documents)):
+        raise ValueError("CloudTrail data-resource selectors are not canonical")
+    return dict(value)
+
+
+def _validate_cloudtrail_advanced_selector(value: object) -> dict[str, object]:
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != {"name", "field_selectors"}
+        or (value["name"] is not None and not _is_safe_non_empty_string(value["name"]))
+        or not isinstance(value["field_selectors"], list)
+        or not value["field_selectors"]
+    ):
+        raise ValueError("CloudTrail advanced selector is malformed")
+    normalized_fields = []
+    for item in value["field_selectors"]:
+        expected = {"field", *_CLOUDTRAIL_ADVANCED_OPERATOR_FIELDS}
+        if (
+            not isinstance(item, Mapping)
+            or set(item) != expected
+            or not _is_safe_non_empty_string(item["field"])
+        ):
+            raise ValueError("CloudTrail advanced field selector is malformed")
+        has_value = False
+        for operator in _CLOUDTRAIL_ADVANCED_OPERATOR_FIELDS:
+            entries = item[operator]
+            if (
+                not isinstance(entries, list)
+                or entries != sorted(set(entries))
+                or not all(_is_safe_non_empty_string(entry) for entry in entries)
+            ):
+                raise ValueError("CloudTrail advanced field selector is malformed")
+            has_value |= bool(entries)
+        if not has_value:
+            raise ValueError("CloudTrail advanced field selector requires an operator value")
+        normalized_fields.append(dict(item))
+    documents = [_canonical_json(item) for item in normalized_fields]
+    if documents != sorted(set(documents)):
+        raise ValueError("CloudTrail advanced field selectors are not canonical")
+    return dict(value)
+
+
+def _validate_cloudtrail_tags_value(value: object) -> dict[str, str]:
+    if not isinstance(value, list):
+        raise ValueError("CloudTrail tag evidence must be a list")
+    tags: dict[str, str] = {}
+    entries: list[dict[str, str]] = []
+    for item in value:
+        if (
+            not isinstance(item, Mapping)
+            or set(item) != {"key", "value"}
+            or not _is_safe_non_empty_string(item["key"])
+            or not isinstance(item["value"], str)
+            or item["key"] in tags
+        ):
+            raise ValueError("CloudTrail tag evidence is malformed")
+        tags[item["key"]] = item["value"]
+        entries.append(dict(item))
+    if entries != sorted(entries, key=lambda item: item["key"]):
+        raise ValueError("CloudTrail tag evidence is not canonical")
+    return tags
+
+
+def _parse_cloudtrail_trail_arn(value: str) -> tuple[str, str, str, str]:
+    if not isinstance(value, str):
+        raise ValueError("CloudTrail trail ARN is malformed")
+    parts = value.split(":", 5)
+    if (
+        len(parts) != 6
+        or parts[0] != "arn"
+        or not re.fullmatch(r"aws(?:-[a-z0-9]+)*", parts[1])
+        or parts[2] != "cloudtrail"
+        or not _valid_normalized_region(parts[3])
+        or not re.fullmatch(r"[0-9]{12}", parts[4])
+        or not parts[5].startswith("trail/")
+        or not _CLOUDTRAIL_NAME_PATTERN.fullmatch(parts[5].removeprefix("trail/"))
+        or _IP_SHAPED_NAME_PATTERN.fullmatch(parts[5].removeprefix("trail/")) is not None
+    ):
+        raise ValueError("CloudTrail trail ARN is malformed")
+    return parts[1], parts[3], parts[4], parts[5].removeprefix("trail/")
+
+
+def _parse_kms_key_arn(value: object) -> tuple[str, str, str, str]:
+    if not isinstance(value, str):
+        raise ValueError("CloudTrail KMS key reference must be a full key ARN")
+    parts = value.split(":", 5)
+    resource = parts[5] if len(parts) == 6 else ""
+    if (
+        len(parts) != 6
+        or parts[0] != "arn"
+        or not re.fullmatch(r"aws(?:-[a-z0-9]+)*", parts[1])
+        or parts[2] != "kms"
+        or not _valid_normalized_region(parts[3])
+        or not re.fullmatch(r"[0-9]{12}", parts[4])
+        or not resource.startswith("key/")
+        or not _is_safe_non_empty_string(resource.removeprefix("key/"))
+    ):
+        raise ValueError("CloudTrail KMS key reference must be a full key ARN")
+    return parts[1], parts[3], parts[4], resource.removeprefix("key/")
 
 
 def reconstruct_s3_bucket_region_evidence(
@@ -2302,6 +3031,233 @@ def _is_s3_kms_relationship(relationship: ResourceRelationship) -> bool:
     )
 
 
+def _validate_cloudtrail_relationship_manifest(
+    *,
+    scan_id: UUID,
+    collection_account_id: str,
+    manifest: _CloudTrailManifest,
+    contracts: tuple[ScanSourceContract, ...],
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+    relationships: tuple[ResourceRelationship, ...],
+    raw_relationships: tuple[ResourceRelationship, ...],
+) -> None:
+    """Bind every 5F destination edge to one PRESENT configuration observation."""
+
+    actual = tuple(
+        relationship
+        for relationship in relationships
+        if relationship.source.service == "cloudtrail"
+        and relationship.source.resource_type == "cloudtrail_trail"
+    )
+    raw_actual = tuple(
+        relationship
+        for relationship in raw_relationships
+        if relationship.source.service == "cloudtrail"
+        and relationship.source.resource_type == "cloudtrail_trail"
+    )
+    if len(raw_actual) != len({item.observation_id for item in raw_actual}):
+        raise ValueError("CloudTrail relationship observation is duplicated")
+
+    expected: dict[tuple[str, RelationshipType], tuple[SourceEvidenceOutcome, str]] = {}
+    for trail_arn, sources in manifest.sources_by_arn.items():
+        configuration_outcome, payload = sources["cloudtrail.trail.configuration"]
+        if configuration_outcome.state is not EvidenceSourceState.PRESENT:
+            continue
+        if not isinstance(payload, Mapping):  # pragma: no cover - manifest invariant
+            raise TypeError("CloudTrail configuration payload must be an object")
+        configuration = payload["value"]
+        if not isinstance(configuration, Mapping):  # pragma: no cover - manifest invariant
+            raise TypeError("CloudTrail configuration value must be an object")
+        bucket_name = configuration["s3_bucket_name"]
+        kms_key_id = configuration["kms_key_id"]
+        if bucket_name is not None:
+            expected[(trail_arn, RelationshipType.DELIVERS_TO_BUCKET)] = (
+                configuration_outcome,
+                bucket_name,
+            )
+        if kms_key_id is not None:
+            expected[(trail_arn, RelationshipType.ENCRYPTED_WITH)] = (
+                configuration_outcome,
+                kms_key_id,
+            )
+
+    actual_by_key: dict[tuple[str, RelationshipType], ResourceRelationship] = {}
+    for relationship in actual:
+        key = (relationship.source.aws_resource_id, relationship.relationship_type)
+        if key in actual_by_key or key not in expected:
+            raise ValueError("CloudTrail relationship manifest is duplicated or unexpected")
+        outcome, reference = expected[key]
+        subject = outcome.subject
+        if (
+            not isinstance(subject, ResourceEvidenceSubject)
+            or relationship.scan_id != scan_id
+            or relationship.collection_account_id != collection_account_id
+            or relationship.source.resource_snapshot_id != subject.resource_snapshot_id
+            or not _resource_endpoint_matches_subject(relationship.source, subject)
+            or not _provenance_matches_outcome(relationship.provenance, outcome)
+        ):
+            raise ValueError("CloudTrail relationship provenance is invalid")
+        if relationship.relationship_type is RelationshipType.DELIVERS_TO_BUCKET:
+            _validate_cloudtrail_bucket_relationship(relationship, reference)
+        elif relationship.relationship_type is RelationshipType.ENCRYPTED_WITH:
+            _validate_cloudtrail_kms_relationship(
+                relationship,
+                reference,
+                contracts=contracts,
+                artifacts=artifacts,
+                outcomes=outcomes,
+            )
+        else:  # pragma: no cover - expected key invariant
+            raise ValueError("CloudTrail relationship type is invalid")
+        actual_by_key[key] = relationship
+    if set(actual_by_key) != set(expected):
+        raise ValueError("CloudTrail relationship manifest is incomplete")
+
+
+def _resource_endpoint_matches_subject(
+    endpoint: RelationshipEndpoint,
+    subject: ResourceEvidenceSubject,
+) -> bool:
+    return (
+        endpoint.aws_account_id,
+        endpoint.service,
+        endpoint.resource_type,
+        endpoint.aws_resource_id,
+        endpoint.scope,
+        endpoint.region,
+    ) == (
+        subject.aws_account_id,
+        subject.service,
+        subject.resource_type,
+        subject.aws_resource_id,
+        subject.scope,
+        subject.region,
+    )
+
+
+def _validate_cloudtrail_bucket_relationship(
+    relationship: ResourceRelationship,
+    bucket_name: str,
+) -> None:
+    target = relationship.target
+    if (
+        target.service != "s3"
+        or target.resource_type != "s3_bucket"
+        or target.aws_resource_id != bucket_name
+        or target.scope is not ResourceScope.REGIONAL
+    ):
+        raise ValueError("CloudTrail bucket relationship target is invalid")
+    if isinstance(target, UnresolvedRelationshipTarget):
+        if (
+            target.aws_account_id is not None
+            or target.region is not None
+            or relationship.resolution is not RelationshipResolution.TARGET_IDENTITY_INCOMPLETE
+        ):
+            raise ValueError("CloudTrail bucket relationship resolution is invalid")
+    elif relationship.resolution is not RelationshipResolution.RESOLVED:
+        raise ValueError("CloudTrail bucket relationship resolution is invalid")
+
+
+def _validate_cloudtrail_kms_relationship(
+    relationship: ResourceRelationship,
+    kms_key_arn: str,
+    *,
+    contracts: tuple[ScanSourceContract, ...],
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+) -> None:
+    _, region, owner, _ = _parse_kms_key_arn(kms_key_arn)
+    target = relationship.target
+    if (
+        not isinstance(target, RelationshipEndpoint)
+        or target.aws_account_id != owner
+        or target.service != "kms"
+        or target.resource_type != "kms_key"
+        or target.aws_resource_id != kms_key_arn
+        or target.scope is not ResourceScope.REGIONAL
+        or target.region != region
+    ):
+        raise ValueError("CloudTrail KMS relationship target is invalid")
+    expected_resolution = _cloudtrail_kms_resolution_from_outcomes(
+        kms_key_arn=kms_key_arn,
+        contracts=contracts,
+        artifacts=artifacts,
+        outcomes=outcomes,
+    )
+    if relationship.resolution is not expected_resolution or (
+        expected_resolution is RelationshipResolution.RESOLVED
+    ) is (target.resource_snapshot_id is None):
+        raise ValueError("CloudTrail KMS relationship resolution is invalid")
+
+
+def _cloudtrail_kms_resolution_from_outcomes(
+    *,
+    kms_key_arn: str,
+    contracts: tuple[ScanSourceContract, ...],
+    artifacts: tuple[SourceEvidenceArtifact, ...],
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+) -> RelationshipResolution:
+    """Reconstruct the exact runtime resolution of one canonical CloudTrail KMS target."""
+
+    _, region, owner, _ = _parse_kms_key_arn(kms_key_arn)
+    s3_outcomes = tuple(outcome for outcome in outcomes if outcome.collector in _S3_5E_COLLECTORS)
+    region_evidence = None
+    if s3_outcomes:
+        region_evidence = reconstruct_s3_bucket_region_evidence(
+            contracts=contracts,
+            outcomes=outcomes,
+            artifacts=artifacts,
+        )
+        if region_evidence is None:
+            raise ValueError("CloudTrail KMS target requires a valid S3 collection manifest")
+
+    matching_key_subjects = tuple(
+        outcome
+        for outcome in outcomes
+        if outcome.collector == "kms.keys"
+        and outcome.state is EvidenceSourceState.PRESENT
+        and isinstance(outcome.subject, ResourceEvidenceSubject)
+        and outcome.subject.aws_account_id == owner
+        and outcome.subject.service == "kms"
+        and outcome.subject.resource_type == "kms_key"
+        and outcome.subject.aws_resource_id == kms_key_arn
+        and outcome.subject.scope is ResourceScope.REGIONAL
+        and outcome.subject.region == region
+    )
+    if matching_key_subjects:
+        return RelationshipResolution.RESOLVED
+
+    evidence_kind = "kms.key." + hashlib.sha256(f"{region}\x00{kms_key_arn}".encode()).hexdigest()
+    matching_outcomes = tuple(
+        outcome for outcome in outcomes if outcome.evidence_kind == evidence_kind
+    )
+    if (
+        any(outcome.collector != "kms.keys" for outcome in matching_outcomes)
+        or len(matching_outcomes) > 1
+    ):
+        raise ValueError("CloudTrail KMS target evidence is ambiguous")
+    if matching_outcomes:
+        outcome = matching_outcomes[0]
+        if outcome.state is EvidenceSourceState.PRESENT:
+            raise ValueError("CloudTrail KMS target evidence contradicts its canonical identity")
+        if outcome.failure_category is EvidenceFailureCategory.ACCESS_DENIED:
+            return RelationshipResolution.TARGET_ACCESS_DENIED
+        return RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE
+
+    complete_states = {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}
+    if not s3_outcomes:
+        return RelationshipResolution.TARGET_NOT_COLLECTED
+    if region_evidence is None:  # pragma: no cover - guarded above
+        raise TypeError("S3 outcomes require reconstructed Region evidence")
+    if (
+        all(outcome.state in complete_states for outcome in s3_outcomes)
+        and region_evidence.complete
+    ):
+        return RelationshipResolution.TARGET_NOT_COLLECTED
+    return RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE
+
+
 def validate_graph_resources(
     *,
     graph: EvidenceGraph,
@@ -2399,6 +3355,11 @@ def validate_graph_resources(
         resources_by_snapshot=resource_by_snapshot_id,
         artifacts_by_reference=artifact_by_reference,
     )
+    _validate_cloudtrail_resource_readback(
+        graph=graph,
+        resources_by_snapshot=resource_by_snapshot_id,
+        requested_region=requested_region,
+    )
     kms_source_buckets_by_snapshot: dict[UUID, set[str]] = {}
     for outcome_id, outcome in outcome_by_id.items():
         if outcome.state is not EvidenceSourceState.PRESENT:
@@ -2480,6 +3441,159 @@ def validate_graph_resources(
             referenced_by_resolved_s3_encryption=snapshot_id in resolved_s3_kms_targets,
             s3_region_evidence=s3_region_evidence,
         )
+
+
+def _validate_cloudtrail_resource_readback(
+    *,
+    graph: EvidenceGraph,
+    resources_by_snapshot: Mapping[UUID, NormalizedResource],
+    requested_region: str,
+) -> None:
+    """Rebuild each canonical trail from its immutable 5F source artifacts."""
+
+    cloudtrail_outcomes = tuple(
+        outcome
+        for outcome in graph.source_outcomes
+        if outcome.collector in {identity[0] for identity in _CLOUDTRAIL_SOURCE_IDENTITIES.values()}
+    )
+    if not cloudtrail_outcomes:
+        return
+    manifest = _validate_cloudtrail_manifest(
+        outcomes=graph.source_outcomes,
+        contracts=graph.source_contracts,
+        artifacts=graph.artifacts,
+    )
+    if manifest.invocation_region != requested_region:
+        raise ValueError("CloudTrail discovery invocation Region contradicts the scan request")
+    cloudtrail_resources = tuple(
+        resource
+        for resource in resources_by_snapshot.values()
+        if (resource.service, resource.resource_type) == ("cloudtrail", "cloudtrail_trail")
+    )
+    actual_trails = {resource.aws_resource_id: resource for resource in cloudtrail_resources}
+    if len(cloudtrail_resources) != len(actual_trails) or set(actual_trails) != set(
+        manifest.admitted_arns
+    ):
+        raise ValueError("CloudTrail canonical resource manifest contradicts discovery")
+
+    for trail_arn in manifest.admitted_arns:
+        resource = actual_trails[trail_arn]
+        sources = manifest.sources_by_arn[trail_arn]
+        identity_outcome, identity_payload = sources["cloudtrail.trail.identity"]
+        if not isinstance(identity_payload, Mapping):  # pragma: no cover - manifest invariant
+            raise TypeError("CloudTrail identity payload must be an object")
+        configuration_outcome, configuration_payload = sources["cloudtrail.trail.configuration"]
+        status_outcome, status_payload = sources["cloudtrail.trail.status"]
+        selectors_outcome, selectors_payload = sources["cloudtrail.trail.event-selectors"]
+        tags_outcome, tags_payload = sources["cloudtrail.trail.tags"]
+        if not all(
+            isinstance(payload, Mapping)
+            for payload in (
+                configuration_payload,
+                status_payload,
+                selectors_payload,
+                tags_payload,
+            )
+        ):
+            raise TypeError("CloudTrail enrichment payload must be an object")
+
+        configuration_value = (
+            configuration_payload["value"]
+            if configuration_outcome.state is EvidenceSourceState.PRESENT
+            else None
+        )
+        status_value = (
+            status_payload["value"] if status_outcome.state is EvidenceSourceState.PRESENT else None
+        )
+        selectors_value = (
+            selectors_payload["value"]
+            if selectors_outcome.state is EvidenceSourceState.PRESENT
+            else None
+        )
+        tags_value = (
+            tags_payload["value"] if tags_outcome.state is EvidenceSourceState.PRESENT else None
+        )
+        if configuration_value is not None and not isinstance(configuration_value, Mapping):
+            raise TypeError("CloudTrail configuration value must be an object")
+        if status_value is not None and not isinstance(status_value, Mapping):
+            raise TypeError("CloudTrail status value must be an object")
+
+        expected_configuration = {
+            "home_region": identity_payload["home_region"],
+            "s3_bucket_name": (
+                configuration_value["s3_bucket_name"] if configuration_value is not None else None
+            ),
+            "s3_key_prefix": (
+                configuration_value["s3_key_prefix"] if configuration_value is not None else None
+            ),
+            "include_global_service_events": (
+                configuration_value["include_global_service_events"]
+                if configuration_value is not None
+                else None
+            ),
+            "is_multi_region_trail": (
+                configuration_value["is_multi_region_trail"]
+                if configuration_value is not None
+                else None
+            ),
+            "log_file_validation_enabled": (
+                configuration_value["log_file_validation_enabled"]
+                if configuration_value is not None
+                else None
+            ),
+            "cloudwatch_logs_log_group_arn": (
+                configuration_value["cloudwatch_logs_log_group_arn"]
+                if configuration_value is not None
+                else None
+            ),
+            "cloudwatch_logs_role_arn": (
+                configuration_value["cloudwatch_logs_role_arn"]
+                if configuration_value is not None
+                else None
+            ),
+            "kms_key_id": (
+                configuration_value["kms_key_id"] if configuration_value is not None else None
+            ),
+            "is_organization_trail": (
+                configuration_value["is_organization_trail"]
+                if configuration_value is not None
+                else None
+            ),
+            "is_logging": (status_value["is_logging"] if status_value is not None else None),
+            "status": status_value["status"] if status_value is not None else None,
+            "event_selectors": selectors_value,
+            "source_states": {
+                "identity": identity_outcome.state.value,
+                "configuration": configuration_outcome.state.value,
+                "status": status_outcome.state.value,
+                "event_selectors": selectors_outcome.state.value,
+                "tags": tags_outcome.state.value,
+            },
+        }
+        expected_raw = {
+            "summary": {
+                "TrailARN": trail_arn,
+                "Name": identity_payload["name"],
+                "HomeRegion": identity_payload["home_region"],
+            },
+            "trail": configuration_value,
+            "status": status_value["status"] if status_value is not None else None,
+            "event_selectors": selectors_value,
+        }
+        expected_tags = (
+            _validate_cloudtrail_tags_value(tags_value) if tags_value is not None else {}
+        )
+        if (
+            resource.account_id != identity_payload["owner_account_id"]
+            or resource.scope is not ResourceScope.REGIONAL
+            or resource.region != identity_payload["home_region"]
+            or resource.arn != trail_arn
+            or resource.name != identity_payload["name"]
+            or resource.tags != expected_tags
+            or resource.configuration != expected_configuration
+            or resource.raw_configuration != expected_raw
+        ):
+            raise ValueError("CloudTrail canonical resource contradicts its source artifacts")
 
 
 def _validate_s3_and_kms_resource_readback(
@@ -3403,6 +4517,13 @@ def _validate_resource_admission(
             and any(_is_authoritative_kms_key_source(contract) for contract in contracts_tuple)
             and referenced_by_resolved_s3_encryption
         )
+        and not (
+            (resource.service, resource.resource_type) == ("cloudtrail", "cloudtrail_trail")
+            and any(
+                _is_authoritative_cloudtrail_identity_source(contract)
+                for contract in contracts_tuple
+            )
+        )
         and not any(contract.allows_supplemental_region for contract in contracts_tuple)
     ):
         raise ValueError("resource Region requires declared supplemental-Region evidence")
@@ -3431,6 +4552,29 @@ def _is_authoritative_kms_key_source(contract: ScanSourceContract) -> bool:
             contract.source_api == "kms:DescribeKey",
             contract.identity_authoritative,
         )
+    )
+
+
+def _is_authoritative_cloudtrail_identity_source(contract: ScanSourceContract) -> bool:
+    """Recognize only 5F ListTrails proof for one exact trail subject/home Region."""
+
+    subject = contract.subject
+    expected = _CLOUDTRAIL_SOURCE_IDENTITIES["cloudtrail.trail.identity"]
+    return bool(
+        isinstance(subject, ResourceEvidenceSubject)
+        and subject.service == "cloudtrail"
+        and subject.resource_type == "cloudtrail_trail"
+        and subject.scope is ResourceScope.REGIONAL
+        and contract.contract_key == "cloudtrail.trail.identity"
+        and contract.contract_version == "1.0.0"
+        and contract.evidence_kind == "cloudtrail.trail.identity"
+        and contract.collector == expected[0]
+        and contract.collector_version == "1.0.0"
+        and contract.source_api == expected[1]
+        and contract.phase is EvidenceCollectionPhase.ENRICHMENT
+        and contract.cardinality is EvidenceCardinality.SINGLE
+        and contract.identity_authoritative
+        and not contract.allows_supplemental_region
     )
 
 

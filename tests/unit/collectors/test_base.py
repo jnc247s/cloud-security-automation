@@ -7,7 +7,11 @@ from uuid import UUID
 import pytest
 from botocore.exceptions import PaginationError
 
-from app.assessment.evidence_graph import SourceEvidenceArtifact
+from app.assessment.evidence_graph import (
+    EvidenceCardinality,
+    ScanSourceContract,
+    SourceEvidenceArtifact,
+)
 from app.assessment.source_outcomes import (
     AccountEvidenceSubject,
     EvidenceCollectionPhase,
@@ -30,12 +34,13 @@ from app.collectors.base import (
     require_non_empty_string,
     require_string,
     should_skip_exact_duplicate,
+    source_failure,
     tags_to_dict,
     validate_access_analyzer_s3_region_source_status,
 )
 from app.schemas.inventory import CollectionStatus
 from app.schemas.resource import ResourceScope
-from tests.fakes import FakeAWSClient, FakePaginator
+from tests.fakes import FakeAWSClient, FakePaginator, client_error
 
 SCAN_ID = UUID("68d059ae-a5b6-42a1-aac6-76d7e72ac2ca")
 ACCOUNT_ID = "123456789012"
@@ -154,6 +159,78 @@ def _s3_discovery_source(
         evidence_sha256=artifact.evidence_sha256,
     )
     return artifact, outcome
+
+
+def _cloudtrail_discovery_source(
+    *,
+    unadmitted: bool,
+) -> tuple[ScanSourceContract, SourceEvidenceArtifact, SourceEvidenceOutcome]:
+    trail_arn = "arn:aws:cloudtrail:us-west-2:210987654321:trail/audit-trail"
+    subject = AccountEvidenceSubject(
+        aws_account_id=ACCOUNT_ID,
+        scope=ResourceScope.GLOBAL,
+    )
+    contract = ScanSourceContract.for_scan(
+        contract_key="cloudtrail.trails.discovery",
+        contract_version="1.0.0",
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=subject,
+        evidence_kind="cloudtrail.trails.discovery",
+        collector="cloudtrail.trails",
+        collector_version="1.0.0",
+        source_api="cloudtrail:ListTrails",
+        cardinality=EvidenceCardinality.COLLECTION,
+    )
+    artifact = SourceEvidenceArtifact.for_payload(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        evidence_reference="normalized://cloudtrail/trails/discovery",
+        evidence_schema="cloudtrail.trails.discovery",
+        evidence_schema_version="1.0.0",
+        collected_at=COLLECTED_AT,
+        normalized_payload={
+            "collection_account_id": ACCOUNT_ID,
+            "invocation_region": "us-east-1",
+            "trail_arns": [trail_arn] if unadmitted else [],
+            "trail_count": 1 if unadmitted else 0,
+            "discarded_item_count": 0,
+            "admission_complete": not unadmitted,
+            "unadmitted_resources": (
+                [
+                    {
+                        "account_id": "210987654321",
+                        "service": "cloudtrail",
+                        "resource_type": "cloudtrail_trail",
+                        "scope": "regional",
+                        "region": "us-west-2",
+                        "resource_id": trail_arn,
+                    }
+                ]
+                if unadmitted
+                else []
+            ),
+            "complete": True,
+            "failure_category": None,
+        },
+    )
+    outcome = SourceEvidenceOutcome.for_observation(
+        scan_id=SCAN_ID,
+        collection_account_id=ACCOUNT_ID,
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=subject,
+        evidence_kind="cloudtrail.trails.discovery",
+        state=EvidenceSourceState.PRESENT,
+        failure_category=None,
+        collector="cloudtrail.trails",
+        collector_version="1.0.0",
+        source_api="cloudtrail:ListTrails",
+        collected_at=COLLECTED_AT,
+        evidence_reference=artifact.evidence_reference,
+        evidence_sha256=artifact.evidence_sha256,
+    )
+    return contract, artifact, outcome
 
 
 @pytest.mark.parametrize(
@@ -332,6 +409,15 @@ def test_paginated_items_preserve_botocore_pagination_failures() -> None:
     assert error_info.value is error
 
 
+def test_source_failure_classifies_unsupported_operation_exception() -> None:
+    state, category = source_failure(
+        client_error("UnsupportedOperationException", "GetEventSelectors")
+    )
+
+    assert state is EvidenceSourceState.UNAVAILABLE
+    assert category is EvidenceFailureCategory.UNSUPPORTED_OPERATION
+
+
 def test_5c_manifest_marker_preserves_pre_5c_iam_history_and_gates_new_scans() -> None:
     """The new account collector distinguishes exact 5C manifests from legacy IAM scans."""
 
@@ -433,6 +519,39 @@ def test_access_analyzer_status_reconstructs_dynamic_regional_manifest() -> None
             artifacts=(east[0],),
             outcomes=(east[1],),
         )
+
+
+def test_cloudtrail_graph_status_reconstructs_empty_dynamic_manifest() -> None:
+    contract, artifact, outcome = _cloudtrail_discovery_source(unadmitted=False)
+
+    assert (
+        graph_collection_status_for(
+            collector_name="cloudtrail_evidence",
+            outcomes=(outcome,),
+            artifacts=(artifact,),
+            contracts=(contract,),
+        )
+        is CollectionStatus.SUCCEEDED
+    )
+    assert graph_collection_validation_required(
+        collector_name="cloudtrail_evidence",
+        requested_collectors=("cloudtrail_evidence",),
+        outcomes=(),
+    )
+
+
+def test_cloudtrail_graph_status_retains_unadmitted_external_gap() -> None:
+    contract, artifact, outcome = _cloudtrail_discovery_source(unadmitted=True)
+
+    assert (
+        graph_collection_status_for(
+            collector_name="cloudtrail_evidence",
+            outcomes=(outcome,),
+            artifacts=(artifact,),
+            contracts=(contract,),
+        )
+        is CollectionStatus.PARTIAL
+    )
 
 
 def test_incomplete_s3_region_source_makes_analyzer_coverage_partial() -> None:

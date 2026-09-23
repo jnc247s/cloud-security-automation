@@ -36,7 +36,11 @@ from app.collectors.base import (
     ResourceCollector,
     graph_collection_status_for,
 )
-from app.collectors.cloudtrail import CloudTrailCollector
+from app.collectors.cloudtrail import (
+    CloudTrailCollectionBundle,
+    CloudTrailCollector,
+    CloudTrailEvidenceCollector,
+)
 from app.collectors.ec2 import EC2EbsCollector
 from app.collectors.iam import IAMUserCollector
 from app.collectors.iam_account import IAMAccountEvidenceCollector
@@ -51,6 +55,7 @@ def build_default_collectors(
     client_provider: AWSClientProvider,
     *,
     include_access_analyzer: bool = True,
+    include_cloudtrail_evidence: bool = True,
     include_s3_evidence: bool = True,
 ) -> tuple[ResourceCollector, ...]:
     """Build the accepted inventory collectors without making an AWS API call."""
@@ -70,11 +75,17 @@ def build_default_collectors(
         collectors += (S3BucketCollector(client_provider),)
     if include_access_analyzer:
         collectors += (AccessAnalyzerCollector(client_provider),)
-    return collectors + (
+    collectors += (
         IAMAccountEvidenceCollector(client_provider),
         IAMUserCollector(client_provider),
-        CloudTrailCollector(client_provider),
     )
+    if include_cloudtrail_evidence:
+        cloudtrail_bundle = CloudTrailCollectionBundle(client_provider)
+        return collectors + (
+            CloudTrailCollector(client_provider, collection_bundle=cloudtrail_bundle),
+            CloudTrailEvidenceCollector(client_provider, collection_bundle=cloudtrail_bundle),
+        )
+    return collectors + (CloudTrailCollector(client_provider),)
 
 
 class InventoryService:
@@ -86,6 +97,7 @@ class InventoryService:
         collectors: Sequence[ResourceCollector] | None = None,
         *,
         include_access_analyzer: bool = True,
+        include_cloudtrail_evidence: bool = True,
         include_s3_evidence: bool = True,
     ) -> None:
         self.client_provider = client_provider
@@ -95,6 +107,7 @@ class InventoryService:
             else build_default_collectors(
                 client_provider,
                 include_access_analyzer=include_access_analyzer,
+                include_cloudtrail_evidence=include_cloudtrail_evidence,
                 include_s3_evidence=include_s3_evidence,
             )
         )
@@ -320,8 +333,34 @@ def _prune_unadmitted_external_resources(
             for resource in result.resources
             if resource.identity in unadmitted_identities
         }
+        removed_identities.update(
+            _subject_identity(contract.subject)
+            for contract in result.source_contracts
+            if isinstance(contract.subject, ResourceEvidenceSubject)
+            and _subject_identity(contract.subject) in unadmitted_identities
+        )
         if not removed_identities:
             prepared.append((collector_name, result))
+            continue
+
+        if not result.source_contracts:
+            if collector_name != "cloudtrail_trails":
+                raise ValueError(
+                    "unadmitted legacy resources require an approved graph-aware projection"
+                )
+            prepared.append(
+                (
+                    collector_name,
+                    CollectorResult(
+                        resources=tuple(
+                            resource
+                            for resource in result.resources
+                            if resource.identity not in removed_identities
+                        ),
+                        status=CollectionStatus.PARTIAL,
+                    ),
+                )
+            )
             continue
 
         outcomes_by_id = {outcome.source_outcome_id: outcome for outcome in result.source_outcomes}
@@ -338,7 +377,10 @@ def _prune_unadmitted_external_resources(
         }
         removed_by_source: dict[tuple[str, str], set[tuple[str, str, str, str, str, str]]] = {}
         for contract in result.source_contracts:
-            if contract.source_outcome_id not in removed_outcome_ids:
+            if (
+                contract.source_outcome_id not in removed_outcome_ids
+                or not contract.identity_authoritative
+            ):
                 continue
             outcome = outcomes_by_id.get(contract.source_outcome_id)
             if outcome is None:  # pragma: no cover - collector graph validation owns this
