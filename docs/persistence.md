@@ -2,12 +2,11 @@
 
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
-accepted 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS
-producers supply AWS graph fragments through the same persistence boundary. The 5F CloudTrail
-feature branch reuses that boundary and is pending acceptance. Slices 5D through 5F add no schema
-migration. The persistence boundary does not call AWS, run controls, schedule scans, or commit
-transactions on behalf of its caller. The inventory command still prints a summary only; it does
-not persist anything.
+accepted 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, 5E S3/referenced-KMS, and 5F
+CloudTrail producers supply AWS graph fragments through the same persistence boundary. Slices 5D
+through 5F add no schema migration. The persistence boundary does not call AWS, run controls,
+schedule scans, or commit transactions on behalf of its caller. The inventory command still
+prints a summary only; it does not persist anything.
 
 The five executable controls are unchanged. 5A through 5F add documented read-only evidence calls
 but do not register a control. `S3-900` remains the legacy
@@ -101,7 +100,7 @@ graphs remain valid without Analyzer contracts, outcomes, resources, or relation
 row or source manifest is rewritten.
 
 Accepted 5E similarly uses `kms` in its exact tuple to select the S3/KMS graph while preserving
-5D and pre-5D paths. The 5F feature branch uses exact tuple
+5D and pre-5D paths. Accepted 5F uses exact tuple
 `("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`.
 `cloudtrail-evidence` is execution intent, not an AWS service or permission. It ensures a pre-5F
 `RUNNING` scan cannot silently gain selectors, CloudTrail graph contracts, or new API calls; no
@@ -237,7 +236,7 @@ producer uses the same tables for Regional analyzer/finding source evidence, nor
 Analyzer summaries remain artifacts rather than top-level resources, and the normalized AWS
 finding resource is not a control-plane `Finding`. Accepted 5E adds direct S3 source
 history, `kms_key` snapshots, and bucket-to-key `encrypted_with` observations without a schema
-migration or service-specific table. The pending-acceptance 5F implementation reuses these tables
+migration or service-specific table. The accepted 5F implementation reuses these tables
 for `cloudtrail.trails.discovery`; per-trail `identity`, `configuration`, `status`,
 `event-selectors`, and `tags` source families; and CloudTrail-to-S3/KMS relationships. An
 external-owner organization trail remains only in its
@@ -455,7 +454,7 @@ blocked incompatible downgrade integrity, immutable assessment-profile roll-forw
 behavior, persisted profile use after executor restart, committed pending-scan finalization,
 pre-5D pending-scan and graph readback compatibility, early failure before AWS identity, and
 concurrent finding/scan deduplication. The acceptance path uses deterministic fake AWS responses
-and now covers the accepted 5E S3/KMS graph plus the pending-acceptance 5F CloudTrail graph when
+and now covers the accepted 5E S3/KMS and 5F CloudTrail graphs when
 PostgreSQL is configured; it does not contact live AWS.
 
 With the unchanged development username and password from `.env.example`, an example setup is:
@@ -487,7 +486,7 @@ The accepted 5C implementation extends the same generic graph with IAM account, 
 and relationship evidence and requires no schema migration. The accepted 5D implementation
 extends that graph with fact-only Access Analyzer evidence, bucket-backed supplemental Regional
 coverage, and finding-to-S3 relationships; it also requires no migration. Accepted 5E adds
-fact-only direct S3 and referenced-KMS evidence through the same schema. The 5F feature branch adds
-fact-only CloudTrail graph evidence through that schema and is pending acceptance; it requires no
-migration. Sprint 6 production controls, Terraform infrastructure, governance mutation APIs,
-remediation, dashboards/frontend, and AI functionality remain outside this slice.
+fact-only direct S3 and referenced-KMS evidence through the same schema. Accepted 5F adds fact-only
+CloudTrail graph evidence through that schema and also requires no migration. The 5G closure
+remains unstarted. Sprint 6 production controls, Terraform infrastructure, governance mutation
+APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.

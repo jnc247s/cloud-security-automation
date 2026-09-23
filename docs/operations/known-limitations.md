@@ -240,9 +240,10 @@ manifest atomically, and Sprint 6 must
 add separately reviewed result-sensitive rule behavior. Existing graph support is never
 permission to reinterpret `PARTIAL` as complete.
 
-The 5F feature branch adds matching per-source CloudTrail behavior through a shared bundle while
-preserving the accepted direct and pending pre-5F paths. It remains pending acceptance and merge;
-the accepted `main` runtime is still collector-granular for CloudTrail.
+Accepted 5F adds matching per-source CloudTrail behavior through a shared bundle while preserving
+the accepted direct and pending pre-5F paths. It was merged in pull request 24 at `main` commit
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 remains `IN PROGRESS`, its 5G closure
+remains unstarted, and no Sprint 6 rule consumes the new source outcomes yet.
 
 ### Single-region request model — PLANNED LIMIT
 
@@ -266,9 +267,10 @@ python -m pytest tests/integration/test_persistence_postgres.py::test_authentica
 
 `TEST_DATABASE_URL` must be set as described in the repository test instructions; CI supplies
 PostgreSQL 16. This coverage remains an integration regression test, not live-AWS validation.
-The 5F branch extends the same authenticated PostgreSQL boundary through CloudTrail source and
-relationship readback. The implementation remains pending acceptance until that test and CI pass;
-this document does not claim those pending results before the gate runs.
+Accepted 5F extends the same authenticated PostgreSQL boundary through CloudTrail source and
+relationship readback. Pull request 24 passed that acceptance and CI gate before merge; the
+remaining 5G closure is a Sprint-wide validation and closeout boundary, not a missing 5F evidence
+producer.
 
 ### Build provenance and dependency reproducibility — LOW
 

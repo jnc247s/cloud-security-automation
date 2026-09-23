@@ -248,8 +248,11 @@ foundation now supplies the reviewed end-to-end writer/read path rather than an 
 5A supplied the first AWS relationship producer, and 5B extended it with the accepted network
 graph. The accepted 5C producer extended it with IAM relationships, and the accepted 5D producer
 added Access Analyzer-to-S3 references. Accepted 5E reuses the same contract for resolved and
-unresolved S3-to-KMS `encrypted_with` observations. The 5F relationship preflight is complete,
-but implementation remains unstarted and may not invent another representation.
+unresolved S3-to-KMS `encrypted_with` observations. Accepted 5F reuses it for CloudTrail-to-S3
+`delivers_to_bucket` and CloudTrail-to-KMS `encrypted_with` observations; that implementation was
+merged in pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592` without
+inventing another representation. Sprint 5 remains `IN PROGRESS`, and the 5G closure remains
+unstarted.
 
 ## Alternatives considered
 
