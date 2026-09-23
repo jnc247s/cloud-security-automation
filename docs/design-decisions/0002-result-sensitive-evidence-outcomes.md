@@ -228,9 +228,11 @@ collector rollups, AWS calls, and rules remain unchanged. Revision `20260915_000
 append-only schema without rewriting an accepted migration or historical row.
 
 Collector integration remains slice-specific work in 5A--5F. It must construct the complete
-declared-source manifest atomically. The accepted 5A through 5E producers construct their complete
-manifests. The 5F source-manifest preflight is complete, but its collector and every deterministic
-Sprint 6 rule remain unimplemented merely because the storage and read boundary exists.
+declared-source manifest atomically. The accepted 5A through 5F producers construct their complete
+manifests. The 5F CloudTrail producer was accepted and merged in pull request 24 at `main` commit
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`; every deterministic Sprint 6 rule remains
+unimplemented merely because the storage, read, and factual-evidence boundaries exist. Sprint 5
+remains `IN PROGRESS`, and the 5G closure remains unstarted.
 
 ## Validation
 

@@ -1,11 +1,10 @@
 # Architecture
 
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
-evidence-graph foundation, the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, and
-5E S3/referenced-KMS producers, and the 5F CloudTrail feature-branch implementation pending
-acceptance. The accepted baseline is `main` commit
-`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`; 5F is not yet accepted or merged, and every Sprint
-6 control remains unimplemented.
+evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer,
+5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`, which merged 5F in pull request #24. The 5G closure
+remains unstarted, and every Sprint 6 control remains unimplemented.
 
 ## System context
 
@@ -296,7 +295,7 @@ status. Older pending scans are selected by their persisted service tuple and ma
 calls. The slice adds no migration or service-specific route. All Sprint 6 rule execution remains
 unimplemented.
 
-The feature-branch 5F implementation preserves the accepted `cloudtrail_trails` projection and
+The accepted 5F implementation preserves the accepted `cloudtrail_trails` projection and
 adds a separate graph-aware `cloudtrail_evidence` projection over one shared per-scan collection
 bundle. One paginated account `ListTrails` discovery, called without an unsupported shadow-trail
 argument, is validated and deduplicated by stable ARN. Each admitted trail is enriched in its
@@ -329,8 +328,8 @@ accepted `delivers_to_bucket` and `encrypted_with` observations. S3 resolution u
 same-scan 5E bucket evidence; KMS resolution reuses an exact already-collected 5E key and 5F does
 not add a second `DescribeKey` producer. All 5F sources produce normalized facts and provenance,
 not assessment results. The implementation adds no schema, dependency, route, authentication
-change, assessment-profile change, or Sprint 6 rule. It is **IMPLEMENTED; PENDING ACCEPTANCE** on
-the feature branch rather than accepted architecture on `main`.
+change, assessment-profile change, or Sprint 6 rule. It is accepted architecture on `main` at the
+baseline above.
 
 Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
 
@@ -403,8 +402,7 @@ workload-role configuration remain deployment responsibilities.
 - Scan audit attribution stores subject but not issuer, roles, or authorizing capability.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
-  traversal. The merged 5A through 5E producers emit graph records; the 5F feature branch adds its
-  records but remains pending acceptance.
+  traversal. The merged 5A through 5F producers emit graph records.
 - No frontend, Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

@@ -21,6 +21,12 @@ The default executable control catalog is `aws-cloud-security-controls` version 
 | `NET-002` | EC2 security group | Public ingress effectively exposes TCP port 3389 | `HIGH` |
 | `S3-900` | S3 bucket | The explicit default-encryption configuration is `null` | `MEDIUM` |
 
+Accepted Sprint 5 evidence slices 5A through 5F now provide the factual prerequisites documented
+for all 25 planned control meanings. The bounded 5F CloudTrail producer was accepted and merged in
+pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Evidence readiness
+does not change the executable catalog: Sprint 5 remains `IN PROGRESS`, the 5G closure remains
+unstarted, and every planned Sprint 6 control below remains unregistered and disabled.
+
 ## Permanent S3 identifier safety
 
 Only `S3-900` is implemented today. The canonical Sprint 6 identifiers below are reserved now so
