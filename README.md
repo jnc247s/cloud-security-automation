@@ -10,11 +10,12 @@ provide certification or claim organization-wide NIST compliance.
 ## Status
 
 Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
-`IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and
+`COMPLETE`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and
 5D IAM Access Analyzer evidence slices are accepted, as is the fact-only 5E S3 and referenced-KMS
 evidence slice. The bounded fact-only 5F CloudTrail slice is also accepted and merged. The 5G
-closure implementation is on its feature branch, pending acceptance and merge.
-Sprint 6 remains `PLANNED`.
+closure is accepted and merged in pull request 25. The
+[completed plan](docs/exec-plans/completed/sprint-5.md) records acceptance and retained limitations.
+Sprint 6 is `NEXT`, not started.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:

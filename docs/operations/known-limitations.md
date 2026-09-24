@@ -1,7 +1,8 @@
 # Current known limitations
 
-This register records accepted Sprint 0--4 implementation reality and the in-progress Sprint 5
-shared evidence-graph foundation. These items are not silently repaired by documentation work.
+This register records accepted Sprint 0--5 implementation reality, including the shared
+evidence-graph foundation and evidence producers. These items are not silently repaired by
+documentation work.
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
@@ -242,8 +243,8 @@ permission to reinterpret `PARTIAL` as complete.
 
 Accepted 5F adds matching per-source CloudTrail behavior through a shared bundle while preserving
 the accepted direct and pending pre-5F paths. It was merged in pull request 24 at `main` commit
-`29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 remains `IN PROGRESS`, its 5G closure
-is pending acceptance and merge, and no Sprint 6 rule consumes the new source outcomes yet.
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 is `COMPLETE`, its 5G closure was
+accepted in pull request 25, and no Sprint 6 rule consumes the new source outcomes yet.
 
 ### Single-region request model — PLANNED LIMIT
 
@@ -269,8 +270,9 @@ python -m pytest tests/integration/test_persistence_postgres.py::test_authentica
 PostgreSQL 16. This coverage remains an integration regression test, not live-AWS validation.
 Accepted 5F extends the same authenticated PostgreSQL boundary through CloudTrail source and
 relationship readback. Pull request 24 passed that acceptance and CI gate before merge; the
-remaining 5G closure is a Sprint-wide validation and closeout boundary, not a missing 5F evidence
-producer.
+accepted 5G closure in pull request 25 revalidated it alongside the Sprint-wide performance gates.
+Merged-main CI passed all 1,396 tests, including all 20 PostgreSQL integration tests. This does
+not remove the operational limitations documented here or enable a Sprint 6 rule.
 
 ### Build provenance and dependency reproducibility — LOW
 

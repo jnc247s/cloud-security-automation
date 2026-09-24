@@ -4,11 +4,11 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-09-23
-Accepted baseline: `main` at `29aeea59b9cceff957adac4fba75cb8ca2c4a592` (Sprints 0--4,
+Accepted baseline: `main` at `ef4543d439ed3a33064c6bcf383db201a94d2881` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
 Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and accepted 5F CloudTrail
-evidence)
+evidence, and the accepted 5G Sprint-wide closure)
 
 ## Current state
 
@@ -20,28 +20,29 @@ evidence)
 | Sprint 2.1 | Assessment Framework / NIST / Control Contracts | **COMPLETE** |
 | Sprint 3 | Persistence / History / Evidence / Findings / Exceptions / Audit | **COMPLETE** |
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
-| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |
-| Sprint 6 | Production Security Controls | **PLANNED** |
+| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
+| Sprint 6 | Production Security Controls | **NEXT** |
 | Sprint 7 | Dashboard / NIST Technical Posture | **PLANNED** |
 | Sprint 8 | Human-Approved Remediation | **PLANNED** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
 
-Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
+Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
-evidence slices. The bounded 5G closure implementation is on its feature branch, pending acceptance
-and merge. No Sprint 6 control has been enabled.
+evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
+Sprint 6 is `NEXT`, not started. No Sprint 6 control has been enabled.
 
-## In progress: Sprint 5 — AWS Evidence Expansion
+## Completed: Sprint 5 — AWS Evidence Expansion
 
 Sprint 5 collects the normalized evidence needed by the Sprint 6 production control library; it
 does not implement those controls. Approved roadmap scope includes EC2 and EBS facts, VPC/network
 facts, IAM account and policy evidence, IAM Access Analyzer evidence where available, expanded S3
 and CloudTrail facts, explicit global-versus-regional execution scope, and resource relationships.
 
-The approved requirements are preserved in `docs/exec-plans/active/sprint-5.md`. Its analysis-only
+The approved requirements and closeout evidence are preserved in
+[the completed Sprint 5 plan](docs/exec-plans/completed/sprint-5.md). Its analysis-only
 preflight and reviewable execution sequence are complete. The shared 5G
 relationship/source-outcome evidence foundation passed its acceptance gate as
 `FOUNDATION_READY_FOR_5A`; 5A was accepted and merged in pull request 16, 5B in pull request 17,
@@ -52,13 +53,15 @@ behavior. The merged 5F preflight records the immutable scan intent, CloudTrail
 ownership/admission, account-coverage, source, and relationship contracts. The bounded fact-only
 implementation passed its acceptance gates and was merged in pull request 24 without adding a
 Sprint 6 rule. The 5G closure adds deterministic operation/query-count gates and behavior-preserving
-in-memory indexes on its feature branch; acceptance and merge remain required.
+in-memory indexes, accepted and merged in pull request 25. Merged-main CI passed all 1,396 tests,
+including the 20 PostgreSQL integration tests and the authoritative HTTP acceptance, plus Ruff
+and the API image build. Independent review has no unresolved findings.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
-implementation slice is the 5G relationship/source-outcome persistence foundation documented in
-the active plan, followed by 5A through 5F and the 5G closure. This gate makes Sprint 5 ready to
-start; the approved foundation implementation branch has now begun and moved the sprint to
+implementation slice was the 5G relationship/source-outcome persistence foundation documented in
+the then-active plan, followed by 5A through 5F and the 5G closure. That gate made Sprint 5 ready
+to start; the subsequently approved foundation implementation began and moved the sprint to
 `IN PROGRESS`.
 
 The shared foundation gate completed on 2026-09-15 at migration head `20260915_0003`. Domain,
@@ -73,9 +76,17 @@ bounded 5E implementation was accepted and merged in pull request 22 at
 `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with green pull-request CI. The bounded 5F preflight
 was merged into `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. Slice 5F subsequently
 passed its acceptance gates and was merged in pull request 24 at
-`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. The bounded 5G closure is implemented on its feature
-branch, pending acceptance and merge. Sprint 5 remains `IN PROGRESS`, and Sprint 6 remains
-`PLANNED`. Sprint completion requires a separate post-merge closeout.
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. The bounded 5G closure was accepted and merged in
+pull request 25 at `ef4543d439ed3a33064c6bcf383db201a94d2881`. This post-merge closeout marks
+Sprint 5 `COMPLETE`, archives its execution plan, and promotes Sprint 6 to `NEXT`. Migration head
+remains `20260915_0003`.
+
+## Next: Sprint 6 — Production Security Controls
+
+Sprint 6 has not started. Its analysis-only preflight and separately approved implementation are
+still required. The 25-control evidence matrix is `CURRENT`; evidence readiness does not enable
+new rules or decide deferred Sprint 6 policy. No Sprint 6 plan or implementation is added by this
+closeout.
 
 ## Pre-Sprint 5 attention
 

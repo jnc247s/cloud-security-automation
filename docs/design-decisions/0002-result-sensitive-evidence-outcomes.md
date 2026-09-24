@@ -232,8 +232,7 @@ declared-source manifest atomically. The accepted 5A through 5F producers constr
 manifests. The 5F CloudTrail producer was accepted and merged in pull request 24 at `main` commit
 `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; every deterministic Sprint 6 rule remains
 unimplemented merely because the storage, read, and factual-evidence boundaries exist. Sprint 5
-remains `IN PROGRESS`, and the bounded 5G closure is pending acceptance and merge without changing
-this contract.
+is `COMPLETE`; the bounded 5G closure was accepted in pull request 25 without changing this contract.
 
 ## Validation
 

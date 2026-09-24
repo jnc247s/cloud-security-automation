@@ -1,8 +1,8 @@
 # Sprint 5 — AWS Evidence Expansion
 
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
-Current slice: **5G closure — IMPLEMENTED; PENDING ACCEPTANCE**
+Final slice: **5G closure — COMPLETE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
@@ -11,6 +11,53 @@ Accepted prerequisites: **5G shared relationship/source-outcome evidence foundat
 **5F CloudTrail evidence expansion — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
+
+## Post-merge closeout — 2026-09-23
+
+Sprint 5 is **COMPLETE**. Sprint 6 is **NEXT**, not started.
+
+Accepted merge: `ef4543d439ed3a33064c6bcf383db201a94d2881`
+Final 5G implementation commit: `7129996bab890d9432c0121fe028083b6fc9c2d0`
+Pull request: [#25](https://github.com/jnc247s/cloud-security-automation/pull/25)
+Merged: 2026-09-24 02:28 UTC (2026-09-23 America/Chicago)
+Final migration head: `20260915_0003`
+
+The accepted shared foundation, 5A through 5F evidence producers, and 5G closure supply the
+normalized factual prerequisites for all 25 planned control meanings. Collection remains
+read-only and facts-only; no Sprint 6 rule, policy registration, remediation, dashboard,
+production deployment, or AI work was added.
+
+Acceptance evidence:
+
+- Focused closure/graph/contract validation: **125 passed**.
+- Local full regression: **1376 passed, 20 PostgreSQL tests skipped** because no local disposable
+  database was available. Local Docker Desktop did not provide a usable engine.
+- [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/35947427683):
+  **1396 passed, 0 skipped, 20 warnings**, including all **20 PostgreSQL integration tests**, the
+  real authenticated HTTP-to-persistence acceptance, and constant-query-count tests.
+- Ruff lint and formatting passed (210 Python files); API image build and local Compose
+  configuration validation passed. Image/Compose runtime was not exercised during 5G closure.
+- Independent correctness/security/data-integrity review passed. The only subsequent LOW
+  traceability finding, a stale section heading, was corrected before merge; none remains open.
+- Required implementation approval and merge are complete. This closeout changes documentation
+  and its existing status/path assertions only, not runtime behavior or migration history.
+
+Material implemented differences and retained limitations:
+
+- 5G was the approved foundation-and-closure bookend, before 5A and after 5F, rather than a
+  collector-last-only relationship slice. The dependency rationale is preserved below.
+- Closure reused the existing authoritative HTTP acceptance instead of duplicating it. Performance
+  gates measure model operations and SQL counts, not wall-clock SLAs; only in-memory lookup indexes
+  were needed, with no additional schema, API, dependency, or permission.
+- One requested Region plus source-proven supplemental/global scope remains the accepted request
+  model, not full multi-account/multi-Region orchestration. Single-trust-domain authorization,
+  bounded in-process execution, and the other documented limitations remain unchanged.
+- S3-004 final KMS result-policy choices remain Sprint 6 work; complete factual collection does
+  not decide them or authorize new executable controls.
+
+The sections below preserve the original approved plan and stage-specific implementation records.
+Their earlier status labels describe those historical checkpoints, not current sprint state; this
+closeout and `ROADMAP.md` supersede them. No Sprint 6 work is authorized or started by this record.
 
 ## Phase 0 gate
 
