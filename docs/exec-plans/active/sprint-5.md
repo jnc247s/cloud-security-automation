@@ -600,7 +600,7 @@ pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; the
 commit was `78ca8afa4d2051c69cde5b595c0bb4a90a1a4c3b`. Slice 5F is **COMPLETE**. Sprint 5 remains
 `IN PROGRESS`; Sprint 6 remains `PLANNED`.
 
-## Planned 5G closure — preflight complete
+## Approved 5G closure scope
 
 State: **IMPLEMENTED; PENDING ACCEPTANCE**
 

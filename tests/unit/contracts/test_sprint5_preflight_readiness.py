@@ -429,7 +429,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in active_plan
     assert "Slice 5F is **COMPLETE**" in active_plan
-    assert "## Planned 5G closure — preflight complete" in active_plan
+    assert "## Approved 5G closure scope" in active_plan
     assert "State: **IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
     assert "## 5G closure implementation — pending acceptance" in active_plan
     assert "not a wall-clock SLA" in active_plan
