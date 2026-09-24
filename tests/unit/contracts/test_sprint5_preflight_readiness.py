@@ -12,7 +12,7 @@ from app.assessment.source_outcomes import EvidenceSourceState
 ROOT = Path(__file__).resolve().parents[3]
 MATRIX_PATH = ROOT / "docs" / "controls" / "sprint-5-evidence-readiness.md"
 CATALOG_PATH = ROOT / "docs" / "controls" / "catalog.md"
-ACTIVE_PLAN_PATH = ROOT / "docs" / "exec-plans" / "active" / "sprint-5.md"
+SPRINT_PLAN_PATH = ROOT / "docs" / "exec-plans" / "completed" / "sprint-5.md"
 ROADMAP_PATH = ROOT / "ROADMAP.md"
 RELATIONSHIP_ADR_PATH = (
     ROOT / "docs" / "design-decisions" / "0001-generic-resource-relationships.md"
@@ -280,7 +280,7 @@ def test_s3_exact_policy_entries_bind_full_stable_bucket_identity() -> None:
 def test_s3_004_classifier_readiness_does_not_invent_sprint_6_kms_policy() -> None:
     matrix = _read(MATRIX_PATH)
     catalog = _read(CATALOG_PATH)
-    active_plan = _read(ACTIVE_PLAN_PATH)
+    sprint_plan = _read(SPRINT_PLAN_PATH)
     classifier_contract = _read(
         ROOT / "docs" / "controls" / "s3-004-sensitive-bucket-classifier.md"
     )
@@ -299,14 +299,14 @@ def test_s3_004_classifier_readiness_does_not_invent_sprint_6_kms_policy() -> No
     assert "No encryption state maps to Sprint 6 `PASS`/`FAIL`" in matrix
     assert "does not" in catalog
     assert "whether an AWS-managed or only a customer-managed KMS key" in catalog
-    assert "not an invented final Sprint 6 KMS result policy" in active_plan
+    assert "not an invented final Sprint 6 KMS result policy" in sprint_plan
     assert "intentionally does not decide whether" in classifier_contract
     assert "false `restricted_data_requires_kms` setting yields" in classifier_contract
 
 
 def test_result_sensitive_source_outcome_contract_is_closed_and_foundation_only() -> None:
     matrix = _read(MATRIX_PATH)
-    active_plan = _read(ACTIVE_PLAN_PATH)
+    sprint_plan = _read(SPRINT_PLAN_PATH)
     adr = _read(ROOT / "docs" / "design-decisions" / "0002-result-sensitive-evidence-outcomes.md")
 
     assert {state.value for state in EvidenceSourceState} == {
@@ -318,8 +318,8 @@ def test_result_sensitive_source_outcome_contract_is_closed_and_foundation_only(
         "RESOURCE_DISAPPEARED",
     }
     assert "`PARTIAL` is never a generic completeness bypass" in matrix
-    assert "Remaining graphless Sprint 0--4 collector" in active_plan
-    assert "paths retain all-or-nothing behavior" in active_plan
+    assert "Remaining graphless Sprint 0--4 collector" in sprint_plan
+    assert "paths retain all-or-nothing behavior" in sprint_plan
     assert "Sprint 0--4 legacy collectors retain their accepted" in adr
     assert "graphless behavior" in adr
     assert "no Sprint 6 rule" in adr
@@ -400,7 +400,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
 def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
-    active_plan = _read(ACTIVE_PLAN_PATH)
+    sprint_plan = _read(SPRINT_PLAN_PATH)
     matrix = _read(MATRIX_PATH)
     runtime = "\n".join(
         path.read_text(encoding="utf-8") for path in sorted((ROOT / "app").rglob("*.py"))
@@ -408,44 +408,46 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
 
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
-    assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
-    assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "`29aeea59b9cceff957adac4fba75cb8ca2c4a592`" in roadmap
-    assert "Current slice: **5G closure — IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
+    assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
+    assert "| Sprint 6 | Production Security Controls | **NEXT** |" in roadmap
+    assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in roadmap
+    assert "Final slice: **5G closure — COMPLETE**" in sprint_plan
+    assert "Status: **COMPLETE**" in sprint_plan
+    assert not (ROOT / "docs" / "exec-plans" / "active" / "sprint-5.md").exists()
     assert "5D IAM Access Analyzer evidence slices" in roadmap
     assert "accepted on `main`" in roadmap
-    assert "FOUNDATION_READY_FOR_5A" in active_plan
-    assert "**5A EC2 and EBS evidence — COMPLETE**" in active_plan
-    assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in active_plan
-    assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
-    assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
-    assert "**5E S3 evidence expansion — COMPLETE**" in active_plan
-    assert "**5F CloudTrail evidence expansion — COMPLETE**" in active_plan
-    assert "pull request 22" in active_plan
-    assert "pull request 24" in active_plan
-    assert "## Accepted 5F implementation state" in active_plan
+    assert "FOUNDATION_READY_FOR_5A" in sprint_plan
+    assert "**5A EC2 and EBS evidence — COMPLETE**" in sprint_plan
+    assert "**5B VPC, subnet, Flow Log, and network evidence — COMPLETE**" in sprint_plan
+    assert "**5C IAM account and IAM policy evidence — COMPLETE**" in sprint_plan
+    assert "**5D IAM Access Analyzer evidence — COMPLETE**" in sprint_plan
+    assert "**5E S3 evidence expansion — COMPLETE**" in sprint_plan
+    assert "**5F CloudTrail evidence expansion — COMPLETE**" in sprint_plan
+    assert "pull request 22" in sprint_plan
+    assert "pull request 24" in sprint_plan
+    assert "## Accepted 5F implementation state" in sprint_plan
     assert (
-        "Implementation started from the merged preflight baseline at `main` commit" in active_plan
+        "Implementation started from the merged preflight baseline at `main` commit" in sprint_plan
     )
-    assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in active_plan
-    assert "Slice 5F is **COMPLETE**" in active_plan
-    assert "## Approved 5G closure scope" in active_plan
-    assert "State: **IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
-    assert "## 5G closure implementation — pending acceptance" in active_plan
-    assert "not a wall-clock SLA" in active_plan
-    assert "representative synthetic graphs of size `N` and `2N`" in active_plan
-    assert "constant two SQL statements" in active_plan
-    assert "Sprint 6 remains `PLANNED`" in active_plan
-    assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
-    assert "evidence remains supplementary and non-decisive" in active_plan
-    assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
+    assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in sprint_plan
+    assert "Slice 5F is **COMPLETE**" in sprint_plan
+    assert "## Approved 5G closure scope" in sprint_plan
+    assert "## Post-merge closeout — 2026-09-23" in sprint_plan
+    assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in sprint_plan
+    assert "not a wall-clock SLA" in sprint_plan
+    assert "representative synthetic graphs of size `N` and `2N`" in sprint_plan
+    assert "constant two SQL statements" in sprint_plan
+    assert "Sprint 6 is **NEXT**, not started" in sprint_plan
+    assert "supplemental Regional discovery only for the controlled Access Analyzer" in sprint_plan
+    assert "evidence remains supplementary and non-decisive" in sprint_plan
+    assert "bucket-Region discovery makes Analyzer coverage incomplete" in sprint_plan
     assert "complete `ListBuckets` enumeration" in matrix
-    assert "honor each pending scan's persisted `requested_services`" in active_plan
-    assert "resume with the accepted pre-5D collector set" in active_plan
-    assert "completed pre-5D source manifests and evidence graphs valid" in active_plan
-    assert "persisted readback coverage" in active_plan
-    assert "explicitly triaged accepted limitations" in active_plan
-    assert "must be resolved before any multi-tenant deployment" in active_plan
+    assert "honor each pending scan's persisted `requested_services`" in sprint_plan
+    assert "resume with the accepted pre-5D collector set" in sprint_plan
+    assert "completed pre-5D source manifests and evidence graphs valid" in sprint_plan
+    assert "persisted readback coverage" in sprint_plan
+    assert "explicitly triaged accepted limitations" in sprint_plan
+    assert "must be resolved before any multi-tenant deployment" in sprint_plan
     for required_5e_contract in (
         '`("access-analyzer", "cloudtrail", "ec2", "iam", "kms", "s3")`',
         "Unknown tuples must fail before AWS work",
@@ -460,7 +462,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
         "must not make otherwise complete\n  `S3-900` encryption evidence unavailable",
         "Do not register `S3-001` through `S3-004`",
     ):
-        assert required_5e_contract in active_plan
+        assert required_5e_contract in sprint_plan
 
     for required_5f_contract in (
         '`("access-analyzer", "cloudtrail", "cloudtrail-evidence", "ec2", "iam", "kms", "s3")`',
@@ -480,14 +482,14 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
         "does not add a\n  second unconditional `DescribeKey` producer",
         "Do not register `LOG-002` through `LOG-004`",
     ):
-        assert required_5f_contract in active_plan
+        assert required_5f_contract in sprint_plan
 
     assert "complete collection-account trail coverage set (not a persisted relationship)" in matrix
     assert _matrix_state(_matrix_rows()["LOG-004"][-1]) == "CURRENT"
     assert "accepted 5A through 5F evidence producers" in matrix
-    assert "`ListTrails(IncludeShadowTrails=False)`" not in active_plan
-    assert "accepted 5E tuple remains a distinct path and makes no new selector call" in active_plan
-    assert "Direct and persisted pre-5F paths retain their accepted" in active_plan
+    assert "`ListTrails(IncludeShadowTrails=False)`" not in sprint_plan
+    assert "accepted 5E tuple remains a distinct path and makes no new selector call" in sprint_plan
+    assert "Direct and persisted pre-5F paths retain their accepted" in sprint_plan
     assert '"cloudtrail-evidence"' in runtime
     assert 'collector_name = "cloudtrail_evidence"' in runtime
     assert "class CloudTrailCollectionBundle" in runtime

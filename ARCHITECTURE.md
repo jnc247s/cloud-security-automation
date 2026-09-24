@@ -3,9 +3,8 @@
 This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer,
 5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
-`29aeea59b9cceff957adac4fba75cb8ca2c4a592`, which merged 5F in pull request #24. The 5G closure
-is implemented on its feature branch pending acceptance and merge; every Sprint 6 control remains
-unimplemented.
+`ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
+request #25. Sprint 5 is complete; Sprint 6 is next and unstarted.
 
 ## System context
 
@@ -126,8 +125,9 @@ policy accepted at creation, even when a deployment has since rolled forward to 
 version. Missing, malformed, or checksum-inconsistent stored provenance fails closed before AWS
 collection.
 
-The executor currently scans one requested Region while collecting regional and global-style
-services through the Sprint 1 collectors. Formal multi-region/global execution is Sprint 5 scope.
+The executor scans one requested Region with account-global discovery and source-proven
+supplemental/home-Region collection as described below. Full multi-Region orchestration remains
+outside the accepted request model.
 
 ## Persistence and history
 
@@ -250,7 +250,7 @@ authenticated read APIs require no service-specific table or route.
 
 The accepted 5A and 5B producers add only approved read actions and policy-neutral evidence. They
 do not register `EC2-001` through `EC2-004` or `NET-003` through `NET-006`, change assessment-
-profile policy, or make any Sprint 6 rule executable. Sprint 5 remains `IN PROGRESS`.
+profile policy, or make any Sprint 6 rule executable. Sprint 5 is `COMPLETE`.
 
 The accepted 5C implementation preserves the established `iam_users` direct-collection contract
 and embedded MFA/access-key facts while its scan path emits account-global evidence graph

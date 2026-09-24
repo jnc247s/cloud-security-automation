@@ -1,8 +1,8 @@
 # Sprint 5 control-to-evidence readiness
 
 Status: canonical evidence-readiness plan with accepted 5A through 5F evidence producers
-reflected. The bounded 5F CloudTrail implementation was accepted and merged in pull request 24 at
-`main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; no Sprint 6 rule is enabled.
+reflected. The bounded 5G closure was accepted and merged in pull request 25 at
+`main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`; no Sprint 6 rule is enabled.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -442,8 +442,8 @@ and does not decide `S3-002`. Accepted 5E supplies the direct S3 and referenced-
 accepted 5F supplies the planned CloudTrail factual graph. Every one of the 25 named factual
 prerequisites is now `CURRENT`; this does not register or execute any pending Sprint 6 rule.
 
-Sprint 5 is `IN PROGRESS`, 5A through 5F are accepted, the bounded 5G closure is pending acceptance and merge, and
-Sprint 6 remains `PLANNED`.
+Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
+Sprint 6 is `NEXT`, not started.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

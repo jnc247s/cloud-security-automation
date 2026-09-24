@@ -12,6 +12,23 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+## Sprint 5 — 2026-09-23
+
+- Added the shared, versioned source-outcome and relationship evidence graph, immutable history,
+  generic authenticated read APIs, and Alembic revision `20260915_0003` with guarded rollback.
+- Added fact-only EC2/EBS, VPC/network, IAM account/policy, Access Analyzer, S3/referenced-KMS,
+  and CloudTrail evidence, with explicit ownership/scope, source uncertainty, provenance, and
+  compatible persisted scan intent. All 25 planned control evidence prerequisites are current.
+- Completed 5G closure with behavior-preserving target/provenance indexes, deterministic
+  operation-count gates, constant PostgreSQL query counts, and the existing authenticated
+  HTTP-to-persistence acceptance using offline AWS fakes.
+- Closure merged in [pull request #25](https://github.com/jnc247s/cloud-security-automation/pull/25)
+  at `ef4543d439ed3a33064c6bcf383db201a94d2881`. Merged-main CI passed all 1,396 tests, including
+  20 PostgreSQL integration tests, Ruff, formatting, and the API image build. Independent review
+  has no unresolved findings.
+- Archived the [completed execution plan](docs/exec-plans/completed/sprint-5.md). No new Sprint 6
+  rule, remediation, dashboard, production deployment, or AI functionality was implemented.
+
 ## Sprint 4 — 2026-09-05
 
 - Added OIDC/JWT and explicitly constrained development authentication.

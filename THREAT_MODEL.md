@@ -2,8 +2,8 @@
 
 Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
 foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer evidence
-producers, plus the merged 5E S3 and referenced-KMS and 5F CloudTrail producers
-Baseline: `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592` (5F merged in pull request #24)
+producers, plus the merged 5E S3 and referenced-KMS, 5F CloudTrail, and 5G closure
+Baseline: `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881` (5G merged in pull request #25)
 Last reviewed: 2026-09-23
 
 ## Scope and security objectives
@@ -17,7 +17,7 @@ identity, and policy implementation, and the merged fact-only 5D IAM Access Anal
 Sprint 6 production rule, production deployment, frontend, Terraform infrastructure, remediation
 execution, or AI agent is implemented. The merged 5E and 5F producers collect facts only. The 5F
 change adds no AWS write, authentication, authorization, route, migration, or assessment-profile
-behavior. The bounded 5G closure is pending acceptance and merge without changing these boundaries.
+behavior. The bounded 5G closure is accepted and merged without changing these boundaries.
 
 Protect:
 

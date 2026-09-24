@@ -501,6 +501,6 @@ extends that graph with fact-only Access Analyzer evidence, bucket-backed supple
 coverage, and finding-to-S3 relationships; it also requires no migration. Accepted 5E adds
 fact-only direct S3 and referenced-KMS evidence through the same schema. Accepted 5F adds fact-only
 CloudTrail graph evidence through that schema and also requires no migration. The 5G closure
-is pending acceptance and merge with behavior-preserving in-memory lookup indexes and deterministic
+is accepted and merged with behavior-preserving in-memory lookup indexes and deterministic
 operation/query-count tests. Sprint 6 production controls, Terraform infrastructure, governance mutation
 APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.
