@@ -4,7 +4,8 @@ This document describes the accepted Sprint 0--4 implementation, the accepted Sp
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer,
 5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
 `29aeea59b9cceff957adac4fba75cb8ca2c4a592`, which merged 5F in pull request #24. The 5G closure
-remains unstarted, and every Sprint 6 control remains unimplemented.
+is implemented on its feature branch pending acceptance and merge; every Sprint 6 control remains
+unimplemented.
 
 ## System context
 
@@ -162,6 +163,11 @@ definition. New content requires an operator-selected new numeric version, while
 scans, and assessments remain unchanged.
 
 ## Sprint 5 evidence graph and 5A--5F producers
+
+The bounded 5G closure adds operation-local target and provenance indexes, not a new graph
+representation or cache. Canonical identities, owner/scope/Region ambiguity, exact provenance
+uniqueness, full reconstruction validation, and transactional persistence remain unchanged.
+Deterministic operation-count and PostgreSQL query-count tests guard these generic paths.
 
 The accepted 5G foundation implements the shared contracts required before Sprint 5 collectors may
 emit graph evidence:

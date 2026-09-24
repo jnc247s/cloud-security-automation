@@ -475,6 +475,19 @@ The test role needs permission to create and drop its own schemas. Each test cre
 cleanup; existing schemas are not targeted. CI provides a PostgreSQL test service and sets
 `TEST_DATABASE_URL`, so these checks run alongside the offline suite.
 
+The bounded 5G performance gates use operation/query counts, not wall-clock thresholds:
+
+```powershell
+python -m pytest tests/unit/services/test_evidence_graph_scaling.py
+python -m pytest tests/integration/test_persistence_postgres.py -k constant_query_counts
+```
+
+The first command measures target/provenance lookup growth and validates persisted graph replay.
+The second requires the disposable PostgreSQL setup above and verifies constant SQL counts through
+generic list/detail projection serialization with cold sessions, multiple graph sizes, page sizes,
+and source-contract filtering. The existing full HTTP acceptance remains in the same integration
+module; it is not replaced by these performance tests.
+
 ## Current boundary and deferred work
 
 Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
@@ -488,5 +501,6 @@ extends that graph with fact-only Access Analyzer evidence, bucket-backed supple
 coverage, and finding-to-S3 relationships; it also requires no migration. Accepted 5E adds
 fact-only direct S3 and referenced-KMS evidence through the same schema. Accepted 5F adds fact-only
 CloudTrail graph evidence through that schema and also requires no migration. The 5G closure
-remains unstarted. Sprint 6 production controls, Terraform infrastructure, governance mutation
+is pending acceptance and merge with behavior-preserving in-memory lookup indexes and deterministic
+operation/query-count tests. Sprint 6 production controls, Terraform infrastructure, governance mutation
 APIs, remediation, dashboards/frontend, and AI functionality remain outside this slice.

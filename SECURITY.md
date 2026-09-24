@@ -4,7 +4,7 @@ This document defines permanent repository security rules and the accepted Sprin
 the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
 IAM, 5D IAM Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers at the
 accepted `main` baseline `29aeea59b9cceff957adac4fba75cb8ca2c4a592`, which merged 5F in pull
-request #24. The 5G closure remains unstarted. Threats and residual risks are tracked in
+request #24. The bounded 5G closure is pending acceptance and merge. Threats and residual risks are tracked in
 [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
@@ -210,7 +210,7 @@ planned control, and they do
 not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
 failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5F are
-accepted on `main`, the 5G closure remains unstarted, and Sprint 6 remains `PLANNED`.
+accepted on `main`, the bounded 5G closure is pending acceptance and merge, and Sprint 6 remains `PLANNED`.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

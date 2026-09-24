@@ -248,7 +248,8 @@ An accepted 5E scan without that marker resumes without `GetEventSelectors` or a
 An accepted 5D scan without `kms` resumes without S3 Control, expanded S3, or KMS work, while a
 pre-5D scan without `access-analyzer` or `kms` retains its older collector set. Unknown tuples fail
 before AWS collection. Historical manifests remain readable without synthesizing later-slice
-evidence. The 5F path is accepted on `main`; the 5G closure remains unstarted.
+evidence. The 5F path is accepted on `main`; the bounded 5G closure is pending acceptance and merge
+without changing this API contract.
 
 ## Error behavior
 

@@ -17,7 +17,7 @@ identity, and policy implementation, and the merged fact-only 5D IAM Access Anal
 Sprint 6 production rule, production deployment, frontend, Terraform infrastructure, remediation
 execution, or AI agent is implemented. The merged 5E and 5F producers collect facts only. The 5F
 change adds no AWS write, authentication, authorization, route, migration, or assessment-profile
-behavior. The 5G closure remains unstarted.
+behavior. The bounded 5G closure is pending acceptance and merge without changing these boundaries.
 
 Protect:
 

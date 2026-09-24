@@ -13,7 +13,7 @@ Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansi
 `IN PROGRESS`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and
 5D IAM Access Analyzer evidence slices are accepted, as is the fact-only 5E S3 and referenced-KMS
 evidence slice. The bounded fact-only 5F CloudTrail slice is also accepted and merged. The 5G
-closure preflight is complete and ready, but closure implementation has not started.
+closure implementation is on its feature branch, pending acceptance and merge.
 Sprint 6 remains `PLANNED`.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 

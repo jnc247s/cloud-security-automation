@@ -442,7 +442,7 @@ and does not decide `S3-002`. Accepted 5E supplies the direct S3 and referenced-
 accepted 5F supplies the planned CloudTrail factual graph. Every one of the 25 named factual
 prerequisites is now `CURRENT`; this does not register or execute any pending Sprint 6 rule.
 
-Sprint 5 is `IN PROGRESS`, 5A through 5F are accepted, the 5G closure remains unstarted, and
+Sprint 5 is `IN PROGRESS`, 5A through 5F are accepted, the bounded 5G closure is pending acceptance and merge, and
 Sprint 6 remains `PLANNED`.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:

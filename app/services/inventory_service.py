@@ -1,8 +1,9 @@
 """Application service for collecting a normalized AWS resource inventory."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
+from itertools import product
 from uuid import UUID, uuid4
 
 from botocore.exceptions import BotoCoreError, ClientError
@@ -626,6 +627,8 @@ def _resolve_relationships(
         source_contracts=source_contracts,
         source_outcomes=source_outcomes,
     )
+    target_index = _index_authoritative_targets(resources, authoritative_identities)
+    target_evidence_resolutions = _index_target_evidence_resolutions(source_outcomes)
     rollups = {outcome.collector_name: outcome.status for outcome in collector_outcomes}
     relationships: list[ResourceRelationship] = []
     for reference in references:
@@ -633,8 +636,7 @@ def _resolve_relationships(
             target = _refine_unresolved_target(
                 context=context,
                 target=reference.target,
-                resources=resources,
-                authoritative_identities=authoritative_identities,
+                target_index=target_index,
             )
             if target is not None:
                 relationships.append(
@@ -684,7 +686,7 @@ def _resolve_relationships(
         else:
             resolution = _unresolved_target_reason(
                 reference=reference,
-                source_outcomes=source_outcomes,
+                evidence_resolutions=target_evidence_resolutions,
                 collector_rollups=rollups,
             )
         relationships.append(
@@ -734,35 +736,59 @@ def _authoritative_resource_identities(
     return frozenset(identities)
 
 
+type _TargetLookupKey = tuple[str, str, str, str | None, ResourceScope | None, str | None]
+
+
+def _index_authoritative_targets(
+    resources: tuple[NormalizedResource, ...],
+    authoritative_identities: frozenset[tuple[str, str, str, str, str, str]],
+) -> dict[_TargetLookupKey, NormalizedResource | None]:
+    """Index the bounded combinations of known identity fields, preserving ambiguity."""
+
+    unique = {resource.identity: resource for resource in resources}
+    indexed: dict[_TargetLookupKey, NormalizedResource | None] = {}
+    for identity, resource in unique.items():
+        if identity not in authoritative_identities:
+            continue
+        # A reference may omit owner, scope, or Region. Precompute at most eight
+        # keys per resource so repeated ambiguous references never rescan a bucket.
+        for owner, scope, region in product(
+            (None, resource.account_id),
+            (None, resource.scope),
+            {None, resource.region},
+        ):
+            key = (
+                resource.service,
+                resource.resource_type,
+                resource.aws_resource_id,
+                owner,
+                scope,
+                region,
+            )
+            indexed[key] = None if key in indexed else resource
+    return indexed
+
+
 def _refine_unresolved_target(
     *,
     context: CollectionContext,
     target: UnresolvedRelationshipTarget,
-    resources: tuple[NormalizedResource, ...],
-    authoritative_identities: frozenset[tuple[str, str, str, str, str, str]],
+    target_index: Mapping[_TargetLookupKey, NormalizedResource | None],
 ) -> RelationshipEndpoint | None:
     """Resolve a partial reference only from one exact authoritative same-scan candidate."""
 
-    candidates: dict[tuple[str, str, str, str, str, str], NormalizedResource] = {}
-    for resource in resources:
-        if resource.identity not in authoritative_identities:
-            continue
-        if (
-            resource.service != target.service
-            or resource.resource_type != target.resource_type
-            or resource.aws_resource_id != target.aws_resource_id
-        ):
-            continue
-        if target.aws_account_id is not None and resource.account_id != target.aws_account_id:
-            continue
-        if target.scope is not None and resource.scope is not target.scope:
-            continue
-        if target.region is not None and resource.region != target.region:
-            continue
-        candidates[resource.identity] = resource
-    if len(candidates) != 1:
+    resource = target_index.get(
+        (
+            target.service,
+            target.resource_type,
+            target.aws_resource_id,
+            target.aws_account_id,
+            target.scope,
+            target.region,
+        )
+    )
+    if resource is None:
         return None
-    resource = next(iter(candidates.values()))
     return RelationshipEndpoint.for_aws_resource(
         aws_account_id=resource.account_id,
         service=resource.service,
@@ -774,30 +800,40 @@ def _refine_unresolved_target(
     )
 
 
+def _index_target_evidence_resolutions(
+    outcomes: tuple[SourceEvidenceOutcome, ...],
+) -> dict[str, RelationshipResolution]:
+    """Retain the existing complete, then denied, then incomplete precedence."""
+
+    indexed: dict[str, RelationshipResolution] = {}
+    priority = {
+        RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE: 0,
+        RelationshipResolution.TARGET_ACCESS_DENIED: 1,
+        RelationshipResolution.TARGET_NOT_COLLECTED: 2,
+    }
+    for outcome in outcomes:
+        if outcome.state in {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}:
+            resolution = RelationshipResolution.TARGET_NOT_COLLECTED
+        elif outcome.failure_category is EvidenceFailureCategory.ACCESS_DENIED:
+            resolution = RelationshipResolution.TARGET_ACCESS_DENIED
+        else:
+            resolution = RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE
+        previous = indexed.get(outcome.evidence_kind)
+        if previous is None or priority[resolution] > priority[previous]:
+            indexed[outcome.evidence_kind] = resolution
+    return indexed
+
+
 def _unresolved_target_reason(
     *,
     reference: RelationshipReference,
-    source_outcomes: tuple[SourceEvidenceOutcome, ...],
+    evidence_resolutions: Mapping[str, RelationshipResolution],
     collector_rollups: dict[str, CollectionStatus],
 ) -> RelationshipResolution:
     if reference.target_evidence_kind is not None:
-        matching = tuple(
-            outcome
-            for outcome in source_outcomes
-            if outcome.evidence_kind == reference.target_evidence_kind
-        )
-        if any(
-            outcome.state in {EvidenceSourceState.PRESENT, EvidenceSourceState.EXPECTED_ABSENCE}
-            for outcome in matching
-        ):
-            return RelationshipResolution.TARGET_NOT_COLLECTED
-        if any(
-            outcome.failure_category is EvidenceFailureCategory.ACCESS_DENIED
-            for outcome in matching
-        ):
-            return RelationshipResolution.TARGET_ACCESS_DENIED
-        if matching:
-            return RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE
+        resolution = evidence_resolutions.get(reference.target_evidence_kind)
+        if resolution is not None:
+            return resolution
     if reference.target_collector_name is None:
         return RelationshipResolution.TARGET_NOT_COLLECTED
     if reference.target_collector_name not in collector_rollups:

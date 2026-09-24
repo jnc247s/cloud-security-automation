@@ -243,7 +243,7 @@ permission to reinterpret `PARTIAL` as complete.
 Accepted 5F adds matching per-source CloudTrail behavior through a shared bundle while preserving
 the accepted direct and pending pre-5F paths. It was merged in pull request 24 at `main` commit
 `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 remains `IN PROGRESS`, its 5G closure
-remains unstarted, and no Sprint 6 rule consumes the new source outcomes yet.
+is pending acceptance and merge, and no Sprint 6 rule consumes the new source outcomes yet.
 
 ### Single-region request model — PLANNED LIMIT
 

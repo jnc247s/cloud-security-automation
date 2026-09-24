@@ -397,7 +397,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_accepted_5f_and_5g_closure_preflight_preserve_sprint6_boundary() -> None:
+def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -411,10 +411,7 @@ def test_accepted_5f_and_5g_closure_preflight_preserve_sprint6_boundary() -> Non
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
     assert "`29aeea59b9cceff957adac4fba75cb8ca2c4a592`" in roadmap
-    assert (
-        "Current slice: **5G closure — PREFLIGHT COMPLETE; READY FOR IMPLEMENTATION**"
-        in active_plan
-    )
+    assert "Current slice: **5G closure — IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
     assert "5D IAM Access Analyzer evidence slices" in roadmap
     assert "accepted on `main`" in roadmap
     assert "FOUNDATION_READY_FOR_5A" in active_plan
@@ -433,8 +430,8 @@ def test_accepted_5f_and_5g_closure_preflight_preserve_sprint6_boundary() -> Non
     assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in active_plan
     assert "Slice 5F is **COMPLETE**" in active_plan
     assert "## Planned 5G closure — preflight complete" in active_plan
-    assert "State: **PREFLIGHT COMPLETE; READY FOR IMPLEMENTATION**" in active_plan
-    assert "The closure implementation has not started" in active_plan
+    assert "State: **IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
+    assert "## 5G closure implementation — pending acceptance" in active_plan
     assert "not a wall-clock SLA" in active_plan
     assert "representative synthetic graphs of size `N` and `2N`" in active_plan
     assert "constant two SQL statements" in active_plan

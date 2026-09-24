@@ -31,8 +31,8 @@ evidence)
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
-evidence slices. The 5G closure preflight is complete and the closure is ready for implementation,
-but closure implementation has not started. No Sprint 6 control has been enabled.
+evidence slices. The bounded 5G closure implementation is on its feature branch, pending acceptance
+and merge. No Sprint 6 control has been enabled.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -51,8 +51,8 @@ resource relationships while preserving accepted pending-scan, Access Analyzer, 
 behavior. The merged 5F preflight records the immutable scan intent, CloudTrail
 ownership/admission, account-coverage, source, and relationship contracts. The bounded fact-only
 implementation passed its acceptance gates and was merged in pull request 24 without adding a
-Sprint 6 rule. The 5G closure preflight is complete and ready for implementation; closure
-implementation has not started.
+Sprint 6 rule. The 5G closure adds deterministic operation/query-count gates and behavior-preserving
+in-memory indexes on its feature branch; acceptance and merge remain required.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -73,9 +73,9 @@ bounded 5E implementation was accepted and merged in pull request 22 at
 `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with green pull-request CI. The bounded 5F preflight
 was merged into `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. Slice 5F subsequently
 passed its acceptance gates and was merged in pull request 24 at
-`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. The 5G closure preflight is complete and ready for
-implementation, but the closure has not started. Sprint 5 remains `IN PROGRESS`, and Sprint 6
-remains `PLANNED`.
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. The bounded 5G closure is implemented on its feature
+branch, pending acceptance and merge. Sprint 5 remains `IN PROGRESS`, and Sprint 6 remains
+`PLANNED`. Sprint completion requires a separate post-merge closeout.
 
 ## Pre-Sprint 5 attention
 

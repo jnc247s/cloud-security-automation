@@ -4,7 +4,7 @@ The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C I
 Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers provide a read-only,
 on-demand AWS inventory run. The bounded 5F producer was accepted and merged in pull request 24 at
 `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Sprint 5 remains `IN PROGRESS`, its 5G
-closure remains unstarted, and Sprint 6 remains `PLANNED`. The
+closure is pending acceptance and merge, and Sprint 6 remains `PLANNED`. The
 standalone command returns a normalized in-memory snapshot and prints only an aggregate summary.
 It does not judge compliance, create
 control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor

@@ -251,8 +251,8 @@ added Access Analyzer-to-S3 references. Accepted 5E reuses the same contract for
 unresolved S3-to-KMS `encrypted_with` observations. Accepted 5F reuses it for CloudTrail-to-S3
 `delivers_to_bucket` and CloudTrail-to-KMS `encrypted_with` observations; that implementation was
 merged in pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592` without
-inventing another representation. Sprint 5 remains `IN PROGRESS`, and the 5G closure remains
-unstarted.
+inventing another representation. Sprint 5 remains `IN PROGRESS`, and the bounded 5G closure is
+pending acceptance and merge without changing this contract.
 
 ## Alternatives considered
 
