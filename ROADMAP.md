@@ -4,10 +4,11 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-09-23
-Accepted baseline: `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805` (Sprints 0--4,
+Accepted baseline: `main` at `29aeea59b9cceff957adac4fba75cb8ca2c4a592` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
-Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and the merged 5F preflight)
+Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and accepted 5F CloudTrail
+evidence)
 
 ## Current state
 
@@ -29,10 +30,9 @@ Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and the merged 5F
 
 Sprint 5 is currently `IN PROGRESS`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
-accepted on `main`, as is the bounded fact-only 5E S3 and referenced-KMS evidence slice. The 5F
-CloudTrail preflight is merged, and its fact-only implementation exists on the feature branch but
-is **IMPLEMENTED; PENDING ACCEPTANCE**. It is not yet accepted or merged. No Sprint 6 control has
-been enabled.
+accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
+evidence slices. The bounded 5G closure implementation is on its feature branch, pending acceptance
+and merge. No Sprint 6 control has been enabled.
 
 ## In progress: Sprint 5 — AWS Evidence Expansion
 
@@ -49,9 +49,10 @@ relationship/source-outcome evidence foundation passed its acceptance gate as
 22 with only the approved direct S3 and referenced-KMS facts, source outcomes, provenance, and
 resource relationships while preserving accepted pending-scan, Access Analyzer, and `S3-900`
 behavior. The merged 5F preflight records the immutable scan intent, CloudTrail
-ownership/admission, account-coverage, source, and relationship contracts. The feature branch now
-implements those contracts without adding a Sprint 6 rule; acceptance, CI, approval, and merge are
-still required.
+ownership/admission, account-coverage, source, and relationship contracts. The bounded fact-only
+implementation passed its acceptance gates and was merged in pull request 24 without adding a
+Sprint 6 rule. The 5G closure adds deterministic operation/query-count gates and behavior-preserving
+in-memory indexes on its feature branch; acceptance and merge remain required.
 
 Sprint 5 Phase 0 completed on 2026-09-15 against `main` commit
 `feb0b5c2b517f51dd6c7b48eb38513cf92306164` with result `SPRINT_5_GO`. The first approved
@@ -70,9 +71,11 @@ Slice 5C subsequently passed its acceptance gates and was merged in pull request
 `1a355107eb7a3ed7845fa3a569dbff80da2778bb`, and the merged-main CI quality job succeeded. The
 bounded 5E implementation was accepted and merged in pull request 22 at
 `8ea9df86f8c6ae623ef41ebb836e6b3b7d052393`, with green pull-request CI. The bounded 5F preflight
-was merged into `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The feature branch
-implements 5F and is pending its acceptance gates; this is not completion or merge. Sprint 6
-remains `PLANNED`.
+was merged into `main` at `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. Slice 5F subsequently
+passed its acceptance gates and was merged in pull request 24 at
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. The bounded 5G closure is implemented on its feature
+branch, pending acceptance and merge. Sprint 5 remains `IN PROGRESS`, and Sprint 6 remains
+`PLANNED`. Sprint completion requires a separate post-merge closeout.
 
 ## Pre-Sprint 5 attention
 

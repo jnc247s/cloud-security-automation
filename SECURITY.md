@@ -2,10 +2,9 @@
 
 This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
 the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
-IAM, 5D IAM Access Analyzer, and 5E S3/referenced-KMS evidence producers at the accepted `main`
-baseline `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The 5F CloudTrail implementation exists on the
-feature branch and is pending acceptance; it is not yet accepted or merged. Threats and residual
-risks are tracked in
+IAM, 5D IAM Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers at the
+accepted `main` baseline `29aeea59b9cceff957adac4fba75cb8ca2c4a592`, which merged 5F in pull
+request #24. The bounded 5G closure is pending acceptance and merge. Threats and residual risks are tracked in
 [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
@@ -124,7 +123,7 @@ same-scan `encrypted_with` relationship; incomplete lookups retain only a typed 
 reference and cannot invent a key, owner, ARN, Region, or manager. These facts do not authorize
 AWS writes or make an S3 compliance decision.
 
-The 5F feature-branch implementation preserves the same fail-closed boundary for CloudTrail. A
+The accepted 5F implementation preserves the same fail-closed boundary for CloudTrail. A
 persisted `cloudtrail-evidence` execution marker prevents accepted pending scans from silently
 gaining new AWS calls. Trail ARNs must prove owner and home Region; the verified collection
 account never substitutes for a management-account owner on an organization trail. An
@@ -203,16 +202,15 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B through 5E collectors and the pending-acceptance 5F collector preserve facts and
+The accepted 5B through 5F collectors preserve facts and
 provenance only. They do not decide whether a default group, Flow Log, public-IP setting, network
 permission, IAM policy, root-account flag, tag, external-access finding, bucket policy, ACL,
 Block Public Access setting, encryption configuration, or CloudTrail configuration passes a
 planned control, and they do
 not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
 resource identity and evidence; it never requests or stores secret access-key material. Provider
-failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5E are
-accepted on `main`, while 5F is **IMPLEMENTED; PENDING ACCEPTANCE** on the feature branch. Sprint
-6 remains `PLANNED`.
+failures and malformed facts remain sanitized. Sprint 5 remains `IN PROGRESS`; 5A through 5F are
+accepted on `main`, the bounded 5G closure is pending acceptance and merge, and Sprint 6 remains `PLANNED`.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

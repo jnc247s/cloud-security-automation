@@ -111,6 +111,7 @@ CURRENT_CONTROL_IDS = {
     "LOG-001",
     "LOG-002",
     "LOG-003",
+    "LOG-004",
     "NET-001",
     "NET-002",
     "NET-003",
@@ -122,7 +123,7 @@ CURRENT_CONTROL_IDS = {
     "S3-003",
     "S3-004",
 }
-CONTRACT_READY_CONTROL_IDS = {"LOG-004"}
+CONTRACT_READY_CONTROL_IDS: set[str] = set()
 EXPECTED_MATRIX_STATES = {
     control_id: (
         "CURRENT"
@@ -396,7 +397,7 @@ def test_resolved_edges_require_top_level_resource_snapshot_endpoints() -> None:
     assert "device object alone is not a canonical relationship endpoint" in catalog
 
 
-def test_5f_implementation_preserves_accepted_5e_and_sprint6_boundary() -> None:
+def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     executable_ids = {contract.control_id for contract in build_default_control_catalog().controls}
     roadmap = _read(ROADMAP_PATH)
     active_plan = _read(ACTIVE_PLAN_PATH)
@@ -409,11 +410,8 @@ def test_5f_implementation_preserves_accepted_5e_and_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **IN PROGRESS** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **PLANNED** |" in roadmap
-    assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in roadmap
-    assert (
-        "Current slice: **5F CloudTrail evidence expansion — IMPLEMENTED; PENDING ACCEPTANCE**"
-        in active_plan
-    )
+    assert "`29aeea59b9cceff957adac4fba75cb8ca2c4a592`" in roadmap
+    assert "Current slice: **5G closure — IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
     assert "5D IAM Access Analyzer evidence slices" in roadmap
     assert "accepted on `main`" in roadmap
     assert "FOUNDATION_READY_FOR_5A" in active_plan
@@ -422,13 +420,22 @@ def test_5f_implementation_preserves_accepted_5e_and_sprint6_boundary() -> None:
     assert "**5C IAM account and IAM policy evidence — COMPLETE**" in active_plan
     assert "**5D IAM Access Analyzer evidence — COMPLETE**" in active_plan
     assert "**5E S3 evidence expansion — COMPLETE**" in active_plan
+    assert "**5F CloudTrail evidence expansion — COMPLETE**" in active_plan
     assert "pull request 22" in active_plan
-    assert "## Implemented 5F state — pending acceptance" in active_plan
+    assert "pull request 24" in active_plan
+    assert "## Accepted 5F implementation state" in active_plan
     assert (
         "Implementation started from the merged preflight baseline at `main` commit" in active_plan
     )
     assert "`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`" in active_plan
-    assert "This state is **IMPLEMENTED; PENDING ACCEPTANCE**, not `COMPLETE`" in active_plan
+    assert "Slice 5F is **COMPLETE**" in active_plan
+    assert "## Approved 5G closure scope" in active_plan
+    assert "State: **IMPLEMENTED; PENDING ACCEPTANCE**" in active_plan
+    assert "## 5G closure implementation — pending acceptance" in active_plan
+    assert "not a wall-clock SLA" in active_plan
+    assert "representative synthetic graphs of size `N` and `2N`" in active_plan
+    assert "constant two SQL statements" in active_plan
+    assert "Sprint 6 remains `PLANNED`" in active_plan
     assert "supplemental Regional discovery only for the controlled Access Analyzer" in active_plan
     assert "evidence remains supplementary and non-decisive" in active_plan
     assert "bucket-Region discovery makes Analyzer coverage incomplete" in active_plan
@@ -476,8 +483,8 @@ def test_5f_implementation_preserves_accepted_5e_and_sprint6_boundary() -> None:
         assert required_5f_contract in active_plan
 
     assert "complete collection-account trail coverage set (not a persisted relationship)" in matrix
-    assert "5F implemented; pending acceptance / `CURRENT`" in matrix
-    assert "5F is **IMPLEMENTED; PENDING ACCEPTANCE**" in matrix
+    assert _matrix_state(_matrix_rows()["LOG-004"][-1]) == "CURRENT"
+    assert "accepted 5A through 5F evidence producers" in matrix
     assert "`ListTrails(IncludeShadowTrails=False)`" not in active_plan
     assert "accepted 5E tuple remains a distinct path and makes no new selector call" in active_plan
     assert "Direct and persisted pre-5F paths retain their accepted" in active_plan

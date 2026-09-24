@@ -2,9 +2,8 @@
 
 Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
 foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer evidence
-producers, plus the merged 5E S3 and referenced-KMS producer and the pending-acceptance 5F
-CloudTrail feature-branch implementation
-Baseline: `main` commit `349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`
+producers, plus the merged 5E S3 and referenced-KMS and 5F CloudTrail producers
+Baseline: `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592` (5F merged in pull request #24)
 Last reviewed: 2026-09-23
 
 ## Scope and security objectives
@@ -16,9 +15,9 @@ executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fa
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
 Sprint 6 production rule, production deployment, frontend, Terraform infrastructure, remediation
-execution, or AI agent is implemented. The merged 5E producer and the pending-acceptance 5F
-CloudTrail feature branch collect facts only. The 5F change adds no AWS write, authentication,
-authorization, route, migration, or assessment-profile behavior.
+execution, or AI agent is implemented. The merged 5E and 5F producers collect facts only. The 5F
+change adds no AWS write, authentication, authorization, route, migration, or assessment-profile
+behavior. The bounded 5G closure is pending acceptance and merge without changing these boundaries.
 
 Protect:
 
@@ -64,11 +63,11 @@ and runtime workload identity are supplied by the deployment environment.
 | T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, audit/evidence-graph history guards, terminal graph-completeness checks, and fail-closed populated-downgrade preflights | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
-| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, 5B independently paginates network sources, 5C independently validates IAM sources, 5D validates and fully paginates Analyzer sources, accepted 5E strictly validates independent S3/KMS sources, and the 5F feature branch isolates CloudTrail identity/configuration/status/selector/tag sources while retaining valid siblings | Remaining legacy collectors still discard the affected collector's otherwise valid items on malformed data; 5F remains pending acceptance and merge |
-| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; accepted 5A through 5E and pending-acceptance 5F emit digest-bound exact source manifests, with execution selected from exact persisted service intent | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists; the 5F `cloudtrail-evidence` marker must remain exact and fail closed until and after acceptance |
+| T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, 5B independently paginates network sources, 5C independently validates IAM sources, 5D validates and fully paginates Analyzer sources, 5E strictly validates independent S3/KMS sources, and 5F isolates CloudTrail identity/configuration/status/selector/tag sources while retaining valid siblings | Remaining legacy collectors still discard the affected collector's otherwise valid items on malformed data |
+| T13 | Profile, mapping, or source-manifest substitution | High | Explicit numeric profile version, content checksums, fail-closed version-content conflict, exact persisted-profile loading for pending scans, graph-derived source-manifest version/digest, mapping/reference validation; accepted 5A through 5F emit digest-bound exact source manifests, with execution selected from exact persisted service intent | Operators must deploy reviewed new policy versions; no automatic semantic ordering or policy approval workflow exists; the 5F `cloudtrail-evidence` marker must remain exact and fail closed |
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded dependency ranges, least-privilege CI, tests/PostgreSQL/image build | No lockfile/SBOM/security scans or immutable action/image pins; review every dependency, action, and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
-| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners; 5B refines owner-incomplete targets only with exact proof; 5C keeps collection account distinct from IAM policy owner; 5D admits supplemental discovery only with exact same-scan S3 Region proof; accepted 5E requires authoritative bucket location and canonical returned KMS identity; pending-acceptance 5F keeps collection account, trail owner, and organization context distinct and resolves S3/KMS edges only from exact same-scan evidence | A privileged database/schema operator remains trusted; 5F still requires acceptance and merge, and unresolved targets remain unavailable for any future rule that requires a resolved edge |
+| T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners; 5B refines owner-incomplete targets only with exact proof; 5C keeps collection account distinct from IAM policy owner; 5D admits supplemental discovery only with exact same-scan S3 Region proof; 5E requires authoritative bucket location and canonical returned KMS identity; 5F keeps collection account, trail owner, and organization context distinct and resolves S3/KMS edges only from exact same-scan evidence | A privileged database/schema operator remains trusted, and unresolved targets remain unavailable for any future rule that requires a resolved edge |
 
 ## Future-boundary threats
 

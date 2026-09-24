@@ -27,6 +27,7 @@ from app.assessment.source_outcomes import (
     ResourceEvidenceSubject,
     SourceEvidenceOutcome,
 )
+from app.collectors.base import CollectionContext, build_source_observation
 from app.rules.engine import RuleEngine
 from app.rules.registry import build_default_registry
 from app.schemas.inventory import CollectionStatus, CollectorOutcome, InventorySnapshot
@@ -250,6 +251,104 @@ def _endpoint(scan_id: UUID, resource: NormalizedResource) -> RelationshipEndpoi
         region=resource.region,
         observed_in_scan_id=scan_id,
     )
+
+
+def scaled_graph_scan_bundle(size: int, *, scan_id: UUID) -> dict[str, Any]:
+    """Build a real, persistable generic graph with independent instance/group pairs."""
+
+    bundle = scan_bundle(scan_id=scan_id)
+    original = bundle["snapshot"]
+    context = CollectionContext(
+        scan_id=scan_id,
+        collection_account_id=original.account_id,
+        region=original.requested_region,
+        collected_at=original.collected_at,
+    )
+    resources = []
+    observations = []
+    relationships = []
+    for index in range(size):
+        instance = NormalizedResource(
+            account_id=original.account_id,
+            service="ec2",
+            resource_type="ec2_instance",
+            aws_resource_id=f"i-closure-{index:04d}",
+            scope=ResourceScope.REGIONAL,
+            region=original.requested_region,
+            configuration={"state": "running"},
+        )
+        group = NormalizedResource(
+            **{
+                **original.resources[0].model_dump(),
+                "aws_resource_id": f"sg-closure-{index:04d}",
+            }
+        )
+        resources.extend((instance, group))
+        for resource in (instance, group):
+            observation = build_source_observation(
+                context=context,
+                contract_key=f"closure.{resource.resource_type}",
+                contract_version="1.0.0",
+                phase=EvidenceCollectionPhase.ENRICHMENT,
+                subject=ResourceEvidenceSubject.for_aws_resource(
+                    scan_id=scan_id,
+                    aws_account_id=resource.account_id,
+                    service=resource.service,
+                    resource_type=resource.resource_type,
+                    aws_resource_id=resource.aws_resource_id,
+                    scope=resource.scope,
+                    region=resource.region,
+                ),
+                evidence_kind=f"closure.{resource.resource_type}",
+                collector="ClosureFixtureCollector",
+                collector_version="1.0.0",
+                source_api="ec2:DescribeInstances"
+                if resource is instance
+                else "ec2:DescribeSecurityGroups",
+                cardinality=EvidenceCardinality.SINGLE,
+                evidence_reference=f"normalized://closure/{resource.aws_resource_id}",
+                evidence_schema="closure.resource",
+                evidence_schema_version="1.0.0",
+                normalized_payload={"resource_id": resource.aws_resource_id},
+                state=EvidenceSourceState.PRESENT,
+                identity_authoritative=True,
+            )
+            observations.append(observation)
+        relationships.append(
+            ResourceRelationship.for_observation(
+                scan_id=scan_id,
+                collection_account_id=original.account_id,
+                relationship_type=RelationshipType.ATTACHED_TO_SECURITY_GROUP,
+                source=_endpoint(scan_id, instance),
+                target=_endpoint(scan_id, group),
+                resolution=RelationshipResolution.RESOLVED,
+                provenance=observations[-2].provenance,
+            )
+        )
+    graph = EvidenceGraph(
+        scan_id=scan_id,
+        collection_account_id=original.account_id,
+        collected_at=original.collected_at,
+        source_contracts=tuple(item.contract for item in observations),
+        artifacts=tuple(item.artifact for item in observations),
+        source_outcomes=tuple(item.outcome for item in observations),
+        relationships=tuple(relationships),
+    )
+    snapshot = InventorySnapshot(
+        **{
+            **original.model_dump(),
+            "resources": tuple(resources),
+            "evidence_graph": graph,
+        }
+    )
+    bundle.update(
+        snapshot=snapshot,
+        scope=bundle["scope"].model_copy(
+            update={"resource_types": ("ec2_instance", "security_group")}
+        ),
+        assessments=RuleEngine(build_default_registry()).assess(snapshot, bundle["profile"]),
+    )
+    return bundle
 
 
 def exceptional_owner_graph_scan_bundle(

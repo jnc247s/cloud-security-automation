@@ -2,9 +2,8 @@
 
 This is the authoritative human-readable contract for the accepted Sprint 4 API, the accepted
 Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM
-Access Analyzer and 5E S3/referenced-KMS evidence producers. The pending-acceptance 5F CloudTrail
-feature branch projects through those same generic interfaces without adding a service-specific
-route.
+Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers. The accepted 5F
+producer projects through those same generic interfaces without adding a service-specific route.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
 All slices use the existing generic scan and read interfaces; no service-specific collector
 endpoint or Sprint 6 control is implied. Future interface changes must update this document and
@@ -179,7 +178,7 @@ route is added, raw policy content is returned only inside the authorized normal
 snapshot projections, and these facts are not executable `S3-001` through `S3-004` results.
 Sprint 0--4 collectors that have not been upgraded remain graphless.
 
-The 5F feature branch adds the exact `cloudtrail-evidence` persisted intent marker and a
+The accepted 5F path adds the exact `cloudtrail-evidence` persisted intent marker and a
 `cloudtrail_evidence` collector outcome to these same generic projections.
 “Account to trails” remains source-manifest coverage attached to the verified scan account, not a
 new account-resource endpoint or API shape. CloudTrail resources, source outcomes/artifacts, and
@@ -249,7 +248,8 @@ An accepted 5E scan without that marker resumes without `GetEventSelectors` or a
 An accepted 5D scan without `kms` resumes without S3 Control, expanded S3, or KMS work, while a
 pre-5D scan without `access-analyzer` or `kms` retains its older collector set. Unknown tuples fail
 before AWS collection. Historical manifests remain readable without synthesizing later-slice
-evidence. The new 5F path remains pending acceptance and merge.
+evidence. The 5F path is accepted on `main`; the bounded 5G closure is pending acceptance and merge
+without changing this API contract.
 
 ## Error behavior
 

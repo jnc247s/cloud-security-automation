@@ -2,12 +2,13 @@
 
 Status: **IN PROGRESS**
 
-Current slice: **5F CloudTrail evidence expansion — IMPLEMENTED; PENDING ACCEPTANCE**
+Current slice: **5G closure — IMPLEMENTED; PENDING ACCEPTANCE**
 
 Accepted prerequisites: **5G shared relationship/source-outcome evidence foundation — FOUNDATION_READY_FOR_5A**;
 **5A EC2 and EBS evidence — COMPLETE**; **5B VPC, subnet, Flow Log, and network evidence — COMPLETE**;
 **5C IAM account and IAM policy evidence — COMPLETE**;
-**5D IAM Access Analyzer evidence — COMPLETE**; **5E S3 evidence expansion — COMPLETE**
+**5D IAM Access Analyzer evidence — COMPLETE**; **5E S3 evidence expansion — COMPLETE**;
+**5F CloudTrail evidence expansion — COMPLETE**
 
 Canonical scope and project state: [ROADMAP.md](../../../ROADMAP.md)
 
@@ -37,9 +38,9 @@ foundation has passed its acceptance gate as `FOUNDATION_READY_FOR_5A`. Slice 5A
 acceptance gates and merged in pull request 16. Slice 5B passed its acceptance gates and merged in
 pull request 17. Slice 5C passed its acceptance gates and merged in pull request 18. Slice 5D is
 accepted and merged in pull request 20. Slice 5E passed its acceptance gates and merged in pull
-request 22. The bounded 5F preflight is merged. Its implementation is present on the feature
-branch and awaits the required validation, independent review, CI, approval, and merge gates.
-The 5G closure and later sprints remain unstarted.
+request 22. Slice 5F passed its acceptance gates and merged in pull request 24. The bounded 5G
+closure implementation is on its feature branch, pending acceptance and merge.
+Later sprints remain unstarted.
 
 The two remaining `MEDIUM` roadmap items are explicitly triaged accepted limitations, not hidden
 Sprint 5 blockers. Sprint 5 adds no governance mutation route, so audit principal-context
@@ -65,8 +66,7 @@ Before Sprint 5 began, their standalone schemas and contract tests did not imple
 collector, executable rule, profile registration, database table, API route, or remediation
 behavior. The accepted 5G foundation is limited to the approved shared persistence, domain,
 projection, authorization, and migration boundary. Sprint 5 is `IN PROGRESS`; accepted slices 5A
-through 5E use that boundary, and the implemented-but-unaccepted 5F slice uses it without enabling
-Sprint 6 rules.
+through 5F use that boundary without enabling Sprint 6 rules.
 
 The S3-004 approval here is the versioned sensitive-bucket classifier and its evidence boundary,
 not an invented final Sprint 6 KMS result policy. Sprint 5 preserves distinct absent, `AES256`,
@@ -99,9 +99,9 @@ graph boundary would have lost evidence or forced that slice to invent a represe
 4. **COMPLETE — 5C** — IAM account and policy evidence;
 5. **COMPLETE — 5D** — IAM Access Analyzer evidence;
 6. **COMPLETE — 5E** — S3 evidence expansion;
-7. **IMPLEMENTED; PENDING ACCEPTANCE — 5F** — CloudTrail evidence expansion; and
-8. 5G closure — Sprint-wide relationship, persistence, API, acceptance, and performance
-   validation.
+7. **COMPLETE — 5F** — CloudTrail evidence expansion; and
+8. **IMPLEMENTED; PENDING ACCEPTANCE — 5G closure** — Sprint-wide relationship,
+   persistence, API, acceptance, and performance validation.
 
 The foundational 5G change is not permission for an empty table or a relaxed account check. Its
 migration, domain integration, writer, reader, API projection, authorization behavior, and
@@ -110,9 +110,9 @@ satisfied; later evidence producers may depend on the accepted boundary only whe
 is separately authorized.
 
 Sprint 5 remains `IN PROGRESS`, with the shared 5G foundation accepted as
-`FOUNDATION_READY_FOR_5A` and 5A through 5E accepted on `main`. The separately bounded 5F
-preflight is merged, and its implementation is present on the feature branch pending acceptance.
-This does not authorize executable Sprint 6 rules, remediation, or later-sprint work.
+`FOUNDATION_READY_FOR_5A` and 5A through 5F accepted on `main`. The bounded 5G closure is implemented
+on its feature branch, pending acceptance and merge. This does not
+authorize executable Sprint 6 rules, remediation, or later-sprint work.
 
 ## Accepted 5A implementation state
 
@@ -561,10 +561,10 @@ persistence/API readback, authenticated disposable-PostgreSQL HTTP acceptance, t
 regression tests, Ruff lint/format, container validation, independent review, green CI, approval,
 and merge. No test may contact live AWS.
 
-## Implemented 5F state — pending acceptance
+## Accepted 5F implementation state
 
 Implementation started from the merged preflight baseline at `main` commit
-`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The feature branch adds the bounded fact-only
+`349f57ebe8fb8ad6c4e4e6e01a8d6262394f8805`. The bounded implementation added the fact-only
 CloudTrail expansion described above:
 
 - New scans persist the exact service intent
@@ -593,9 +593,82 @@ CloudTrail expansion described above:
   dependency, migration, route, authentication/authorization change, assessment-profile change,
   executable Sprint 6 rule, finding behavior, AWS write, or later-sprint implementation.
 
-This state is **IMPLEMENTED; PENDING ACCEPTANCE**, not `COMPLETE`. Exact validation results,
-independent-review disposition, CI, approval, and merge must be recorded only after those gates
-finish. Sprint 5 remains `IN PROGRESS`; Sprint 6 remains `PLANNED`, and 5G closure has not started.
+Slice 5F passed its deterministic fake-AWS, graph replay/tamper, generic persistence/API readback,
+authenticated disposable-PostgreSQL HTTP acceptance, targeted/full regression, Ruff,
+container-build, independent-review, CI, approval, and merge gates. It was accepted and merged in
+pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; the final feature
+commit was `78ca8afa4d2051c69cde5b595c0bb4a90a1a4c3b`. Slice 5F is **COMPLETE**. Sprint 5 remains
+`IN PROGRESS`; Sprint 6 remains `PLANNED`.
+
+## Approved 5G closure scope
+
+State: **IMPLEMENTED; PENDING ACCEPTANCE**
+
+The approved closure scope is bounded to Sprint-wide validation of the
+accepted 5G foundation and 5A through 5F evidence producers across relationships, transactional
+persistence, generic authenticated API readback, acceptance coverage, and performance behavior.
+It does not add a new collector, executable Sprint 6 rule, schema, API, dependency, assessment
+profile, finding policy, AWS permission, remediation behavior, dashboard, deployment, or AI
+functionality. If validation exposes a concrete defect that requires one of those changes, stop
+and obtain a separate architecture and implementation review rather than expanding closure scope
+silently.
+
+The existing authenticated disposable-PostgreSQL HTTP acceptance test remains authoritative for
+the real routing, authentication, authorization, service, executor, normalization, graph,
+transactional persistence, and generic readback path; only AWS is replaced by deterministic
+fakes. Do not duplicate that acceptance test. Add only the missing deterministic performance
+gates and the behavior-preserving in-memory lookup indexes needed to satisfy them:
+
+- with representative synthetic graphs of size `N` and `2N`, prove target resolution,
+  relationship-provenance validation, and persistence provenance lookup work grows linearly rather
+  than rescanning every resource or source outcome for every relationship; and
+- on disposable PostgreSQL, prove the generic relationship and source-outcome list operations use
+  a constant two SQL statements (count plus bounded page) and their detail operations use a
+  constant statement count, independent of stored graph size and requested page size.
+
+These are operation/query-count invariants, not a wall-clock SLA or environment-dependent
+benchmark. Closure acceptance requires its focused tests, the complete regression suite,
+disposable-PostgreSQL acceptance/integration tests, container validation, Ruff lint and format,
+independent correctness/security/data-integrity review, green CI, explicit approval, and merge.
+No test contacts live AWS.
+
+Only a separate post-merge closeout may mark Sprint 5 `COMPLETE`, move this plan to
+`docs/exec-plans/completed/`, promote Sprint 6 from `PLANNED` to `NEXT`, and update released
+history. Until then, Sprint 5 remains `IN PROGRESS`, Sprint 6 remains `PLANNED`, and 5G closure
+requires acceptance and merge.
+
+## 5G closure implementation — pending acceptance
+
+The implementation branch `codex/sprint-5g-closure` starts from the accepted 5F `main` baseline
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592` and carries the reviewed closure-preflight documentation
+commit before the bounded implementation. No merge into `main` is implied.
+
+- Target resolution builds an operation-local index of authoritative identities. Partial target
+  keys retain owner/scope/Region distinctions and ambiguous matches remain unresolved. Source
+  uncertainty precedence is indexed without changing resolution semantics.
+- Graph validation, resource binding, and persistence build operation-local provenance indexes
+  using the existing six-field tuple. Multiple matches remain visible and are rejected; indexes
+  are never persisted or used to bypass graph reconstruction, digest validation, or transactions.
+- Deterministic synthetic graphs of 16 and 32 relationships exercise real resolution, validation,
+  persistence, and replay. Model-access counts detect repeated full scans without a timing SLA.
+  The tests failed against the original repeated-scan implementation before the indexes were added.
+- Disposable-PostgreSQL tests count real SQL through serialization with fresh sessions: list
+  operations require exactly two statements, relationship details one, and source details two,
+  across graph sizes, page sizes, and the source-contract filter.
+- The existing authenticated HTTP-to-PostgreSQL acceptance test remains authoritative and is not
+  duplicated. It exercises accepted 5A through 5F facts and relationships with only AWS replaced.
+
+No collector, schema, migration, API, dependency, permission, profile, executable control, or
+later-sprint behavior is added. Migration head remains `20260915_0003`. Final validation, review,
+CI, and merge evidence belongs to the closure PR; sprint closeout remains a separate post-merge
+action.
+
+Local validation on 2026-09-23: focused closure/graph/contract tests **125 passed**; full regression
+**1376 passed, 20 skipped** (the established PostgreSQL skips without `TEST_DATABASE_URL`). Ruff
+lint and format checks passed. An independent read-only correctness/security/integrity review
+returned `REVIEW_PASS` with no findings. Local Docker Desktop did not provide a usable engine;
+PostgreSQL integration/HTTP acceptance and the image build therefore still require the authoritative
+CI run before acceptance. Docker Compose configuration validation passed.
 
 ## Objective and boundary
 

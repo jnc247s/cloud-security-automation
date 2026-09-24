@@ -13,6 +13,8 @@ from app.assessment.evidence_graph import (
     EvidenceCardinality,
     EvidenceGraph,
     ResourceOwnerMode,
+    index_source_outcomes_by_provenance,
+    source_provenance_key,
 )
 from app.assessment.evidence_graph import (
     ScanSourceContract as DomainSourceContract,
@@ -168,20 +170,14 @@ def persist_evidence_graph(session: Session, graph: EvidenceGraph) -> None:
 
     session.flush()
 
+    outcomes_by_provenance = index_source_outcomes_by_provenance(validated.source_outcomes)
     for relationship in validated.relationships:
         target = relationship.target
         stable_target = target if isinstance(target, RelationshipEndpoint) else None
         partial_target = target if isinstance(target, UnresolvedRelationshipTarget) else None
-        matching_outcomes = [
-            outcome
-            for outcome in validated.source_outcomes
-            if outcome.collector == relationship.provenance.collector
-            and outcome.collector_version == relationship.provenance.collector_version
-            and outcome.source == relationship.provenance.source
-            and outcome.source_api == relationship.provenance.source_api
-            and outcome.evidence_reference == relationship.provenance.evidence_reference
-            and outcome.collected_at == relationship.provenance.collected_at
-        ]
+        matching_outcomes = outcomes_by_provenance.get(
+            source_provenance_key(relationship.provenance), ()
+        )
         if len(matching_outcomes) != 1:  # defensive; domain validation already proves this
             raise EvidenceGraphPersistenceError(
                 "relationship provenance does not resolve to one source outcome"

@@ -7,11 +7,12 @@ import os
 from collections import Counter
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from threading import Barrier, Event
 from time import monotonic
-from uuid import UUID, uuid4
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 import pytest
 from alembic import command
@@ -55,6 +56,7 @@ from app.rules.registry import build_default_registry
 from app.schemas.scan import ScanCreateRequest
 from app.security.authentication import DEVELOPMENT_BEARER_MARKER
 from app.services.errors import AssessmentProfileConflictError
+from app.services.evidence_graph_service import EvidenceGraphService
 from app.services.inventory_service import InventoryService
 from app.services.scan_executor import InProcessScanExecutor, _scope_for
 from app.services.scan_service import ScanService
@@ -69,6 +71,7 @@ from tests.fakes import (
 from tests.unit.database.factories import (
     exceptional_owner_graph_scan_bundle,
     graph_scan_bundle,
+    scaled_graph_scan_bundle,
     scan_bundle,
 )
 
@@ -425,6 +428,94 @@ def postgres_engine() -> Iterator[Engine]:
         with admin_engine.begin() as connection:
             connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
         admin_engine.dispose()
+
+
+@contextmanager
+def _count_sql_statements(engine: Engine) -> Iterator[list[str]]:
+    statements: list[str] = []
+
+    def observe(_connection, _cursor, statement, _parameters, _context, _executemany):
+        statements.append(statement)
+
+    event.listen(engine, "before_cursor_execute", observe)
+    try:
+        yield statements
+    finally:
+        event.remove(engine, "before_cursor_execute", observe)
+
+
+@pytest.mark.parametrize("size", [16, 32])
+def test_postgres_generic_graph_reads_have_constant_query_counts(
+    postgres_engine: Engine, size: int
+) -> None:
+    bundle = scaled_graph_scan_bundle(
+        size, scan_id=uuid5(NAMESPACE_URL, f"https://example.test/postgres-closure/{size}")
+    )
+    graph = bundle["snapshot"].evidence_graph
+    with Session(postgres_engine) as session, session.begin():
+        persist_scan_result(session, **bundle)
+
+    relationships = sorted(graph.relationships, key=lambda edge: edge.observation_id)
+    outcomes = sorted(graph.source_outcomes, key=lambda outcome: outcome.source_outcome_id)
+    artifacts = {artifact.evidence_reference: artifact for artifact in graph.artifacts}
+    for limit in (1, 8, 16):
+        # Each measured operation starts with a cold identity map. Count through
+        # projection serialization too, so lazy/N+1 loads cannot escape the gate.
+        with Session(postgres_engine) as session, _count_sql_statements(postgres_engine) as sql:
+            page = EvidenceGraphService(session).list_relationships(
+                scan_id=graph.scan_id,
+                collection_account_id=graph.collection_account_id,
+                limit=limit,
+                offset=1,
+            )
+            document = page.model_dump(mode="json")
+        assert len(sql) == 2, f"relationship list used {len(sql)} statements at size={size}"
+        assert document["total"] == size
+        assert [item.observation_id for item in page.items] == [
+            edge.observation_id for edge in relationships[1 : 1 + limit]
+        ]
+
+        for contract_key in (None, "closure.ec2_instance"):
+            expected = [
+                outcome
+                for outcome in outcomes
+                if contract_key is None or outcome.evidence_kind == contract_key
+            ]
+            with (
+                Session(postgres_engine) as session,
+                _count_sql_statements(postgres_engine) as sql,
+            ):
+                page = EvidenceGraphService(session).list_source_outcomes(
+                    scan_id=graph.scan_id,
+                    collection_account_id=graph.collection_account_id,
+                    contract_key=contract_key,
+                    limit=limit,
+                    offset=1,
+                )
+                document = page.model_dump(mode="json")
+            assert len(sql) == 2, f"source list used {len(sql)} statements at size={size}"
+            assert document["total"] == len(expected)
+            assert [item.source_outcome_id for item in page.items] == [
+                outcome.source_outcome_id for outcome in expected[1 : 1 + limit]
+            ]
+
+    for edge in (relationships[0], relationships[-1]):
+        with Session(postgres_engine) as session, _count_sql_statements(postgres_engine) as sql:
+            detail = EvidenceGraphService(session).get_relationship(edge.observation_id)
+            detail.model_dump(mode="json")
+        assert len(sql) == 1, f"relationship detail used {len(sql)} statements at size={size}"
+        assert detail.observation_id == edge.observation_id
+        assert detail.source.stable_resource_id == edge.source.stable_resource_id
+        assert detail.target.resource_snapshot_id == edge.target.resource_snapshot_id
+
+    for outcome in (outcomes[0], outcomes[-1]):
+        with Session(postgres_engine) as session, _count_sql_statements(postgres_engine) as sql:
+            detail = EvidenceGraphService(session).get_source_outcome(outcome.source_outcome_id)
+            detail.model_dump(mode="json")
+        assert len(sql) == 2, f"source detail used {len(sql)} statements at size={size}"
+        assert detail.source_outcome_id == outcome.source_outcome_id
+        assert detail.artifact.artifact_id == artifacts[outcome.evidence_reference].artifact_id
+        assert detail.artifact.evidence_sha256 == outcome.evidence_sha256
 
 
 def test_postgres_migration_round_trip_and_jsonb(postgres_engine: Engine) -> None:

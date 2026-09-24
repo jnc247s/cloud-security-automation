@@ -1283,18 +1283,15 @@ class EvidenceGraph(BaseModel):
                 artifacts=artifacts,
             )
 
+        outcomes_by_provenance = index_source_outcomes_by_provenance(outcomes)
         for relationship in relationships:
             self._validate_common_observation(relationship)
-            matches = [
-                (contract_by_id[outcome.source_outcome_id], outcome)
-                for outcome in outcomes
-                if _provenance_matches_outcome(relationship.provenance, outcome)
-            ]
+            matches = outcomes_by_provenance.get(source_provenance_key(relationship.provenance), ())
             if len(matches) != 1:
                 raise ValueError(
                     "relationship provenance must identify exactly one declared source outcome"
                 )
-            _, outcome = matches[0]
+            outcome = matches[0]
             if outcome.state is not EvidenceSourceState.PRESENT:
                 raise ValueError("relationships require PRESENT source evidence")
         _validate_s3_kms_relationship_manifest(
@@ -3388,6 +3385,7 @@ def validate_graph_resources(
                     set(),
                 ).update(source_bucket_names)
 
+    outcomes_by_provenance = index_source_outcomes_by_provenance(graph.source_outcomes)
     for relationship in graph.relationships:
         _require_relationship_endpoint(
             relationship.source,
@@ -3407,10 +3405,8 @@ def validate_graph_resources(
             if source_snapshot_id is None:  # pragma: no cover - relationship invariant
                 raise ValueError("relationship source must identify a snapshot")
             resolved_relationship_snapshots.update((source_snapshot_id, target_snapshot_id))
-            provenance_outcomes = tuple(
-                outcome
-                for outcome in graph.source_outcomes
-                if _provenance_matches_outcome(relationship.provenance, outcome)
+            provenance_outcomes = outcomes_by_provenance.get(
+                source_provenance_key(relationship.provenance), ()
             )
             if (
                 relationship.relationship_type is RelationshipType.ENCRYPTED_WITH
@@ -4367,20 +4363,40 @@ def _deduplicate_records[T](
     return tuple(deduplicated[item_id] for item_id in ordered_ids)
 
 
+type SourceProvenanceKey = tuple[str, str, str, str, str, datetime]
+
+
+def source_provenance_key(
+    observation: RelationshipProvenance | SourceEvidenceOutcome,
+) -> SourceProvenanceKey:
+    """Key the exact existing equality fields without ambiguous string serialization."""
+
+    return (
+        observation.collector,
+        observation.collector_version,
+        observation.source,
+        observation.source_api,
+        observation.evidence_reference,
+        observation.collected_at,
+    )
+
+
+def index_source_outcomes_by_provenance(
+    outcomes: Iterable[SourceEvidenceOutcome],
+) -> dict[SourceProvenanceKey, list[SourceEvidenceOutcome]]:
+    """Index once per operation, retaining every match so ambiguity still fails closed."""
+
+    indexed: dict[SourceProvenanceKey, list[SourceEvidenceOutcome]] = {}
+    for outcome in outcomes:
+        indexed.setdefault(source_provenance_key(outcome), []).append(outcome)
+    return indexed
+
+
 def _provenance_matches_outcome(
     provenance: RelationshipProvenance,
     outcome: SourceEvidenceOutcome,
 ) -> bool:
-    return all(
-        (
-            provenance.collector == outcome.collector,
-            provenance.collector_version == outcome.collector_version,
-            provenance.source == outcome.source,
-            provenance.source_api == outcome.source_api,
-            provenance.evidence_reference == outcome.evidence_reference,
-            provenance.collected_at == outcome.collected_at,
-        )
-    )
+    return source_provenance_key(provenance) == source_provenance_key(outcome)
 
 
 def _require_resource_subject(

@@ -2028,6 +2028,26 @@ def test_graph_rejects_conflicting_duplicate_contract_outcome_and_artifact() -> 
         _graph(artifacts=(artifact, conflicting_artifact))
 
 
+def test_relationship_provenance_index_does_not_hide_multiple_matching_sources() -> None:
+    contract, artifact, outcome, _, _ = _valid_parts()
+    second_contract = ScanSourceContract.for_scan(
+        **{
+            **contract.model_dump(exclude={"source_outcome_id", "schema_version"}),
+            "subject": contract.subject,
+            "contract_key": "ec2.other-instances",
+            "evidence_kind": "ec2.other-instances",
+        }
+    )
+    second_outcome = _outcome(second_contract, artifact)
+    assert second_outcome.source_outcome_id != outcome.source_outcome_id
+    # Both declarations may cite this artifact, but an edge must identify exactly one.
+    with pytest.raises(ValidationError, match="exactly one declared source outcome"):
+        _graph(
+            source_contracts=(contract, second_contract),
+            source_outcomes=(outcome, second_outcome),
+        )
+
+
 def test_graph_binds_scan_account_time_digest_and_relationship_provenance() -> None:
     contract, artifact, outcome, relationship, _ = _valid_parts()
 
