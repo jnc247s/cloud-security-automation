@@ -185,7 +185,7 @@ class AssessmentEvidenceReader:
                 ) from None
             return
         if (
-            candidate.result is not AssessmentResult.INSUFFICIENT_EVIDENCE
+            candidate.result in {AssessmentResult.PASS, AssessmentResult.FAIL}
             and not candidate.evidence_artifacts
         ):
             raise ValueError("source-aware assessment requires structured source proof")

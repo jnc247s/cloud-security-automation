@@ -24,7 +24,7 @@ class RequiredSource(BaseModel):
     """A mandatory source and its normalized completeness attestations."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    collector: str = Field(pattern=r"^[a-z][a-z0-9_.-]*$")
+    collector: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_.-]*$")
     evidence_kind: str = Field(pattern=r"^[a-z][a-z0-9_.-]*$")
     source_api: str = Field(pattern=r"^[a-z0-9-]+:[A-Za-z][A-Za-z0-9]*$")
     subject: Literal["target", "global_account", "regional_account"]

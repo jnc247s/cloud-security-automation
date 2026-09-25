@@ -394,3 +394,25 @@ not claimed successes. No production database or live AWS was used.
 
 The user approved one read-only independent reviewer. Review and branch CI are pending at this
 checkpoint; do not mark 6A complete or merge until required gates and human approval succeed.
+
+### Reviewed implementation follow-up
+
+Initial implementation commit: `b03eaab3df54af8d24d40c481fd745c023f3389c`.
+The single independent reviewer found zero CRITICAL/HIGH and three MEDIUM issues: an artifact-free
+N/A compatibility conflict, non-atomic SQLite upgrade DDL, and PostgreSQL artifact-guard SQLSTATE.
+All three were corrected and the same reviewer independently verified their resolution, with no
+unresolved findings. Added tests cover complete/incomplete empty populations, populated failed
+upgrade rollback/retry, and admitted-resource proof with resolved/missing/unresolved required edges.
+
+First branch CI ran all PostgreSQL cases, including both real HTTP profile variants: **1,442 passed,
+1 failed, 20 warnings**. Its sole failure was the old graph-writer concurrency test waiting for the
+second migration lock, while the new guard now blocks at the first. The synchronization point was
+updated without weakening its writer-release, blocked-downgrade, or history-preservation assertions;
+the reviewer verified this adjustment.
+
+After these corrections, focused foundation tests: **41 passed, 2 warnings**. Full local regression:
+**1,421 passed, 32 skipped, 21 warnings**; all skips are unconfigured disposable PostgreSQL cases.
+Ruff lint, formatting (221 local files), whitespace, and scoped credential-pattern checks passed.
+Migration head is `20260924_0004`. The follow-up commit requires a new green CI run including
+PostgreSQL and the API image; human review/merge approval remains outstanding. Slices 6B onward
+remain unstarted. This is a reviewed implementation checkpoint, not a sprint-completion declaration.

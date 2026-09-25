@@ -173,3 +173,44 @@ def regional_bundle():
         completed_at=snapshot.collected_at + timedelta(seconds=1),
         scanner_version="test",
     )
+
+
+def empty_resource_bundle(*, complete=True, force_na=False):
+    from app.assessment.execution import ResourceFamily
+
+    bundle = regional_bundle()
+    snapshot = regional_snapshot(complete=complete)
+    contract = ExecutionContract.model_validate(
+        {
+            **regional_contract().model_dump(),
+            "target_kind": "resources",
+            "resource_families": (
+                ResourceFamily(service="ec2", resource_type="ec2_instance").model_dump(),
+            ),
+        }
+    )
+    catalog = synthetic_catalog(contract)
+
+    class EmptyRule(SyntheticRegionalRule):
+        def assess(self, snapshot, profile):
+            return (
+                self.assessment_for_account(
+                    snapshot,
+                    profile,
+                    service="ec2",
+                    result=AssessmentResult.NOT_APPLICABLE
+                    if complete or force_na
+                    else AssessmentResult.INSUFFICIENT_EVIDENCE,
+                    evidence=None,
+                    reason="No observed targets.",
+                    collector="foundation.test",
+                    source_api="ec2:GetSetting",
+                    missing_evidence=() if complete or force_na else ("test.setting.complete",),
+                ),
+            )
+
+    assessments = RuleEngine(RuleRegistry((EmptyRule(),)), catalog=catalog).assess(
+        snapshot, bundle["profile"]
+    )
+    bundle.update(snapshot=snapshot, catalog=catalog, assessments=assessments)
+    return bundle

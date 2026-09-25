@@ -743,7 +743,8 @@ def test_postgres_evidence_graph_writer_completes_before_downgrade_preflight(
                 _context,
                 _executemany,
             ) -> None:
-                if statement.startswith("LOCK TABLE scans, scan_scope_manifests"):
+                # Head now preflights 0004 before reaching the older evidence-graph guard.
+                if statement.startswith("LOCK TABLE scans, assessment_profiles"):
                     downgrade_lock_attempted.set()
 
             command.downgrade(migration_config(connection), _PENDING_SCAN_REVISION)

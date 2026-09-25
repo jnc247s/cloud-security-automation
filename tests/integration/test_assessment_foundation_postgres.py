@@ -18,9 +18,11 @@ from tests.integration.test_persistence_postgres import postgres_engine as _post
 from tests.unit.database.test_assessment_foundation import (
     exercise_blocked_downgrade,
     exercise_compatible_downgrade,
+    exercise_empty_targets,
     exercise_extended_profile,
     exercise_regional_history,
     exercise_transition_rollback,
+    exercise_upgrade_rollback,
 )
 
 pytestmark = pytest.mark.integration
@@ -72,6 +74,15 @@ def test_postgres_concurrent_policy_artifact_version_conflict(postgres_engine):
 
 def test_postgres_failed_transition_rolls_back_ddl(postgres_engine):
     exercise_transition_rollback(postgres_engine, migration_config)
+
+
+def test_postgres_failed_populated_upgrade_is_atomic(postgres_engine):
+    exercise_upgrade_rollback(postgres_engine, migration_config)
+
+
+@pytest.mark.parametrize("complete", [True, False])
+def test_postgres_empty_targets_require_coverage(postgres_engine, complete):
+    exercise_empty_targets(postgres_engine, complete=complete)
 
 
 def test_postgres_downgrade_excludes_concurrent_profile_writer(postgres_engine):

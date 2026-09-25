@@ -236,3 +236,76 @@ def exercise_transition_rollback(engine, config_factory):
 
 def test_failed_sqlite_transition_rolls_back_ddl(migrated_engine):
     exercise_transition_rollback(migrated_engine, _migration_config)
+
+
+def exercise_upgrade_rollback(engine, config_factory):
+    with Session(engine) as session, session.begin():
+        persist_scan_result(session, **scan_bundle())
+    with engine.begin() as connection:
+        command.downgrade(config_factory(connection), "20260915_0003")
+    with engine.connect() as connection:
+        before = {
+            name: connection.execute(text(f'SELECT * FROM "{name}"')).mappings().all()
+            for name in inspect(connection).get_table_names()
+        }
+        columns = {
+            name: [c["name"] for c in inspect(connection).get_columns(name)] for name in before
+        }
+
+    def fail_after_profile_columns(_conn, _cursor, statement, *_args):
+        if "ALTER TABLE control_versions ADD COLUMN execution_contract" in statement:
+            raise RuntimeError("injected upgrade failure")
+
+    event.listen(engine, "before_cursor_execute", fail_after_profile_columns)
+    try:
+        with (
+            pytest.raises(RuntimeError, match="injected upgrade failure"),
+            engine.begin() as connection,
+        ):
+            command.upgrade(config_factory(connection), "head")
+    finally:
+        event.remove(engine, "before_cursor_execute", fail_after_profile_columns)
+    with engine.begin() as connection:
+        assert {
+            name: connection.execute(text(f'SELECT * FROM "{name}"')).mappings().all()
+            for name in before
+        } == before
+        assert {
+            name: [c["name"] for c in inspect(connection).get_columns(name)] for name in before
+        } == columns
+        command.upgrade(config_factory(connection), "head")
+        command.check(config_factory(connection))
+
+
+def test_populated_failed_sqlite_upgrade_is_atomic_and_retryable(migrated_engine):
+    exercise_upgrade_rollback(migrated_engine, _migration_config)
+
+
+def exercise_empty_targets(engine, *, complete):
+    from app.assessment.models import AssessmentResult
+    from tests.foundation_fixtures import empty_resource_bundle
+
+    bundle = empty_resource_bundle(complete=complete)
+    with Session(engine) as session, session.begin():
+        persist_scan_result(session, **bundle)
+    with Session(engine) as session:
+        assessment = session.scalar(select(ControlAssessment))
+        assert assessment.assessment_result is (
+            AssessmentResult.NOT_APPLICABLE if complete else AssessmentResult.INSUFFICIENT_EVIDENCE
+        )
+        assert assessment.resource_snapshot.scan_id == bundle["snapshot"].scan_id
+        assert session.scalar(select(Finding)) is None
+        assert session.scalar(text("SELECT COUNT(*) FROM evidence_artifacts")) == 0
+
+
+@pytest.mark.parametrize("complete", [True, False])
+def test_empty_targets_require_complete_coverage_for_na(migrated_engine, complete):
+    exercise_empty_targets(migrated_engine, complete=complete)
+
+
+def test_missing_coverage_cannot_claim_empty_na():
+    from app.rules.engine import RuleContractError
+    from tests.foundation_fixtures import empty_resource_bundle
+
+    with pytest.raises(RuleContractError):
+        empty_resource_bundle(complete=False, force_na=True)

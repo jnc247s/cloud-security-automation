@@ -74,6 +74,8 @@ cannot support decisive results. Required edge provenance must resolve to a prov
 The per-invocation reader revalidates the graph and indexes declarations/artifacts/provenance.
 Assessment payload `source_proof` binds source outcome IDs, artifact IDs/digests, same-scan relationship
 observation IDs, scan ID, and schema version. Both boundaries verify it against the retained graph.
+`NOT_APPLICABLE` retains the accepted artifact-free representation: the reader verifies complete
+required coverage against the retained graph and exact catalog before accepting that result.
 This validates evidence, not control policy: no new evaluator, S3 aggregation, or dependency engine
 is present. The five legacy rules keep their whole-collector guards. Source sufficiency does not
 relax the existing complete-scan finding-resolution gate.

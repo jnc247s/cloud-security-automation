@@ -194,3 +194,115 @@ def test_multitype_targets_preserve_actual_identities():
 def test_unknown_execution_strategies_fail_closed(changes):
     with pytest.raises(ValueError):
         ExecutionContract.model_validate({**regional_contract().model_dump(), **changes})
+
+
+@pytest.mark.parametrize("edge_mode", ["resolved", "missing", "unresolved"])
+def test_admitted_resource_and_required_relationship_proof(edge_mode):
+    from uuid import uuid4
+
+    from app.assessment.evidence_graph import EvidenceCardinality, EvidenceGraph
+    from app.assessment.execution import RequiredSource
+    from app.assessment.relationships import (
+        RelationshipResolution,
+        RelationshipType,
+        ResourceRelationship,
+    )
+    from app.assessment.source_outcomes import (
+        AccountEvidenceSubject,
+        EvidenceCollectionPhase,
+        EvidenceSourceState,
+    )
+    from app.collectors.base import CollectionContext, build_source_observation
+    from app.schemas.inventory import InventorySnapshot
+    from tests.unit.database.factories import scaled_graph_scan_bundle
+
+    original = scaled_graph_scan_bundle(1, scan_id=uuid4())["snapshot"]
+    graph = original.evidence_graph
+    coverage = build_source_observation(
+        context=CollectionContext(
+            scan_id=original.scan_id,
+            collection_account_id=original.account_id,
+            collected_at=original.collected_at,
+            region=original.requested_region,
+        ),
+        contract_key="test.coverage",
+        contract_version="1.0.0",
+        phase=EvidenceCollectionPhase.DISCOVERY,
+        subject=AccountEvidenceSubject(
+            aws_account_id=original.account_id,
+            scope=ResourceScope.REGIONAL,
+            region=original.requested_region,
+        ),
+        evidence_kind="test.coverage",
+        collector="fixture.coverage",
+        collector_version="1.0.0",
+        source_api="ec2:DescribeInstances",
+        cardinality=EvidenceCardinality.COLLECTION,
+        evidence_reference="normalized://test/coverage",
+        evidence_schema="test.coverage",
+        evidence_schema_version="1.0.0",
+        normalized_payload={"complete": True},
+        state=EvidenceSourceState.PRESENT,
+    )
+    edges = graph.relationships
+    if edge_mode == "missing":
+        edges = ()
+    elif edge_mode == "unresolved":
+        edge = edges[0]
+        edges = (
+            ResourceRelationship.for_observation(
+                scan_id=original.scan_id,
+                collection_account_id=original.account_id,
+                relationship_type=edge.relationship_type,
+                source=edge.source,
+                target=edge.target.model_copy(update={"resource_snapshot_id": None}),
+                resolution=RelationshipResolution.TARGET_EVIDENCE_INCOMPLETE,
+                provenance=edge.provenance,
+            ),
+        )
+    graph = EvidenceGraph.model_validate(
+        {
+            **graph.model_dump(),
+            "source_contracts": (*graph.source_contracts, coverage.contract),
+            "source_outcomes": (*graph.source_outcomes, coverage.outcome),
+            "artifacts": (*graph.artifacts, coverage.artifact),
+            "relationships": edges,
+        }
+    )
+    snapshot = InventorySnapshot.model_validate({**original.model_dump(), "evidence_graph": graph})
+    contract = ExecutionContract(
+        schema_version="1.0.0",
+        target_kind="resources",
+        target_selection="all_observed_v1",
+        account_service="ec2",
+        validation_strategy="all_required_sources_complete_v1",
+        resource_families=(ResourceFamily(service="ec2", resource_type="ec2_instance"),),
+        required_sources=(
+            RequiredSource(
+                collector="fixture.coverage",
+                evidence_kind="test.coverage",
+                source_api="ec2:DescribeInstances",
+                subject="regional_account",
+                contract_version="1.0.0",
+                completeness_fields=("complete",),
+            ),
+            RequiredSource(
+                collector="ClosureFixtureCollector",
+                evidence_kind="closure.ec2_instance",
+                source_api="ec2:DescribeInstances",
+                subject="target",
+                contract_version="1.0.0",
+                completion="admitted_resource_v1",
+            ),
+        ),
+        required_relationships=(RelationshipType.ATTACHED_TO_SECURITY_GROUP,),
+    )
+    reader = AssessmentEvidenceReader(snapshot)
+    target = assessment_targets(snapshot, contract)[0]
+    if edge_mode != "resolved":
+        with pytest.raises(IncompleteAssessmentEvidence, match="relationship"):
+            reader.proof(contract, target)
+    else:
+        proof = reader.proof(contract, target)
+        assert len(proof["sources"]) == 2
+        assert proof["relationship_observation_ids"] == [str(edges[0].observation_id)]

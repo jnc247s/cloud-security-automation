@@ -17,6 +17,15 @@ def _json():
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    if (
+        bind.dialect.name == "sqlite"
+        and not op.get_context().as_sql
+        and not bind.connection.driver_connection.in_transaction
+    ):
+        # sqlite3 legacy mode otherwise commits ADD COLUMN before Alembic records the revision.
+        # The caller's rollback must undo every part of this additive transition.
+        op.execute("BEGIN IMMEDIATE")
     op.add_column("assessment_profiles", sa.Column("policy_extensions", _json(), nullable=True))
     op.add_column(
         "assessment_profiles",
