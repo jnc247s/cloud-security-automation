@@ -17,6 +17,8 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from app.assessment.controls import ControlCatalog as CatalogInput
+from app.assessment.evidence_reader import AssessmentEvidenceReader
+from app.assessment.execution import account_target
 from app.assessment.identities import (
     control_assessment_id,
     finding_fingerprint,
@@ -128,6 +130,11 @@ def _validate_bundle(
 
     InventorySnapshot.model_validate_json(snapshot.model_dump_json())
     ScanScopeManifestInput.model_validate_json(scope.model_dump_json())
+    evidence_reader = (
+        AssessmentEvidenceReader(snapshot)
+        if any(c.technical.execution_contract is not None for c in catalog.controls)
+        else None
+    )
     for candidate in assessments:
         # model_copy() is intentionally unchecked by Pydantic; validate at this trust boundary.
         AssessmentCandidate.model_validate_json(candidate.model_dump_json())
@@ -244,6 +251,12 @@ def _validate_bundle(
         ):
             raise ScanPersistenceError("assessment belongs to another profile version")
         contract = catalog.get(candidate.control_id)
+        execution = contract.technical.execution_contract
+        if execution is not None:
+            try:
+                evidence_reader.validate_candidate(execution, candidate)
+            except ValueError as error:
+                raise ScanPersistenceError("assessment source evidence is invalid") from error
         key = (candidate.control_id, candidate.resource_snapshot_id)
         if key in seen:
             raise ScanPersistenceError("duplicate assessment target and control")
@@ -261,7 +274,11 @@ def _validate_bundle(
         if _target_snapshot_id(snapshot.scan_id, target) != candidate.resource_snapshot_id:
             raise ScanPersistenceError("assessment resource snapshot identity is invalid")
         if candidate.resource_snapshot_id not in targets:
-            if not (
+            extended_account = (
+                execution is not None
+                and target.identity == account_target(snapshot, execution).identity
+            )
+            if not extended_account and not (
                 candidate.resource_type == "aws_account"
                 and candidate.aws_resource_id == snapshot.account_id
                 and candidate.scope is ResourceScope.GLOBAL
@@ -275,7 +292,7 @@ def _validate_bundle(
         for artifact in candidate.evidence_artifacts:
             if artifact.collected_at != snapshot.collected_at:
                 raise ScanPersistenceError("evidence observation time differs from inventory")
-        if candidate.result in {AssessmentResult.PASS, AssessmentResult.FAIL}:
+        if execution is None and candidate.result in {AssessmentResult.PASS, AssessmentResult.FAIL}:
             if candidate.resource_type != contract.technical.resource_type:
                 raise ScanPersistenceError("decisive assessment has the wrong resource type")
             for artifact in candidate.evidence_artifacts:

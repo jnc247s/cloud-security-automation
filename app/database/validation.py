@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from app.assessment.controls import ControlCatalog
+from app.assessment.execution import validate_execution_targets
 from app.assessment.models import AssessmentCandidate, AssessmentResult
 from app.schemas.inventory import InventorySnapshot
 from app.schemas.persistence import ScanScopeManifestInput
@@ -87,6 +88,10 @@ def validate_expected_assessments(
         candidates = grouped[control_id]
         if not candidates:
             raise ValueError(f"{control_id} requires an explicit assessment")
+
+        if contract.execution_contract is not None:
+            validate_execution_targets(snapshot, contract.execution_contract, tuple(candidates))
+            continue
 
         if contract.resource_type == "aws_account":
             if len(candidates) != 1 or not _is_account_target(candidates[0], snapshot):

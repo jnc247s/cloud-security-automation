@@ -7,10 +7,12 @@ from sqlalchemy import JSON, CheckConstraint, Enum
 from sqlalchemy.dialects.postgresql import JSONB
 
 
-def json_document_type() -> JSON:
+def json_document_type(*, none_as_null: bool = False) -> JSON:
     """Use JSONB on PostgreSQL while retaining SQLite migration-test portability."""
 
-    return JSON().with_variant(JSONB(), "postgresql")
+    return JSON(none_as_null=none_as_null).with_variant(
+        JSONB(none_as_null=none_as_null), "postgresql"
+    )
 
 
 def string_enum_type(enum_type: type[PythonEnum], *, name: str, length: int) -> Enum:

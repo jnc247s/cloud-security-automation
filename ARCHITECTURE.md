@@ -4,7 +4,23 @@ This document describes the accepted Sprint 0--4 implementation, the accepted Sp
 evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer,
 5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
 `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
-request #25. Sprint 5 is complete; Sprint 6 is next and unstarted.
+request #25. Sprint 5 is complete. Approved Sprint 6A adds the versioned assessment foundation
+below; later production-control slices are unstarted and the five executable controls are unchanged.
+
+## Sprint 6A assessment integration
+
+The [assessment foundation](docs/assessment-foundation.md) adds explicit legacy/schema-2 policy
+dispatch, exact catalog/registry selection, immutable policy-artifact storage, and nullable
+version-bound execution metadata. Restart verifies the persisted catalog and complete profile
+before AWS work; it never substitutes current deployment policy. Migration `20260924_0004` is
+additive and preserves legacy definitions/checksums.
+
+Extended definitions use a shared pure target enumerator and evidence reader at engine and
+persistence boundaries. Regional account settings are assessment-only `ec2/aws_account` targets,
+not collector resources or graph endpoints. Exact resource families retain observed identities.
+All declared required sources and edges must be complete; legacy whole-collector guards and
+full-scope finding resolution are unchanged. This adds no control, collector, permission, or
+dependency scheduler. The foundation remains subject to the active plan's validation/review gate.
 
 ## System context
 
@@ -347,7 +363,8 @@ Two approved policy artifacts remain pre-implementation contracts for later road
 - [S3-004 sensitive-bucket classification](docs/controls/s3-004-sensitive-bucket-classifier.md)
   defines a pure versioned classifier over exact full bucket identities, restricted name
   patterns, and exact tags. It assigns applicability only—not compliance, severity, or framework
-  status—and is not registered with the current profile or database.
+  status. 6A can retain its exact artifact in an explicitly selected extended profile and the
+  immutable artifact registry; no production assessment invokes the classifier yet.
 
 The foundation preserves the collector/rule boundary defined by the
 [result-sensitive source-outcome decision](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md).

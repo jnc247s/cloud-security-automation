@@ -21,7 +21,7 @@ evidence, and the accepted 5G Sprint-wide closure)
 | Sprint 3 | Persistence / History / Evidence / Findings / Exceptions / Audit | **COMPLETE** |
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
 | Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
-| Sprint 6 | Production Security Controls | **NEXT** |
+| Sprint 6 | Production Security Controls | **IN PROGRESS** |
 | Sprint 7 | Dashboard / NIST Technical Posture | **PLANNED** |
 | Sprint 8 | Human-Approved Remediation | **PLANNED** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
@@ -32,7 +32,7 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `NEXT`, not started. No Sprint 6 control has been enabled.
+Sprint 6 is `IN PROGRESS` for approved slice 6A only. No new control has been enabled.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -81,12 +81,16 @@ pull request 25 at `ef4543d439ed3a33064c6bcf383db201a94d2881`. This post-merge c
 Sprint 5 `COMPLETE`, archives its execution plan, and promotes Sprint 6 to `NEXT`. Migration head
 remains `20260915_0003`.
 
-## Next: Sprint 6 — Production Security Controls
+## Active: Sprint 6 — Production Security Controls
 
-Sprint 6 has not started. Its analysis-only preflight and separately approved implementation are
-still required. The 25-control evidence matrix is `CURRENT`; evidence readiness does not enable
-new rules or decide deferred Sprint 6 policy. No Sprint 6 plan or implementation is added by this
-closeout.
+Sprint 6 slice 6A was authorized on 2026-09-24. The 25-control evidence matrix is `CURRENT`;
+evidence readiness does not enable new rules or decide deferred Sprint 6 policy. The preceding
+Sprint 5 closeout did not implement Sprint 6; the subsequent approved 6A work is tracked below.
+
+The subsequent [Sprint 6 execution plan](docs/exec-plans/active/sprint-6.md) records the
+merged starting checkpoint, proposed implementation slices, compatibility work, and policy
+approval gates. The user approved 6A and a combined planning/implementation PR. Only 6A is
+`IN PROGRESS`; later slices have not started, and merge approval remains required.
 
 ## Pre-Sprint 5 attention
 

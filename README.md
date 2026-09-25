@@ -15,7 +15,7 @@ Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansi
 evidence slice. The bounded fact-only 5F CloudTrail slice is also accepted and merged. The 5G
 closure is accepted and merged in pull request 25. The
 [completed plan](docs/exec-plans/completed/sprint-5.md) records acceptance and retained limitations.
-Sprint 6 is `NEXT`, not started.
+Sprint 6 is `IN PROGRESS` for approved 6A assessment integration only. No new control is enabled.
 [ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
 
 The current implementation includes:
@@ -228,4 +228,7 @@ HTTP 409 response; stored profiles and historical scans are never overwritten.
 Pending scans retain the exact profile selected when they were created. A restarted executor
 loads that persisted definition instead of rebuilding it from the deployment's current
 environment. This roll-forward requires no database migration because the existing schema already
-stores complete versioned profile content and scan provenance.
+stores complete legacy profile content and scan provenance. The additive 6A schema extension
+requires migration `20260924_0004`; see [versioned assessment configuration](docs/assessment-foundation.md)
+for the optional protected local `ASSESSMENT_PROFILE_FILE`, its exact catalog/profile envelope,
+and the legacy-compatible default behavior.

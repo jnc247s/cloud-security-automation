@@ -295,6 +295,82 @@ def test_restarted_executor_uses_pending_scans_persisted_profile(
     assert assessment_profile_ids == {profiles[0].profile_version_id}
 
 
+@pytest.mark.parametrize("supported", [True, False])
+def test_recovery_resolves_exact_fixture_catalog_before_aws(
+    db_session,
+    migrated_engine,
+    monkeypatch,
+    tmp_path,
+    supported,
+):
+    import json
+
+    import app.assessment.deployment_policy as selection
+    import app.services.scan_executor as execution
+    from app.assessment.controls import ControlCatalog, build_default_control_catalog
+    from app.rules.registry import build_default_registry
+    from tests.foundation_fixtures import extended_profile
+
+    # A future fixture release is isolated from the production resolver/default catalog.
+    fixture_catalog = ControlCatalog.model_validate(
+        {
+            **build_default_control_catalog().model_dump(),
+            "version": "6.0.0",
+        }
+    )
+    original_resolver = execution.resolve_catalog
+
+    def resolve(catalog_id, version):
+        if (catalog_id, version) == (fixture_catalog.catalog_id, fixture_catalog.version):
+            return fixture_catalog, build_default_registry()
+        return original_resolver(catalog_id, version)
+
+    monkeypatch.setattr(selection, "resolve_catalog", resolve)
+    profile = extended_profile()
+    policy_file = tmp_path / "profile.json"
+    policy_file.write_text(
+        json.dumps(
+            {
+                "catalog_id": fixture_catalog.catalog_id,
+                "catalog_version": fixture_catalog.version,
+                "profile": profile.model_dump(mode="json"),
+            }
+        ),
+        encoding="utf-8",
+    )
+    pending = ScanService(
+        db_session,
+        _settings(
+            assessment_profile_file=str(policy_file), assessment_profile_version=profile.version
+        ),
+    ).start_scan(ScanCreateRequest(), RecordingExecutor(), actor_id="operator")
+    if supported:
+        monkeypatch.setattr(execution, "resolve_catalog", resolve)
+    provider_requests = []
+
+    def provider(region):
+        provider_requests.append(region)
+        return _empty_provider()
+
+    executor = InProcessScanExecutor(
+        session_factory=sessionmaker(bind=migrated_engine),
+        settings=_settings(),
+        provider_factory=provider,
+        max_workers=1,
+        max_outstanding=1,
+    )
+    try:
+        assert executor.resume_pending() == 1
+    finally:
+        executor.shutdown(wait=True)
+    db_session.expire_all()
+    scan = db_session.get(Scan, pending.scan_id)
+    assert scan.assessment_profile_checksum == profile.content_checksum
+    assert scan.control_catalog_version == fixture_catalog.version
+    assert scan.status is (ScanStatus.COMPLETED if supported else ScanStatus.FAILED)
+    assert provider_requests == (["us-west-2"] if supported else [])
+
+
 def test_restarted_executor_preserves_pre_5d_pending_scan_intent(
     db_session: Session,
     migrated_engine: Engine,

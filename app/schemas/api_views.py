@@ -6,9 +6,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from app.assessment.controls import AssessmentType
+from app.assessment.execution import ExecutionContract
 from app.assessment.frameworks import FrameworkReferenceLevel
 from app.assessment.models import AssessmentResult
 from app.assessment.relationships import (
@@ -230,6 +231,15 @@ class FindingDetailView(FindingView):
 
 
 class ControlVersionView(ApiView):
+    execution_contract: ExecutionContract | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_version(self, handler):
+        document = handler(self)
+        if self.execution_contract is None:
+            document.pop("execution_contract", None)
+        return document
+
     control_version_id: UUID
     catalog_id: UUID
     catalog_key: str

@@ -31,6 +31,7 @@ def create_app(
     """Create and configure the FastAPI application."""
 
     settings = get_settings()
+    _ = settings.assessment_policy
     configure_logging(settings.log_level)
 
     @asynccontextmanager

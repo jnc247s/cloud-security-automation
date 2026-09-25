@@ -48,3 +48,13 @@ def build_default_registry() -> RuleRegistry:
             MissingCloudTrailRule(),
         )
     )
+
+
+def resolve_catalog(catalog_id: str, version: str):
+    """Resolve only explicitly supported releases, never a latest-version fallback."""
+
+    from app.assessment.controls import build_default_control_catalog
+
+    if (catalog_id, version) != ("aws-cloud-security-controls", "0.2.1"):
+        raise ValueError("unsupported assessment catalog version")
+    return build_default_control_catalog(), build_default_registry()

@@ -11,8 +11,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app import __version__
-from app.assessment.controls import build_default_control_catalog
-from app.assessment.profiles import create_default_assessment_profile
 from app.config import Settings, get_settings
 from app.database.catalogs import (
     VersionContentConflictError,
@@ -103,12 +101,8 @@ class ScanService:
         if not actor_id.strip():
             raise ValueError("audit actor must not be blank")
         region = request.region or self.settings.aws_region
-        profile = create_default_assessment_profile(
-            version=self.settings.assessment_profile_version,
-            required_tags=self.settings.required_tag_names,
-            stale_key_days=self.settings.stale_access_key_days,
-        )
-        catalog = build_default_control_catalog()
+        policy = self.settings.assessment_policy
+        profile, catalog = policy.profile, policy.catalog
         try:
             ensure_assessment_profile(self.session, profile)
         except VersionContentConflictError as error:

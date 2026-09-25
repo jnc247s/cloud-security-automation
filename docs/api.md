@@ -211,6 +211,13 @@ Invoke-RestMethod `
 The request body permits only optional `region`; omission uses `AWS_REGION`. Extra fields are
 rejected. The API never accepts an AWS account ID from the caller.
 
+6A does not change the scan request or capabilities. An operator may select a complete protected
+local policy file at startup as described in [assessment configuration](assessment-foundation.md);
+HTTP callers cannot supply policy paths or select catalog releases. Generic control-version
+responses include `execution_contract` only for extended definitions; legacy responses omit it.
+The resource-type filter matches exact declared resource-family types for extended definitions,
+`aws_account` for account targets, and the existing `resource_type` field for legacy definitions.
+
 The requested Region remains the only caller-supplied Region. On the 5E path, inventory assembly
 collects each bucket in the home Region established by exact same-scan S3 location evidence and
 looks up an explicit KMS reference in its proved Region. Access Analyzer runs in the sorted unique

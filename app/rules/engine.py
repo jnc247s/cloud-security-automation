@@ -1,6 +1,8 @@
 """Deterministic orchestration for registered security controls."""
 
-from app.assessment.controls import build_default_control_catalog
+from app.assessment.controls import ControlCatalog, build_default_control_catalog
+from app.assessment.evidence_reader import AssessmentEvidenceReader
+from app.assessment.execution import validate_execution_targets
 from app.assessment.identities import assessment_scan_id, inventory_sha256, resource_snapshot_id
 from app.assessment.models import AssessmentCandidate
 from app.assessment.profiles import AssessmentProfile
@@ -39,8 +41,9 @@ class RuleContractError(RuntimeError):
 class RuleEngine:
     """Evaluate a normalized inventory without AWS, persistence, or side effects."""
 
-    def __init__(self, registry: RuleRegistry) -> None:
+    def __init__(self, registry: RuleRegistry, *, catalog: ControlCatalog | None = None) -> None:
         self.registry = registry
+        self.catalog = catalog
 
     def evaluate(self, snapshot: InventorySnapshot) -> tuple[FindingCandidate, ...]:
         """Evaluate all rules and return validated findings in stable order."""
@@ -94,8 +97,13 @@ class RuleEngine:
         seen_identities: set[tuple[str, str, str, str, str, str, str]] = set()
         expected_scan_id = assessment_scan_id(snapshot)
         expected_inventory_sha256 = inventory_sha256(snapshot)
-        catalog = build_default_control_catalog()
+        catalog = self.catalog if self.catalog is not None else build_default_control_catalog()
         expected_catalog_sha256 = control_catalog_sha256(catalog)
+        evidence_reader = (
+            AssessmentEvidenceReader(snapshot)
+            if any(c.technical.execution_contract is not None for c in catalog.controls)
+            else None
+        )
         if set(profile.enabled_controls) - {control.control_id for control in catalog.controls}:
             raise RuleContractError(
                 "enabled controls require a versioned technical catalog contract"
@@ -111,6 +119,15 @@ class RuleEngine:
                     f"{rule.control_id} returned no assessment; PASS and NOT_APPLICABLE "
                     "must be explicit"
                 )
+
+            execution = catalog.get(rule.control_id).technical.execution_contract
+            if execution is not None:
+                try:
+                    validate_execution_targets(snapshot, execution, rule_assessments)
+                    for candidate in rule_assessments:
+                        evidence_reader.validate_candidate(execution, candidate)
+                except ValueError as error:
+                    raise RuleContractError("assessment execution contract was violated") from error
 
             for candidate in rule_assessments:
                 if not isinstance(candidate, AssessmentCandidate):
