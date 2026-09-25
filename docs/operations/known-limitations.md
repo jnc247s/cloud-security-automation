@@ -254,6 +254,35 @@ assume-role and full multi-region orchestration are not implemented.
 
 ## Verification and reproducibility
 
+### Assessment foundation downgrade
+
+Migration `20260924_0004` adds extended profile, policy artifact, and execution-contract storage.
+An online downgrade crossing this revision is blocked before any DDL if retained profiles have
+extension content, artifact registry entries exist, control versions have execution metadata, or
+Regional account-setting resources exist. The error is sanitized; no incompatible history is
+rewritten or deleted. PostgreSQL holds exclusive locks through the check and transition. SQLite
+reserves its writer lock and keeps the transition in a transaction. Offline downgrade across this
+boundary is rejected because retained data cannot be checked.
+
+During an authorized maintenance window, stop writers and take a verified restorable backup of
+the database, including exact profile/catalog/artifact history. Inspect incompatible identities
+using read-only queries (results are sensitive security metadata):
+
+```sql
+SELECT profile_id, version FROM assessment_profiles
+WHERE schema_version IS NOT NULL OR policy_extensions IS NOT NULL;
+SELECT artifact_kind, artifact_id, version FROM assessment_policy_artifacts;
+SELECT control_version_id FROM control_versions WHERE execution_contract IS NOT NULL;
+SELECT resource_id FROM resources WHERE resource_type = 'aws_account' AND scope = 'regional';
+```
+
+Safe choices are to retain the current schema with a compatible application release, roll forward
+with a reviewed repair, or evaluate a verified pre-transition backup in a separate isolated
+environment without discarding current history. A compatible legacy-only database may follow the
+tested Alembic downgrade path. Do not fabricate policy values, strip metadata, delete failed scans,
+disable history guards, or stamp revisions merely to force rollback. This is not permission to
+mutate production or overwrite a live database from backup.
+
 ### Sprint 0–5F HTTP acceptance coverage
 
 The PostgreSQL integration suite contains one authoritative acceptance test that starts with real

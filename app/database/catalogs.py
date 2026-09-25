@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -15,6 +14,12 @@ from app.assessment.controls import (
     ControlCatalog as ControlCatalogContract,
 )
 from app.assessment.controls import TechnicalControlContract
+from app.assessment.extended_profiles import (
+    EXTENSION_FIELDS,
+    ExtendedAssessmentProfile,
+    canonical_profile_document,
+    validate_profile_document,
+)
 from app.assessment.frameworks import (
     ControlFrameworkMapping as FrameworkMappingContract,
 )
@@ -31,7 +36,7 @@ from app.models.control import (
     Framework,
     FrameworkReference,
 )
-from app.models.profile import PersistedAssessmentProfile
+from app.models.profile import AssessmentPolicyArtifact, PersistedAssessmentProfile
 
 
 class VersionContentConflictError(ValueError):
@@ -52,11 +57,17 @@ def ensure_assessment_profile(
     responsible for rolling back its transaction.
     """
 
-    validated = AssessmentProfile.model_validate(profile.model_dump(mode="python"))
+    validated = validate_profile_document(profile.model_dump(mode="json"), persisted=True)
     content = _profile_content(validated)
     checksum = canonical_json_sha256(content)
     label = f"assessment profile {validated.profile_id} {validated.version}"
     with session.no_autoflush:
+        _ensure_policy_artifacts(session, validated)
+        storage = dict(content)
+        if isinstance(validated, ExtendedAssessmentProfile):
+            storage["policy_extensions"] = {key: storage.pop(key) for key in EXTENSION_FIELDS}
+        else:
+            storage.update(schema_version=None, policy_extensions=None)
         record, _ = _ensure_row(
             session,
             PersistedAssessmentProfile,
@@ -64,7 +75,7 @@ def ensure_assessment_profile(
             content={
                 **{
                     key: value
-                    for key, value in content.items()
+                    for key, value in storage.items()
                     if key not in {"profile_id", "version"}
                 },
                 "content_checksum": checksum,
@@ -96,18 +107,18 @@ def load_assessment_profile(
         raise CatalogPersistenceError("persisted assessment profile content is invalid")
 
     try:
-        profile = AssessmentProfile(
-            profile_id=record.profile_id,
-            version=record.version,
-            enabled_controls=_stored_profile_values(record.enabled_controls),
-            required_tags=_stored_profile_values(record.required_tags),
-            stale_key_days=record.stale_key_days,
-            approved_management_cidrs=_stored_profile_values(record.approved_management_cidrs),
-            public_ec2_exceptions=_stored_profile_values(record.public_ec2_exceptions),
-            restricted_data_requires_kms=record.restricted_data_requires_kms,
-            content_checksum=record.content_checksum,
-        )
-    except (TypeError, ValidationError) as error:
+        document = {key: getattr(record, key) for key in AssessmentProfile.model_fields}
+        if record.schema_version is not None:
+            if not isinstance(record.policy_extensions, dict) or set(
+                record.policy_extensions
+            ) != set(EXTENSION_FIELDS):
+                raise ValueError("invalid stored profile extension")
+            document.update(record.policy_extensions, schema_version=record.schema_version)
+        elif record.policy_extensions is not None:
+            raise ValueError("invalid stored schema pair")
+        profile = validate_profile_document(document, persisted=True)
+        _verify_policy_artifacts(session, profile)
+    except (TypeError, ValueError) as error:
         raise CatalogPersistenceError("persisted assessment profile content is invalid") from error
     if profile.content_checksum != expected_checksum:
         raise VersionContentConflictError(
@@ -119,6 +130,8 @@ def load_assessment_profile(
 def ensure_control_catalog(
     session: Session,
     catalog: ControlCatalogContract,
+    *,
+    verify_only: bool = False,
 ) -> tuple[ControlCatalog, dict[str, ControlVersion]]:
     """Persist exact technical and framework inputs, retaining all older versions.
 
@@ -136,6 +149,7 @@ def ensure_control_catalog(
             keys={"catalog_key": validated.catalog_id, "version": validated.version},
             content={"content_checksum": control_catalog_sha256(validated)},
             label=label,
+            verify_only=verify_only,
         )
         expected_keys = {contract.control_id for contract in validated.controls}
         if not inserted:
@@ -153,7 +167,9 @@ def ensure_control_catalog(
             validated.framework_catalogs,
             key=lambda item: (item.framework.framework_id, item.framework.version),
         ):
-            references.update(_ensure_framework(session, framework_catalog))
+            references.update(
+                _ensure_framework(session, framework_catalog, verify_only=verify_only)
+            )
 
         versions: dict[str, ControlVersion] = {}
         for contract in sorted(validated.controls, key=lambda item: item.control_id):
@@ -163,6 +179,7 @@ def ensure_control_catalog(
                 keys={"control_key": contract.control_id},
                 content={},
                 label=f"control {contract.control_id}",
+                verify_only=verify_only,
             )
             technical = _technical_content(contract.technical)
             version, version_inserted = _ensure_row(
@@ -170,10 +187,12 @@ def ensure_control_catalog(
                 ControlVersion,
                 keys={"catalog_id": record.catalog_id, "control_id": control.control_id},
                 content={
+                    "execution_contract": None,
                     **{key: value for key, value in technical.items() if key != "control_id"},
                     "definition_checksum": canonical_json_sha256(technical),
                 },
                 label=f"{label}, control {contract.control_id}",
+                verify_only=verify_only,
             )
             mappings = tuple(sorted(contract.framework_mappings, key=lambda item: item.identity))
             expected_reference_ids = {
@@ -214,14 +233,22 @@ def ensure_control_catalog(
                         "mapping_checksum": canonical_json_sha256(_mapping_content(mapping)),
                     },
                     label=f"{label}, mapping {mapping.control_id} to {mapping.reference_id}",
+                    verify_only=verify_only,
                 )
             versions[contract.control_id] = version
     return record, versions
 
 
+def verify_control_catalog(session: Session, catalog: ControlCatalogContract) -> None:
+    """Verify a supported stored release without inserting or repairing historical rows."""
+    ensure_control_catalog(session, catalog, verify_only=True)
+
+
 def _ensure_framework(
     session: Session,
     catalog: FrameworkCatalog,
+    *,
+    verify_only: bool = False,
 ) -> dict[tuple[str, str, str], FrameworkReference]:
     framework = catalog.framework
     manifest = catalog.source_manifest
@@ -237,6 +264,7 @@ def _ensure_framework(
             "source_checksum": manifest.sha256,
         },
         label=label,
+        verify_only=verify_only,
     )
     if not inserted:
         stored_keys = set(
@@ -270,6 +298,7 @@ def _ensure_framework(
                 "parent_reference_id": parent_id,
             },
             label=f"{label}, reference {reference.reference_id}",
+            verify_only=verify_only,
         )
         references_by_key[reference.reference_id] = persisted
     return {
@@ -285,6 +314,7 @@ def _ensure_row[ModelT: Base](
     keys: dict[str, Any],
     content: dict[str, Any],
     label: str,
+    verify_only: bool = False,
 ) -> tuple[ModelT, bool]:
     dialect = session.get_bind().dialect.name
     if dialect == "postgresql":
@@ -301,7 +331,7 @@ def _ensure_row[ModelT: Base](
         .on_conflict_do_nothing(index_elements=list(keys))
         .returning(primary_key)
     )
-    inserted = session.execute(statement).first() is not None
+    inserted = False if verify_only else session.execute(statement).first() is not None
     record = session.scalar(
         select(model).filter_by(**keys).execution_options(populate_existing=True)
     )
@@ -343,15 +373,43 @@ def _utc_datetime(value: datetime) -> datetime:
 
 
 def _profile_content(profile: AssessmentProfile) -> dict[str, Any]:
-    content = profile.model_dump(mode="json", exclude={"content_checksum"})
-    for key in (
-        "enabled_controls",
-        "required_tags",
-        "approved_management_cidrs",
-        "public_ec2_exceptions",
-    ):
-        content[key] = sorted(content[key])
-    return content
+    return canonical_profile_document(profile)
+
+
+def _policy_artifacts(profile: AssessmentProfile):
+    if isinstance(profile, ExtendedAssessmentProfile):
+        for kind, artifact in (
+            ("s3-exposure", profile.s3_exposure_approvals),
+            ("sensitive-bucket", profile.sensitive_bucket_classifier),
+        ):
+            if artifact is not None:
+                document = artifact.model_dump(mode="json")
+                yield (
+                    {
+                        "artifact_kind": kind,
+                        "artifact_id": document.get("policy_id", document.get("classifier_id")),
+                        "version": artifact.version,
+                    },
+                    {"content": document, "content_checksum": artifact.content_checksum},
+                )
+
+
+def _ensure_policy_artifacts(session: Session, profile: AssessmentProfile) -> None:
+    for keys, content in _policy_artifacts(profile):
+        _ensure_row(
+            session,
+            AssessmentPolicyArtifact,
+            keys=keys,
+            content=content,
+            label="assessment policy artifact",
+        )
+
+
+def _verify_policy_artifacts(session: Session, profile: AssessmentProfile) -> None:
+    for keys, content in _policy_artifacts(profile):
+        row = session.scalar(select(AssessmentPolicyArtifact).filter_by(**keys))
+        if row is None or any(getattr(row, key) != value for key, value in content.items()):
+            raise ValueError("stored policy artifact differs from profile")
 
 
 def _stored_profile_values(value: Any) -> tuple[Any, ...]:

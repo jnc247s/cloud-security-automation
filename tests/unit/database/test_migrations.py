@@ -23,7 +23,7 @@ from app.schemas.scan import ScanCreateRequest
 from app.services.scan_service import ScanService
 from tests.unit.database.factories import scan_bundle
 
-_CURRENT_REVISION = "20260915_0003"
+_CURRENT_REVISION = "20260924_0004"
 _PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"
@@ -302,7 +302,7 @@ def test_pending_scan_migration_preserves_existing_sprint3_history() -> None:
         connection.execute("PRAGMA foreign_keys=ON")
 
     with engine.begin() as connection:
-        command.upgrade(_migration_config(connection), _PREVIOUS_REVISION)
+        command.upgrade(_migration_config(connection), "head")
 
     bundle = scan_bundle()
     with Session(engine) as session, session.begin():
@@ -311,6 +311,9 @@ def test_pending_scan_migration_preserves_existing_sprint3_history() -> None:
 
     with engine.begin() as connection:
         migration_config = _migration_config(connection)
+        # Seed legacy-compatible data with today's writer, then place it at the historical
+        # revision. Current ORM models deliberately cannot write an obsolete schema.
+        command.downgrade(migration_config, _PREVIOUS_REVISION)
         command.upgrade(migration_config, "head")
         command.check(migration_config)
 
@@ -829,7 +832,7 @@ def test_evidence_graph_downgrade_cannot_be_generated_offline(
     with pytest.raises(CommandError, match="Offline downgrade blocked before revision 20260915"):
         command.downgrade(
             config,
-            f"{_CURRENT_REVISION}:{_PENDING_SCAN_REVISION}",
+            f"20260915_0003:{_PENDING_SCAN_REVISION}",
             sql=True,
         )
 

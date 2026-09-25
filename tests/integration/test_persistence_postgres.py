@@ -77,7 +77,7 @@ from tests.unit.database.factories import (
 
 pytestmark = pytest.mark.integration
 
-_CURRENT_REVISION = "20260915_0003"
+_CURRENT_REVISION = "20260924_0004"
 _PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"
@@ -1135,9 +1135,12 @@ def _poll_terminal_scan(
     )
 
 
+@pytest.mark.parametrize("profile_schema", ["legacy", "extended"])
 def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5f_graph(
     postgres_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    profile_schema: str,
 ) -> None:
     """Prove the accepted HTTP-to-PostgreSQL scan workflow with only AWS replaced."""
 
@@ -1148,6 +1151,22 @@ def test_authenticated_http_scan_persists_and_exposes_sprint_0_to_5f_graph(
     )
     monkeypatch.setattr(database_session, "SessionLocal", session_factory)
     headers = {"Authorization": f"Bearer {DEVELOPMENT_BEARER_MARKER}"}
+    if profile_schema == "extended":
+        from tests.foundation_fixtures import extended_profile
+
+        profile = extended_profile(version="1.0.0")
+        policy_path = tmp_path / "assessment-policy.json"
+        policy_path.write_text(
+            json.dumps(
+                {
+                    "catalog_id": "aws-cloud-security-controls",
+                    "catalog_version": "0.2.1",
+                    "profile": profile.model_dump(mode="json"),
+                }
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("ASSESSMENT_PROFILE_FILE", str(policy_path))
 
     try:
         analyst_settings = _development_settings(

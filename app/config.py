@@ -1,6 +1,6 @@
 """Centralized environment-based application configuration."""
 
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from urllib.parse import urlparse
 
 from pydantic import Field, field_validator, model_validator
@@ -32,6 +32,7 @@ class Settings(BaseSettings):
         pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$",
     )
     stale_access_key_days: int = Field(default=90, ge=1)
+    assessment_profile_file: str | None = None
     required_tags: str = "Owner,Environment"
     auth_mode: str = "development"
     oidc_issuer: str | None = None
@@ -42,6 +43,13 @@ class Settings(BaseSettings):
     oidc_allow_insecure_http: bool = False
     dev_identity_subject: str = "local-developer"
     dev_identity_roles: str = "ADMIN"
+
+    @cached_property
+    def assessment_policy(self):
+        """Load deployment policy once; retained scans never read this configuration."""
+        from app.assessment.deployment_policy import load_deployment_policy
+
+        return load_deployment_policy(self)
 
     @field_validator("app_env", "auth_mode", mode="before")
     @classmethod

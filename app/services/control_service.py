@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.control import (
@@ -50,7 +50,35 @@ class ControlService:
         if severity is not None:
             version_predicates.append(ControlVersion.severity == severity)
         if resource_type is not None:
-            version_predicates.append(ControlVersion.resource_type == resource_type)
+            payload = ControlVersion.execution_contract["resource_families"]
+            if self._session.get_bind().dialect.name == "postgresql":
+                families = func.jsonb_array_elements(payload).table_valued("value").alias("family")
+                family_type = families.c.value.op("->>")("resource_type")
+            else:
+                families = func.json_each(payload).table_valued("value").alias("family")
+                family_type = func.json_extract(families.c.value, "$.resource_type")
+            declared_type = (
+                select(1)
+                .select_from(families)
+                .where(family_type == resource_type)
+                .correlate(ControlVersion)
+                .exists()
+            )
+            version_predicates.append(
+                or_(
+                    and_(
+                        ControlVersion.execution_contract.is_(None),
+                        ControlVersion.resource_type == resource_type,
+                    ),
+                    declared_type,
+                    and_(
+                        ControlVersion.execution_contract["target_kind"]
+                        .as_string()
+                        .in_(("global_account", "regional_account")),
+                        resource_type == "aws_account",
+                    ),
+                )
+            )
         if catalog_key is not None:
             version_predicates.append(
                 ControlVersion.catalog.has(ControlCatalog.catalog_key == catalog_key)

@@ -103,11 +103,11 @@ The pre-Sprint-5 contracts also define two standalone future policy artifacts:
 [bucket-scoped S3 exposure approvals](controls/s3-002-exposure-aggregation.md) and the
 [sensitive-bucket classifier](controls/s3-004-sensitive-bucket-classifier.md). Their exact bucket
 entries bind account, bucket-home Region, ARN/name, and canonical stable resource ID, and their
-strict history containers reject reuse of a version with changed content. They are not fields
-in the current `AssessmentProfile`, are not persisted or selected by current scans, and do not
-enable `S3-002` or `S3-004`. Future integration must introduce a reviewed profile/schema version,
-retain each artifact's complete versioned content and checksum, and keep old profile definitions
-loadable rather than applying current policy to historical scans.
+strict history containers reject reuse of a version with changed content. They remain absent
+from legacy `AssessmentProfile`. 6A's explicit `ExtendedAssessmentProfile` schema `2.0.0` can retain
+their complete content/checksums and selects no new control. The immutable persisted artifact
+registry prevents version reuse across profiles. Old profile definitions remain loadable without
+applying current policy to historical scans. See [6A assessment foundation](assessment-foundation.md).
 
 ## Control contracts
 

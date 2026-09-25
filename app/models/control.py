@@ -141,6 +141,7 @@ class ControlVersion(Base):
     profile_parameters: Mapped[JsonArray] = mapped_column(json_document_type(), nullable=False)
     limitations: Mapped[JsonArray] = mapped_column(json_document_type(), nullable=False)
     definition_checksum: Mapped[str] = mapped_column(String(64), nullable=False)
+    execution_contract: Mapped[dict | None] = mapped_column(json_document_type(none_as_null=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

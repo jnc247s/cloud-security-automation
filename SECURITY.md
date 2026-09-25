@@ -9,6 +9,14 @@ accepted `main` baseline `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merge
 
 ## Authentication
 
+The approved 6A policy-file boundary is operator configuration, not an HTTP input. Store the
+complete policy envelope outside Git with restrictive permissions and mount it read-only in
+containers. It contains sensitive security policy, never credentials. Only local UTF-8 JSON up
+to 1 MiB is accepted; duplicate keys, invalid checksums, unsupported versions, and unreadable files
+fail closed with a fixed diagnostic. There is no network fetch, hot reload, or fallback policy.
+Restart validates exact retained profile/artifact/catalog content before constructing AWS clients.
+See [assessment foundation](docs/assessment-foundation.md) for the unchanged legacy defaults.
+
 Every `/api/v1` operation requires an HTTP bearer token. Production must use `AUTH_MODE=oidc` and
 valid HTTPS issuer/JWKS URLs. JWT verification requires a trusted JWKS signature, an explicitly
 allowed asymmetric algorithm, exact issuer and audience, expiration, non-empty subject, and only

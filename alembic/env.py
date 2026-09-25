@@ -25,6 +25,7 @@ script_directory = ScriptDirectory.from_config(config)
 
 _PENDING_SCAN_INVENTORY_REVISION: Final = "20260904_0002"
 _EVIDENCE_GRAPH_REVISION: Final = "20260915_0003"
+_ASSESSMENT_EXECUTION_REVISION: Final = "20260924_0004"
 _RECOVERY_DOCUMENT: Final = "docs/operations/known-limitations.md"
 _UNSAFE_DOWNGRADE_MESSAGE: Final = (
     "Downgrade blocked before revision 20260904_0002: retained scan history contains "
@@ -76,6 +77,56 @@ def _downgrades_pending_scan_inventory(
     except RangeNotAncestorError:
         # The requested path is an upgrade rather than a downgrade.
         return False
+
+
+def _downgrades_assessment_execution(current_revisions) -> bool:
+    if not current_revisions:
+        return False
+    try:
+        destination = context.get_revision_argument()
+        return any(
+            revision.revision == _ASSESSMENT_EXECUTION_REVISION
+            for revision in script_directory.iterate_revisions(
+                current_revisions, destination, select_for_downgrade=True
+            )
+        )
+    except (KeyError, RangeNotAncestorError):
+        return False
+
+
+def _assert_assessment_execution_downgrade_safe(connection: Connection) -> None:
+    if connection.dialect.name == "postgresql":
+        connection.execute(
+            text(
+                "LOCK TABLE scans, assessment_profiles, control_catalogs, control_versions, "
+                "assessment_policy_artifacts, resources, resource_snapshots, control_assessments "
+                "IN ACCESS EXCLUSIVE MODE"
+            )
+        )
+    elif connection.dialect.name == "sqlite":
+        # sqlite3 legacy transaction mode does not BEGIN for SELECT/DDL. Reserve the writer
+        # lock before checking history, and keep DDL inside this caller-owned transaction.
+        if not connection.connection.driver_connection.in_transaction:
+            connection.execute(text("BEGIN IMMEDIATE"))
+        else:
+            connection.execute(text("UPDATE alembic_version SET version_num = version_num WHERE 0"))
+    incompatible = connection.execute(
+        text(
+            "SELECT EXISTS (SELECT 1 FROM assessment_profiles WHERE schema_version IS NOT NULL "
+            "OR policy_extensions IS NOT NULL UNION ALL SELECT 1 FROM control_versions "
+            "WHERE execution_contract IS NOT NULL "
+            "UNION ALL SELECT 1 FROM assessment_policy_artifacts "
+            "UNION ALL SELECT 1 FROM resources "
+            "WHERE resource_type = 'aws_account' AND scope = 'regional')"
+        )
+    ).scalar_one()
+    if incompatible:
+        raise util.CommandError(
+            "Downgrade blocked before revision 20260924_0004: retained assessment policy or "
+            "execution history cannot be represented by the older schema. No schema or data "
+            "changes were applied. Keep this revision, verify backups, and follow "
+            "docs/operations/known-limitations.md."
+        )
 
 
 def _downgrades_evidence_graph(
@@ -187,6 +238,10 @@ def run_migrations_offline() -> None:
         compare_type=True,
     )
     starting_revision = context.get_starting_revision_argument()
+    if _downgrades_assessment_execution(starting_revision):
+        raise util.CommandError(
+            "Offline downgrade across 20260924_0004 requires an online history compatibility check."
+        )
     if _downgrades_evidence_graph(starting_revision):
         raise util.CommandError(_OFFLINE_EVIDENCE_GRAPH_DOWNGRADE_MESSAGE)
     if _downgrades_pending_scan_inventory(starting_revision):
@@ -207,6 +262,8 @@ def run_migrations_online() -> None:
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
+            if _downgrades_assessment_execution(current_heads):
+                _assert_assessment_execution_downgrade_safe(supplied_connection)
             if _downgrades_evidence_graph(current_heads):
                 _assert_evidence_graph_downgrade_safe(supplied_connection)
             if _downgrades_pending_scan_inventory(current_heads):
@@ -227,6 +284,8 @@ def run_migrations_online() -> None:
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
+            if _downgrades_assessment_execution(current_heads):
+                _assert_assessment_execution_downgrade_safe(connection)
             if _downgrades_evidence_graph(current_heads):
                 _assert_evidence_graph_downgrade_safe(connection)
             if _downgrades_pending_scan_inventory(current_heads):

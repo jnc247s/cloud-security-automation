@@ -247,13 +247,14 @@ result consumes the Sprint 5 graph.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable
-ID, schema version, policy version, and content checksum. Before either future rule is enabled,
-profile/persistence integration must bind a scan and assessment to the complete selected artifact,
-reject changed content under an existing logical version, and retain older artifacts for replay.
+ID, schema version, policy version, and content checksum. 6A's additive migration `20260924_0004`
+and [extended policy storage](assessment-foundation.md) bind a scan and assessment to the complete
+selected artifact, reject changed content under an existing logical version across profiles,
+and retain older artifacts for replay. No S3 rule is enabled by storing its policy.
 Their standalone strict history containers already make version reuse and exact historical
 reconstruction testable in memory. Exact bucket entries include account, home Region, ARN/name,
 and canonical stable resource ID; persistence must not reduce them to the account-less ARN.
-That integration requires a reviewed profile/schema transition; it does not mutate the existing
+That integration uses explicit schema `2.0.0`; it does not mutate the existing
 default profile `1.0.0` or the accepted persisted rows. The standalone contracts are sufficient
 for Sprint 5 fact collection because classification and exposure evaluation remain later,
 deterministic rule work.

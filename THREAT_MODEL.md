@@ -8,6 +8,15 @@ Last reviewed: 2026-09-23
 
 ## Scope and security objectives
 
+Approved 6A adds an operator-controlled local policy-file input and immutable artifact registry.
+Threats include replacing policy content under reused versions, substituting current policy on
+restart, fabricated evidence citations, and destructive rollback of extended history. Mitigations
+are strict schema/checksum dispatch, exact persisted catalog verification before AWS work,
+cross-profile artifact identity enforcement, shared source/target validation, and a pre-DDL
+downgrade guard with writer exclusion. The file remains sensitive operator-managed configuration,
+not an authentication input or remotely editable resource. The five existing controls retain
+their whole-collector evidence guard; a partial scan cannot newly resolve a finding.
+
 The model covers AWS credential use, fact collection, deterministic assessment, PostgreSQL
 history, the source-outcome/relationship evidence-graph foundation, the service layer,
 OIDC/development authentication, capability authorization, FastAPI, and the in-process scan

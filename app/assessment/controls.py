@@ -11,8 +11,17 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
+from app.assessment.execution import ExecutionContract
+from app.assessment.extended_profiles import EXTENSION_FIELDS
 from app.assessment.frameworks import (
     ControlFrameworkMapping,
     FrameworkCatalog,
@@ -72,6 +81,15 @@ class TechnicalControlContract(BaseModel):
     remediation_guidance: str = Field(min_length=1)
     profile_parameters: tuple[str, ...] = Field(min_length=1)
     limitations: tuple[str, ...] = ()
+    execution_contract: ExecutionContract | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_definition(self, handler):
+        """Do not add a null extension to accepted technical definitions or their digests."""
+        document = handler(self)
+        if self.execution_contract is None:
+            document.pop("execution_contract", None)
+        return document
 
     @field_validator(
         "title",
@@ -111,7 +129,7 @@ class TechnicalControlContract(BaseModel):
         if len(self.profile_parameters) != len(set(self.profile_parameters)):
             raise ValueError(f"duplicate profile parameter for {self.control_id}")
         unknown_profile_parameters = set(self.profile_parameters) - set(
-            AssessmentProfile.model_fields
+            (*AssessmentProfile.model_fields, *EXTENSION_FIELDS)
         )
         if unknown_profile_parameters:
             unknown = ", ".join(sorted(unknown_profile_parameters))

@@ -272,7 +272,16 @@ def finding_detail_view(finding: Finding) -> FindingDetailView:
 
 
 def control_version_view(version: ControlVersion) -> ControlVersionView:
+    import json
+
+    from app.assessment.execution import ExecutionContract
+
     return ControlVersionView(
+        execution_contract=(
+            ExecutionContract.model_validate_json(json.dumps(version.execution_contract))
+            if version.execution_contract is not None
+            else None
+        ),
         control_version_id=version.control_version_id,
         catalog_id=version.catalog_id,
         catalog_key=version.catalog.catalog_key,

@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import __version__
-from app.assessment.controls import ControlCatalog, build_default_control_catalog
+from app.assessment.controls import ControlCatalog
 from app.assessment.profiles import AssessmentProfile
 from app.aws.client import AWSClientProvider, AWSIdentityEvidenceError, Boto3ClientProvider
 from app.config import Settings, get_settings
@@ -23,13 +23,14 @@ from app.database.catalogs import (
     CatalogPersistenceError,
     VersionContentConflictError,
     load_assessment_profile,
+    verify_control_catalog,
 )
 from app.database.persistence import ScanPersistenceError, fail_pending_scan, persist_scan_result
 from app.database.session import SessionLocal
 from app.models import Scan
 from app.models.enums import ScanStatus
 from app.rules.engine import RuleEngine
-from app.rules.registry import build_default_registry
+from app.rules.registry import resolve_catalog
 from app.schemas.inventory import CollectionStatus, InventorySnapshot
 from app.schemas.persistence import ScanScopeManifestInput
 from app.services.inventory_service import InventoryService
@@ -286,6 +287,13 @@ class InProcessScanExecutor:
                 ) from error
             expected_catalog = (scan.control_catalog_id, scan.control_catalog_version)
             requested_services = tuple(scan.requested_services)
+            try:
+                catalog, registry = resolve_catalog(*expected_catalog)
+                verify_control_catalog(session, catalog)
+                if set(profile.enabled_controls) - {rule.control_id for rule in registry.rules}:
+                    raise ValueError("unsupported enabled controls")
+            except (ValueError, CatalogPersistenceError) as error:
+                raise ScanPersistenceError("pending scan catalog provenance is invalid") from error
 
         requested_collectors, resource_types = _execution_scope_for(requested_services)
 
@@ -296,10 +304,7 @@ class InProcessScanExecutor:
             include_cloudtrail_evidence="cloudtrail-evidence" in requested_services,
             include_s3_evidence="kms" in requested_services,
         ).collect(scan_id=scan_id)
-        catalog = build_default_control_catalog()
-        if expected_catalog != (catalog.catalog_id, catalog.version):
-            raise ScanPersistenceError("executor policy differs from pending scan provenance")
-        assessments = RuleEngine(build_default_registry()).assess(snapshot, profile)
+        assessments = RuleEngine(registry, catalog=catalog).assess(snapshot, profile)
         scope = _scope_for(
             snapshot,
             profile,
