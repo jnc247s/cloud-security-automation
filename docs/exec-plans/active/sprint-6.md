@@ -367,7 +367,7 @@ A final read-only self-check found no scope/status conflict; no independent revi
 and no implementation-review approval is claimed. No new full regression was run for this
 documentation-only preparation.
 
-**Current action:** implement and validate approved 6B.1 as recorded below. Organization-specific
+**Current action:** implement and validate approved 6B.2 as recorded below. Organization-specific
 and S3 decisions must be approved before their dependent slices; they must not be silently supplied
 by code. Earlier preparation and implementation checkpoints below are historical evidence.
 
@@ -502,3 +502,62 @@ readiness, not passed or waived. Commit/push permission was requested to obtain 
 CI validation; no push or merge is claimed here. The change remains uncommitted at this checkpoint.
 IAM-004 (6B.2), later slices, remediation, and deployment were not started. 6B.1 is not marked
 COMPLETE while validation/review/merge gates remain outstanding.
+
+## 6B.2 authorization and workflow amendment — 2026-09-27
+
+The user approved IAM-004 implementation, HIGH severity, evaluator `1.0.0`, opt-in catalog
+`0.4.0`, scoped PR.AA-05 mapping, and impact/guidance described in
+[6B.2 metadata](../../controls/sprint-6b2-metadata.md). Preserve all earlier catalog/framework
+bytes and defaults. Scope is permissions-policy syntax only, not effective authorization.
+
+The user explicitly approved stacking this slice before 6B.1 is accepted: checkpoint 6B.1 on
+`codex/sprint-6b-iam-key-root-controls`, then branch `codex/sprint-6b-iam-policy-controls` from it.
+The checkpoint is `e242e64f2feb6c69ffbee0b00b8cc88e2064a54c`, based on merged 6A
+`1900dd4fd0968de5c130a65265ce2c8670a51a09`. This is a bounded exception to the clean-main
+per-slice rule, not acceptance of 6B.1. Keep separate PRs and review all of 6B together.
+No push, merge, or reviewer launch is authorized by this approval.
+
+Reuse existing managed/default-version and inline-policy evidence. Version the bounded
+multi-family target/proof strategy; incomplete enumeration, missing document/version/owner/digest
+or unresolved usage must fail safely. Preserve boundary-only context and deduplicate documents
+across usage. No collector, permission, schema, route, authentication, or later-slice change is
+planned. Run targeted, history/recovery/HTTP, PostgreSQL where available, full regression, Ruff,
+and applicable container checks. Review/CI/merge gates remain outstanding.
+
+## 6B.2 implementation checkpoint — 2026-09-27
+
+Branch: `codex/sprint-6b-iam-policy-controls`, stacked on local 6B.1 commit
+`e242e64f2feb6c69ffbee0b00b8cc88e2064a54c`. IAM-004 is implemented in explicit catalog `0.4.0`
+with approved HIGH severity, evaluator `1.0.0`, and independently versioned PR.AA-05 metadata.
+The new execution schema `1.2.0` shares target/proof validation across engine and persistence.
+It deduplicates policy documents while retaining usage, verifies enumeration/relationships and
+document identity/digest, and keeps missing managed versions visible as insufficient targets.
+Conditions do not erase literal matches; boundary-only policies are not described as grants.
+
+No collector, AWS permission, migration, API request/route, authentication or authorization
+change was made. Defaults and catalogs `0.2.1`/`0.3.0` remain unchanged. Migration head remains
+`20260924_0004`. Architecture, control/framework, persistence, API and security owners document
+the bounded extension. The original inventory digest's graph-order semantics were preserved;
+reordered evidence retains identical technical results and canonical proofs, not a fabricated
+claim that every raw inventory serialization is byte-identical.
+
+Validation of the implementation tree before its local commit:
+
+- Combined 6B rules, history, recovery and real authenticated HTTP: **80 passed, 2 warnings**.
+- Final IAM-004 rules/history after correcting the fixture to roll both managed-policy version
+  IDs with changed documents: **43 passed, 2 warnings**.
+- Final full regression: **1,503 passed, 42 skipped, 21 warnings** in 36.59 seconds. All skips
+  are disposable PostgreSQL tests without `TEST_DATABASE_URL`; deprecations are unchanged.
+- Contract/Markdown/link validation: **65 passed**; the five new PostgreSQL cases explicitly
+  skip locally. Those cover old/new catalog history, forged-proof atomic rejection, pending-scan
+  recovery, real HTTP-to-persistence/public reads, and managed/inline document version history.
+- Ruff lint and formatting passed (**239 local Python files**); whitespace and changed-file
+  AWS-key/private-key pattern checks passed. These are scoped checks, not a secret-scan guarantee.
+- Compose configuration passed. Docker Linux engine is unavailable; PostgreSQL execution and
+  image build are not claimed. No live AWS or production database was used.
+
+No independent reviewer was launched, no push/PR/merge was performed, and no CI result is claimed
+for these local commits. The whole-6B review, authoritative PostgreSQL/image CI and human merge
+approval are outstanding. Neither 6B slice nor Sprint 6 is COMPLETE. Next action requires
+authorization to push the separate stacked branches and run the consolidated review; do not
+start 6C or later work as part of this handoff.

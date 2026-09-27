@@ -65,4 +65,11 @@ def resolve_catalog(catalog_id: str, version: str):
         for control_id in IAM_CONTROL_IDS:
             registry.register(IAMCredentialRule(control_id))
         return build_iam_control_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.4.0"):
+        from app.assessment.iam_policy_control import build_iam_policy_catalog
+        from app.rules.iam_policy import IAMPolicyRule
+
+        _, registry = resolve_catalog(catalog_id, "0.3.0")
+        registry.register(IAMPolicyRule())
+        return build_iam_policy_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

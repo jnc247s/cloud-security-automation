@@ -24,16 +24,21 @@ from tests.integration.test_persistence_postgres import (
 )
 
 
-def exercise_iam_http(engine, monkeypatch, tmp_path):
+def exercise_iam_http(engine, monkeypatch, tmp_path, *, policy_control=False):
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     monkeypatch.setattr(database_session, "SessionLocal", factory)
-    profile = iam_profile(version="6.1.0")
+    if policy_control:
+        from tests.iam_policy_fixtures import policy_client, policy_profile
+
+        profile = policy_profile(version="6.2.0")
+    else:
+        profile = iam_profile(version="6.1.0")
     policy_path = tmp_path / "iam-acceptance-policy.json"
     policy_path.write_text(
         json.dumps(
             {
                 "catalog_id": "aws-cloud-security-controls",
-                "catalog_version": "0.3.0",
+                "catalog_version": "0.4.0" if policy_control else "0.3.0",
                 "profile": profile.model_dump(mode="json"),
             }
         ),
@@ -49,7 +54,7 @@ def exercise_iam_http(engine, monkeypatch, tmp_path):
         calls.append(region)
         fake = _empty_provider(region)
         # Fixed ancient dates ensure these failures do not depend on the current second.
-        client = iam_client(age=730, unused=730)
+        client = policy_client() if policy_control else iam_client(age=730, unused=730)
         pages = client._paginators["list_users"][0].pages
         client._paginators["list_users"][0] = _CollectionGatePaginator(
             pages, entered=entered, release=release
@@ -144,7 +149,14 @@ def exercise_iam_http(engine, monkeypatch, tmp_path):
                     for edge_id in proof["relationship_observation_ids"]:
                         edge = get(f"relationships/{edge_id}")
                         assert edge["scan_id"] == str(scan_id)
-                        assert edge["source"]["resource_snapshot_id"] == str(target.snapshot_id)
+                        if not policy_control:
+                            assert edge["source"]["resource_snapshot_id"] == str(target.snapshot_id)
+                        else:
+                            owner = get(f"resources/{edge['source']['stable_resource_id']}/history")
+                            assert any(
+                                h["snapshot_id"] == edge["source"]["resource_snapshot_id"]
+                                for h in owner["items"]
+                            )
                         child = get(f"resources/{edge['target']['stable_resource_id']}/history")
                         assert any(
                             h["snapshot_id"] == edge["target"]["resource_snapshot_id"]
@@ -157,10 +169,22 @@ def exercise_iam_http(engine, monkeypatch, tmp_path):
                     )
                     control = get(f"controls/{assessment.control_id}")
                     mapping = detail["framework_mappings"][0]
-                    assert mapping["framework_version"] == "2.0+subset.2"
-                    assert mapping["reference_key"] == (
-                        "PR.AA-03" if control["control_key"] == "IAM-006" else "PR.AA-01"
+                    assert mapping["framework_version"] == (
+                        "2.0+subset.3" if policy_control else "2.0+subset.2"
                     )
+                    assert mapping["reference_key"] == (
+                        "PR.AA-05"
+                        if policy_control
+                        else ("PR.AA-03" if control["control_key"] == "IAM-006" else "PR.AA-01")
+                    )
+                    if policy_control:
+                        assert control["control_key"] == "IAM-004"
+                        fact = proof["iam_policy_document"]
+                        assert fact["resource_snapshot_id"] == str(target.snapshot_id)
+                        assert (
+                            fact["document_sha256"]
+                            == target.normalized_configuration["document_sha256"]
+                        )
                     framework = get(f"frameworks/{mapping['framework_id']}")
                     assert framework["version"] == mapping["framework_version"]
                 events = session.scalars(

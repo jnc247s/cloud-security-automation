@@ -64,6 +64,12 @@ and root summary flags do not establish centralized root-access posture. Operato
 not encourage creating root credentials or weakening MFA to satisfy or test a control. Existing
 authentication, capability separation, sanitized errors, and historical-integrity guards remain.
 
+6B.2 similarly adds only retained-evidence IAM policy evaluation. A literal unrestricted Allow
+pattern is not an effective-access result: a boundary grants nothing, and conditions or other
+policies may constrain access. Guidance requires an authorized review and approved change;
+the scanner neither edits policies nor assumes new permissions. Incomplete enumeration, usage,
+document identity or digest proof cannot become PASS. Policy documents remain sensitive data.
+
 - Prefer a workload role, role assumption, or short-lived IAM Identity Center credentials.
 - Never accept AWS access keys as application settings or mount a complete host credential store
   into the default container.

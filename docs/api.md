@@ -223,6 +223,12 @@ Their persisted results, source proofs, findings, and mappings use these generic
 controls expose execution schema `1.1.0`; root controls use the existing account-target schema.
 Default catalog `0.2.1` and HTTP capability requirements remain unchanged.
 
+6B.2's opt-in catalog `0.4.0` adds IAM-004 through the same generic interfaces, with execution
+schema `1.2.0`. Its exact target families include managed policy versions and inline policies;
+parent managed-policy targets represent unavailable default versions as insufficient evidence.
+Assessment evidence exposes snapshot/document digest and retained attachment/boundary contexts,
+not an effective-authorization claim. No request/route/capability or default-catalog change occurs.
+
 The requested Region remains the only caller-supplied Region. On the 5E path, inventory assembly
 collects each bucket in the home Region established by exact same-scan S3 location evidence and
 looks up an explicit KMS reference in its proved Region. Access Analyzer runs in the sorted unique
