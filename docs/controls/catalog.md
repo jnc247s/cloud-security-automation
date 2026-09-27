@@ -1,8 +1,8 @@
 # Control catalog
 
 This file is the authoritative catalog for immutable control identifiers and technical meanings.
-It distinguishes the five executable controls accepted through Sprint 4 from canonical contracts
-planned for Sprint 6. A planned contract defines what evidence Sprint 5 must make available; it is
+It distinguishes the five default controls accepted through Sprint 4, opt-in Sprint 6 controls,
+and remaining planned contracts. A planned contract defines required Sprint 5 evidence; it is
 not an implemented rule, an enabled assessment, or a claim that the current runtime evaluates it.
 
 Sprint 2.1 kept the five deterministic technical checks introduced in Sprint 2 and gave each one
@@ -25,7 +25,12 @@ Accepted Sprint 5 evidence slices 5A through 5F now provide the factual prerequi
 for all 25 planned control meanings. The bounded 5F CloudTrail producer was accepted and merged in
 pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Evidence readiness
 does not change the executable catalog: Sprint 5 is `COMPLETE`, the bounded 5G closure was
-accepted in pull request 25, and every planned Sprint 6 control below remains unregistered and disabled.
+accepted in pull request 25. Approved 6B.1 adds IAM-002/003/005/006 only in explicitly selected
+catalog `0.3.0`; other planned controls stay unregistered. The default catalog is unchanged.
+
+The [approved 6B.1 metadata](sprint-6b1-metadata.md) owns severities, operator guidance, mappings,
+and release identities: IAM-002/003 are MEDIUM, IAM-005/006 HIGH. IAM-003 requires explicit
+unused-key policy in a new profile (approved deployment value 90), never a hard-coded default.
 
 ## Permanent S3 identifier safety
 
@@ -64,7 +69,8 @@ contract outside the authorized scope.
 
 ## Planned-contract interpretation
 
-The following contracts are canonical designs for Sprint 6 but are not executable. Every planned
+The following canonical contracts distinguish opt-in implementation through their status fields.
+Every planned
 assessment uses the established `PASS`, `FAIL`, `INSUFFICIENT_EVIDENCE`, and `NOT_APPLICABLE`
 states. Missing required evidence or incomplete collector coverage never becomes `PASS`.
 Exceptions and profile allowlists remain distinct: an operational Finding Exception cannot
@@ -83,7 +89,7 @@ Normalized resource edges use the approved
 That contract fixes direction, stable and per-scan identity, Region, resolution, and provenance;
 its collector and persistence integration remains Sprint 5 work.
 
-New contracts deliberately have no severity or NIST mapping yet. Severity is project policy and
+Except for approved 6B.1 metadata, new contracts have no severity or NIST mapping yet. Severity is project policy and
 must not be inferred from NIST. A future mapping requires separate authoritative provenance and
 review; no mapping metadata is needed to collect Sprint 5 facts.
 
@@ -91,7 +97,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-002` — Active IAM access key exceeds maximum age
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
 - **Scope/resource type:** one IAM user, using the complete set of that user's active access keys.
 - **Required evidence:** user identity; access-key identifier; key status; key creation timestamp;
   deterministic observation time; complete key enumeration; and common provenance.
@@ -116,7 +122,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-003` — Active IAM access key unused beyond allowed period
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
 - **Scope/resource type:** one IAM user, using the complete set of that user's active access keys.
 - **Required evidence:** key identifier, status, creation timestamp, last-used timestamp when
   present, an explicit `no_recorded_use` state after a successful lookup returns no
@@ -124,8 +130,8 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 - **Relationships:** IAM user -> access key. Both endpoints are top-level normalized `Resource` +
   `ResourceSnapshot` observations for the same scan.
 - **Assessment Profile:** `enabled_controls` and a future versioned
-  `max_unused_access_key_days` input. It must be added only with a reviewed new profile schema and
-  profile version; it is not hard-coded by the control.
+  `max_unused_access_key_days` input, now supported by extended schema `2.0.0` and a new explicit
+  organization profile version; the approved deployment value is 90, not a rule constant.
 - **PASS:** every active key was used within the threshold, or has `no_recorded_use` but is no
   older than the threshold.
 - **FAIL:** at least one active key was last used before the threshold boundary, or has
@@ -191,7 +197,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-005` — Root account access key exists
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
 - **Scope/resource type:** AWS account; global IAM evidence.
 - **Required evidence:** a complete account summary containing the authoritative
   `AccountAccessKeysPresent` value, plus common global provenance.
@@ -208,7 +214,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-006` — Root account MFA is not enabled
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
 - **Scope/resource type:** AWS account; global IAM evidence.
 - **Required evidence:** a complete account summary containing authoritative
   `AccountMFAEnabled`, plus common global provenance.

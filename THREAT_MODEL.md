@@ -23,7 +23,7 @@ OIDC/development authentication, capability authorization, FastAPI, and the in-p
 executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fact-only
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
-Sprint 6 production rule, production deployment, frontend, Terraform infrastructure, remediation
+production deployment, frontend, Terraform infrastructure, remediation
 execution, or AI agent is implemented. The merged 5E and 5F producers collect facts only. The 5F
 change adds no AWS write, authentication, authorization, route, migration, or assessment-profile
 behavior. The bounded 5G closure is accepted and merged without changing these boundaries.
@@ -43,6 +43,13 @@ reproducibility of technical assessments, authorized access, append-only auditab
 failure behavior.
 
 ## Trust boundaries and assumptions
+
+Approved 6B.1 adds IAM-002/003/005/006 in opt-in catalog `0.3.0`, not the default catalog. Its
+joined evidence boundary rejects incomplete enumeration, unresolved/missing key edges, mismatched
+identity/provenance, and ambiguous last-use facts. Observation-time thresholds and exact catalog/
+profile recovery preserve replay. New framework subset bytes have a separate identity and digest;
+old mappings remain unchanged. These rules add no AWS calls or remediation handlers. Root-summary
+presence checks do not establish centralized root-access posture or compromise.
 
 ```text
 external identity provider -> untrusted bearer token -> API authentication boundary

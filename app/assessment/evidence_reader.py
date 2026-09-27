@@ -35,6 +35,7 @@ class AssessmentEvidenceReader:
         self._outcomes = {}
         self._artifacts = {}
         self._provenance = {}
+        self.resources = {self._target_id(r): r for r in self.snapshot.resources}
         if self.graph is not None:
             self._outcomes = {o.source_outcome_id: o for o in self.graph.source_outcomes}
             self._artifacts = {a.evidence_reference: a for a in self.graph.artifacts}
@@ -105,6 +106,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.1.0":
+            from app.assessment.iam_key_evidence import iam_key_proof
+
+            return iam_key_proof(self, contract, target)
         citations = {}
         # Empty resource populations use only their mandatory account coverage sources.
         empty_fallback = (
@@ -160,6 +165,38 @@ class AssessmentEvidenceReader:
             "sources": [citations[key] for key in sorted(citations)],
             "relationship_observation_ids": sorted(edge_ids),
         }
+
+    def resolve_source(self, required: RequiredSource, target: NormalizedResource):
+        """Resolve a single complete source for bounded joined evidence consumers."""
+        matches = [
+            source
+            for source in self._sources.get(
+                (required.collector, required.evidence_kind, required.source_api), ()
+            )
+            if source.contract_version == required.contract_version
+            and self._subject_matches(source.subject, required, target)
+        ]
+        if len(matches) != 1:
+            raise IncompleteAssessmentEvidence("required source is absent or ambiguous")
+        source = matches[0]
+        if required.completion == "admitted_resource_v1" and not source.identity_authoritative:
+            raise IncompleteAssessmentEvidence("required resource admission is unavailable")
+        outcome = self._outcomes[source.source_outcome_id]
+        citation = self._citation(
+            outcome,
+            fields=required.completeness_fields,
+            allow_absence=required.expected_absence_is_complete,
+        )
+        return outcome, self._artifacts[outcome.evidence_reference].normalized_payload, citation
+
+    def source_payloads(self, proof: dict, evidence_kind: str) -> tuple[dict, ...]:
+        """Read only artifacts cited by a proof already produced by this reader."""
+        selected = {item["source_outcome_id"] for item in proof["sources"]}
+        return tuple(
+            self._artifacts[outcome.evidence_reference].normalized_payload
+            for outcome in self._outcomes.values()
+            if str(outcome.source_outcome_id) in selected and outcome.evidence_kind == evidence_kind
+        )
 
     def validate_candidate(
         self, contract: ExecutionContract, candidate: AssessmentCandidate

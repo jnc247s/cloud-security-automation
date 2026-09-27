@@ -242,8 +242,10 @@ for `cloudtrail.trails.discovery`; per-trail `identity`, `configuration`, `statu
 external-owner organization trail remains only in its
 digest-bound source artifact and is omitted from both 5F resource projections with incomplete
 coverage unless it satisfies the existing exact resource-admission proof. Remaining legacy
-collectors remain graphless. No current technical
-result consumes the Sprint 5 graph.
+collectors remain graphless. Opt-in 6B.1 technical results consume the retained IAM graph through
+the shared source-proof reader. Execution schema `1.1.0` verifies complete same-scan user/key
+coverage and source bindings; schema `1.0.0` semantics remain unchanged. Catalogs `0.2.1` and
+`0.3.0`, their framework subsets, and exact pending-scan profiles coexist without a new migration.
 
 The planned [S3-002 approval artifact](controls/s3-002-exposure-aggregation.md) and
 [S3-004 classifier](controls/s3-004-sensitive-bucket-classifier.md) each carry their own immutable

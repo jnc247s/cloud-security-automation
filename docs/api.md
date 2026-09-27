@@ -218,6 +218,11 @@ responses include `execution_contract` only for extended definitions; legacy res
 The resource-type filter matches exact declared resource-family types for extended definitions,
 `aws_account` for account targets, and the existing `resource_type` field for legacy definitions.
 
+6B.1's opt-in catalog `0.3.0` adds IAM-002/003/005/006 without new routes or caller-selected policy.
+Their persisted results, source proofs, findings, and mappings use these generic reads. IAM key
+controls expose execution schema `1.1.0`; root controls use the existing account-target schema.
+Default catalog `0.2.1` and HTTP capability requirements remain unchanged.
+
 The requested Region remains the only caller-supplied Region. On the 5E path, inventory assembly
 collects each bucket in the home Region established by exact same-scan S3 location evidence and
 looks up an explicit KMS reference in its proved Region. Access Analyzer runs in the sorted unique

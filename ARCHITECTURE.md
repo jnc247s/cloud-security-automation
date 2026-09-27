@@ -5,7 +5,7 @@ evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM
 5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
 `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
 request #25. Sprint 5 is complete. Approved Sprint 6A adds the versioned assessment foundation
-below; later production-control slices are unstarted and the five executable controls are unchanged.
+below. Approved 6B.1 adds four opt-in IAM controls; the five default controls remain unchanged.
 
 ## Sprint 6A assessment integration
 
@@ -21,6 +21,17 @@ not collector resources or graph endpoints. Exact resource families retain obser
 All declared required sources and edges must be complete; legacy whole-collector guards and
 full-scope finding resolution are unchanged. This adds no control, collector, permission, or
 dependency scheduler. The foundation remains subject to the active plan's validation/review gate.
+
+## Sprint 6B.1 opt-in IAM controls
+
+Catalog `0.3.0` adds IAM-002/003/005/006 over retained IAM evidence, without collector, AWS
+permission, API route, or schema changes. The original `0.2.1` catalog remains the default and
+recoverable by exact identity. Versioned IAM user/key proofs establish complete enumeration,
+same-scan endpoint/provenance binding, and active-key usage facts before evaluation or persistence.
+Thresholds use retained observation time, never wall-clock time. Root flags remain global account
+assessments. See [assessment foundation](docs/assessment-foundation.md#6b1-iam-evidence-joins)
+and [approved control metadata](docs/controls/sprint-6b1-metadata.md). Source sufficiency does not
+weaken whole-scan finding-resolution requirements; framework metadata never controls results.
 
 ## System context
 

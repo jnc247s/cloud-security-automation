@@ -53,17 +53,31 @@ class ExecutionContract(BaseModel):
     """The only 6A strategy requires every declared source and edge to be complete."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    schema_version: Literal["1.0.0"]
+    schema_version: Literal["1.0.0", "1.1.0"]
     target_kind: Literal["global_account", "regional_account", "resources"]
     target_selection: Literal["all_observed_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     resource_families: tuple[ResourceFamily, ...] = ()
-    validation_strategy: Literal["all_required_sources_complete_v1"]
+    validation_strategy: Literal[
+        "all_required_sources_complete_v1", "iam_active_key_age_v1", "iam_active_key_usage_v1"
+    ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        if self.schema_version == "1.0.0" and self.validation_strategy != (
+            "all_required_sources_complete_v1"
+        ):
+            raise ValueError("legacy execution schema does not support IAM key proofs")
+        if self.schema_version == "1.1.0" and (
+            self.validation_strategy not in {"iam_active_key_age_v1", "iam_active_key_usage_v1"}
+            or self.target_kind != "resources"
+            or self.account_service != "iam"
+            or self.resource_families != (ResourceFamily(service="iam", resource_type="iam_user"),)
+            or self.required_relationships != (RelationshipType.HAS_ACCESS_KEY,)
+        ):
+            raise ValueError("execution schema 1.1 is restricted to IAM user/key proofs")
         families = [(item.service, item.resource_type) for item in self.resource_families]
         if len(set(families)) != len(families):
             raise ValueError("duplicate resource family")

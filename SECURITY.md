@@ -58,6 +58,12 @@ security control.
 
 ## AWS access and least privilege
 
+6B.1 adds no AWS permissions or write handlers. Its opt-in IAM evaluators use only retained,
+same-scan facts and explicit versioned policy. Key age/last-use checks do not establish compromise,
+and root summary flags do not establish centralized root-access posture. Operator guidance must
+not encourage creating root credentials or weakening MFA to satisfy or test a control. Existing
+authentication, capability separation, sanitized errors, and historical-integrity guards remain.
+
 - Prefer a workload role, role assumption, or short-lived IAM Identity Center credentials.
 - Never accept AWS access keys as application settings or mount a complete host credential store
   into the default container.

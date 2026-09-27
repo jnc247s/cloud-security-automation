@@ -1,6 +1,7 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A approved and IN PROGRESS; later implementation slices remain proposed.
+Plan state: 6A COMPLETE and merged; 6B.1 approved and IN PROGRESS. Later implementation
+slices remain proposed. Independent review is deferred to the whole-6B gate by user instruction.
 Prepared: 2026-09-24.
 Sprint state: `IN PROGRESS`, as owned exclusively by [ROADMAP.md](../../../ROADMAP.md).
 The user authorized 6A implementation and a combined planning/implementation PR on 2026-09-24.
@@ -366,9 +367,9 @@ A final read-only self-check found no scope/status conflict; no independent revi
 and no implementation-review approval is claimed. No new full regression was run for this
 documentation-only preparation.
 
-**Current action:** implement approved 6A only. Organization-specific and S3 decisions must be
-approved before their dependent slices; they must not be silently supplied by code. The preparation
-results above are historical baseline evidence, not validation of the ongoing implementation.
+**Current action:** implement and validate approved 6B.1 as recorded below. Organization-specific
+and S3 decisions must be approved before their dependent slices; they must not be silently supplied
+by code. Earlier preparation and implementation checkpoints below are historical evidence.
 
 ## 6A implementation checkpoint — 2026-09-24
 
@@ -416,3 +417,88 @@ Ruff lint, formatting (221 local files), whitespace, and scoped credential-patte
 Migration head is `20260924_0004`. The follow-up commit requires a new green CI run including
 PostgreSQL and the API image; human review/merge approval remains outstanding. Slices 6B onward
 remain unstarted. This is a reviewed implementation checkpoint, not a sprint-completion declaration.
+
+## 6B.1 implementation authorization — 2026-09-27
+
+The user approved the remaining metadata and requested implementation of IAM-002/003/005/006.
+The preparation notes below retain their original approval checkpoint; their pending-approval
+statements are superseded by this authorization. Catalog `0.3.0`, evaluation version `1.0.0`,
+framework subset release `2.0+subset.2`, guidance, and scoped mappings are approved. Default
+catalog `0.2.1` and its five controls remain unchanged. No migration or collector change is planned.
+
+The user subsequently directed that independent review wait until 6B as a whole is done.
+Do not launch a 6B.1 reviewer or claim the review gate has passed. This does not authorize IAM-004
+implementation in this task, waive validation, or permit merging. Stop after the 6B.1 handoff.
+
+## 6A acceptance and 6B.1 preparation — 2026-09-27
+
+PR #27 merged 6A into `main` at `1900dd4fd0968de5c130a65265ce2c8670a51a09`.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36168438181)
+is successful. The previously recorded independent review has no unresolved findings; the
+pending-CI/merge statements above describe earlier checkpoints, not the current state.
+Migration head remains `20260924_0004`; no new rule was enabled by 6A.
+
+Clean local `main` was fast-forwarded to that accepted commit before creating
+`codex/sprint-6b-iam-key-root-controls`. Scope is IAM-002/003/005/006 only. The user approved
+`max_unused_access_key_days = 90` as explicit versioned profile policy, MEDIUM severity for
+IAM-002/003, and HIGH severity for IAM-005/006. Existing `stale_key_days` semantics and values
+are unchanged. No hard-coded unused-key default is authorized.
+
+The [metadata proposal](../../controls/sprint-6b1-metadata.md) contains the remaining impact,
+guidance, evaluation-version, and sourced mapping decisions for approval. Do not treat these
+draft definitions as approved or enable the catalog before approval. IAM-004, collector changes,
+new AWS permissions, remediation execution, and later-sprint work are excluded.
+
+After approval, implement the bounded same-scan user/key evidence proof, four deterministic
+rules, exact catalog/profile selection, and persistence/API acceptance described in the 6B plan.
+Preserve empty-set versus unavailable-evidence distinctions, old catalog/profile checksums and
+pending scans, source-proof validation, and finding-resolution gates. Follow the full slice
+validation/review/CI/human-merge gates above. No runtime implementation is claimed at this checkpoint.
+
+Documentation-only validation: `python -m pytest tests/unit/contracts -q` passed **64 tests,
+3 warnings** (two dependency deprecations and a local pytest-cache warning). Ruff lint passed;
+format check passed (222 local Python files); whitespace checks passed. No full regression,
+PostgreSQL rerun, or new independent reviewer was needed for this metadata preparation. These
+results do not validate future 6B.1 runtime changes. The three documentation files remain
+uncommitted; no push or merge was performed.
+
+## 6B.1 implementation checkpoint — 2026-09-27
+
+Branch: `codex/sprint-6b-iam-key-root-controls`; base/HEAD before implementation commit:
+`1900dd4fd0968de5c130a65265ce2c8670a51a09`. The four approved IAM controls are implemented in
+explicit catalog `0.3.0`, with the approved metadata and separately checksummed NIST subset.
+Existing catalog `0.2.1`, default configuration, old control definitions/mappings, collectors,
+authentication, routes, schema, and migration head `20260924_0004` remain unchanged.
+
+Execution schema `1.1.0` supports only the bounded IAM key-age/key-use proofs. The proof verifies
+complete user/key identity sets, same-scan resolved relationships, exact admission provenance,
+key status/chronology and active-key usage. Empty active-key sets retain artifact-free N/A only
+after complete coverage. Root flags use the existing global account-target/source-proof path.
+Missing declared profile inputs are rejected before collection and on exact-profile recovery.
+Rule evidence records evaluation version `1.0.0`; finding-resolution gates remain unchanged.
+
+Validation of the implementation working tree:
+
+- Focused IAM rules, storage, recovery, local HTTP acceptance and 6A foundation: **62 passed,
+  2 warnings**. This includes 31 IAM rule cases and five local storage/HTTP/recovery cases.
+- Complete pytest: **1,458 passed, 37 skipped, 21 warnings**. All skips are PostgreSQL cases
+  without `TEST_DATABASE_URL`. Warnings are existing dependency/SQLite datetime deprecations.
+- New PostgreSQL module: **5 skipped**, explicitly requiring disposable `TEST_DATABASE_URL`.
+  It covers populated legacy/new history, forged-proof rollback, complete empty-key history,
+  exact pending-scan recovery, and real bearer HTTP-to-persistence/public-read acceptance.
+- Contract/Markdown links: **64 passed, 3 warnings**, including the local cache warning.
+- Ruff lint passed; format check passed (**231 local Python files**); diff whitespace passed.
+- Docker Compose configuration passed. Docker's Linux engine was unavailable; a local startup
+  attempt timed out. Neither PostgreSQL execution nor an image build is claimed as successful.
+
+HTTP acceptance preserves real routing, bearer authentication, capability enforcement, executor,
+collectors, rules, transactions, and public read projections. Only AWS is replaced, with a bounded
+gate proving HTTP 202 is nonblocking. ADMIN can scan; ANALYST cannot. The test checks exact persisted
+assessment/evidence/source/relationship/resource-history/finding/framework IDs and scan audit.
+Local SQLite execution is supplemental; PostgreSQL execution remains the authoritative CI gate.
+
+No independent reviewer was launched, as directed by the user. Review is deferred until whole-6B
+readiness, not passed or waived. Commit/push permission was requested to obtain PostgreSQL/image
+CI validation; no push or merge is claimed here. The change remains uncommitted at this checkpoint.
+IAM-004 (6B.2), later slices, remediation, and deployment were not started. 6B.1 is not marked
+COMPLETE while validation/review/merge gates remain outstanding.

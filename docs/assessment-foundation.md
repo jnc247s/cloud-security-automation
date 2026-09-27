@@ -2,8 +2,9 @@
 
 Scope/status is owned by [ROADMAP.md](../ROADMAP.md) and the
 [active Sprint 6 plan](exec-plans/active/sprint-6.md). This foundation enables no new control.
-The production resolver still supports only `aws-cloud-security-controls` version `0.2.1` and
-its five accepted rules. Synthetic test catalogs are not production releases.
+The default release remains `aws-cloud-security-controls/0.2.1` and its five accepted rules.
+Approved 6B.1 adds explicit opt-in `0.3.0` containing those five plus IAM-002/003/005/006.
+Synthetic test catalogs are not production releases.
 
 ## Explicit configuration
 
@@ -64,7 +65,7 @@ assessment-only targets, never inserted into the collector graph. Resource-famil
 retain actual resource identity/type/owner. Empty populations require an explicit N/A or
 insufficient account fallback; incomplete evidence cannot justify N/A.
 
-The only source-aware strategy is `all_required_sources_complete_v1`. Requirements bind collector,
+The original source-aware strategy is `all_required_sources_complete_v1`. Requirements bind collector,
 source API, evidence kind, subject scope, declaration version, and completeness strategy. Account
 enumeration/settings require explicit normalized completeness flags. Exact resource enrichment may
 use `admitted_resource_v1` only with authoritative same-scan resource admission and required account
@@ -76,9 +77,26 @@ Assessment payload `source_proof` binds source outcome IDs, artifact IDs/digests
 observation IDs, scan ID, and schema version. Both boundaries verify it against the retained graph.
 `NOT_APPLICABLE` retains the accepted artifact-free representation: the reader verifies complete
 required coverage against the retained graph and exact catalog before accepting that result.
-This validates evidence, not control policy: no new evaluator, S3 aggregation, or dependency engine
-is present. The five legacy rules keep their whole-collector guards. Source sufficiency does not
+This reader validates evidence, not control policy; it has no S3 aggregation or dependency engine.
+The five legacy rules keep their whole-collector guards. Source sufficiency does not
 relax the existing complete-scan finding-resolution gate.
+
+### 6B.1 IAM evidence joins
+
+Execution schema `1.1.0` adds only `iam_active_key_age_v1` and `iam_active_key_usage_v1`, restricted
+to global IAM user targets and their `has_access_key` edges. Schema `1.0.0` retains its exact
+semantics and cannot select the new strategies. Complete user discovery and per-user key
+enumeration must match retained identities and resolved edges; edge provenance must identify the
+exact admitted key source. Zero active keys is N/A only after complete enumeration is proved.
+Usage evidence is required only for active keys in IAM-003; missing lookup evidence is not
+`no_recorded_use`. Decision facts bind to retained source artifacts and observation time.
+Unrelated source failure does not erase complete required evidence, but the existing whole-scan
+finding-resolution guard still applies. The reader and persistence enforce the same proof.
+
+The opt-in catalog requires a new explicit policy-file profile. IAM-003 requires extended schema
+`2.0.0` and `max_unused_access_key_days` (approved deployment value 90); no default is supplied.
+Missing declared profile inputs fail before AWS collection, including pending-scan recovery.
+See [approved metadata](controls/sprint-6b1-metadata.md). No schema migration is added.
 
 ## Validation and rollback
 
