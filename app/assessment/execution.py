@@ -53,7 +53,7 @@ class ExecutionContract(BaseModel):
     """The only 6A strategy requires every declared source and edge to be complete."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    schema_version: Literal["1.0.0", "1.1.0", "1.2.0"]
+    schema_version: Literal["1.0.0", "1.1.0", "1.2.0", "1.3.0"]
     target_kind: Literal["global_account", "regional_account", "resources"]
     target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
@@ -63,12 +63,26 @@ class ExecutionContract(BaseModel):
         "iam_active_key_age_v1",
         "iam_active_key_usage_v1",
         "iam_policy_document_v1",
+        "security_group_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        if self.schema_version == "1.3.0":
+            from app.assessment.security_group_evidence import NETWORK_SOURCES
+
+            if (
+                self.validation_strategy != "security_group_v1"
+                or self.target_kind != "resources"
+                or self.account_service != "ec2"
+                or self.resource_families
+                != (ResourceFamily(service="ec2", resource_type="security_group"),)
+                or self.required_sources != NETWORK_SOURCES
+                or self.required_relationships != (RelationshipType.IN_VPC,)
+            ):
+                raise ValueError("execution schema 1.3 is restricted to security-group proofs")
         if self.schema_version != "1.2.0" and self.target_selection != "all_observed_v1":
             raise ValueError("legacy execution schemas require legacy target selection")
         if self.schema_version == "1.2.0":

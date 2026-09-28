@@ -126,7 +126,7 @@ class RuleEngine:
                 try:
                     validate_execution_targets(snapshot, execution, rule_assessments)
                     for candidate in rule_assessments:
-                        evidence_reader.validate_candidate(execution, candidate)
+                        evidence_reader.validate_candidate(execution, candidate, profile=profile)
                 except ValueError as error:
                     raise RuleContractError("assessment execution contract was violated") from error
 

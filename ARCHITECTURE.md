@@ -36,6 +36,13 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
+Approved 6D.1 adds opt-in NET-003/004/005 in catalog `0.6.0`. Execution schema `1.3.0`
+binds complete security-group/VPC discovery, exact admitted configuration and the same-scan
+`in_vpc` relationship. The engine and persistence use the same proof and pure truth table,
+with the exact profile passed for empty-port applicability. Old execution schemas and NET-001/002
+are unchanged. No collector, permission, migration, API or authentication change is introduced.
+See [6D.1 metadata](docs/controls/sprint-6d1-metadata.md); NET-006 is not implemented.
+
 Approved 6C adds EC2-001 through EC2-004 in opt-in catalog `0.5.0`. It reuses execution schema
 `1.0.0`, with shared EC2 discovery/admission/fact and applicability checks at engine and storage
 boundaries. The public-address allowlist uses the existing stable resource UUID, not a bare AWS

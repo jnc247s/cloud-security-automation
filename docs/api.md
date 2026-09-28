@@ -14,6 +14,11 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Opt-in catalog `0.6.0` exposes NET-003/004/005 through the same scan, resource/history,
+assessment/evidence, finding and control/framework routes. Proofs identify exact same-scan VPC
+relationship observations and source artifacts. No route, request schema, role or capability
+changes. ADMIN can scan; ANALYST remains denied. NET-006 is not included.
+
 Opt-in catalog `0.5.0` adds EC2-001 through EC2-004 through the existing authenticated scan,
 resource/history, assessment/evidence, finding and control/framework reads. No route or request
 field is added. EC2-004 uses a Regional `ec2/aws_account` assessment-only target, with its own stable

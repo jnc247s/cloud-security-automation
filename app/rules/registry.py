@@ -81,4 +81,13 @@ def resolve_catalog(catalog_id: str, version: str):
         for control_id in EC2_CONTROL_IDS:
             registry.register(EC2Rule(control_id))
         return build_ec2_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.6.0"):
+        from app.assessment.security_group_controls import build_network_catalog
+        from app.assessment.security_group_evidence import NETWORK_CONTROL_IDS
+        from app.rules.security_groups import SecurityGroupRule
+
+        _, registry = resolve_catalog(catalog_id, "0.5.0")
+        for control_id in NETWORK_CONTROL_IDS:
+            registry.register(SecurityGroupRule(control_id))
+        return build_network_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

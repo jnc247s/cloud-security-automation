@@ -255,7 +255,7 @@ def _validate_bundle(
         execution = contract.technical.execution_contract
         if execution is not None:
             try:
-                evidence_reader.validate_candidate(execution, candidate)
+                evidence_reader.validate_candidate(execution, candidate, profile=profile)
             except ValueError as error:
                 raise ScanPersistenceError("assessment source evidence is invalid") from error
         key = (candidate.control_id, candidate.resource_snapshot_id)

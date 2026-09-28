@@ -1,11 +1,60 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A and 6B COMPLETE and merged; 6C approved and IN PROGRESS. Later implementation
-slices remain proposed. One read-only reviewer is approved after 6C validation.
+Plan state: 6A, 6B and 6C COMPLETE and merged; 6D.1 approved and IN PROGRESS.
+6D.2 and later implementation slices remain proposed.
 Prepared: 2026-09-24.
 Current checkpoint verified: 2026-09-28. Historical checkpoints below retain their original state.
 
 ## 6C authorization and integration checkpoint — 2026-09-28
+
+Superseding checkpoint: PR #30 merged 6C at `c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c`;
+[merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36477059926).
+The following 6C implementation checkpoints retain their original predictions.
+
+## 6D.1 authorization — 2026-09-28
+
+The user approved [6D.1 metadata](../../controls/sprint-6d1-metadata.md) and implementation of
+NET-003/004/005 only. Clean main was fast-forwarded to the accepted 6C merge before creating
+`codex/sprint-6d1-security-group-controls`. No 6D.2 Flow Log control is included.
+
+Reuse retained security-group/VPC evidence, exact versioned profiles, generic API and persistence.
+Add a bounded versioned security-group proof binding discovery membership, admitted facts and the
+same-scan VPC edge; preserve legacy schemas and NET-001/002. Profile-dependent empty-port N/A
+requires exact policy at both engine and persistence boundaries. No collector, permission, schema
+migration, authentication or route change is planned. Default catalog remains 0.2.1.
+
+Validate canonical truth tables, empty versus unavailable evidence, source and relationship
+integrity, partial-source isolation, old/new history, profile recovery, finding lifecycle and real
+authenticated HTTP-to-persistence/public reads with offline AWS only. Run targeted tests, full
+pytest, Ruff, disposable PostgreSQL, applicable container and documentation checks, followed by one
+consolidated independent review. CI and human merge remain gates; do not mark 6D.1 COMPLETE early.
+
+### 6D.1 local implementation checkpoint — 2026-09-28
+
+NET-003/004/005 are implemented in opt-in catalog `0.6.0`, evaluator `1.0.0`, using bounded
+execution schema `1.3.0` and separately checksummed framework subset `.5`. Earlier releases,
+profiles, defaults, NET-001/002, collectors, permissions, API/auth and migration head are unchanged.
+The optional profile argument on shared candidate validation is supplied by engine and persistence;
+it is mandatory for new network proofs and leaves old callers/schema behavior intact.
+
+Focused rules, history/recovery, atomic forgery rejection, finding lifecycle and real authenticated
+HTTP acceptance: **42 passed**. With contract/Markdown/link checks: **109 passed, 2 warnings**.
+Full local regression: **1,613 passed, 65 skipped, 21 warnings**, 44.26 seconds; skips exclusively
+require disposable PostgreSQL. After that run, the forged-PASS test was strengthened to retain
+valid evidence and assert rejection specifically at the source/result boundary; all 109 focused
+checks passed again. No runtime behavior changed after the full run.
+
+Ruff lint/format (259 Python files), whitespace and Compose configuration passed. Docker's Linux
+engine is unavailable and TEST_DATABASE_URL is unconfigured; the 11 new PostgreSQL cases skip
+locally. No PostgreSQL execution or image-build success is claimed. AWS is offline fake data only;
+real routing, bearer backend/capability enforcement, executor, collectors, rules and transactions
+remain intact. Findings resolve only after a later sufficiently complete PASS, not a partial scan.
+
+One read-only reviewer was requested; approval/review remains pending. No commit, push, new CI,
+PR or merge is claimed. PostgreSQL/image CI and human merge remain acceptance gates. This is not
+6D.1 completion. NET-006/6D.2 and later-sprint work were not started.
+
+### Historical 6C implementation authorization
 
 PR #29 merged 6B.2 into 6B.1, then PR #28 merged both at
 `42cc65366ed4d6e1fe14aa28e2650a62280cba8b`. Merged-main

@@ -1,5 +1,11 @@
 # Persistence and assessment history
 
+6D.1 adds opt-in catalog `0.6.0` without a migration. Versioned security-group proofs retain exact
+source artifact/outcome digests and same-scan VPC relationship IDs. Engine and storage share the
+same truth table and exact-profile applicability validation, rejecting forged results atomically.
+Catalogs 0.2.1 through 0.5.0, historical profiles and pending scans remain supported unchanged.
+Partial scans do not resolve findings, even when independent required network sources are complete.
+
 Sprint 3 established durable history for already-collected and already-assessed results. The
 Sprint 5 shared foundation extends that history with an optional, versioned evidence graph. The
 accepted 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer, 5E S3/referenced-KMS, and 5F

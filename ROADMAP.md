@@ -32,9 +32,9 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `IN PROGRESS`. Slices 6A and 6B are accepted and merged. Slice 6C is approved and
-`IN PROGRESS` for EC2-001 through EC2-004 only. The default catalog remains unchanged; all added
-controls require explicit catalog/profile selection. Later slices remain proposed.
+Sprint 6 is `IN PROGRESS`. Slices 6A, 6B and 6C are accepted and merged. Slice 6D.1 is approved
+and `IN PROGRESS` for NET-003/004/005 only. The default catalog remains unchanged; all added
+controls require explicit catalog/profile selection. 6D.2 and later slices remain proposed.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -105,8 +105,12 @@ was verified on 2026-09-28. Migration head remains `20260924_0004`.
 
 The user approved 6C implementation and its bounded metadata/UUID allowlist decisions on
 2026-09-28. See [6C metadata](docs/controls/sprint-6c-metadata.md) and the active plan.
-6C requires validation, independent review, CI and human merge before completion; no 6D work
-is authorized by this slice.
+6C is COMPLETE: PR #30 merged at `c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c` and
+merged-main CI passed. Its independent review has no unresolved findings.
+
+The user subsequently approved 6D.1 implementation and its
+[control metadata](docs/controls/sprint-6d1-metadata.md). This authorizes only NET-003/004/005;
+NET-006 and later work remain unstarted. Migration head remains `20260924_0004`.
 
 ## Pre-Sprint 5 attention
 

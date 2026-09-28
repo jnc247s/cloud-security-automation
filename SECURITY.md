@@ -58,6 +58,12 @@ security control.
 
 ## AWS access and least privilege
 
+6D.1 evaluates only retained security-group/VPC facts. Source/edge identities, complete discovery,
+snapshot content and exact policy are validated at engine and persistence boundaries. Public
+permission checks are not end-to-end reachability claims. Guidance requires dependency review and
+separately authorized changes; no AWS writes, new permissions or remediation handlers are added.
+NET-001/002, authentication and capability separation remain unchanged.
+
 6C consumes only retained EC2/EBS evidence and adds no AWS permissions or write capability.
 EC2-002 approvals use exact stable resource UUIDs, binding account, Region and instance; bare IDs
 are rejected only for profiles enabling that control. Approval is immutable assessment policy,

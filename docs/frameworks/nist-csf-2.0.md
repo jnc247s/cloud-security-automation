@@ -6,6 +6,13 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+6D.1 catalog `0.6.0` adds NET-003/004/005 -> PR.IR-01 using separately checksummed local subset
+`2.0+subset.5`. Source remains NIST CSWP 29 official version 2.0, Appendix A printed page 20,
+inspected 2026-09-28. The subset and manifest are `app/assessment/data/nist_csf_2_0_subset_5.json`
+and its `_manifest.json` companion. These project mappings contribute network-access protection
+context only; severity, policy and technical results are independent. Earlier framework artifacts
+and mappings are unchanged. See [approved metadata](../controls/sprint-6d1-metadata.md).
+
 The application performs NIST CSF 2.0-aligned AWS technical security assessment. A mapping says
 that evidence from an internal technical control contributes context to a CSF outcome. It does not
 make the internal control equivalent to the entire outcome, prove organization-wide satisfaction,
