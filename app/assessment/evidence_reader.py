@@ -217,6 +217,11 @@ class AssessmentEvidenceReader:
         )
         try:
             expected = self.proof(contract, target)
+            ec2_facts_value = None
+            if candidate.control_id in {"EC2-001", "EC2-002", "EC2-003", "EC2-004"}:
+                from app.assessment.ec2_evidence import ec2_facts
+
+                ec2_facts_value = ec2_facts(self, contract, target, candidate.control_id)
         except IncompleteAssessmentEvidence:
             if (
                 candidate.result is not AssessmentResult.INSUFFICIENT_EVIDENCE
@@ -246,3 +251,19 @@ class AssessmentEvidenceReader:
         for artifact in candidate.evidence_artifacts:
             if artifact.payload.get("source_proof") != expected:
                 raise ValueError("assessment source proof differs from retained evidence")
+            if ec2_facts_value is not None:
+                from app.assessment.ec2_evidence import canonical
+
+                if any(
+                    canonical(artifact.payload.get(k)) != canonical(v)
+                    for k, v in ec2_facts_value.items()
+                ):
+                    raise ValueError("EC2 decision facts differ from retained evidence")
+                if artifact.payload.get("evaluation_version") != "1.0.0":
+                    raise ValueError("EC2 evaluation version differs from contract")
+        if ec2_facts_value is not None:
+            from app.assessment.ec2_evidence import ec2_not_applicable
+
+            na = ec2_not_applicable(ec2_facts_value)
+            if (candidate.result is AssessmentResult.NOT_APPLICABLE) != na:
+                raise ValueError("EC2 applicability differs from retained evidence")

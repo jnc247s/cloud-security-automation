@@ -60,6 +60,17 @@ separately from findings and assessments.
 
 ## Interpretation rules
 
+### 6C additional subset and mappings
+
+Opt-in catalog `0.5.0` retains all earlier subset bytes and adds separately identified local
+`nist-csf/2.0+subset.4`, sourced from NIST CSWP 29 version `2.0`, Appendix A, printed page 20,
+inspected 2026-09-28. Its files are `app/assessment/data/nist_csf_2_0_subset_4.json` and
+`app/assessment/data/nist_csf_2_0_subset_4_manifest.json`; the manifest binds the exact subset hash.
+EC2-001 maps to PR.PS-01, EC2-002 to PR.IR-01, and EC2-003/004 to PR.DS-01 with the limited
+rationales in [approved 6C metadata](../controls/sprint-6c-metadata.md). These project mappings
+do not determine technical results or claim complete NIST outcomes. The suffix is a local release,
+not an official NIST framework version.
+
 ### 6B.1 additional subset and mappings
 
 Opt-in control catalog `0.3.0` retains the original `nist-csf/2.0` subset and all five existing

@@ -58,6 +58,13 @@ security control.
 
 ## AWS access and least privilege
 
+6C consumes only retained EC2/EBS evidence and adds no AWS permissions or write capability.
+EC2-002 approvals use exact stable resource UUIDs, binding account, Region and instance; bare IDs
+are rejected only for profiles enabling that control. Approval is immutable assessment policy,
+not an operational finding exception. IMDS tokens, public addressing and encryption facts do not
+prove compromise, reachability, full data protection or KMS-policy correctness. Operator guidance
+requires compatibility checks and separately approved changes; no automatic remediation is added.
+
 6B.1 adds no AWS permissions or write handlers. Its opt-in IAM evaluators use only retained,
 same-scan facts and explicit versioned policy. Key age/last-use checks do not establish compromise,
 and root summary flags do not establish centralized root-access posture. Operator guidance must

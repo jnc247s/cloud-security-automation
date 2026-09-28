@@ -14,6 +14,12 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Opt-in catalog `0.5.0` adds EC2-001 through EC2-004 through the existing authenticated scan,
+resource/history, assessment/evidence, finding and control/framework reads. No route or request
+field is added. EC2-004 uses a Regional `ec2/aws_account` assessment-only target, with its own stable
+resource and snapshot history, not a fabricated collector graph endpoint. EC2-002 approvals use
+the existing `resource_id` UUID from generic resource reads, never the bare instance identifier.
+
 All `/api/v1` operations require an HTTP bearer token. `/health`, `/ready`, `/docs`,
 `/docs/oauth2-redirect`, `/redoc`, and `/openapi.json` remain unauthenticated for platform probes
 and API discovery and must never expose resource evidence.

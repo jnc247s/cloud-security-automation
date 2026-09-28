@@ -44,6 +44,13 @@ failure behavior.
 
 ## Trust boundaries and assumptions
 
+Approved 6C mitigates ambiguous cross-account/Region public-IP approvals by matching canonical
+stable resource UUIDs only. Required discovery/admission/configuration facts and N/A applicability
+are revalidated at engine and persistence boundaries. Regional EBS defaults cannot be collapsed
+into global or volume targets. Source failure cannot prove empty inventory, and unavailable
+optional KMS context cannot erase an independently proved encryption boolean. No new AWS,
+authentication, authorization or deployment boundary is introduced.
+
 Approved 6B.1 adds IAM-002/003/005/006 in opt-in catalog `0.3.0`, not the default catalog. Its
 joined evidence boundary rejects incomplete enumeration, unresolved/missing key edges, mismatched
 identity/provenance, and ambiguous last-use facts. Observation-time thresholds and exact catalog/

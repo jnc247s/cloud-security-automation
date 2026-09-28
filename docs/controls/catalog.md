@@ -26,8 +26,10 @@ for all 25 planned control meanings. The bounded 5F CloudTrail producer was acce
 pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Evidence readiness
 does not change the executable catalog: Sprint 5 is `COMPLETE`, the bounded 5G closure was
 accepted in pull request 25. Approved 6B.1 adds IAM-002/003/005/006 only in explicitly selected
-catalog `0.3.0`. Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`; other planned controls stay
-unregistered. The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md).
+catalog `0.3.0`. Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, and approved 6C adds
+EC2-001 through EC2-004 in opt-in catalog `0.5.0`. Other planned controls stay unregistered.
+The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
+[6C metadata](sprint-6c-metadata.md).
 
 The [approved 6B.1 metadata](sprint-6b1-metadata.md) owns severities, operator guidance, mappings,
 and release identities: IAM-002/003 are MEDIUM, IAM-005/006 HIGH. IAM-003 requires explicit
@@ -90,7 +92,8 @@ Normalized resource edges use the approved
 That contract fixes direction, stable and per-scan identity, Region, resolution, and provenance;
 its collector and persistence integration remains Sprint 5 work.
 
-Except for approved 6B.1 metadata, new contracts have no severity or NIST mapping yet. Severity is project policy and
+Except for approved 6B.1, 6B.2 and 6C metadata, new contracts have no severity or NIST mapping yet.
+Severity is project policy and
 must not be inferred from NIST. A future mapping requires separate authoritative provenance and
 review; no mapping metadata is needed to collect Sprint 5 facts.
 
@@ -324,7 +327,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `EC2-001` — EC2 instance does not require IMDSv2
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.5.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EC2 instance.
 - **Required evidence:** instance identity and complete `MetadataOptions.State`,
   `MetadataOptions.HttpEndpoint`, and `MetadataOptions.HttpTokens`, with common regional
@@ -346,7 +349,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `EC2-002` — EC2 instance has an unapproved public IPv4 address
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.5.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EC2 instance.
 - **Required evidence:** instance/account/Region identity, complete public-IPv4 assignment state
   across the instance-level address, every attached network interface association, and every
@@ -357,6 +360,9 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 - **Assessment Profile:** `enabled_controls` and the established versioned
   `public_ec2_exceptions` resource allowlist. Despite its historical field name, this is
   assessment policy and is separate from the Finding Exception lifecycle.
+  Executable v1 matches canonical stable resource UUIDs, binding account/Region/instance.
+  Bare IDs, ARNs and wildcards are rejected when EC2-002 is enabled; old profiles are not rewritten.
+  See [approved 6C metadata](sprint-6c-metadata.md).
 - **PASS:** no public IPv4 is assigned, or the stable instance identity is explicitly allowed by
   the selected profile.
 - **FAIL:** a public IPv4 is assigned and the stable identity is not allowed by policy.
@@ -368,7 +374,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `EC2-003` — EBS volume is not encrypted
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.5.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EBS volume.
 - **Required evidence:** volume/account/Region identity, `Encrypted`, KMS key ID when present,
   attachments, and common regional provenance.
@@ -386,7 +392,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `EC2-004` — EBS encryption by default is disabled
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.5.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** AWS account + Region setting, not an EBS volume.
 - **Required evidence:** account, Region, explicit `EbsEncryptionByDefault`, optional default KMS
   key ID for context, and common regional provenance.

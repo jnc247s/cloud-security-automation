@@ -8,6 +8,20 @@ Synthetic test catalogs are not production releases.
 
 ## Explicit configuration
 
+6C adds opt-in catalog `0.5.0` with EC2-001/002/003/004. Its new controls use execution schema
+`1.0.0` and shared EC2 fact/applicability validation; the prior catalog releases are unchanged.
+When EC2-002 is enabled, every `public_ec2_exceptions` entry must be a canonical lowercase,
+hyphenated stable resource UUID (the existing UUIDv5 `resource_id`), not a snapshot UUID, ARN,
+wildcard or bare instance ID. Empty means no approvals. Validation runs before collection and
+on exact-policy recovery. Profiles without EC2-002 retain the established string-list contract.
+No old policy version is rewritten; create a new version when enabling controls or changing approvals.
+
+Run the bounded local acceptance with `python -m pytest tests/unit/rules/test_ec2.py
+tests/unit/database/test_ec2_controls.py tests/unit/database/test_ec2_http_acceptance.py`.
+With an explicitly disposable `TEST_DATABASE_URL`, run
+`python -m pytest tests/integration/test_ec2_controls_postgres.py`. CI is authoritative for
+PostgreSQL and retains real auth, executor, collectors, rules and persistence with fake AWS only.
+
 With `ASSESSMENT_PROFILE_FILE` unset, the existing environment-based legacy factory is unchanged.
 Set it only to a protected local UTF-8 JSON file, outside Git, with this envelope:
 

@@ -1,8 +1,61 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A COMPLETE and merged; 6B.1 approved and IN PROGRESS. Later implementation
-slices remain proposed. Independent review is deferred to the whole-6B gate by user instruction.
+Plan state: 6A and 6B COMPLETE and merged; 6C approved and IN PROGRESS. Later implementation
+slices remain proposed. One read-only reviewer is approved after 6C validation.
 Prepared: 2026-09-24.
+Current checkpoint verified: 2026-09-28. Historical checkpoints below retain their original state.
+
+## 6C authorization and integration checkpoint — 2026-09-28
+
+PR #29 merged 6B.2 into 6B.1, then PR #28 merged both at
+`42cc65366ed4d6e1fe14aa28e2650a62280cba8b`. Merged-main
+[CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36464517181).
+This supersedes historical 6B pending-merge notes. The clean baseline was fast-forwarded before
+creating `codex/sprint-6c-ec2-ebs-controls`; migration head remains `20260924_0004`.
+
+The user approved implementation and [6C metadata](../../controls/sprint-6c-metadata.md), including
+catalog `0.5.0`, evaluator `1.0.0`, severities, scoped mappings, stable-resource UUID allowlisting,
+human-approved operator guidance and one read-only reviewer after validation. Scope is exactly
+EC2-001/002/003/004; no collector, permission, schema, API/auth or later-slice change is authorized.
+
+Implementation reuses execution schema `1.0.0`, exact source coverage and admitted snapshots.
+A shared EC2 fact/applicability validator additionally binds complete discovery membership and
+configuration to retained source payloads. Missing/ambiguous evidence cannot become empty N/A.
+EC2-004 remains a requested-Region assessment-only account target, never a collector resource.
+Optional KMS evidence and contextual topology do not determine these results. Profile validation
+rejects noncanonical UUID approvals only when EC2-002 is enabled, including before AWS work and
+on recovery; old profile bytes remain valid. Framework subset `.4` is independently checksummed.
+
+Validate truth tables, source isolation, empty/missing distinctions, identity/Region safety,
+forged evidence and N/A rejection, old/new history, exact pending-scan recovery and real authenticated
+HTTP-to-persistence/public reads. Run focused tests then Ruff/full regression, disposable PostgreSQL,
+container checks and the approved independent review. CI and human merge remain acceptance gates.
+No 6C completion or later-slice implementation is claimed at this authorization checkpoint.
+
+### Reviewed 6C implementation checkpoint — 2026-09-28
+
+EC2-001 through EC2-004 are implemented in explicit catalog `0.5.0` with the approved metadata
+and independently hashed framework subset `.4`. Source/fact/applicability checks are shared by
+engine and persistence. Default catalog `0.2.1`, earlier releases, profile bytes, source manifests,
+collectors, API/auth and migrations are unchanged. Migration head remains `20260924_0004`.
+
+Validation of the final local implementation: **43 targeted tests passed**; targeted plus
+contract/Markdown/link checks **109 passed, 2 warnings**. Complete regression: **1,570 passed,
+54 skipped, 21 warnings** in 45.24 seconds. The skips are exclusively unconfigured PostgreSQL
+cases, including eight new 6C cases. Ruff lint and format passed (249 local Python files),
+whitespace and changed-file sensitive-path/AWS-key/private-key pattern checks passed. These
+are scoped checks, not a comprehensive secret-scan guarantee. Compose configuration passed;
+Docker's Linux engine is unavailable locally. No live AWS or production database was used.
+
+The single approved independent reviewer returned REVIEW_PASS with zero unresolved findings.
+One LOW stale catalog summary was corrected and independently verified; no runtime issue was
+identified. The reviewer independently ran 35 rule tests. Documentation links were rechecked
+after the correction: **66 passed, 2 warnings**.
+
+The user explicitly approved committing and pushing after review for authoritative PostgreSQL
+acceptance and image-build CI. CI on the pushed commit and human merge remain required before
+acceptance. This checkpoint does not claim 6C COMPLETE, a PR merge, or any 6D/later work.
+
 Sprint state: `IN PROGRESS`, as owned exclusively by [ROADMAP.md](../../../ROADMAP.md).
 The user authorized 6A implementation and a combined planning/implementation PR on 2026-09-24.
 
