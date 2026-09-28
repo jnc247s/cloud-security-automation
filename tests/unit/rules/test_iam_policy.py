@@ -235,3 +235,52 @@ def test_in_scope_document_cannot_be_forged_as_artifact_free_na():
     reader = AssessmentEvidenceReader(bundle["snapshot"])
     with pytest.raises(ValueError, match="cannot be not applicable"):
         reader.validate_candidate(iam_policy_contract().technical.execution_contract, a)
+
+
+@pytest.mark.parametrize("action", ["*", "s3:GetObject"])
+@pytest.mark.parametrize(
+    "condition",
+    [
+        {"Bool": True},
+        {},
+        {"Bool": {}},
+        {"Bool": {"aws:SecureTransport": None}},
+        {"Bool": {"aws:SecureTransport": []}},
+        {"StringEquals": {"aws:PrincipalTag/team": {"nested": "value"}}},
+    ],
+)
+def test_malformed_nested_condition_never_has_a_decisive_result(action, condition):
+    results = policy_bundle(
+        document={
+            "Statement": {
+                "Effect": "Allow",
+                "Action": action,
+                "Resource": "*",
+                "Condition": condition,
+            }
+        }
+    )["assessments"]
+    assert len(results) == 4
+    assert {a.result for a in results} == {AssessmentResult.INSUFFICIENT_EVIDENCE}
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        {"Bool": {"aws:SecureTransport": True}},
+        {"NumericLessThan": {"s3:max-keys": [10, 20]}},
+        {"StringEquals": {"aws:PrincipalTag/team": ["security", "platform"]}},
+    ],
+)
+def test_valid_condition_structure_does_not_erase_literal_match(condition):
+    results = policy_bundle(
+        document={
+            "Statement": {
+                "Effect": "Allow",
+                "Action": "*",
+                "Resource": "*",
+                "Condition": condition,
+            }
+        }
+    )["assessments"]
+    assert {a.result for a in results} == {AssessmentResult.FAIL}

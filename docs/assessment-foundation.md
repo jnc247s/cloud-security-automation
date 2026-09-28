@@ -92,6 +92,8 @@ Usage evidence is required only for active keys in IAM-003; missing lookup evide
 `no_recorded_use`. Decision facts bind to retained source artifacts and observation time.
 Unrelated source failure does not erase complete required evidence, but the existing whole-scan
 finding-resolution guard still applies. The reader and persistence enforce the same proof.
+The shared candidate validator rejects N/A with a nonempty proved active-key set, and rejects
+N/A for the never-inapplicable IAM-005/006 root controls. Genuine complete-empty key N/A is retained.
 
 The opt-in catalog requires a new explicit policy-file profile. IAM-003 requires extended schema
 `2.0.0` and `max_unused_access_key_days` (approved deployment value 90); no default is supplied.
@@ -118,8 +120,12 @@ proof makes results insufficient; a document-only failure does not erase complet
 
 Proofs retain canonical sorted source/relationship IDs and usage contexts; evaluation evidence
 records version `1.0.0` and matching statement indexes. This detects only literal Allow/Action */
-Resource * syntax, not effective permissions. Conditions do not erase the match. No thresholds
-or profile schema change are introduced. Exact catalog/profile recovery and whole-scan finding
+Resource * syntax, not effective permissions. Conditions do not erase the match.
+Their operator/key/scalar-or-scalar-list structure must be valid;
+malformed nested conditions are insufficient, not PASS or FAIL. Operator semantics are not
+evaluated. Structural references follow the
+[AWS policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html).
+No thresholds or profile schema change are introduced. Exact catalog/profile recovery and whole-scan finding
 resolution remain unchanged. See [approved metadata](controls/sprint-6b2-metadata.md).
 
 ## Validation and rollback

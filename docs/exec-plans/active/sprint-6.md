@@ -561,3 +561,40 @@ for these local commits. The whole-6B review, authoritative PostgreSQL/image CI 
 approval are outstanding. Neither 6B slice nor Sprint 6 is COMPLETE. Next action requires
 authorization to push the separate stacked branches and run the consolidated review; do not
 start 6C or later work as part of this handoff.
+
+## Whole-6B reviewed finalization — 2026-09-27
+
+The user authorized finalization and pushing both existing feature branches. This supersedes the
+earlier no-push/reviewer stopping point; no automatic merge or later-slice work is authorized.
+The single previously deferred independent reviewer reviewed both slices against merged 6A.
+Initial result: zero CRITICAL/HIGH, two MEDIUM findings. Both are fixed and the same reviewer
+verified `REVIEW_PASS`, with zero unresolved findings of any severity:
+
+1. IAM-004 now validates nested Condition structure without evaluating condition semantics.
+   Malformed conditions cannot produce a decisive assessment; valid conditions do not erase
+   the literal wildcard match. Collectors and approved control truth tables remain unchanged.
+2. Shared candidate validation rejects false N/A for nonempty IAM key populations and root
+   controls. Genuine complete-empty key N/A and unrelated legacy schema behavior are preserved.
+   The fix is on 6B.1 as `e7e40e442687c9192d611a162e7b140d14150d37`, carried into 6B.2 by
+   cherry-pick `28c79267f44bd0dc2e31a072655848e7129f907c`. Both guards were preserved during
+   conflict resolution. No published history was rewritten or branch automatically merged.
+
+Final local validation after repairs: combined focused tests **103 passed, 2 warnings**; full
+regression **1,526 passed, 46 skipped, 21 warnings**. The 46 skips are explicitly unconfigured
+disposable PostgreSQL cases. 6B.1 independently passed **44 focused** and **1,466 full tests**
+with 41 local PostgreSQL skips. Ruff lint/format (239 local Python files), whitespace, scoped
+credential-pattern checks and Compose configuration passed. No live AWS or production DB was used.
+
+GitHub CI on the original combined implementation ran **1,545 tests with no skips**, including
+PostgreSQL acceptance, and built the image. The repaired 6B.1 runtime also passed
+[CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362683825).
+Final pushed-HEAD CI remains mandatory before human merge; current results are owned by GitHub,
+not inferred from the earlier successful runs. Local Docker is still unavailable.
+
+Git push works, but GitHub's PR-creation integration returned HTTP 403 (resource not accessible
+by integration). No PR was created and no credential/access-policy workaround was attempted.
+Open separate PRs manually: 6B.1 -> main, then 6B.2 -> 6B.1; merge the base first and retarget
+the second PR to main before its merge. The identical applicability repair appears in both
+histories intentionally, via cherry-pick rather than a force-push or automatic merge.
+All implementation/review work is ready for these acceptance gates. Sprint 6 and its 6B slices
+remain IN PROGRESS until required human merge approval/merge; no 6C work was started.

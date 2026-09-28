@@ -315,7 +315,22 @@ def _statements(document):
                     and all(isinstance(v, str) and bool(v.strip()) for v in values)
                 )
         if "Condition" in statement:
-            _require(isinstance(statement["Condition"], Mapping))
+            condition = statement["Condition"]
+            _require(isinstance(condition, Mapping) and bool(condition))
+            for operator, entries in condition.items():
+                _require(
+                    isinstance(operator, str)
+                    and bool(operator.strip())
+                    and isinstance(entries, Mapping)
+                    and bool(entries)
+                )
+                for key, value in entries.items():
+                    _require(isinstance(key, str) and bool(key.strip()))
+                    values = value if isinstance(value, list | tuple) else (value,)
+                    # Validate JSON structure only, never evaluate operator/key semantics.
+                    _require(
+                        bool(values) and all(type(v) in (str, bool, int, float) for v in values)
+                    )
     return statements
 
 
