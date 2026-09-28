@@ -69,6 +69,7 @@ def load_deployment_policy(settings) -> DeploymentPolicy:
         if profile.version != settings.assessment_profile_version:
             raise ValueError("configured profile version mismatch")
         catalog, registry = resolve_catalog(envelope.catalog_id, envelope.catalog_version)
+        catalog.validate_profile_inputs(profile)
         if set(profile.enabled_controls) - {rule.control_id for rule in registry.rules}:
             raise ValueError("profile enables an unsupported control")
         return DeploymentPolicy(profile, catalog)

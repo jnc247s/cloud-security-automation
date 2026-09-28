@@ -96,8 +96,9 @@ This behavior uses the existing versioned persistence schema and requires no mig
 These thresholds and exceptions are organization or project policy. NIST CSF 2.0 does not
 universally mandate the default tag names, a 90-day stale-key threshold, particular management
 CIDRs, project-specific EC2 exceptions, or this project's KMS rule. Current controls use only the
-`enabled_controls` profile field; the other fields establish versioned inputs for roadmap controls
-that will explicitly depend on them.
+`enabled_controls` profile field in the default catalog. Opt-in catalog `0.3.0` also uses
+`stale_key_days` for IAM-002 and explicit `max_unused_access_key_days` for IAM-003. Other fields
+remain versioned inputs for later controls.
 
 The pre-Sprint-5 contracts also define two standalone future policy artifacts:
 [bucket-scoped S3 exposure approvals](controls/s3-002-exposure-aggregation.md) and the
@@ -111,7 +112,10 @@ applying current policy to historical scans. See [6A assessment foundation](asse
 
 ## Control contracts
 
-The control catalog is `aws-cloud-security-controls` version `0.2.1`. Each automated control has a
+The default control catalog is `aws-cloud-security-controls/0.2.1`; opt-in release `0.3.0` adds
+IAM-002/003/005/006 with [approved metadata](controls/sprint-6b1-metadata.md). Opt-in `0.4.0` adds
+IAM-004 with [approved policy metadata](controls/sprint-6b2-metadata.md), preserving prior releases.
+Each control has a
 framework-independent `TechnicalControlContract` covering:
 
 1. what the control measures;

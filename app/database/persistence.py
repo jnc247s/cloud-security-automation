@@ -207,6 +207,7 @@ def _validate_bundle(
     if set(item.control_id for item in assessments) != set(scope.enabled_controls):
         raise ScanPersistenceError("every enabled control requires an explicit assessment")
     try:
+        catalog.validate_profile_inputs(profile)
         validate_expected_assessments(snapshot, scope, catalog, assessments)
     except ValueError as error:
         raise ScanPersistenceError(str(error)) from error

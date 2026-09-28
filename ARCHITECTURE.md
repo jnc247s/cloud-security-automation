@@ -5,7 +5,8 @@ evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM
 5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
 `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
 request #25. Sprint 5 is complete. Approved Sprint 6A adds the versioned assessment foundation
-below; later production-control slices are unstarted and the five executable controls are unchanged.
+below. Approved 6B.1 adds four opt-in IAM controls; the five default controls remain unchanged.
+Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, retaining prior catalog definitions.
 
 ## Sprint 6A assessment integration
 
@@ -22,7 +23,26 @@ All declared required sources and edges must be complete; legacy whole-collector
 full-scope finding resolution are unchanged. This adds no control, collector, permission, or
 dependency scheduler. The foundation remains subject to the active plan's validation/review gate.
 
+## Sprint 6B.1 opt-in IAM controls
+
+Catalog `0.3.0` adds IAM-002/003/005/006 over retained IAM evidence, without collector, AWS
+permission, API route, or schema changes. The original `0.2.1` catalog remains the default and
+recoverable by exact identity. Versioned IAM user/key proofs establish complete enumeration,
+same-scan endpoint/provenance binding, and active-key usage facts before evaluation or persistence.
+Thresholds use retained observation time, never wall-clock time. Root flags remain global account
+assessments. See [assessment foundation](docs/assessment-foundation.md#6b1-iam-evidence-joins)
+and [approved control metadata](docs/controls/sprint-6b1-metadata.md). Source sufficiency does not
+weaken whole-scan finding-resolution requirements; framework metadata never controls results.
+
 ## System context
+
+The 6B.2 permissions-policy evaluator uses execution schema `1.2.0`: complete global discovery
+and same-scan owner/usage proofs, one target per managed default-version or inline document,
+and explicit insufficient parent targets when managed versions are unavailable. It retains
+boundary-only context without computing effective permissions. The shared engine/persistence
+reader binds document digests, immutable snapshot IDs and source/edge provenance. See
+[policy evidence joins](docs/assessment-foundation.md#6b2-iam-policy-document-joins).
+No collector, AWS permission, database migration, route, or authentication change is introduced.
 
 ```text
 AWS environment

@@ -243,6 +243,19 @@ class ControlCatalog(BaseModel):
                 return control
         raise KeyError(f"unknown control in catalog {self.catalog_id} {self.version}: {control_id}")
 
+    def validate_profile_inputs(self, profile: AssessmentProfile) -> None:
+        """Reject missing declared policy before collection, evaluation, or persistence."""
+        for control_id in profile.enabled_controls:
+            try:
+                control = self.get(control_id)
+            except KeyError:
+                raise ValueError("profile enables an unsupported control") from None
+            if any(
+                getattr(profile, field, None) is None
+                for field in control.technical.profile_parameters
+            ):
+                raise ValueError("enabled control requires explicit policy inputs")
+
 
 TECHNICAL_CONTROL_CONTRACTS: tuple[TechnicalControlContract, ...] = (
     TechnicalControlContract(

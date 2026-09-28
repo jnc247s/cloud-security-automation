@@ -99,6 +99,7 @@ class RuleEngine:
         expected_inventory_sha256 = inventory_sha256(snapshot)
         catalog = self.catalog if self.catalog is not None else build_default_control_catalog()
         expected_catalog_sha256 = control_catalog_sha256(catalog)
+        catalog.validate_profile_inputs(profile)
         evidence_reader = (
             AssessmentEvidenceReader(snapshot)
             if any(c.technical.execution_contract is not None for c in catalog.controls)

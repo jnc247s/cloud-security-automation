@@ -2,8 +2,9 @@
 
 Scope/status is owned by [ROADMAP.md](../ROADMAP.md) and the
 [active Sprint 6 plan](exec-plans/active/sprint-6.md). This foundation enables no new control.
-The production resolver still supports only `aws-cloud-security-controls` version `0.2.1` and
-its five accepted rules. Synthetic test catalogs are not production releases.
+The default release remains `aws-cloud-security-controls/0.2.1` and its five accepted rules.
+Approved 6B.1 adds explicit opt-in `0.3.0` containing those five plus IAM-002/003/005/006.
+Synthetic test catalogs are not production releases.
 
 ## Explicit configuration
 
@@ -64,7 +65,7 @@ assessment-only targets, never inserted into the collector graph. Resource-famil
 retain actual resource identity/type/owner. Empty populations require an explicit N/A or
 insufficient account fallback; incomplete evidence cannot justify N/A.
 
-The only source-aware strategy is `all_required_sources_complete_v1`. Requirements bind collector,
+The original source-aware strategy is `all_required_sources_complete_v1`. Requirements bind collector,
 source API, evidence kind, subject scope, declaration version, and completeness strategy. Account
 enumeration/settings require explicit normalized completeness flags. Exact resource enrichment may
 use `admitted_resource_v1` only with authoritative same-scan resource admission and required account
@@ -76,11 +77,64 @@ Assessment payload `source_proof` binds source outcome IDs, artifact IDs/digests
 observation IDs, scan ID, and schema version. Both boundaries verify it against the retained graph.
 `NOT_APPLICABLE` retains the accepted artifact-free representation: the reader verifies complete
 required coverage against the retained graph and exact catalog before accepting that result.
-This validates evidence, not control policy: no new evaluator, S3 aggregation, or dependency engine
-is present. The five legacy rules keep their whole-collector guards. Source sufficiency does not
+This reader validates evidence, not control policy; it has no S3 aggregation or dependency engine.
+The five legacy rules keep their whole-collector guards. Source sufficiency does not
 relax the existing complete-scan finding-resolution gate.
 
+### 6B.1 IAM evidence joins
+
+Execution schema `1.1.0` adds only `iam_active_key_age_v1` and `iam_active_key_usage_v1`, restricted
+to global IAM user targets and their `has_access_key` edges. Schema `1.0.0` retains its exact
+semantics and cannot select the new strategies. Complete user discovery and per-user key
+enumeration must match retained identities and resolved edges; edge provenance must identify the
+exact admitted key source. Zero active keys is N/A only after complete enumeration is proved.
+Usage evidence is required only for active keys in IAM-003; missing lookup evidence is not
+`no_recorded_use`. Decision facts bind to retained source artifacts and observation time.
+Unrelated source failure does not erase complete required evidence, but the existing whole-scan
+finding-resolution guard still applies. The reader and persistence enforce the same proof.
+The shared candidate validator rejects N/A with a nonempty proved active-key set, and rejects
+N/A for the never-inapplicable IAM-005/006 root controls. Genuine complete-empty key N/A is retained.
+
+The opt-in catalog requires a new explicit policy-file profile. IAM-003 requires extended schema
+`2.0.0` and `max_unused_access_key_days` (approved deployment value 90); no default is supplied.
+Missing declared profile inputs fail before AWS collection, including pending-scan recovery.
+See [approved metadata](controls/sprint-6b1-metadata.md). No schema migration is added.
+
+### 6B.2 IAM policy-document joins
+
+Catalog `0.4.0` adds IAM-004 using execution schema `1.2.0`, selection
+`iam_policy_documents_v1`, and validation `iam_policy_document_v1`. Old schemas cannot select
+this strategy. Customer-managed and referenced AWS-managed default-version documents are targets;
+inline documents use their existing owner/name identity without a synthetic AWS version.
+One document is evaluated once even when multiple identities attach it or use it as a boundary.
+Trust policies are outside this target set. No changes to collectors or the API are required.
+
+The reader verifies complete user/group/role/local-policy enumeration; per-identity attachment,
+boundary and inline enumeration; group membership; same-scan resolved edges and exact source
+provenance. The target's decoded document and digest must match the retained snapshot. Managed
+versions must agree with GetPolicy and the selected-version relationship. Inline owner/name must
+agree with enumeration and the canonical identity. Missing metadata/default versions retain a
+parent insufficient-evidence target rather than silently disappearing. Complete empty populations
+use artifact-free account N/A, but in-scope documents cannot be N/A. Incomplete usage/population
+proof makes results insufficient; a document-only failure does not erase complete sibling documents.
+
+Proofs retain canonical sorted source/relationship IDs and usage contexts; evaluation evidence
+records version `1.0.0` and matching statement indexes. This detects only literal Allow/Action */
+Resource * syntax, not effective permissions. Conditions do not erase the match.
+Their operator/key/scalar-or-scalar-list structure must be valid;
+malformed nested conditions are insufficient, not PASS or FAIL. Operator semantics are not
+evaluated. Structural references follow the
+[AWS policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html).
+No thresholds or profile schema change are introduced. Exact catalog/profile recovery and whole-scan finding
+resolution remain unchanged. See [approved metadata](controls/sprint-6b2-metadata.md).
+
 ## Validation and rollback
+
+Run `python -m pytest tests/unit/rules/test_iam_policy.py tests/unit/database/test_iam_policy.py
+tests/unit/database/test_iam_http_acceptance.py` for focused offline validation. Run
+`python -m pytest tests/integration/test_iam_policy_postgres.py` with an explicitly disposable
+`TEST_DATABASE_URL` for authoritative persistence, recovery, historical versions and authenticated
+HTTP acceptance. SQLite HTTP validation is supplemental; CI must execute PostgreSQL.
 
 Focused tests are in `tests/unit/assessment/test_assessment_foundation.py`,
 `tests/unit/database/test_assessment_foundation.py`, and

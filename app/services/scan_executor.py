@@ -289,6 +289,7 @@ class InProcessScanExecutor:
             requested_services = tuple(scan.requested_services)
             try:
                 catalog, registry = resolve_catalog(*expected_catalog)
+                catalog.validate_profile_inputs(profile)
                 verify_control_catalog(session, catalog)
                 if set(profile.enabled_controls) - {rule.control_id for rule in registry.rules}:
                     raise ValueError("unsupported enabled controls")
