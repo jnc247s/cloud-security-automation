@@ -598,3 +598,50 @@ the second PR to main before its merge. The identical applicability repair appea
 histories intentionally, via cherry-pick rather than a force-push or automatic merge.
 All implementation/review work is ready for these acceptance gates. Sprint 6 and its 6B slices
 remain IN PROGRESS until required human merge approval/merge; no 6C work was started.
+
+## Reviewed 6B.1 finalization — 2026-09-27
+
+The user authorized finalizing and pushing the two 6B feature branches. The single deferred
+whole-6B reviewer found zero CRITICAL/HIGH and two MEDIUM issues. Both were fixed and the same
+reviewer verified REVIEW_PASS, with zero unresolved findings. This supersedes the earlier
+review/push stopping points; no automatic merge or later-slice work is authorized.
+
+This branch's applicability repair is `e7e40e442687c9192d611a162e7b140d14150d37`: shared
+engine/persistence validation rejects false N/A for nonempty IAM key sets and the never-N/A
+root controls. Complete-empty key N/A and unrelated legacy behavior remain valid. The other
+finding, malformed nested Condition structure, is repaired only on the separate IAM-004 branch
+`codex/sprint-6b-iam-policy-controls`. That branch also carries the applicability repair through
+a cherry-pick without rewriting published commits or automatically merging branches.
+
+Final local 6B.1 validation: **44 focused tests passed, 2 warnings**; full regression
+**1,466 passed, 41 skipped, 21 warnings**. Skips are unconfigured disposable PostgreSQL cases.
+Ruff lint/format passed (231 local Python files). The repaired runtime passed
+[GitHub CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362683825),
+including PostgreSQL integration, real authenticated HTTP acceptance and the API image build.
+Final pushed-HEAD CI remains mandatory before human merge. No live AWS or production DB was used.
+
+Both feature branches are pushed. PR creation was refused by the GitHub integration with HTTP
+403; no credentials/access-policy workaround was attempted. Open 6B.1 -> main first, then
+6B.2 -> 6B.1, and retarget the second to main after the base merges. Human merge approval remains
+required; no slice completion or merge is claimed here. IAM-004 is not part of this base PR;
+6C and later work were not started.
+
+## Authorized feature-branch synchronization — 2026-09-27
+
+The user explicitly approved merging 6B.1 into 6B.2 only to synchronize their shared repair and
+closeout history. This narrowly supersedes the earlier no-branch-merge stopping point; it does
+not authorize merging either PR into main, rewriting published history, or starting 6C.
+The preceding 6B.1 checkpoint describes the base branch, not the combined branch's runtime.
+Conflict resolution preserves the exact reviewed combined application and tests from
+`ff46041918fffe2a902bba267b83aa4f6feffb19`, including both applicability guards, and retains both
+slices' execution history. The combined roadmap remains authoritative for this stacked branch.
+
+The repaired combined implementation passed
+[CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362960955):
+**1,572 passed, zero skipped, 20 warnings**, with disposable PostgreSQL acceptance, Ruff, and
+the API image build. Final synchronization-commit CI remains required before human merge.
+The approved feature merge removes the stacked-branch conflict without changing runtime behavior.
+Post-resolution contract/link, IAM rule, persistence and authenticated HTTP checks passed:
+**168 passed, 2 warnings**. Ruff lint/format (239 files) and whitespace checks passed. Application
+and test files match the reviewed, fully validated combined commit byte-for-byte; final CI
+reruns the full regression with PostgreSQL on the synchronization commit.

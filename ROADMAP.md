@@ -101,7 +101,7 @@ verified on 2026-09-27 and supersedes the earlier 6A pending-merge notes. Migrat
 
 The user requested 6B.1 implementation and approved its 90-day unused-key policy and severities
 on 2026-09-27, then approved the remaining [control metadata](docs/controls/sprint-6b1-metadata.md).
-6B.1 is `IN PROGRESS` for IAM-002/003/005/006 only. At the user's request, independent review is
+6B.1 is `IN PROGRESS` for IAM-002/003/005/006 only. At the user's request, independent review
 was deferred until 6B as a whole was ready; that consolidated review has now passed. IAM-004
 belongs to separate slice 6B.2, authorized on 2026-09-27 and now `IN PROGRESS` on a stacked
 branch. The approved metadata and workflow amendment are recorded in the active plan.
