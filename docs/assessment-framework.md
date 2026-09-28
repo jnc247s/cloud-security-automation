@@ -113,7 +113,9 @@ applying current policy to historical scans. See [6A assessment foundation](asse
 ## Control contracts
 
 The default control catalog is `aws-cloud-security-controls/0.2.1`; opt-in release `0.3.0` adds
-IAM-002/003/005/006 with [approved metadata](controls/sprint-6b1-metadata.md). Each control has a
+IAM-002/003/005/006 with [approved metadata](controls/sprint-6b1-metadata.md). Opt-in `0.4.0` adds
+IAM-004 with [approved policy metadata](controls/sprint-6b2-metadata.md), preserving prior releases.
+Each control has a
 framework-independent `TechnicalControlContract` covering:
 
 1. what the control measures;

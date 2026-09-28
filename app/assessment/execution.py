@@ -53,19 +53,37 @@ class ExecutionContract(BaseModel):
     """The only 6A strategy requires every declared source and edge to be complete."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    schema_version: Literal["1.0.0", "1.1.0"]
+    schema_version: Literal["1.0.0", "1.1.0", "1.2.0"]
     target_kind: Literal["global_account", "regional_account", "resources"]
-    target_selection: Literal["all_observed_v1"]
+    target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     resource_families: tuple[ResourceFamily, ...] = ()
     validation_strategy: Literal[
-        "all_required_sources_complete_v1", "iam_active_key_age_v1", "iam_active_key_usage_v1"
+        "all_required_sources_complete_v1",
+        "iam_active_key_age_v1",
+        "iam_active_key_usage_v1",
+        "iam_policy_document_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        if self.schema_version != "1.2.0" and self.target_selection != "all_observed_v1":
+            raise ValueError("legacy execution schemas require legacy target selection")
+        if self.schema_version == "1.2.0":
+            from app.assessment.iam_policy_evidence import POLICY_DISCOVERY, POLICY_FAMILIES
+
+            if (
+                self.validation_strategy != "iam_policy_document_v1"
+                or self.target_selection != "iam_policy_documents_v1"
+                or self.target_kind != "resources"
+                or self.account_service != "iam"
+                or self.resource_families != POLICY_FAMILIES
+                or self.required_sources != POLICY_DISCOVERY
+                or self.required_relationships
+            ):
+                raise ValueError("execution schema 1.2 is restricted to IAM policy proofs")
         if self.schema_version == "1.0.0" and self.validation_strategy != (
             "all_required_sources_complete_v1"
         ):
@@ -130,6 +148,10 @@ def assessment_targets(
 
     if contract.target_kind != "resources":
         return (account_target(snapshot, contract),)
+    if contract.target_selection == "iam_policy_documents_v1":
+        from app.assessment.iam_policy_evidence import policy_targets
+
+        return policy_targets(snapshot)
     families = {(item.service, item.resource_type) for item in contract.resource_families}
     resources = tuple(
         sorted(

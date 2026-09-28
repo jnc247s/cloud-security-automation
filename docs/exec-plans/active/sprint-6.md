@@ -367,7 +367,7 @@ A final read-only self-check found no scope/status conflict; no independent revi
 and no implementation-review approval is claimed. No new full regression was run for this
 documentation-only preparation.
 
-**Current action:** implement and validate approved 6B.1 as recorded below. Organization-specific
+**Current action:** implement and validate approved 6B.2 as recorded below. Organization-specific
 and S3 decisions must be approved before their dependent slices; they must not be silently supplied
 by code. Earlier preparation and implementation checkpoints below are historical evidence.
 
@@ -503,6 +503,102 @@ CI validation; no push or merge is claimed here. The change remains uncommitted 
 IAM-004 (6B.2), later slices, remediation, and deployment were not started. 6B.1 is not marked
 COMPLETE while validation/review/merge gates remain outstanding.
 
+## 6B.2 authorization and workflow amendment — 2026-09-27
+
+The user approved IAM-004 implementation, HIGH severity, evaluator `1.0.0`, opt-in catalog
+`0.4.0`, scoped PR.AA-05 mapping, and impact/guidance described in
+[6B.2 metadata](../../controls/sprint-6b2-metadata.md). Preserve all earlier catalog/framework
+bytes and defaults. Scope is permissions-policy syntax only, not effective authorization.
+
+The user explicitly approved stacking this slice before 6B.1 is accepted: checkpoint 6B.1 on
+`codex/sprint-6b-iam-key-root-controls`, then branch `codex/sprint-6b-iam-policy-controls` from it.
+The checkpoint is `e242e64f2feb6c69ffbee0b00b8cc88e2064a54c`, based on merged 6A
+`1900dd4fd0968de5c130a65265ce2c8670a51a09`. This is a bounded exception to the clean-main
+per-slice rule, not acceptance of 6B.1. Keep separate PRs and review all of 6B together.
+No push, merge, or reviewer launch is authorized by this approval.
+
+Reuse existing managed/default-version and inline-policy evidence. Version the bounded
+multi-family target/proof strategy; incomplete enumeration, missing document/version/owner/digest
+or unresolved usage must fail safely. Preserve boundary-only context and deduplicate documents
+across usage. No collector, permission, schema, route, authentication, or later-slice change is
+planned. Run targeted, history/recovery/HTTP, PostgreSQL where available, full regression, Ruff,
+and applicable container checks. Review/CI/merge gates remain outstanding.
+
+## 6B.2 implementation checkpoint — 2026-09-27
+
+Branch: `codex/sprint-6b-iam-policy-controls`, stacked on local 6B.1 commit
+`e242e64f2feb6c69ffbee0b00b8cc88e2064a54c`. IAM-004 is implemented in explicit catalog `0.4.0`
+with approved HIGH severity, evaluator `1.0.0`, and independently versioned PR.AA-05 metadata.
+The new execution schema `1.2.0` shares target/proof validation across engine and persistence.
+It deduplicates policy documents while retaining usage, verifies enumeration/relationships and
+document identity/digest, and keeps missing managed versions visible as insufficient targets.
+Conditions do not erase literal matches; boundary-only policies are not described as grants.
+
+No collector, AWS permission, migration, API request/route, authentication or authorization
+change was made. Defaults and catalogs `0.2.1`/`0.3.0` remain unchanged. Migration head remains
+`20260924_0004`. Architecture, control/framework, persistence, API and security owners document
+the bounded extension. The original inventory digest's graph-order semantics were preserved;
+reordered evidence retains identical technical results and canonical proofs, not a fabricated
+claim that every raw inventory serialization is byte-identical.
+
+Validation of the implementation tree before its local commit:
+
+- Combined 6B rules, history, recovery and real authenticated HTTP: **80 passed, 2 warnings**.
+- Final IAM-004 rules/history after correcting the fixture to roll both managed-policy version
+  IDs with changed documents: **43 passed, 2 warnings**.
+- Final full regression: **1,503 passed, 42 skipped, 21 warnings** in 36.59 seconds. All skips
+  are disposable PostgreSQL tests without `TEST_DATABASE_URL`; deprecations are unchanged.
+- Contract/Markdown/link validation: **65 passed**; the five new PostgreSQL cases explicitly
+  skip locally. Those cover old/new catalog history, forged-proof atomic rejection, pending-scan
+  recovery, real HTTP-to-persistence/public reads, and managed/inline document version history.
+- Ruff lint and formatting passed (**239 local Python files**); whitespace and changed-file
+  AWS-key/private-key pattern checks passed. These are scoped checks, not a secret-scan guarantee.
+- Compose configuration passed. Docker Linux engine is unavailable; PostgreSQL execution and
+  image build are not claimed. No live AWS or production database was used.
+
+No independent reviewer was launched, no push/PR/merge was performed, and no CI result is claimed
+for these local commits. The whole-6B review, authoritative PostgreSQL/image CI and human merge
+approval are outstanding. Neither 6B slice nor Sprint 6 is COMPLETE. Next action requires
+authorization to push the separate stacked branches and run the consolidated review; do not
+start 6C or later work as part of this handoff.
+
+## Whole-6B reviewed finalization — 2026-09-27
+
+The user authorized finalization and pushing both existing feature branches. This supersedes the
+earlier no-push/reviewer stopping point; no automatic merge or later-slice work is authorized.
+The single previously deferred independent reviewer reviewed both slices against merged 6A.
+Initial result: zero CRITICAL/HIGH, two MEDIUM findings. Both are fixed and the same reviewer
+verified `REVIEW_PASS`, with zero unresolved findings of any severity:
+
+1. IAM-004 now validates nested Condition structure without evaluating condition semantics.
+   Malformed conditions cannot produce a decisive assessment; valid conditions do not erase
+   the literal wildcard match. Collectors and approved control truth tables remain unchanged.
+2. Shared candidate validation rejects false N/A for nonempty IAM key populations and root
+   controls. Genuine complete-empty key N/A and unrelated legacy schema behavior are preserved.
+   The fix is on 6B.1 as `e7e40e442687c9192d611a162e7b140d14150d37`, carried into 6B.2 by
+   cherry-pick `28c79267f44bd0dc2e31a072655848e7129f907c`. Both guards were preserved during
+   conflict resolution. No published history was rewritten or branch automatically merged.
+
+Final local validation after repairs: combined focused tests **103 passed, 2 warnings**; full
+regression **1,526 passed, 46 skipped, 21 warnings**. The 46 skips are explicitly unconfigured
+disposable PostgreSQL cases. 6B.1 independently passed **44 focused** and **1,466 full tests**
+with 41 local PostgreSQL skips. Ruff lint/format (239 local Python files), whitespace, scoped
+credential-pattern checks and Compose configuration passed. No live AWS or production DB was used.
+
+GitHub CI on the original combined implementation ran **1,545 tests with no skips**, including
+PostgreSQL acceptance, and built the image. The repaired 6B.1 runtime also passed
+[CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362683825).
+Final pushed-HEAD CI remains mandatory before human merge; current results are owned by GitHub,
+not inferred from the earlier successful runs. Local Docker is still unavailable.
+
+Git push works, but GitHub's PR-creation integration returned HTTP 403 (resource not accessible
+by integration). No PR was created and no credential/access-policy workaround was attempted.
+Open separate PRs manually: 6B.1 -> main, then 6B.2 -> 6B.1; merge the base first and retarget
+the second PR to main before its merge. The identical applicability repair appears in both
+histories intentionally, via cherry-pick rather than a force-push or automatic merge.
+All implementation/review work is ready for these acceptance gates. Sprint 6 and its 6B slices
+remain IN PROGRESS until required human merge approval/merge; no 6C work was started.
+
 ## Reviewed 6B.1 finalization — 2026-09-27
 
 The user authorized finalizing and pushing the two 6B feature branches. The single deferred
@@ -529,3 +625,23 @@ Both feature branches are pushed. PR creation was refused by the GitHub integrat
 6B.2 -> 6B.1, and retarget the second to main after the base merges. Human merge approval remains
 required; no slice completion or merge is claimed here. IAM-004 is not part of this base PR;
 6C and later work were not started.
+
+## Authorized feature-branch synchronization — 2026-09-27
+
+The user explicitly approved merging 6B.1 into 6B.2 only to synchronize their shared repair and
+closeout history. This narrowly supersedes the earlier no-branch-merge stopping point; it does
+not authorize merging either PR into main, rewriting published history, or starting 6C.
+The preceding 6B.1 checkpoint describes the base branch, not the combined branch's runtime.
+Conflict resolution preserves the exact reviewed combined application and tests from
+`ff46041918fffe2a902bba267b83aa4f6feffb19`, including both applicability guards, and retains both
+slices' execution history. The combined roadmap remains authoritative for this stacked branch.
+
+The repaired combined implementation passed
+[CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362960955):
+**1,572 passed, zero skipped, 20 warnings**, with disposable PostgreSQL acceptance, Ruff, and
+the API image build. Final synchronization-commit CI remains required before human merge.
+The approved feature merge removes the stacked-branch conflict without changing runtime behavior.
+Post-resolution contract/link, IAM rule, persistence and authenticated HTTP checks passed:
+**168 passed, 2 warnings**. Ruff lint/format (239 files) and whitespace checks passed. Application
+and test files match the reviewed, fully validated combined commit byte-for-byte; final CI
+reruns the full regression with PostgreSQL on the synchronization commit.

@@ -36,6 +36,7 @@ class AssessmentEvidenceReader:
         self._artifacts = {}
         self._provenance = {}
         self.resources = {self._target_id(r): r for r in self.snapshot.resources}
+        self._iam_policy_coverage = None
         if self.graph is not None:
             self._outcomes = {o.source_outcome_id: o for o in self.graph.source_outcomes}
             self._artifacts = {a.evidence_reference: a for a in self.graph.artifacts}
@@ -110,6 +111,10 @@ class AssessmentEvidenceReader:
             from app.assessment.iam_key_evidence import iam_key_proof
 
             return iam_key_proof(self, contract, target)
+        if contract.schema_version == "1.2.0":
+            from app.assessment.iam_policy_evidence import iam_policy_proof
+
+            return iam_policy_proof(self, target)
         citations = {}
         # Empty resource populations use only their mandatory account coverage sources.
         empty_fallback = (
@@ -226,6 +231,12 @@ class AssessmentEvidenceReader:
             and not candidate.evidence_artifacts
         ):
             raise ValueError("source-aware assessment requires structured source proof")
+        if (
+            contract.schema_version == "1.2.0"
+            and candidate.result is AssessmentResult.NOT_APPLICABLE
+            and expected["iam_policy_document"] is not None
+        ):
+            raise ValueError("in-scope policy documents cannot be not applicable")
         if candidate.result is AssessmentResult.NOT_APPLICABLE and (
             candidate.control_id in {"IAM-005", "IAM-006"}
             or contract.schema_version == "1.1.0"

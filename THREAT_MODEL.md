@@ -51,6 +51,13 @@ profile recovery preserve replay. New framework subset bytes have a separate ide
 old mappings remain unchanged. These rules add no AWS calls or remediation handlers. Root-summary
 presence checks do not establish centralized root-access posture or compromise.
 
+Approved 6B.2 adds opt-in IAM-004 syntax evaluation. Its proof binds managed ARN/default version
+or inline owner/name to retained snapshot/document digests and exact usage relationships.
+Missing versions remain explicit insufficient targets; missing enumeration or usage cannot
+masquerade as an empty policy population. Boundary-only documents remain in scope without
+granting permissions. Old catalog/mapping bytes and historical artifacts are not rewritten.
+No effective-authorization, remediation, or live AWS capability is added.
+
 ```text
 external identity provider -> untrusted bearer token -> API authentication boundary
 authenticated principal -> capability check -> service/API data boundary

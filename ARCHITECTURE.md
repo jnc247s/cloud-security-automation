@@ -6,6 +6,7 @@ evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM
 `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
 request #25. Sprint 5 is complete. Approved Sprint 6A adds the versioned assessment foundation
 below. Approved 6B.1 adds four opt-in IAM controls; the five default controls remain unchanged.
+Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, retaining prior catalog definitions.
 
 ## Sprint 6A assessment integration
 
@@ -34,6 +35,14 @@ and [approved control metadata](docs/controls/sprint-6b1-metadata.md). Source su
 weaken whole-scan finding-resolution requirements; framework metadata never controls results.
 
 ## System context
+
+The 6B.2 permissions-policy evaluator uses execution schema `1.2.0`: complete global discovery
+and same-scan owner/usage proofs, one target per managed default-version or inline document,
+and explicit insufficient parent targets when managed versions are unavailable. It retains
+boundary-only context without computing effective permissions. The shared engine/persistence
+reader binds document digests, immutable snapshot IDs and source/edge provenance. See
+[policy evidence joins](docs/assessment-foundation.md#6b2-iam-policy-document-joins).
+No collector, AWS permission, database migration, route, or authentication change is introduced.
 
 ```text
 AWS environment

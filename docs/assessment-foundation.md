@@ -100,7 +100,41 @@ The opt-in catalog requires a new explicit policy-file profile. IAM-003 requires
 Missing declared profile inputs fail before AWS collection, including pending-scan recovery.
 See [approved metadata](controls/sprint-6b1-metadata.md). No schema migration is added.
 
+### 6B.2 IAM policy-document joins
+
+Catalog `0.4.0` adds IAM-004 using execution schema `1.2.0`, selection
+`iam_policy_documents_v1`, and validation `iam_policy_document_v1`. Old schemas cannot select
+this strategy. Customer-managed and referenced AWS-managed default-version documents are targets;
+inline documents use their existing owner/name identity without a synthetic AWS version.
+One document is evaluated once even when multiple identities attach it or use it as a boundary.
+Trust policies are outside this target set. No changes to collectors or the API are required.
+
+The reader verifies complete user/group/role/local-policy enumeration; per-identity attachment,
+boundary and inline enumeration; group membership; same-scan resolved edges and exact source
+provenance. The target's decoded document and digest must match the retained snapshot. Managed
+versions must agree with GetPolicy and the selected-version relationship. Inline owner/name must
+agree with enumeration and the canonical identity. Missing metadata/default versions retain a
+parent insufficient-evidence target rather than silently disappearing. Complete empty populations
+use artifact-free account N/A, but in-scope documents cannot be N/A. Incomplete usage/population
+proof makes results insufficient; a document-only failure does not erase complete sibling documents.
+
+Proofs retain canonical sorted source/relationship IDs and usage contexts; evaluation evidence
+records version `1.0.0` and matching statement indexes. This detects only literal Allow/Action */
+Resource * syntax, not effective permissions. Conditions do not erase the match.
+Their operator/key/scalar-or-scalar-list structure must be valid;
+malformed nested conditions are insufficient, not PASS or FAIL. Operator semantics are not
+evaluated. Structural references follow the
+[AWS policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html).
+No thresholds or profile schema change are introduced. Exact catalog/profile recovery and whole-scan finding
+resolution remain unchanged. See [approved metadata](controls/sprint-6b2-metadata.md).
+
 ## Validation and rollback
+
+Run `python -m pytest tests/unit/rules/test_iam_policy.py tests/unit/database/test_iam_policy.py
+tests/unit/database/test_iam_http_acceptance.py` for focused offline validation. Run
+`python -m pytest tests/integration/test_iam_policy_postgres.py` with an explicitly disposable
+`TEST_DATABASE_URL` for authoritative persistence, recovery, historical versions and authenticated
+HTTP acceptance. SQLite HTTP validation is supplemental; CI must execute PostgreSQL.
 
 Focused tests are in `tests/unit/assessment/test_assessment_foundation.py`,
 `tests/unit/database/test_assessment_foundation.py`, and

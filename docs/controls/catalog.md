@@ -26,7 +26,8 @@ for all 25 planned control meanings. The bounded 5F CloudTrail producer was acce
 pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Evidence readiness
 does not change the executable catalog: Sprint 5 is `COMPLETE`, the bounded 5G closure was
 accepted in pull request 25. Approved 6B.1 adds IAM-002/003/005/006 only in explicitly selected
-catalog `0.3.0`; other planned controls stay unregistered. The default catalog is unchanged.
+catalog `0.3.0`. Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`; other planned controls stay
+unregistered. The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md).
 
 The [approved 6B.1 metadata](sprint-6b1-metadata.md) owns severities, operator guidance, mappings,
 and release identities: IAM-002/003 are MEDIUM, IAM-005/006 HIGH. IAM-003 requires explicit
@@ -147,7 +148,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-004` — IAM policy grants explicit full administrative access
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.4.0`; validation in progress; default unchanged.
 - **Scope/resource type:** one complete in-scope IAM permissions-policy document. V1 scope covers
   customer-managed policies, AWS-managed policies referenced by an identity attachment or
   permissions-boundary ARN, and user, group, or role inline identity policies. Role trust policies

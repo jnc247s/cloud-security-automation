@@ -85,6 +85,15 @@ These mappings do not determine thresholds, severity, or technical results.
 
 ### Common interpretation rules
 
+Opt-in catalog `0.4.0` preserves both earlier subsets and adds separately identified local
+`nist-csf/2.0+subset.3` for IAM-004 -> PR.AA-05. Source remains official NIST CSWP 29 version
+`2.0`, Appendix A, printed page 20, inspected 2026-09-27. The subset and manifest are
+`app/assessment/data/nist_csf_2_0_subset_3.json` and its `_manifest.json` companion, with SHA-256
+`e43c585f8f5a012241b63f552fcd3d4546805993766c48f9dbd4b6544f2bf87f`.
+This mapping supports permissions-policy/least-privilege review, not effective authorization,
+complete authorization management, separation of duties or compliance. The subset suffix is a
+local artifact release, not a new official NIST version. See [approved metadata](../controls/sprint-6b2-metadata.md).
+
 - NIST metadata is never an input to a technical rule.
 - One mapped control passing does not make a Subcategory `TECHNICAL_PASS`.
 - A future aggregate can report technical coverage only against an explicit versioned profile and
