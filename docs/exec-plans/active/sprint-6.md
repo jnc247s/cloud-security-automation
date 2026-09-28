@@ -502,3 +502,30 @@ readiness, not passed or waived. Commit/push permission was requested to obtain 
 CI validation; no push or merge is claimed here. The change remains uncommitted at this checkpoint.
 IAM-004 (6B.2), later slices, remediation, and deployment were not started. 6B.1 is not marked
 COMPLETE while validation/review/merge gates remain outstanding.
+
+## Reviewed 6B.1 finalization — 2026-09-27
+
+The user authorized finalizing and pushing the two 6B feature branches. The single deferred
+whole-6B reviewer found zero CRITICAL/HIGH and two MEDIUM issues. Both were fixed and the same
+reviewer verified REVIEW_PASS, with zero unresolved findings. This supersedes the earlier
+review/push stopping points; no automatic merge or later-slice work is authorized.
+
+This branch's applicability repair is `e7e40e442687c9192d611a162e7b140d14150d37`: shared
+engine/persistence validation rejects false N/A for nonempty IAM key sets and the never-N/A
+root controls. Complete-empty key N/A and unrelated legacy behavior remain valid. The other
+finding, malformed nested Condition structure, is repaired only on the separate IAM-004 branch
+`codex/sprint-6b-iam-policy-controls`. That branch also carries the applicability repair through
+a cherry-pick without rewriting published commits or automatically merging branches.
+
+Final local 6B.1 validation: **44 focused tests passed, 2 warnings**; full regression
+**1,466 passed, 41 skipped, 21 warnings**. Skips are unconfigured disposable PostgreSQL cases.
+Ruff lint/format passed (231 local Python files). The repaired runtime passed
+[GitHub CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36362683825),
+including PostgreSQL integration, real authenticated HTTP acceptance and the API image build.
+Final pushed-HEAD CI remains mandatory before human merge. No live AWS or production DB was used.
+
+Both feature branches are pushed. PR creation was refused by the GitHub integration with HTTP
+403; no credentials/access-policy workaround was attempted. Open 6B.1 -> main first, then
+6B.2 -> 6B.1, and retarget the second to main after the base merges. Human merge approval remains
+required; no slice completion or merge is claimed here. IAM-004 is not part of this base PR;
+6C and later work were not started.

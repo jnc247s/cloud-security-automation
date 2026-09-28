@@ -92,6 +92,8 @@ Usage evidence is required only for active keys in IAM-003; missing lookup evide
 `no_recorded_use`. Decision facts bind to retained source artifacts and observation time.
 Unrelated source failure does not erase complete required evidence, but the existing whole-scan
 finding-resolution guard still applies. The reader and persistence enforce the same proof.
+The shared candidate validator rejects N/A with a nonempty proved active-key set, and rejects
+N/A for the never-inapplicable IAM-005/006 root controls. Genuine complete-empty key N/A is retained.
 
 The opt-in catalog requires a new explicit policy-file profile. IAM-003 requires extended schema
 `2.0.0` and `max_unused_access_key_days` (approved deployment value 90); no default is supplied.

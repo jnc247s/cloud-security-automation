@@ -32,8 +32,8 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `IN PROGRESS`. Slice 6A is accepted and merged; approved slice 6B.1 is being
-implemented and validated. The default five-control catalog remains unchanged; the new IAM
+Sprint 6 is `IN PROGRESS`. Slice 6A is accepted and merged; approved slice 6B.1 is implemented,
+validated and independently reviewed, awaiting human merge approval. The default catalog remains unchanged; the new IAM
 controls require explicit selection of catalog `0.3.0` and versioned profile policy.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
@@ -98,9 +98,11 @@ verified on 2026-09-27 and supersedes the earlier 6A pending-merge notes. Migrat
 
 The user requested 6B.1 implementation and approved its 90-day unused-key policy and severities
 on 2026-09-27, then approved the remaining [control metadata](docs/controls/sprint-6b1-metadata.md).
-6B.1 is `IN PROGRESS` for IAM-002/003/005/006 only. At the user's request, independent review is
-deferred until 6B as a whole is ready; no review pass or slice completion is claimed. IAM-004
-belongs to separate slice 6B.2 and is not started. Human merge approval remains required.
+6B.1 is `IN PROGRESS` for IAM-002/003/005/006 only. The deferred whole-6B independent review
+passed after two MEDIUM repairs. IAM-004 is implemented and reviewed on separate stacked branch
+`codex/sprint-6b-iam-policy-controls`; it is not part of this 6B.1 branch's runtime.
+Final pushed-HEAD CI and human merge approval remain acceptance gates; neither slice is marked
+COMPLETE before merge. See the active plan's reviewed finalization checkpoint.
 
 ## Pre-Sprint 5 attention
 
