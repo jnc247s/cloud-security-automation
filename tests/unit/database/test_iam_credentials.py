@@ -183,3 +183,24 @@ def exercise_iam_recovery(engine, tmp_path):
 
 def test_pending_iam_scan_recovers_exact_policy(migrated_engine, tmp_path):
     exercise_iam_recovery(migrated_engine, tmp_path)
+
+
+def exercise_iam_false_na(engine, control_id):
+    bundle = iam_bundle()
+    bundle["assessments"] = tuple(
+        a.model_copy(update={"result": AssessmentResult.NOT_APPLICABLE, "evidence_artifacts": ()})
+        if a.control_id == control_id
+        else a
+        for a in bundle["assessments"]
+    )
+    with Session(engine) as session, pytest.raises(ScanPersistenceError), session.begin():
+        persist_scan_result(session, **bundle)
+    with Session(engine) as session:
+        assert session.scalar(select(func.count()).select_from(Scan)) == 0
+        assert session.scalar(select(func.count()).select_from(ControlAssessment)) == 0
+        assert session.scalar(select(func.count()).select_from(Finding)) == 0
+
+
+@pytest.mark.parametrize("control_id", ["IAM-002", "IAM-003", "IAM-005", "IAM-006"])
+def test_iam_false_na_is_rejected_atomically(migrated_engine, control_id):
+    exercise_iam_false_na(migrated_engine, control_id)

@@ -136,3 +136,18 @@ def test_age_uses_observation_not_clock():
         timedelta(days=90)
     )
     assert all(a.result is AssessmentResult.PASS for a in bundle["assessments"][:2])
+
+
+@pytest.mark.parametrize("control_id", ["IAM-002", "IAM-003", "IAM-005", "IAM-006"])
+def test_shared_validator_rejects_false_iam_non_applicability(control_id):
+    bundle = iam_bundle()
+    actual = next(a for a in bundle["assessments"] if a.control_id == control_id)
+    forged = actual.model_copy(
+        update={
+            "result": AssessmentResult.NOT_APPLICABLE,
+            "evidence_artifacts": (),
+        }
+    )
+    reader = AssessmentEvidenceReader(bundle["snapshot"])
+    with pytest.raises(ValueError, match="cannot be not applicable"):
+        reader.validate_candidate(iam_execution(control_id), forged)

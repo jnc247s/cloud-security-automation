@@ -237,6 +237,12 @@ class AssessmentEvidenceReader:
             and expected["iam_policy_document"] is not None
         ):
             raise ValueError("in-scope policy documents cannot be not applicable")
+        if candidate.result is AssessmentResult.NOT_APPLICABLE and (
+            candidate.control_id in {"IAM-005", "IAM-006"}
+            or contract.schema_version == "1.1.0"
+            and expected["iam_active_keys"]
+        ):
+            raise ValueError("observed IAM credentials or root controls cannot be not applicable")
         for artifact in candidate.evidence_artifacts:
             if artifact.payload.get("source_proof") != expected:
                 raise ValueError("assessment source proof differs from retained evidence")
