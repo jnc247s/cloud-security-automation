@@ -1,0 +1,73 @@
+{
+  "framework": {
+    "framework_id": "nist-csf",
+    "name": "NIST Cybersecurity Framework",
+    "version": "2.0+subset.4",
+    "source": "https://doi.org/10.6028/NIST.CSWP.29"
+  },
+  "references": [
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR",
+      "level": "function",
+      "title": "Protect",
+      "description": "Safeguards to manage the organization’s cybersecurity risks are used",
+      "parent_reference_id": null
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.DS",
+      "level": "category",
+      "title": "Data Security",
+      "description": "Data are managed consistent with the organization’s risk strategy to protect the confidentiality, integrity, and availability of information",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.PS",
+      "level": "category",
+      "title": "Platform Security",
+      "description": "The hardware, software (e.g., firmware, operating systems, applications), and services of physical and virtual platforms are managed consistent with the organization’s risk strategy to protect their confidentiality, integrity, and availability",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.IR",
+      "level": "category",
+      "title": "Technology Infrastructure Resilience",
+      "description": "Security architectures are managed with the organization’s risk strategy to protect asset confidentiality, integrity, and availability, and organizational resilience",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.DS-01",
+      "level": "subcategory",
+      "title": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "description": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "parent_reference_id": "PR.DS"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.IR-01",
+      "level": "subcategory",
+      "title": "Networks and environments are protected from unauthorized logical access and usage",
+      "description": "Networks and environments are protected from unauthorized logical access and usage",
+      "parent_reference_id": "PR.IR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.4",
+      "reference_id": "PR.PS-01",
+      "level": "subcategory",
+      "title": "Configuration management practices are established and applied",
+      "description": "Configuration management practices are established and applied",
+      "parent_reference_id": "PR.PS"
+    }
+  ]
+}

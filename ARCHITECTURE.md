@@ -36,6 +36,13 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
+Approved 6C adds EC2-001 through EC2-004 in opt-in catalog `0.5.0`. It reuses execution schema
+`1.0.0`, with shared EC2 discovery/admission/fact and applicability checks at engine and storage
+boundaries. The public-address allowlist uses the existing stable resource UUID, not a bare AWS
+instance ID. Regional default encryption is an assessment-only account target; its API/history
+identity remains distinct across Regions. No collector, route, authentication or migration changes
+are introduced. Old catalogs and defaults remain exact; see [6C metadata](docs/controls/sprint-6c-metadata.md).
+
 The 6B.2 permissions-policy evaluator uses execution schema `1.2.0`: complete global discovery
 and same-scan owner/usage proofs, one target per managed default-version or inline document,
 and explicit insufficient parent targets when managed versions are unavailable. It retains

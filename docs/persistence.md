@@ -17,6 +17,14 @@ documented in the [control catalog](controls/catalog.md) and
 
 ## Stable identity and historical state
 
+6C adds opt-in catalog `0.5.0` without a migration. It retains earlier profile/catalog/framework
+bytes and pending-scan recovery. Shared validation checks EC2 discovery membership, exact admitted
+configuration, decision facts and applicability before transactional history/finding writes.
+EC2-004 preserves the existing Regional assessment-only account representation; two Regions have
+different stable targets. Source completeness never relaxes whole-scan finding-resolution gates.
+The new PostgreSQL coverage includes all supported catalog generations, empty populations,
+Regional targets, forged-evidence rollback, pending recovery and real authenticated HTTP reads.
+
 | Record | Responsibility |
 | --- | --- |
 | `Resource` | Stable AWS identity: provider, account, service, resource type, scope, region, and AWS resource ID. |

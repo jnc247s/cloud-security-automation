@@ -32,12 +32,9 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `IN PROGRESS`. Slice 6A is accepted and merged; approved slices 6B.1 and 6B.2 are
-implemented, locally validated, and independently reviewed. The default catalog remains unchanged;
-the IAM credential/root controls require opt-in catalog `0.3.0`, and IAM-004 requires `0.4.0`.
-Both use explicit versioned profile policy. Combined independent review passed after two MEDIUM
-repairs. Final pushed-HEAD CI and human merge approval remain acceptance gates; neither slice is
-marked COMPLETE before merge.
+Sprint 6 is `IN PROGRESS`. Slices 6A and 6B are accepted and merged. Slice 6C is approved and
+`IN PROGRESS` for EC2-001 through EC2-004 only. The default catalog remains unchanged; all added
+controls require explicit catalog/profile selection. Later slices remain proposed.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -101,11 +98,15 @@ verified on 2026-09-27 and supersedes the earlier 6A pending-merge notes. Migrat
 
 The user requested 6B.1 implementation and approved its 90-day unused-key policy and severities
 on 2026-09-27, then approved the remaining [control metadata](docs/controls/sprint-6b1-metadata.md).
-6B.1 is `IN PROGRESS` for IAM-002/003/005/006 only. At the user's request, independent review
-was deferred until 6B as a whole was ready; that consolidated review has now passed. IAM-004
-belongs to separate slice 6B.2, authorized on 2026-09-27 and now `IN PROGRESS` on a stacked
-branch. The approved metadata and workflow amendment are recorded in the active plan.
-Human merge approval remains required; neither 6B slice is accepted yet.
+6B.1 and 6B.2 are `COMPLETE`: PR #29 merged the policy slice into the credential/root branch,
+then PR #28 merged both into main at `42cc65366ed4d6e1fe14aa28e2650a62280cba8b`.
+Whole-6B independent review passed; final branch CI and merged-main CI passed. This acceptance
+was verified on 2026-09-28. Migration head remains `20260924_0004`.
+
+The user approved 6C implementation and its bounded metadata/UUID allowlist decisions on
+2026-09-28. See [6C metadata](docs/controls/sprint-6c-metadata.md) and the active plan.
+6C requires validation, independent review, CI and human merge before completion; no 6D work
+is authorized by this slice.
 
 ## Pre-Sprint 5 attention
 
