@@ -2,10 +2,36 @@
 
 Plan state: 6A through 6D COMPLETE and merged. 6E.1 policy and metadata approved;
 6E.1 IN PROGRESS, with local implementation, validation and independent review passed;
-publication, final CI and human merge acceptance remain pending.
+the branch is pushed, with PR creation, final CI and human merge acceptance pending.
 6E.2/6E.3 retain their policy gates; later implementation slices remain proposed.
 
-## 6D acceptance and 6E.1 authorization checkpoint — 2026-09-29
+## 6E.1 publication and 6E.2 preparation — 2026-09-29
+
+The user requested closing 6E.1 and preparing 6E.2. This authorizes branch publication and a PR,
+not automatic merge or 6E.2 implementation. The clean branch's three reviewed commits were pushed:
+`ce49f3b` migration comparison, `8b12191` validation automation, and
+`f2b57d514a9eb20d4b7d7a21dc35626bc4f6ca5a` S3-001/003. Accepted origin/main remains
+`9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`. No force-push, credentials change or merge occurred.
+
+GitHub's integration refused PR creation with HTTP 403, `Resource not accessible by integration`.
+[Open the 6E.1 PR manually](https://github.com/jnc247s/cloud-security-automation/compare/main...codex/sprint-6e1-s3-bpa-transport-controls?expand=1).
+The [implementation push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36586631570)
+was running at publication; do not infer final-HEAD CI success from local validation. The existing
+1,790-test local acceptance and zero-finding review apply to unchanged runtime code. Only
+publication/preparation documentation is added in this handoff; run lightweight documentation
+checks, not a redundant local full suite. The final documentation push receives its own CI.
+
+[6E.2 preparation](../../controls/sprint-6e2-preflight.md) records inspected integration seams,
+the bounded S3-002 scope, canonical result-sensitive semantics, test plan and one consolidated
+policy/metadata proposal. It enables no control and changes no contract. Start its scoped branch
+only after 6E.1 is accepted on clean synchronized main and its proposal is explicitly approved.
+6E.1 stays IN PROGRESS until CI and human merge acceptance; 6E.2 is prepared, not implemented.
+
+Documentation-only validation: **71 contract/link tests passed, 1 existing warning**; Ruff lint,
+formatting and whitespace checks passed. No runtime/test changes or additional review agents were
+needed for this preparation. No new full local regression is claimed for the documentation commit.
+
+### Historical 6D acceptance and 6E.1 authorization checkpoint
 
 PR #32 merged both 6D implementation commits into main at
 `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`. This supersedes the earlier proposed two-PR

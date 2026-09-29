@@ -37,9 +37,11 @@ accepted through PR #32 at `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`; merged-ma
 The user requested 6E implementation and approved combined account/bucket Block Public Access
 protection and bounded explicit HTTPS-denial evaluation for 6E.1. The subsequent metadata
 approval authorized opt-in catalog `0.8.0`; 6E.1 is IN PROGRESS with local validation and
-independent review passed, awaiting publication/CI and human merge acceptance.
+independent review passed. Its branch is pushed; PR creation was refused by the GitHub integration
+(HTTP 403), and final CI/human merge acceptance remain pending. The active plan links the manual PR.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
-selection. 6E.2/6E.3 retain their separate policy gates; later slices remain proposed.
+selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) is analysis-only and includes
+one policy/metadata proposal; 6E.2/6E.3 retain their gates and are not implemented.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -126,8 +128,8 @@ Deny evaluator. See the [6E preflight](docs/controls/sprint-6e-preflight.md) and
 that metadata; S3-001 and S3-003 are implemented locally in opt-in `0.8.0`, with acceptance
 gates outstanding. The authorized migration-comparison repair resolved the baseline failures:
 all 1,790 tests pass, including 88 PostgreSQL cases, and independent review has zero findings.
-The repeatable local validation pipeline passes; publication, final CI and human merge remain
-pending. See the active plan for exact validation results.
+The repeatable local validation pipeline passes; the branch is pushed, with PR creation, final CI
+and human merge pending. See the active plan for exact validation results and the PR access blocker.
 This is 6E.1 only, not completion of 6E;
 6E.2 exposure approvals and 6E.3 classifier/encryption policy remain separate required decisions.
 Later slices remain unstarted.
