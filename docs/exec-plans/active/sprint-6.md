@@ -1,9 +1,53 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6D COMPLETE and merged. 6E.1 policy and metadata approved;
-6E.1 IN PROGRESS, with local implementation, validation and independent review passed;
-the branch is pushed, with PR creation, final CI and human merge acceptance pending.
-6E.2/6E.3 retain their policy gates; later implementation slices remain proposed.
+Plan state: 6A through 6D and 6E.1 COMPLETE and merged. 6E.2 is IN PROGRESS under the
+prepared policy/metadata bundle. 6E.3 retains its policy gate; later slices remain unstarted.
+
+## 6E.1 acceptance and 6E.2 authorization — 2026-09-29
+
+### 6E.2 implementation checkpoint
+
+S3-002 is implemented in opt-in `0.9.0` with closed proof `1.6.0`, explicit immutable
+approval/profile binding and separately checksummed NIST subset `2.0+subset.8`. See
+[approved release metadata](../../controls/sprint-6e2-metadata.md). All 21 canonical cases run
+through the unchanged collectors. Same-owner/service exclusions, exact scoped approvals,
+unknown-plus-confirmed aggregation, deletion/conflicts, version substitution, source/result
+forgery, history/recovery, finding lifecycle and real bearer/capability HTTP are covered.
+Only AWS is replaced in acceptance; no live policy file, migration, collector, permission,
+service, route or authentication change. Default `0.2.1` and historical catalogs are preserved.
+
+Final automated validation: **153 focused tests passed**, followed by **1,873 full tests
+passed, zero skipped, 20 existing deprecation warnings**, including **102 disposable PostgreSQL
+tests** (14 new S3-002 cases). Ruff lint and formatting passed (291 Python files), all 72
+contract/link checks passed, whitespace and Compose configuration passed, and the API image
+built successfully. The runner removed its disposable database; user databases were untouched.
+Changed-file credential-pattern checks found zero matches; no secrets/local policy were added.
+
+The initial full run caught the old documentation assertion that S3-002 was not implemented;
+that assertion now verifies the explicit new release and absence from historical/default
+registries. Final validation above includes that correction and closed AWS-principal syntax
+and independent canonical-user ownership proof fixes. No failing acceptance was suppressed.
+
+Independent review remains pending the requested authorization for one read-only reviewer.
+Do not claim REVIEW_PASS, PR readiness, CI success for this branch or merge acceptance yet.
+Keep 6E.2 IN PROGRESS. No push/PR/merge or 6E.3, 6F or later-sprint work in this checkpoint.
+
+PR #33 merged 6E.1 at `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`.
+[Merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36611975078).
+This supersedes the earlier pending-PR/CI/merge checkpoints; zero independent-review findings
+remain. Clean main was synchronized before creating `codex/sprint-6e2-s3-exposure-control`.
+
+After the explicit approval prompt the user repeated the instruction to implement 6E.2; proceed
+with the presented bundle: explicit empty exposure approvals (schema/policy `1.0.0`), HIGH
+severity, evaluator `1.0.0`, opt-in catalog `0.9.0`, independently checksummed reporting subset
+`2.0+subset.8` and PR.AA-05 metadata/guidance from the preparation. This policy is explicit
+operator input, never an implicit default when the artifact is missing.
+
+Implement S3-002 only under its canonical channel tables and bounded same-scan proofs. Preserve
+all prior catalogs/defaults, finding resolution, exact policy recovery and generic authenticated
+API/persistence. No collectors, permissions, migrations or later controls are authorized. Run
+targeted and full automated acceptance, one consolidated independent review, and final CI before
+human merge acceptance. S3-004/LOG-004 and all later slices remain unstarted.
 
 ## 6E.1 publication and 6E.2 preparation — 2026-09-29
 

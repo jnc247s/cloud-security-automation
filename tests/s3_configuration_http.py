@@ -23,16 +23,23 @@ from tests.integration.test_persistence_postgres import (
 from tests.s3_configuration_fixtures import failing_provider, s3_profile
 
 
-def exercise_s3_http(engine, monkeypatch, tmp_path):
+def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     monkeypatch.setattr(database_session, "SessionLocal", factory)
     profile = s3_profile()
+    provider_factory = failing_provider
+    if exposure:
+        from tests.s3_exposure_fixtures import exposure_profile
+        from tests.s3_exposure_fixtures import failing_provider as exposure_provider
+
+        profile = exposure_profile()
+        provider_factory = exposure_provider
     path = tmp_path / "s3-http-policy.json"
     path.write_text(
         json.dumps(
             {
                 "catalog_id": "aws-cloud-security-controls",
-                "catalog_version": "0.8.0",
+                "catalog_version": "0.9.0" if exposure else "0.8.0",
                 "profile": profile.model_dump(mode="json"),
             }
         ),
@@ -46,7 +53,7 @@ def exercise_s3_http(engine, monkeypatch, tmp_path):
 
     def provider(region):
         calls.append(region)
-        fake = failing_provider(region)
+        fake = provider_factory(region)
         client = fake._clients[("s3", region)]
         pages = client._paginators["list_buckets"][0].pages
         client._paginators["list_buckets"][0] = _CollectionGatePaginator(
@@ -102,7 +109,7 @@ def exercise_s3_http(engine, monkeypatch, tmp_path):
                     rows = session.scalars(
                         select(ControlAssessment).where(ControlAssessment.scan_id == scan_id)
                     ).all()
-                    assert len(rows) == len(listing) == 2
+                    assert len(rows) == len(listing) == (1 if exposure else 2)
                     assert {str(a.assessment_id) for a in rows} == {
                         a["assessment_id"] for a in listing
                     }
@@ -129,6 +136,16 @@ def exercise_s3_http(engine, monkeypatch, tmp_path):
                         assert detail["evidence"][0]["evidence_id"] == str(artifact.evidence_id)
                         proof = detail["evidence"][0]["payload"]["source_proof"]
                         assert proof["scan_id"] == str(scan_id)
+                        if exposure:
+                            assert (
+                                proof["approval_policy"]["content_checksum"]
+                                == profile.s3_exposure_approvals.content_checksum
+                            )
+                            assert proof["profile_checksum"] == profile.content_checksum
+                            assert (
+                                proof["exposure_decision"]["policy_channel"]
+                                == "CONFIRMED_UNAPPROVED"
+                            )
                         for citation in proof["sources"]:
                             source = get(f"source-outcomes/{citation['source_outcome_id']}")
                             assert source["scan_id"] == str(scan_id)
@@ -144,10 +161,10 @@ def exercise_s3_http(engine, monkeypatch, tmp_path):
                         )
                         assert control_key in profile.enabled_controls
                         mapping = detail["framework_mappings"][0]
-                        version = "2.0+subset.7"
+                        version = "2.0+subset.8" if exposure else "2.0+subset.7"
                         assert mapping["framework_version"] == version
                         assert mapping["reference_key"] == (
-                            "PR.AA-05" if control_key == "S3-001" else "PR.DS-02"
+                            "PR.AA-05" if control_key in {"S3-001", "S3-002"} else "PR.DS-02"
                         )
                         assert get(f"frameworks/{mapping['framework_id']}")["version"] == version
                     events = session.scalars(

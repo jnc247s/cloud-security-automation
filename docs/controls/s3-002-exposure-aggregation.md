@@ -1,14 +1,14 @@
 # S3-002 public and external exposure aggregation
 
-Status: **canonical planned evaluator contract; not implemented or enabled**
+Status: **canonical evaluator contract; implemented in opt-in catalog `0.9.0` by 6E.2**
 
 This document is the authoritative detailed contract for the immutable control meaning
 `S3-002 = Unapproved public/external bucket exposure`. The
 [control catalog](catalog.md) owns the identifier and title. The
 [Sprint 5 evidence-readiness matrix](sprint-5-evidence-readiness.md) owns collection planning.
-This contract defines the later deterministic evaluator's inputs and result, but it does not add
-an executable rule. The accepted Sprint 5E producer now collects its direct AWS evidence without
-evaluating this contract.
+This contract defines the deterministic evaluator's inputs and result. The approved 6E.2
+[release metadata](sprint-6e2-metadata.md) selects it explicitly; it is not enabled by default.
+The accepted Sprint 5E producer still collects facts without evaluating this contract.
 
 ## Assessment scope and vocabulary
 
@@ -40,9 +40,9 @@ access path is private; the explicit v1 exclusions are documented below.
 
 ## Versioned bucket-scoped approvals
 
-`s3_exposure_approvals` is planned immutable Assessment Profile content represented by the pure
-`S3ExposureApprovalPolicy` schema. Profile registration remains a later implementation boundary;
-the approved artifact itself has this exact logical schema:
+`s3_exposure_approvals` is immutable schema-2 Assessment Profile content represented by the pure
+`S3ExposureApprovalPolicy` schema, registered through the accepted 6A boundary. The approved
+artifact itself has this exact logical schema:
 
 ```text
 policy_id: fixed string s3-exposure-approvals
@@ -128,8 +128,8 @@ values, the approval profile version/checksum, and the normalization/evaluator v
 The normalized completeness/outcome record uses the accepted
 [result-sensitive source-outcome contract](../design-decisions/0002-result-sensitive-evidence-outcomes.md).
 This is why one valid channel can remain assessable when another API fails without pretending the
-whole collector succeeded. Accepted 5E implements that source boundary without changing the
-planned evaluator.
+whole collector succeeded. Accepted 5E implements that source boundary; 6E.2 consumes it without
+changing the collector or the canonical channel semantics.
 
 The minimum evidence is result-sensitive. A `PASS` requires both channels to be complete and safe
 or approved. A `FAIL` may be returned when one channel proves `CONFIRMED_UNAPPROVED` even if the

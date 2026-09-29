@@ -107,6 +107,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.6.0":
+            from app.assessment.s3_exposure_evidence import exposure_proof
+
+            return exposure_proof(self, contract, target)
         if contract.schema_version == "1.5.0":
             from app.assessment.s3_configuration_evidence import s3_configuration_proof
 
@@ -231,6 +235,12 @@ class AssessmentEvidenceReader:
             expected = self.proof(contract, target)
             network_expected = None
             s3_expected = None
+            if contract.schema_version == "1.6.0":
+                from app.rules.s3_exposure import exposure_result
+
+                if candidate.control_id != "S3-002" or profile is None:
+                    raise ValueError("exposure validation requires its exact control and profile")
+                s3_expected = exposure_result(expected, profile)
             if contract.schema_version == "1.5.0":
                 from app.rules.s3_configuration import s3_configuration_result
 

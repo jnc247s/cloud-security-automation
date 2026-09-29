@@ -1,5 +1,12 @@
 # Persistence and assessment history
 
+6E.2 adds opt-in `0.9.0` and exposure proof `1.6.0`, without a migration. The same pure S3-002
+result/proof computation runs at engine and persistence boundaries, including exact retained
+approval identity/version/checksum and profile checksum. Forged decisions, sources or policy
+bindings fail atomically. Existing immutable policy storage and pending-scan recovery are reused;
+older catalogs/profiles and full-scan finding-resolution requirements are unchanged.
+See [6E.2 metadata](controls/sprint-6e2-metadata.md).
+
 6E.1 adds opt-in catalog `0.8.0` and S3 configuration proof schema `1.5.0` without a migration.
 The shared engine/persistence boundary recomputes combined BPA and bounded HTTPS results from
 exact source IDs, states, digests and authoritative bucket identity. No historical artifact,

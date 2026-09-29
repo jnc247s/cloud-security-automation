@@ -36,12 +36,16 @@ Sprint 6 is `IN PROGRESS`. Slices 6A through 6D are COMPLETE and merged. Both 6D
 accepted through PR #32 at `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`; merged-main CI passed.
 The user requested 6E implementation and approved combined account/bucket Block Public Access
 protection and bounded explicit HTTPS-denial evaluation for 6E.1. The subsequent metadata
-approval authorized opt-in catalog `0.8.0`; 6E.1 is IN PROGRESS with local validation and
-independent review passed. Its branch is pushed; PR creation was refused by the GitHub integration
-(HTTP 403), and final CI/human merge acceptance remain pending. The active plan links the manual PR.
+approval authorized opt-in catalog `0.8.0`; 6E.1 is COMPLETE, merged through PR #33 at
+`4b3d7355dafe6eceab50214ee2281b0b4f96fa81` with green merged-main CI and zero review findings.
+The user directed implementation of the prepared 6E.2 bundle after its policy approval prompt;
+6E.2 is IN PROGRESS, using explicit no-exemption initial policy and opt-in catalog `0.9.0`.
+Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and active-plan checkpoint
+record 1,873 passing tests including 102 PostgreSQL cases, successful quality/container gates,
+and pending independent review, publication/CI and merge acceptance. It is not yet COMPLETE.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
-selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) is analysis-only and includes
-one policy/metadata proposal; 6E.2/6E.3 retain their gates and are not implemented.
+selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
+the active plan records authorization. 6E.3 retains its separate policy gate and is unstarted.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -125,13 +129,13 @@ The user requested 6E implementation on 2026-09-29 and approved the 6E.1 policy 
 effective combined account/bucket Block Public Access and a bounded explicit secure-transport
 Deny evaluator. See the [6E preflight](docs/controls/sprint-6e-preflight.md) and
 [6E.1 approved metadata](docs/controls/sprint-6e1-metadata.md). The user subsequently approved
-that metadata; S3-001 and S3-003 are implemented locally in opt-in `0.8.0`, with acceptance
-gates outstanding. The authorized migration-comparison repair resolved the baseline failures:
+that metadata; S3-001 and S3-003 are accepted in opt-in `0.8.0`. The authorized
+migration-comparison repair resolved the baseline failures:
 all 1,790 tests pass, including 88 PostgreSQL cases, and independent review has zero findings.
-The repeatable local validation pipeline passes; the branch is pushed, with PR creation, final CI
-and human merge pending. See the active plan for exact validation results and the PR access blocker.
-This is 6E.1 only, not completion of 6E;
-6E.2 exposure approvals and 6E.3 classifier/encryption policy remain separate required decisions.
+PR #33 subsequently merged 6E.1 and its preparation handoff at
+`4b3d7355dafe6eceab50214ee2281b0b4f96fa81`; merged-main CI passed. The user directed 6E.2
+implementation with the prepared policy/metadata bundle. This does not complete all of 6E;
+6E.3 classifier/encryption policy remains a separate required decision.
 Later slices remain unstarted.
 Migration head remains `20260924_0004`.
 

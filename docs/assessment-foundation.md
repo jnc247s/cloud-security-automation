@@ -1,5 +1,11 @@
 # Sprint 6A assessment foundation
 
+6E.2 adds S3-002 in explicit catalog `0.9.0` with closed `s3_exposure_v1` schema `1.6.0`.
+The existing schema-2 profile must contain an explicit immutable `s3_exposure_approvals`
+artifact, including when no exemptions are allowed. No deployment default changes. Exact
+approval/profile/source bindings and channel decisions are recomputed at persistence; missing
+policy never becomes an empty policy. See [metadata, configuration and validation instructions](controls/sprint-6e2-metadata.md).
+
 6E.1 adds opt-in `0.8.0` for S3-001/003 with closed execution schema `1.5.0` strategies
 `s3_bpa_v1` and `s3_transport_v1`. The existing operator-controlled policy-file envelope selects
 the exact catalog and a new immutable profile version; no default changes. Global discovery
