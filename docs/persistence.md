@@ -1,5 +1,10 @@
 # Persistence and assessment history
 
+6D.2 adds catalog `0.7.0` and bounded VPC Flow Log proof schema `1.4.0`, without a migration.
+Exact profile recovery, source/edge references and policy-aware result validation use the same
+engine/storage boundary. Complete absence may produce FAIL with zero relationship IDs; missing
+edges for observed matching logs cannot. Historical catalogs through `0.6.0` are unchanged.
+
 6D.1 adds opt-in catalog `0.6.0` without a migration. Versioned security-group proofs retain exact
 source artifact/outcome digests and same-scan VPC relationship IDs. Engine and storage share the
 same truth table and exact-profile applicability validation, rejecting forged results atomically.

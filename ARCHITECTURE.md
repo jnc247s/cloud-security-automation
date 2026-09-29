@@ -41,7 +41,14 @@ binds complete security-group/VPC discovery, exact admitted configuration and th
 `in_vpc` relationship. The engine and persistence use the same proof and pure truth table,
 with the exact profile passed for empty-port applicability. Old execution schemas and NET-001/002
 are unchanged. No collector, permission, migration, API or authentication change is introduced.
-See [6D.1 metadata](docs/controls/sprint-6d1-metadata.md); NET-006 is not implemented.
+See [6D.1 metadata](docs/controls/sprint-6d1-metadata.md).
+
+Approved 6D.2 adds opt-in NET-006 in catalog `0.7.0`. Bounded execution schema `1.4.0`
+proves complete VPC and Flow Log populations, exact source facts, owner/Region identity and
+zero-or-more `HAS_FLOW_LOG` membership. No logs is a proved result, not a waived required edge.
+Missing matching edges are insufficient. External-owner VPC coverage is insufficient because
+Flow Log discovery is collection-account scoped. Earlier strategies and default `0.2.1` remain
+unchanged. See [6D.2 metadata](docs/controls/sprint-6d2-metadata.md).
 
 Approved 6C adds EC2-001 through EC2-004 in opt-in catalog `0.5.0`. It reuses execution schema
 `1.0.0`, with shared EC2 discovery/admission/fact and applicability checks at engine and storage

@@ -17,7 +17,11 @@ exceptions, controls, mappings, or audit history.
 Opt-in catalog `0.6.0` exposes NET-003/004/005 through the same scan, resource/history,
 assessment/evidence, finding and control/framework routes. Proofs identify exact same-scan VPC
 relationship observations and source artifacts. No route, request schema, role or capability
-changes. ADMIN can scan; ANALYST remains denied. NET-006 is not included.
+changes. ADMIN can scan; ANALYST remains denied.
+
+Opt-in catalog `0.7.0` adds NET-006 through those same interfaces, with exact versioned environment
+and traffic policy and retained VPC/Flow Log source/relationship IDs. No request/response field,
+route, permission or authentication change is introduced; the default catalog is unchanged.
 
 Opt-in catalog `0.5.0` adds EC2-001 through EC2-004 through the existing authenticated scan,
 resource/history, assessment/evidence, finding and control/framework reads. No route or request

@@ -58,6 +58,12 @@ security control.
 
 ## AWS access and least privilege
 
+6D.2 NET-006 uses retained facts only. Exact VPC/log owner, Region, source and edge membership
+are checked before results; collection-account enumeration cannot prove external-owner coverage.
+Environment/traffic policy must be explicit. No log delivery, retention or monitoring assurance
+is inferred; an authorized operator must review dependencies and costs before changing logging.
+No AWS write, new permission, endpoint or capability change is introduced.
+
 6D.1 evaluates only retained security-group/VPC facts. Source/edge identities, complete discovery,
 snapshot content and exact policy are validated at engine and persistence boundaries. Public
 permission checks are not end-to-end reachability claims. Guidance requires dependency review and

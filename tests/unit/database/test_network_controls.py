@@ -139,7 +139,7 @@ def exercise_network_empty_policy(engine):
             )
 
 
-def exercise_network_recovery(engine, tmp_path):
+def exercise_network_recovery(engine, tmp_path, *, flow_logs=False):
     from app.config import Settings
     from app.schemas.scan import ScanCreateRequest
     from app.services.scan_executor import InProcessScanExecutor
@@ -148,12 +148,17 @@ def exercise_network_recovery(engine, tmp_path):
     from tests.integration.test_persistence_postgres import _empty_provider, _RecordingExecutor
 
     profile = network_profile()
+    if flow_logs:
+        from tests.flow_log_fixtures import flow_profile
+
+        profile = flow_profile()
+    version = "0.7.0" if flow_logs else "0.6.0"
     path = tmp_path / "network-recovery.json"
     path.write_text(
         json.dumps(
             {
                 "catalog_id": "aws-cloud-security-controls",
-                "catalog_version": "0.6.0",
+                "catalog_version": version,
                 "profile": profile.model_dump(mode="json"),
             }
         ),
@@ -196,12 +201,12 @@ def exercise_network_recovery(engine, tmp_path):
     with Session(engine) as session:
         scan = session.get(Scan, pending.scan_id)
         assert scan.status is ScanStatus.COMPLETED
-        assert scan.control_catalog_version == "0.6.0"
+        assert scan.control_catalog_version == version
         assert scan.assessment_profile_checksum == profile.content_checksum
         rows = session.scalars(
             select(ControlAssessment).where(ControlAssessment.scan_id == scan.scan_id)
         ).all()
-        assert len(rows) == 3
+        assert len(rows) == (1 if flow_logs else 3)
         assert {r.assessment_result for r in rows} == {AssessmentResult.FAIL}
 
 

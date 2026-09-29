@@ -1,5 +1,12 @@
 # Sprint 6A assessment foundation
 
+6D.2 adds opt-in catalog `0.7.0`, NET-006 and bounded execution schema `1.4.0`.
+Its VPC/Flow Log join proves exact source-bound population and zero-or-more edge membership.
+The shared engine/persistence validator recomputes the result using the retained explicit
+environment/traffic policy, including artifact-free N/A. Missing edges cannot fabricate absence.
+Earlier strategy meanings and default catalog remain unchanged; see
+[approved metadata](controls/sprint-6d2-metadata.md).
+
 Scope/status is owned by [ROADMAP.md](../ROADMAP.md) and the
 [active Sprint 6 plan](exec-plans/active/sprint-6.md). This foundation enables no new control.
 The default release remains `aws-cloud-security-controls/0.2.1` and its five accepted rules.

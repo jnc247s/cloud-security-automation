@@ -107,6 +107,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.4.0":
+            from app.assessment.flow_log_evidence import flow_log_proof
+
+            return flow_log_proof(self, target)
         if contract.schema_version == "1.3.0":
             from app.assessment.security_group_evidence import security_group_proof
 
@@ -222,6 +226,12 @@ class AssessmentEvidenceReader:
         try:
             expected = self.proof(contract, target)
             network_expected = None
+            if contract.schema_version == "1.4.0":
+                from app.rules.flow_logs import flow_log_result
+
+                if candidate.control_id != "NET-006" or profile is None:
+                    raise ValueError("Flow Log validation requires its exact control and profile")
+                network_expected = flow_log_result(expected["vpc_flow_logs"], profile)
             if contract.schema_version == "1.3.0":
                 from app.assessment.security_group_evidence import NETWORK_CONTROL_IDS
                 from app.rules.security_groups import network_result

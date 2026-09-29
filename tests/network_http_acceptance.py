@@ -30,16 +30,20 @@ def install_ec2_client(provider, region, client):
     existing._responses.update(client._responses)
 
 
-def exercise_network_http(engine, monkeypatch, tmp_path):
+def exercise_network_http(engine, monkeypatch, tmp_path, *, flow_logs=False):
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     monkeypatch.setattr(database_session, "SessionLocal", factory)
     profile = network_profile()
+    if flow_logs:
+        from tests.flow_log_fixtures import flow_profile
+
+        profile = flow_profile()
     path = tmp_path / "network-http-policy.json"
     path.write_text(
         json.dumps(
             {
                 "catalog_id": "aws-cloud-security-controls",
-                "catalog_version": "0.6.0",
+                "catalog_version": "0.7.0" if flow_logs else "0.6.0",
                 "profile": profile.model_dump(mode="json"),
             }
         ),
@@ -55,6 +59,12 @@ def exercise_network_http(engine, monkeypatch, tmp_path):
         calls.append(region)
         fake = _empty_provider(region)
         client = network_client()
+        if flow_logs:
+            from tests.unit.collectors.test_network import _flow_log
+
+            log = _flow_log()
+            log["TrafficType"] = "ACCEPT"
+            client = network_client(flow_logs=[log])
         pages = client._paginators["describe_security_groups"][0].pages
         client._paginators["describe_security_groups"][0] = _CollectionGatePaginator(
             pages, entered=entered, release=release
@@ -112,7 +122,7 @@ def exercise_network_http(engine, monkeypatch, tmp_path):
                     rows = session.scalars(
                         select(ControlAssessment).where(ControlAssessment.scan_id == scan_id)
                     ).all()
-                    assert len(rows) == len(listing) == 3
+                    assert len(rows) == len(listing) == (1 if flow_logs else 3)
                     assert {str(a.assessment_id) for a in rows} == {
                         a["assessment_id"] for a in listing
                     }
@@ -151,7 +161,9 @@ def exercise_network_http(engine, monkeypatch, tmp_path):
                             edge = get(f"relationships/{edge_id}")
                             assert edge["observation_id"] == edge_id
                             assert edge["scan_id"] == str(scan_id)
-                            assert edge["relationship_type"] == "in_vpc"
+                            assert edge["relationship_type"] == (
+                                "has_flow_log" if flow_logs else "in_vpc"
+                            )
                         finding = session.get(Finding, UUID(detail["finding_id"]))
                         assert finding.resource_id == target.resource_id
                         assert get(f"findings/{finding.finding_id}")["finding_id"] == str(
@@ -159,12 +171,10 @@ def exercise_network_http(engine, monkeypatch, tmp_path):
                         )
                         assert control_key in profile.enabled_controls
                         mapping = detail["framework_mappings"][0]
-                        assert mapping["framework_version"] == "2.0+subset.5"
-                        assert mapping["reference_key"] == "PR.IR-01"
-                        assert (
-                            get(f"frameworks/{mapping['framework_id']}")["version"]
-                            == "2.0+subset.5"
-                        )
+                        version = "2.0+subset.6" if flow_logs else "2.0+subset.5"
+                        assert mapping["framework_version"] == version
+                        assert mapping["reference_key"] == ("PR.PS-04" if flow_logs else "PR.IR-01")
+                        assert get(f"frameworks/{mapping['framework_id']}")["version"] == version
                     events = session.scalars(
                         select(AuditEvent).where(AuditEvent.target_id == scan_id)
                     ).all()

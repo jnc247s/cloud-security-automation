@@ -6,6 +6,13 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+6D.2 catalog `0.7.0` adds NET-006 -> PR.PS-04 in local subset `2.0+subset.6`, sourced from
+NIST CSWP 29 version 2.0, Appendix A printed page 20, inspected 2026-09-28. The independently
+checksummed `app/assessment/data/nist_csf_2_0_subset_6.json` and `_manifest.json` companion
+preserve earlier releases. This mapping contributes log-generation configuration evidence only,
+not delivery, retention or continuous-monitoring assurance. See
+[approved metadata](../controls/sprint-6d2-metadata.md).
+
 6D.1 catalog `0.6.0` adds NET-003/004/005 -> PR.IR-01 using separately checksummed local subset
 `2.0+subset.5`. Source remains NIST CSWP 29 official version 2.0, Appendix A printed page 20,
 inspected 2026-09-28. The subset and manifest are `app/assessment/data/nist_csf_2_0_subset_5.json`

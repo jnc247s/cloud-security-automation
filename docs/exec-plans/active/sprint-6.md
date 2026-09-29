@@ -1,7 +1,94 @@
 # Sprint 6 — Production Security Controls
 
 Plan state: 6A, 6B and 6C COMPLETE and merged; 6D.1 approved and IN PROGRESS.
-6D.2 and later implementation slices remain proposed.
+6D.2 is approved and IN PROGRESS; later implementation slices remain proposed.
+
+## 6D publication authorization — 2026-09-29
+
+The user explicitly authorized pushing 6D. Commit the reviewed 6D.2 implementation and existing
+analysis-only 6E preparation, then publish both scoped 6D branches without force-pushing or merging.
+This supersedes the earlier no-push checkpoint, not the required CI and human acceptance gates.
+The combined independent review and full local regression below remain applicable; only
+documentation has changed since review. Final pushed-HEAD PostgreSQL and image CI must pass
+before acceptance. 6E implementation and all later work remain unstarted.
+
+## 6D finalization and 6E preparation — 2026-09-28
+
+The user requested finishing 6D and preparing 6E. Runtime implementation and combined read-only
+review are complete locally; the validation checkpoint below remains applicable. No application
+or test behavior is changed by this preparation. Final publication/CI and human acceptance are
+still required before 6D is marked COMPLETE. Commit/push/stacked-PR approval has been requested;
+the earlier no-push/no-merge restriction is not silently waived.
+
+The [6E preflight](../../controls/sprint-6e-preflight.md) records inspected integration seams,
+the three bounded S3 slices, existing policy decisions and validation gates. It is analysis-only,
+not implementation approval or a new control contract. Start 6E.1 from clean synchronized main
+after 6D acceptance and approval of the missing S3-001/S3-003 truth tables and metadata.
+6E remains proposed; S3-001 through S3-004 stay unregistered. Do not implement 6F composition.
+
+## 6D.2 authorization and workflow amendment — 2026-09-28
+
+The user approved a local 6D.1 checkpoint (`215abcf6f2690f93f623db0f3f30fd85cdba2f5d`)
+and stacked branch `codex/sprint-6d2-vpc-flow-log-control`. This is an explicit bounded
+exception to starting each slice from main, not acceptance of 6D.1. The combined base is
+`c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c`. No push or merge is authorized.
+
+Implement NET-006 only: explicit case-sensitive `Environment=production`, acceptable traffic
+types `REJECT` or `ALL`, MEDIUM severity, catalog `0.7.0`, evaluator `1.0.0`, and scoped
+PR.PS-04 mapping for log-generation configuration evidence only. Guidance requires an authorized
+operator to review dependencies and costs before enabling logging; no AWS writes are included.
+Missing policy is rejected, never defaulted. Preserve all older releases and default `0.2.1`.
+
+Use a bounded VPC/Flow Log join that proves both matching membership and complete empty results;
+do not weaken the generic required-edge strategy or treat subnet/interface logs as VPC logs.
+No collector, permission, schema, API or authentication redesign is approved. Run targeted,
+history/recovery/HTTP, PostgreSQL where available, full regression, Ruff and relevant container
+checks. One read-only reviewer is authorized for combined 6D.1/6D.2 after validation. Neither
+slice is complete until its remaining acceptance gates succeed. Later slices are excluded.
+
+### 6D.2 local implementation checkpoint — 2026-09-28
+
+NET-006 is implemented in explicitly selected catalog `0.7.0` with approved MEDIUM severity,
+evaluator `1.0.0`, explicit environment/traffic policy and independently checksummed NIST subset
+`2.0+subset.6`. Bounded execution schema `1.4.0` proves complete VPC/Flow Log populations and
+exact zero-or-more relationship membership. Engine and persistence share result/proof validation.
+External-owner VPC coverage remains insufficient under collection-account Flow Log discovery.
+No collector, AWS permission, migration, route, authentication or default-catalog change was made.
+Migration head remains `20260924_0004`; all earlier releases remain supported.
+
+Validation before the combined independent review:
+
+- Combined 6D rules, persistence, recovery, real HTTP acceptance and contracts/Markdown links:
+  **150 passed, 2 warnings**. NET-006 rule cases: **29**; local storage/recovery cases: **10**;
+  local HTTP cases: **1** in addition to the preserved 6D.1 acceptance.
+- Complete regression: **1,654 passed, 76 skipped, 21 warnings**, 66.20 seconds. Every skip is an
+  unconfigured disposable PostgreSQL case, including the **11** new NET-006 integration cases.
+  Existing dependency and SQLite datetime deprecations remain.
+- Ruff lint passed; formatting passed (**267 local Python files**); whitespace checks passed.
+  Scoped AWS-key/private-key and sensitive-path checks found no matches; this is not a claim of
+  exhaustive secret scanning. Docker Compose configuration passed.
+- Docker's Linux engine is unavailable. PostgreSQL execution and the API image build remain
+  authoritative CI gates, not claimed local successes. CI already provisions disposable PostgreSQL.
+  No live AWS or production database was used.
+
+HTTP acceptance keeps real bearer authentication/capabilities, routes, executor, collectors, rules,
+transactions and public read APIs; only AWS is fake. It verifies nonblocking 202 with a bounded
+gate, persisted IDs, history, sources, relationships, findings, framework metadata and audit.
+Recovery retains the exact catalog/profile despite different deployment defaults. Source failure
+tests preserve independent results without allowing a partial scan to resolve a finding.
+
+The approved single read-only reviewer completed combined 6D.1/6D.2 review against accepted main
+`c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c`, including untracked files: **REVIEW_PASS**, zero
+CRITICAL/HIGH/MEDIUM/LOW findings. The review covered canonical truth tables, owner/Region/source
+proof, complete absence versus missing evidence, exact historical policy/recovery, atomic rejection,
+finding lifecycle, real authenticated HTTP acceptance, compatibility and documentation. No code
+repair was required. Final documentation contracts/Markdown validation: **68 passed, 2 warnings**.
+
+6D.2 changes remain uncommitted on `codex/sprint-6d2-vpc-flow-log-control`; only the approved
+6D.1 checkpoint exists. PostgreSQL, image/CI and human merge approval remain outstanding gates.
+No push, PR, merge or new CI result is claimed. Both slices remain IN PROGRESS until their gates
+and human acceptance succeed. No later slice or sprint was started.
+
 Prepared: 2026-09-24.
 Current checkpoint verified: 2026-09-28. Historical checkpoints below retain their original state.
 

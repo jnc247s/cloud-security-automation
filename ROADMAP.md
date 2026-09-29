@@ -34,7 +34,8 @@ accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
 Sprint 6 is `IN PROGRESS`. Slices 6A, 6B and 6C are accepted and merged. Slice 6D.1 is approved
 and `IN PROGRESS` for NET-003/004/005 only. The default catalog remains unchanged; all added
-controls require explicit catalog/profile selection. 6D.2 and later slices remain proposed.
+controls require explicit catalog/profile selection. 6D.2 is also approved and IN PROGRESS;
+later slices remain proposed.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -110,7 +111,12 @@ merged-main CI passed. Its independent review has no unresolved findings.
 
 The user subsequently approved 6D.1 implementation and its
 [control metadata](docs/controls/sprint-6d1-metadata.md). This authorizes only NET-003/004/005;
-NET-006 and later work remain unstarted. Migration head remains `20260924_0004`.
+The user subsequently approved stacked 6D.2 implementation of NET-006 only, with the exact
+policy and workflow recorded in the active plan. Both 6D slices passed combined independent
+review; publication/CI and human acceptance remain pending. The requested
+[6E preflight](docs/controls/sprint-6e-preflight.md) is prepared as analysis only, with the existing
+S3 policy/metadata gates still requiring approval. 6E implementation and later work remain unstarted.
+Migration head remains `20260924_0004`.
 
 ## Pre-Sprint 5 attention
 

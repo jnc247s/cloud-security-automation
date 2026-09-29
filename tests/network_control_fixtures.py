@@ -46,7 +46,14 @@ def permission(protocol="-1", first=None, last=None, *, ipv4="0.0.0.0/0", ipv6=N
 
 
 def network_client(
-    *, groups=None, vpcs=None, group_error=None, vpc_error=None, subnet_error=None, flow_error=None
+    *,
+    groups=None,
+    vpcs=None,
+    flow_logs=None,
+    group_error=None,
+    vpc_error=None,
+    subnet_error=None,
+    flow_error=None,
 ):
     if groups is None:
         group = _security_group()
@@ -66,7 +73,7 @@ def network_client(
                 [{"Vpcs": [_vpc()] if vpcs is None else vpcs}], error=vpc_error
             ),
             "describe_subnets": FakePaginator([{"Subnets": []}], error=subnet_error),
-            "describe_flow_logs": FakePaginator([{"FlowLogs": []}], error=flow_error),
+            "describe_flow_logs": FakePaginator([{"FlowLogs": flow_logs or []}], error=flow_error),
         }
     )
 
