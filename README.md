@@ -198,6 +198,24 @@ Poll the scan, then query resources, assessments, and findings through the docum
 
 ## Tests and quality
 
+For the complete local acceptance pipeline with Docker running and development dependencies
+installed, use:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.validate
+```
+
+Optionally run slice-specific tests first with `--focused tests/unit/rules/test_s3_configuration.py`.
+The runner always performs Ruff, formatting, the full regression (including PostgreSQL and
+Markdown/link contracts), whitespace checks, Compose validation and the image build. It creates
+its own loopback-only PostgreSQL 16 container with a random password and temporary memory-backed
+storage; it never uses your configured database URL. The test container is removed on success or
+ordinary failure, and failures return a nonzero exit status. Your application/database containers
+are untouched. The local `cloud-security-automation:validation` image/cache is retained.
+Force-killing the runner or losing the Docker daemon can prevent cleanup; the uniquely named
+`cloudsec-validation-*` container is labeled with its exact name for manual identification.
+Do not use broad Docker cleanup commands. This command does not commit, push, merge or deploy.
+
 Default tests use fake AWS clients and migrated SQLite databases. PostgreSQL tests run only when
 `TEST_DATABASE_URL` points to a dedicated disposable test database; CI supplies PostgreSQL 16.
 
