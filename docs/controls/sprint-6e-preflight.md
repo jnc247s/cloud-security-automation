@@ -6,6 +6,15 @@ Prepared: 2026-09-28. Analysis only; no S3 control is enabled by this document.
 
 ## Starting checkpoint and gate
 
+Superseding checkpoint, 2026-09-29: PR #32 merged both reviewed 6D slices into main at
+`9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`; merged-main CI passed. The proposed two-PR
+sequence below was not needed. Clean local main was synchronized and branch
+`codex/sprint-6e1-s3-bpa-transport-controls` created from that accepted checkpoint.
+The user approved combined BPA and bounded HTTPS-denial policy direction; the
+[6E.1 approved metadata](sprint-6e1-metadata.md) records those choices and the subsequent
+explicit metadata approval. 6E.1 is now authorized and underway; the original preflight below is historical
+where it refers to pending 6D acceptance or undecided 6E.1 policy direction.
+
 Accepted main is `c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c` (6C). The reviewed local 6D
 stack adds catalog `0.6.0` for security groups and `0.7.0` for VPC Flow Logs, with migration head
 `20260924_0004` unchanged. Combined independent review passed with zero findings. Local full
@@ -70,10 +79,11 @@ Whole-scan completeness requirements for finding resolution remain unchanged.
 
 These are the active plan's existing gates, not new requirements or approved policy defaults.
 
-1. **S3-001:** independently require all four flags at both account and bucket levels, or require
-   the effective account/bucket OR for each flag. Record PASS/FAIL/insufficient/empty-population
-   behavior, including partial evidence, in the canonical owner before implementation.
-2. **S3-003:** approve the bounded explicit secure-transport Deny proof: supported principals,
+1. **S3-001 direction approved 2026-09-29:** require the effective account/bucket OR for each
+   flag, not independently enabled flags at both levels. Record
+   PASS/FAIL/insufficient/empty-population behavior, including partial evidence, before implementation.
+2. **S3-003 direction approved 2026-09-29:** bounded explicit secure-transport Deny proof.
+   The implementation decision table must fix supported principals,
    action coverage, bucket/object resource coverage, Boolean condition forms, additional
    conditions and unsupported syntax. Do not create a general IAM policy solver or mistake
    absence of an explicit Allow for enforced TLS. Missing policy and unavailable policy differ.
@@ -87,7 +97,8 @@ These are the active plan's existing gates, not new requirements or approved pol
 5. **Each slice:** approve severity, impact/operator guidance, evaluation/catalog identities and
    independently sourced NIST mappings. NIST mappings never decide technical outcomes.
 
-No policy choice in this section has been selected automatically. Stage approvals per slice;
+No policy choice in this section has been selected automatically. Only the two 6E.1 directions
+above and the 6E.1 metadata have subsequently been approved; later-slice gates remain. Stage approvals per slice;
 6E.1 need not wait for organization-specific 6E.3 classifier content once its own gates and the
 accepted starting baseline are satisfied.
 

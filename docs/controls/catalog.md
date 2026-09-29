@@ -29,7 +29,8 @@ accepted in pull request 25. Approved 6B.1 adds IAM-002/003/005/006 only in expl
 catalog `0.3.0`. Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, and approved 6C adds
 EC2-001 through EC2-004 in opt-in catalog `0.5.0`. Approved 6D.1 adds NET-003/004/005 in
 opt-in catalog `0.6.0`. Approved 6D.2 adds NET-006 in opt-in catalog `0.7.0`.
-Other planned controls stay unregistered.
+Approved 6E.1 adds S3-001/003 in opt-in `0.8.0`, with the exact decision tables and metadata
+in [the authoritative 6E.1 contract](sprint-6e1-metadata.md). Other planned controls stay unregistered.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -40,14 +41,15 @@ unused-key policy in a new profile (approved deployment value 90), never a hard-
 
 ## Permanent S3 identifier safety
 
-Only `S3-900` is implemented today. The canonical Sprint 6 identifiers below are reserved now so
+S3-001/003 are implemented in opt-in `0.8.0`; S3-900 remains unchanged. The identifiers below
+retain their permanent meanings so
 historical findings and integrations cannot acquire conflicting meanings:
 
 | Control ID | Permanent semantic meaning | Current state |
 | --- | --- | --- |
-| `S3-001` | Required Block Public Access configuration missing | Reserved; not implemented |
+| `S3-001` | Required Block Public Access configuration missing | Implemented in opt-in 0.8.0; validation underway |
 | `S3-002` | Unapproved public/external bucket exposure | Reserved; not implemented |
-| `S3-003` | Secure transport not enforced | Reserved; not implemented |
+| `S3-003` | Secure transport not enforced | Implemented in opt-in 0.8.0; validation underway |
 | `S3-004` | Sensitive-data KMS requirement not met | Reserved; not implemented |
 | `S3-900` | Legacy explicit default-encryption configuration prototype | Implemented, non-core |
 

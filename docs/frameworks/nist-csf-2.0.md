@@ -6,6 +6,13 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+6E.1 catalog `0.8.0` adds S3-001 -> PR.AA-05 and S3-003 -> PR.DS-02 in separately checksummed
+local subset `2.0+subset.7`. Source: NIST CSWP 29 version 2.0, Appendix A printed page 20,
+inspected 2026-09-29. Files are `app/assessment/data/nist_csf_2_0_subset_7.json` and its
+`_manifest.json` companion. These mappings contribute only public-access safeguard and
+transport-protection configuration evidence, not complete NIST outcomes. Severity and results
+are independent; see [approved metadata](../controls/sprint-6e1-metadata.md).
+
 6D.2 catalog `0.7.0` adds NET-006 -> PR.PS-04 in local subset `2.0+subset.6`, sourced from
 NIST CSWP 29 version 2.0, Appendix A printed page 20, inspected 2026-09-28. The independently
 checksummed `app/assessment/data/nist_csf_2_0_subset_6.json` and `_manifest.json` companion

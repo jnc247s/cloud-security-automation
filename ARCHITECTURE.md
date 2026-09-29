@@ -36,6 +36,15 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
+Approved 6E.1 adds opt-in S3-001/003 in catalog `0.8.0`, evaluator `1.0.0`. Closed execution
+schema `1.5.0` binds global bucket discovery, exact bucket-home Region/owner admission and
+the required account/bucket configuration source IDs, states and artifact digests. BPA combines
+each flag across account and bucket, retaining unavailable outcomes without treating them as
+false. HTTPS evaluation uses only the bounded explicit-Deny contract. Engine and persistence
+recompute the same result; older evidence strategies remain unchanged. No collector, AWS
+permission, migration, service, route or authentication change is introduced. See
+[6E.1 contract](docs/controls/sprint-6e1-metadata.md). S3-002/004 remain unregistered.
+
 Approved 6D.1 adds opt-in NET-003/004/005 in catalog `0.6.0`. Execution schema `1.3.0`
 binds complete security-group/VPC discovery, exact admitted configuration and the same-scan
 `in_vpc` relationship. The engine and persistence use the same proof and pure truth table,

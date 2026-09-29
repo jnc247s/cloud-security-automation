@@ -97,4 +97,13 @@ def resolve_catalog(catalog_id: str, version: str):
         _, registry = resolve_catalog(catalog_id, "0.6.0")
         registry.register(VPCFlowLogRule())
         return build_flow_log_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.8.0"):
+        from app.assessment.s3_configuration_controls import build_s3_configuration_catalog
+        from app.assessment.s3_configuration_evidence import S3_CONFIGURATION_IDS
+        from app.rules.s3_configuration import S3ConfigurationRule
+
+        _, registry = resolve_catalog(catalog_id, "0.7.0")
+        for control_id in S3_CONFIGURATION_IDS:
+            registry.register(S3ConfigurationRule(control_id))
+        return build_s3_configuration_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

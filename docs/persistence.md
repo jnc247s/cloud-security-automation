@@ -1,5 +1,12 @@
 # Persistence and assessment history
 
+6E.1 adds opt-in catalog `0.8.0` and S3 configuration proof schema `1.5.0` without a migration.
+The shared engine/persistence boundary recomputes combined BPA and bounded HTTPS results from
+exact source IDs, states, digests and authoritative bucket identity. No historical artifact,
+profile, catalog or framework content is rewritten. Pending scans retain their original catalog
+and policy; a partial scan cannot resolve findings even when a new control independently passes.
+See [6E.1 contract](controls/sprint-6e1-metadata.md).
+
 6D.2 adds catalog `0.7.0` and bounded VPC Flow Log proof schema `1.4.0`, without a migration.
 Exact profile recovery, source/edge references and policy-aware result validation use the same
 engine/storage boundary. Complete absence may produce FAIL with zero relationship IDs; missing
@@ -517,6 +524,23 @@ and source-contract filtering. The existing full HTTP acceptance remains in the 
 module; it is not replaced by these performance tests.
 
 ## Current boundary and deferred work
+
+### Migration comparison compatibility
+
+Alembic `1.20` or later is required. The named CHECK-constraint comparison plugin is explicitly
+enabled rather than relying on defaults that changed between Alembic releases. Autogeneration
+uses a private metadata copy with CHECK names rendered by the active SQLAlchemy dialect, including
+PostgreSQL's deterministic long-name truncation. Application metadata, stored constraints, their
+expressions, and established migrations remain unchanged; no new migration is required.
+
+Real missing/extra named constraints still fail `alembic check`, as verified against disposable
+PostgreSQL. This plugin compares names, not SQL-expression equivalence; existing constraint
+enforcement and migration-integrity tests remain necessary. SQLite keeps its own untruncated names.
+See [Alembic's CHECK comparison documentation](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#detecting-check-constraints).
+
+The [automated local validation runner](../README.md#tests-and-quality) supplies a separate
+disposable PostgreSQL database, preserves user database configuration, and cleans up its test
+container. CI continues to run the authoritative PostgreSQL regression and image build.
 
 Sprint 4 provides authorized read/query services, versioned REST endpoints, and a bounded,
 recoverable in-process scan executor. The accepted Sprint 5 foundation adds the optional

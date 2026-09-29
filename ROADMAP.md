@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-23
+Last verified: 2026-09-29
 Accepted baseline: `main` at `ef4543d439ed3a33064c6bcf383db201a94d2881` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
@@ -32,10 +32,16 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `IN PROGRESS`. Slices 6A, 6B and 6C are accepted and merged. Slice 6D.1 is approved
-and `IN PROGRESS` for NET-003/004/005 only. The default catalog remains unchanged; all added
-controls require explicit catalog/profile selection. 6D.2 is also approved and IN PROGRESS;
-later slices remain proposed.
+Sprint 6 is `IN PROGRESS`. Slices 6A through 6D are COMPLETE and merged. Both 6D slices were
+accepted through PR #32 at `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`; merged-main CI passed.
+The user requested 6E implementation and approved combined account/bucket Block Public Access
+protection and bounded explicit HTTPS-denial evaluation for 6E.1. The subsequent metadata
+approval authorized opt-in catalog `0.8.0`; 6E.1 is IN PROGRESS with local validation and
+independent review passed. Its branch is pushed; PR creation was refused by the GitHub integration
+(HTTP 403), and final CI/human merge acceptance remain pending. The active plan links the manual PR.
+The default catalog remains unchanged; all added controls require explicit catalog/profile
+selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) is analysis-only and includes
+one policy/metadata proposal; 6E.2/6E.3 retain their gates and are not implemented.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -109,13 +115,24 @@ The user approved 6C implementation and its bounded metadata/UUID allowlist deci
 6C is COMPLETE: PR #30 merged at `c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c` and
 merged-main CI passed. Its independent review has no unresolved findings.
 
-The user subsequently approved 6D.1 implementation and its
-[control metadata](docs/controls/sprint-6d1-metadata.md). This authorizes only NET-003/004/005;
-The user subsequently approved stacked 6D.2 implementation of NET-006 only, with the exact
-policy and workflow recorded in the active plan. Both 6D slices passed combined independent
-review; publication/CI and human acceptance remain pending. The requested
-[6E preflight](docs/controls/sprint-6e-preflight.md) is prepared as analysis only, with the existing
-S3 policy/metadata gates still requiring approval. 6E implementation and later work remain unstarted.
+6D.1 (NET-003/004/005) and 6D.2 (NET-006) are COMPLETE. PR #32 merged both implementation
+commits at `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`, superseding the proposed two-PR merge
+sequence. Combined independent review passed with zero findings; final branch CI and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36532277234)
+passed. Acceptance was verified on 2026-09-29.
+
+The user requested 6E implementation on 2026-09-29 and approved the 6E.1 policy direction:
+effective combined account/bucket Block Public Access and a bounded explicit secure-transport
+Deny evaluator. See the [6E preflight](docs/controls/sprint-6e-preflight.md) and
+[6E.1 approved metadata](docs/controls/sprint-6e1-metadata.md). The user subsequently approved
+that metadata; S3-001 and S3-003 are implemented locally in opt-in `0.8.0`, with acceptance
+gates outstanding. The authorized migration-comparison repair resolved the baseline failures:
+all 1,790 tests pass, including 88 PostgreSQL cases, and independent review has zero findings.
+The repeatable local validation pipeline passes; the branch is pushed, with PR creation, final CI
+and human merge pending. See the active plan for exact validation results and the PR access blocker.
+This is 6E.1 only, not completion of 6E;
+6E.2 exposure approvals and 6E.3 classifier/encryption policy remain separate required decisions.
+Later slices remain unstarted.
 Migration head remains `20260924_0004`.
 
 ## Pre-Sprint 5 attention

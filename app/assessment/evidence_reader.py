@@ -107,6 +107,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.5.0":
+            from app.assessment.s3_configuration_evidence import s3_configuration_proof
+
+            return s3_configuration_proof(self, contract, target)
         if contract.schema_version == "1.4.0":
             from app.assessment.flow_log_evidence import flow_log_proof
 
@@ -226,6 +230,16 @@ class AssessmentEvidenceReader:
         try:
             expected = self.proof(contract, target)
             network_expected = None
+            s3_expected = None
+            if contract.schema_version == "1.5.0":
+                from app.rules.s3_configuration import s3_configuration_result
+
+                control = {"s3_bpa_v1": "S3-001", "s3_transport_v1": "S3-003"}[
+                    contract.validation_strategy
+                ]
+                if candidate.control_id != control:
+                    raise ValueError("S3 control differs from its execution contract")
+                s3_expected = s3_configuration_result(control, expected["s3_configuration"])
             if contract.schema_version == "1.4.0":
                 from app.rules.flow_logs import flow_log_result
 
@@ -255,6 +269,15 @@ class AssessmentEvidenceReader:
                     "incomplete required sources require an insufficient assessment"
                 ) from None
             return
+        if s3_expected is not None:
+            if candidate.result is not s3_expected:
+                raise ValueError("S3 result differs from retained source evidence")
+            if (
+                candidate.result
+                in {AssessmentResult.NOT_APPLICABLE, AssessmentResult.INSUFFICIENT_EVIDENCE}
+                and candidate.evidence_artifacts
+            ):
+                raise ValueError("nondecisive S3 results must not carry decisive evidence")
         if network_expected is not None and candidate.result is not network_expected:
             raise ValueError(
                 "network result or applicability differs from retained evidence/policy"
@@ -277,10 +300,9 @@ class AssessmentEvidenceReader:
         ):
             raise ValueError("observed IAM credentials or root controls cannot be not applicable")
         for artifact in candidate.evidence_artifacts:
-            if (
-                network_expected is not None
-                and artifact.payload.get("evaluation_version") != "1.0.0"
-            ):
+            if (network_expected is not None or s3_expected is not None) and artifact.payload.get(
+                "evaluation_version"
+            ) != "1.0.0":
                 raise ValueError("network evaluation version differs from contract")
             if artifact.payload.get("source_proof") != expected:
                 raise ValueError("assessment source proof differs from retained evidence")
