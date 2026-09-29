@@ -107,6 +107,14 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.4.0":
+            from app.assessment.flow_log_evidence import flow_log_proof
+
+            return flow_log_proof(self, target)
+        if contract.schema_version == "1.3.0":
+            from app.assessment.security_group_evidence import security_group_proof
+
+            return security_group_proof(self, target)
         if contract.schema_version == "1.1.0":
             from app.assessment.iam_key_evidence import iam_key_proof
 
@@ -204,7 +212,7 @@ class AssessmentEvidenceReader:
         )
 
     def validate_candidate(
-        self, contract: ExecutionContract, candidate: AssessmentCandidate
+        self, contract: ExecutionContract, candidate: AssessmentCandidate, *, profile=None
     ) -> None:
         """Persistence and engine share the same exact-reference validation, not a second rule."""
         target = NormalizedResource(
@@ -217,6 +225,22 @@ class AssessmentEvidenceReader:
         )
         try:
             expected = self.proof(contract, target)
+            network_expected = None
+            if contract.schema_version == "1.4.0":
+                from app.rules.flow_logs import flow_log_result
+
+                if candidate.control_id != "NET-006" or profile is None:
+                    raise ValueError("Flow Log validation requires its exact control and profile")
+                network_expected = flow_log_result(expected["vpc_flow_logs"], profile)
+            if contract.schema_version == "1.3.0":
+                from app.assessment.security_group_evidence import NETWORK_CONTROL_IDS
+                from app.rules.security_groups import network_result
+
+                if candidate.control_id not in NETWORK_CONTROL_IDS or profile is None:
+                    raise ValueError("network validation requires its exact control and profile")
+                network_expected = network_result(
+                    candidate.control_id, expected["security_group"], profile
+                )
             ec2_facts_value = None
             if candidate.control_id in {"EC2-001", "EC2-002", "EC2-003", "EC2-004"}:
                 from app.assessment.ec2_evidence import ec2_facts
@@ -231,6 +255,10 @@ class AssessmentEvidenceReader:
                     "incomplete required sources require an insufficient assessment"
                 ) from None
             return
+        if network_expected is not None and candidate.result is not network_expected:
+            raise ValueError(
+                "network result or applicability differs from retained evidence/policy"
+            )
         if (
             candidate.result in {AssessmentResult.PASS, AssessmentResult.FAIL}
             and not candidate.evidence_artifacts
@@ -249,6 +277,11 @@ class AssessmentEvidenceReader:
         ):
             raise ValueError("observed IAM credentials or root controls cannot be not applicable")
         for artifact in candidate.evidence_artifacts:
+            if (
+                network_expected is not None
+                and artifact.payload.get("evaluation_version") != "1.0.0"
+            ):
+                raise ValueError("network evaluation version differs from contract")
             if artifact.payload.get("source_proof") != expected:
                 raise ValueError("assessment source proof differs from retained evidence")
             if ec2_facts_value is not None:

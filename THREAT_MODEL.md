@@ -44,6 +44,20 @@ failure behavior.
 
 ## Trust boundaries and assumptions
 
+6D.2 binds NET-006 results to complete same-scan VPC/Flow Log facts and exact zero-or-more
+relationship membership. Omitted matching edges cannot fabricate absence, non-VPC logs cannot
+fabricate coverage, and external-owner VPCs remain insufficient under collection-account-only
+Flow Log discovery. Engine and persistence re-evaluate the retained explicit policy; forged
+PASS/FAIL/N/A and substituted source proofs are rejected. Partial scans still cannot resolve
+findings. Authentication, authorization and sensitive-evidence exposure are unchanged.
+
+Approved 6D.1 rejects missing, wrong-owner/Region or unresolved VPC edges and incomplete discovery
+before making a decisive network assessment. Shared source-bound proof and pure result validation
+reject forged PASS/N/A, including N/A substituted from a different high-risk-port profile.
+Old catalogs and their whole-collector/finding-resolution guards remain unchanged. Complete
+required sources may support an assessment during an unrelated source failure, but cannot resolve
+an existing finding through a partial scan. No new AWS or authorization boundary is introduced.
+
 Approved 6C mitigates ambiguous cross-account/Region public-IP approvals by matching canonical
 stable resource UUIDs only. Required discovery/admission/configuration facts and N/A applicability
 are revalidated at engine and persistence boundaries. Regional EBS defaults cannot be collapsed

@@ -27,9 +27,12 @@ pull request 24 at `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Evi
 does not change the executable catalog: Sprint 5 is `COMPLETE`, the bounded 5G closure was
 accepted in pull request 25. Approved 6B.1 adds IAM-002/003/005/006 only in explicitly selected
 catalog `0.3.0`. Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, and approved 6C adds
-EC2-001 through EC2-004 in opt-in catalog `0.5.0`. Other planned controls stay unregistered.
+EC2-001 through EC2-004 in opt-in catalog `0.5.0`. Approved 6D.1 adds NET-003/004/005 in
+opt-in catalog `0.6.0`. Approved 6D.2 adds NET-006 in opt-in catalog `0.7.0`.
+Other planned controls stay unregistered.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
-[6C metadata](sprint-6c-metadata.md).
+[6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
+[6D.2 metadata](sprint-6d2-metadata.md).
 
 The [approved 6B.1 metadata](sprint-6b1-metadata.md) owns severities, operator guidance, mappings,
 and release identities: IAM-002/003 are MEDIUM, IAM-005/006 HIGH. IAM-003 requires explicit
@@ -235,7 +238,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `NET-003` — Security group permits unrestricted all-protocol public ingress
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.6.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EC2/VPC security group.
 - **Required evidence:** complete normalized ingress permissions including protocol, ports when
   applicable, IPv4 and IPv6 CIDRs, security-group references, and prefix-list references, with
@@ -255,13 +258,13 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `NET-004` — Security group exposes a high-risk port publicly
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.6.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EC2/VPC security group.
 - **Required evidence:** complete ingress protocol, start/end port, and IPv4/IPv6 CIDR evidence,
   including AWS all-protocol semantics, with common regional provenance.
 - **Relationships:** security group -> VPC.
-- **Assessment Profile:** `enabled_controls` and a future versioned
-  `high_risk_public_tcp_ports` list. The initial reviewed candidate set is `3306`, `5432`, `6379`,
+- **Assessment Profile:** `enabled_controls` and explicit versioned
+  `high_risk_public_tcp_ports`. The approved deployment set is `3306`, `5432`, `6379`,
   `9200`, and `27017`; ports 22 and 3389 remain under `NET-001` and `NET-002` unless a later
   profile explicitly includes them.
 - **PASS:** complete evidence shows that no public IPv4/IPv6 `/0` permission allows a configured
@@ -277,7 +280,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `NET-005` — Default VPC security group permits traffic
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.6.0`, evaluator `1.0.0`; not enabled by default.
 - **Scope/resource type:** EC2/VPC security group.
 - **Required evidence:** group and VPC identity; the exact AWS `GroupName`; and complete ingress
   and egress permissions, including referenced groups, CIDRs, protocols, and ports. The normalized
@@ -297,7 +300,8 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `NET-006` — Required VPC Flow Logs are missing
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** implemented in opt-in catalog `0.7.0`, evaluator `1.0.0`; not enabled by default.
+  Approved policy and metadata: [6D.2 metadata](sprint-6d2-metadata.md).
 - **Scope/resource type:** one VPC in one AWS account and Region.
 - **Required evidence:** VPC identity, account, Region, complete tags/context, and complete VPC
   Flow Log records containing identity, `ResourceId`, `FlowLogStatus`, `TrafficType`, destination
@@ -305,8 +309,8 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 - **Relationships:** VPC -> VPC-scoped Flow Log only when the Flow Log `ResourceId` exactly equals
   the validated ID of that collected VPC. Subnet, interface, and transit-gateway flow logs do not
   silently satisfy this VPC-scoped contract.
-- **Assessment Profile:** `enabled_controls`; future versioned, non-empty
-  `vpc_flow_log_required_environments`; and future versioned, non-empty
+- **Assessment Profile:** `enabled_controls`; explicit versioned, non-empty
+  `vpc_flow_log_required_environments`; and explicit versioned, non-empty
   `acceptable_vpc_flow_log_traffic_types`. V1 applicability uses the exact case-sensitive VPC tag
   key `Environment` and exact case-sensitive values in the environment tuple. Acceptable traffic
   values are a non-empty subset of AWS's exact `REJECT` and `ALL` values. These choices must be

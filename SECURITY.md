@@ -58,6 +58,18 @@ security control.
 
 ## AWS access and least privilege
 
+6D.2 NET-006 uses retained facts only. Exact VPC/log owner, Region, source and edge membership
+are checked before results; collection-account enumeration cannot prove external-owner coverage.
+Environment/traffic policy must be explicit. No log delivery, retention or monitoring assurance
+is inferred; an authorized operator must review dependencies and costs before changing logging.
+No AWS write, new permission, endpoint or capability change is introduced.
+
+6D.1 evaluates only retained security-group/VPC facts. Source/edge identities, complete discovery,
+snapshot content and exact policy are validated at engine and persistence boundaries. Public
+permission checks are not end-to-end reachability claims. Guidance requires dependency review and
+separately authorized changes; no AWS writes, new permissions or remediation handlers are added.
+NET-001/002, authentication and capability separation remain unchanged.
+
 6C consumes only retained EC2/EBS evidence and adds no AWS permissions or write capability.
 EC2-002 approvals use exact stable resource UUIDs, binding account, Region and instance; bare IDs
 are rejected only for profiles enabling that control. Approval is immutable assessment policy,

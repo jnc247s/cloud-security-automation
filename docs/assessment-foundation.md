@@ -1,5 +1,12 @@
 # Sprint 6A assessment foundation
 
+6D.2 adds opt-in catalog `0.7.0`, NET-006 and bounded execution schema `1.4.0`.
+Its VPC/Flow Log join proves exact source-bound population and zero-or-more edge membership.
+The shared engine/persistence validator recomputes the result using the retained explicit
+environment/traffic policy, including artifact-free N/A. Missing edges cannot fabricate absence.
+Earlier strategy meanings and default catalog remain unchanged; see
+[approved metadata](controls/sprint-6d2-metadata.md).
+
 Scope/status is owned by [ROADMAP.md](../ROADMAP.md) and the
 [active Sprint 6 plan](exec-plans/active/sprint-6.md). This foundation enables no new control.
 The default release remains `aws-cloud-security-controls/0.2.1` and its five accepted rules.
@@ -7,6 +14,24 @@ Approved 6B.1 adds explicit opt-in `0.3.0` containing those five plus IAM-002/00
 Synthetic test catalogs are not production releases.
 
 ## Explicit configuration
+
+6D.1 adds opt-in catalog `0.6.0` for NET-003/004/005. NET-004 requires extended profile schema
+`2.0.0` and explicit `high_risk_public_tcp_ports`; approved values are 3306, 5432, 6379, 9200,
+27017. No implicit default is supplied. An explicit empty tuple is N/A after evidence validation;
+missing policy fails before collection and during recovery. No profile schema or migration changes.
+
+Execution schema `1.3.0` is restricted to security-group targets and `security_group_v1` proof.
+It binds complete discovery membership, resource admission/configuration, exact same-owner/Region
+VPC identity, a resolved `in_vpc` edge and its source provenance. Empty group discovery proves N/A
+without a fabricated VPC edge. Unavailable evidence cannot prove absence. Both engine and storage
+reuse the pure rule result with the exact selected profile; prior execution schemas retain their
+semantics. No generic partial-evidence bypass is added. Legacy NET-001/002 and complete-scan
+finding resolution are unchanged. See [approved metadata](controls/sprint-6d1-metadata.md).
+
+Run focused local coverage with `python -m pytest tests/unit/rules/test_security_group_controls.py
+tests/unit/database/test_network_controls.py tests/unit/database/test_network_http_acceptance.py`.
+Run `python -m pytest tests/integration/test_network_controls_postgres.py` with an explicitly
+disposable `TEST_DATABASE_URL` for authoritative PostgreSQL history/recovery/HTTP validation.
 
 6C adds opt-in catalog `0.5.0` with EC2-001/002/003/004. Its new controls use execution schema
 `1.0.0` and shared EC2 fact/applicability validation; the prior catalog releases are unchanged.
