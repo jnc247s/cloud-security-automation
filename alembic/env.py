@@ -13,6 +13,7 @@ from sqlalchemy import Connection, engine_from_config, pool, text
 import app.models  # noqa: F401
 from app.config import get_settings
 from app.database.base import Base
+from app.database.migration_metadata import AUTOGENERATE_PLUGINS, comparison_metadata
 
 config = context.config
 if config.config_file_name is not None and "connection" not in config.attributes:
@@ -236,6 +237,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        autogenerate_plugins=AUTOGENERATE_PLUGINS,
     )
     starting_revision = context.get_starting_revision_argument()
     if _downgrades_assessment_execution(starting_revision):
@@ -257,8 +259,9 @@ def run_migrations_online() -> None:
     if supplied_connection is not None:
         context.configure(
             connection=supplied_connection,
-            target_metadata=target_metadata,
+            target_metadata=comparison_metadata(target_metadata, supplied_connection.dialect),
             compare_type=True,
+            autogenerate_plugins=AUTOGENERATE_PLUGINS,
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
@@ -279,8 +282,9 @@ def run_migrations_online() -> None:
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata,
+            target_metadata=comparison_metadata(target_metadata, connection.dialect),
             compare_type=True,
+            autogenerate_plugins=AUTOGENERATE_PLUGINS,
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
