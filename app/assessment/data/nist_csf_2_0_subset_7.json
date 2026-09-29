@@ -1,0 +1,55 @@
+{
+  "framework": {
+    "framework_id": "nist-csf",
+    "name": "NIST Cybersecurity Framework",
+    "version": "2.0+subset.7",
+    "source": "https://doi.org/10.6028/NIST.CSWP.29"
+  },
+  "references": [
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.7",
+      "reference_id": "PR",
+      "level": "function",
+      "title": "Protect",
+      "description": "Safeguards to manage the organization’s cybersecurity risks are used",
+      "parent_reference_id": null
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.7",
+      "reference_id": "PR.AA",
+      "level": "category",
+      "title": "Identity Management, Authentication, and Access Control",
+      "description": "Access to physical and logical assets is limited to authorized users, services, and hardware and managed commensurate with the assessed risk of unauthorized access",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.7",
+      "reference_id": "PR.AA-05",
+      "level": "subcategory",
+      "title": "Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed, and incorporate the principles of least privilege and separation of duties",
+      "description": "Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed, and incorporate the principles of least privilege and separation of duties",
+      "parent_reference_id": "PR.AA"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.7",
+      "reference_id": "PR.DS",
+      "level": "category",
+      "title": "Data Security",
+      "description": "Data are managed consistent with the organization’s risk strategy to protect the confidentiality, integrity, and availability of information",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.7",
+      "reference_id": "PR.DS-02",
+      "level": "subcategory",
+      "title": "The confidentiality, integrity, and availability of data-in-transit are protected",
+      "description": "The confidentiality, integrity, and availability of data-in-transit are protected",
+      "parent_reference_id": "PR.DS"
+    }
+  ]
+}

@@ -1,5 +1,21 @@
 # Sprint 6A assessment foundation
 
+6E.1 adds opt-in `0.8.0` for S3-001/003 with closed execution schema `1.5.0` strategies
+`s3_bpa_v1` and `s3_transport_v1`. The existing operator-controlled policy-file envelope selects
+the exact catalog and a new immutable profile version; no default changes. Global discovery
+must match the complete retained bucket population; bucket location must prove its exact
+owner/home Region. Bound source observations include state and digest even when unavailable;
+the result-sensitive BPA proof does not relax any earlier all-required-source strategy.
+Engine and persistence share result computation and reject forged results/proofs, including
+artifact-free false N/A or insufficient results. Older profile recovery remains exact.
+See [6E.1 contract](controls/sprint-6e1-metadata.md).
+
+Run local 6E.1 coverage with `python -m pytest tests/unit/rules/test_s3_configuration.py
+tests/unit/database/test_s3_configuration.py`. Run authoritative PostgreSQL coverage with
+`python -m pytest tests/integration/test_s3_configuration_postgres.py` and an explicitly
+disposable `TEST_DATABASE_URL`. HTTP tests use real authentication/execution/persistence and
+offline AWS only; they do not populate the normal development database.
+
 6D.2 adds opt-in catalog `0.7.0`, NET-006 and bounded execution schema `1.4.0`.
 Its VPC/Flow Log join proves exact source-bound population and zero-or-more edge membership.
 The shared engine/persistence validator recomputes the result using the retained explicit

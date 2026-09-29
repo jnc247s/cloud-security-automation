@@ -14,6 +14,11 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Opt-in catalog `0.8.0` adds S3-001/003 through the existing scan, resource/history,
+assessment/evidence, finding and control/framework routes. Evidence binds exact same-scan
+account/bucket sources and home-Region identity. No API, role or capability changes; ADMIN
+can scan and ANALYST cannot. Default `0.2.1` remains unchanged.
+
 Opt-in catalog `0.6.0` exposes NET-003/004/005 through the same scan, resource/history,
 assessment/evidence, finding and control/framework routes. Proofs identify exact same-scan VPC
 relationship observations and source artifacts. No route, request schema, role or capability

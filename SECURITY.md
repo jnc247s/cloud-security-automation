@@ -58,6 +58,14 @@ security control.
 
 ## AWS access and least privilege
 
+6E.1 consumes only retained S3 facts. Combined BPA never borrows another owner's account settings;
+missing source evidence cannot be substituted with false settings. HTTPS PASS requires bounded
+explicit denial, not an HTTPS Allow or inferred effective authorization. An independently proved
+result may retain another unavailable BPA source, without relaxing complete-scan finding resolution.
+Engine and persistence bind and re-evaluate immutable source proofs. No AWS writes, new permissions,
+public endpoint, authentication change or automated remediation is added. Configuration remains
+sensitive READ data; operator guidance requires dependency review and separate change approval.
+
 6D.2 NET-006 uses retained facts only. Exact VPC/log owner, Region, source and edge membership
 are checked before results; collection-account enumeration cannot prove external-owner coverage.
 Environment/traffic policy must be explicit. No log delivery, retention or monitoring assurance

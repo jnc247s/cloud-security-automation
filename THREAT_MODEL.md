@@ -44,6 +44,14 @@ failure behavior.
 
 ## Trust boundaries and assumptions
 
+Approved 6E.1 binds S3-001/003 results to complete discovery, authoritative same-owner bucket-home
+Region, and exact retained configuration source states/digests. Unavailable BPA is neither false
+nor permission to invent protection; only supported universal insecure-transport Deny coverage
+proves HTTPS enforcement. Missing policy differs from inaccessible policy. Shared result/proof
+validation rejects substituted evidence and forged PASS/FAIL/N/A atomically. Prior catalogs,
+pending-scan policy recovery, API authorization and complete-scan finding resolution are preserved.
+The controls do not compute general effective permissions or authorize an AWS configuration change.
+
 6D.2 binds NET-006 results to complete same-scan VPC/Flow Log facts and exact zero-or-more
 relationship membership. Omitted matching edges cannot fabricate absence, non-VPC logs cannot
 fabricate coverage, and external-owner VPCs remain insufficient under collection-account-only

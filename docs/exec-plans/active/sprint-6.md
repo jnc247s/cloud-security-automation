@@ -1,7 +1,121 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A, 6B and 6C COMPLETE and merged; 6D.1 approved and IN PROGRESS.
-6D.2 is approved and IN PROGRESS; later implementation slices remain proposed.
+Plan state: 6A through 6D COMPLETE and merged. 6E.1 policy and metadata approved;
+6E.1 IN PROGRESS, with local implementation, validation and independent review passed;
+publication, final CI and human merge acceptance remain pending.
+6E.2/6E.3 retain their policy gates; later implementation slices remain proposed.
+
+## 6D acceptance and 6E.1 authorization checkpoint — 2026-09-29
+
+PR #32 merged both 6D implementation commits into main at
+`9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`. This supersedes the earlier proposed two-PR
+acceptance sequence; no separate #31 merge is required to obtain the accepted code.
+The combined independent review below passed, final branch CI passed, and
+[merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36532277234).
+Local main was fast-forwarded from a clean tree before creating
+`codex/sprint-6e1-s3-bpa-transport-controls`. Migration head remains `20260924_0004`.
+Historical checkpoints below retain their original state.
+
+The user requested 6E implementation and explicitly selected effective combined account/bucket
+Block Public Access for S3-001 and bounded explicit HTTPS-denial evaluation for S3-003.
+These choices are recorded in the [6E.1 approved metadata](../../controls/sprint-6e1-metadata.md).
+The user subsequently explicitly approved metadata (severity, guidance, release identities and
+sourced mappings). This authorizes S3-001 HIGH and S3-003 MEDIUM in opt-in `0.8.0`, evaluator
+`1.0.0`, with reporting subset `2.0+subset.7` for PR.AA-05 and PR.DS-02. Implement 6E.1 using
+existing facts, exact historical source proofs and the generic API/persistence boundaries.
+Preserve earlier catalogs and default `0.2.1`, authentication, collectors and AWS permissions.
+
+6E.2 and 6E.3 remain separately reviewed slices with the approval/classifier/encryption decisions
+in the preflight. Do not infer those inputs or combine all S3 work into this branch. No 6F,
+dashboard, remediation, live AWS action or production database operation is authorized.
+
+Runtime implementation must pass the full validation and review gates. Bounded execution schema
+`1.5.0` supports only S3 configuration proofs, including result-sensitive BPA observations;
+the existing all-required-source strategies remain unchanged. Engine and persistence recompute
+the exact result and verify retained proof/evaluator content. No migration is planned or added.
+
+## 6E.1 local implementation and validation checkpoint — 2026-09-29
+
+S3-001 and S3-003 are implemented locally on `codex/sprint-6e1-s3-bpa-transport-controls`,
+based on accepted main `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`. Opt-in catalog `0.8.0`
+uses the approved metadata and bounded execution schema `1.5.0`. Default catalog `0.2.1`,
+earlier releases, collectors, AWS permissions, API routes, authentication and database schema
+remain unchanged. Migration head remains `20260924_0004`.
+
+The new tests cover combined BPA truth tables, explicit transport-denial proof, incomplete and
+empty discovery, provenance, old/new historical catalogs, exact pending-scan recovery, forged
+assessment rollback, finding lifecycle and real bearer-authenticated HTTP acceptance. HTTP tests
+retain routing, capability enforcement, executor, collectors, rules and persistence; only AWS is
+replaced. A bounded event gate proves nonblocking scan submission before persisted public reads.
+
+Latest validation results:
+
+- New rules and local persistence/recovery/HTTP acceptance: **42 passed, 1 warning**, 5.21 seconds.
+- New disposable PostgreSQL integration module: **10 passed, 1 warning**, 9.95 seconds.
+- Complete regression with disposable PostgreSQL: **1,774 passed, 10 failed, zero skipped,
+  20 warnings**, 133.11 seconds. All ten failures are existing migration/autogeneration checks
+  comparing PostgreSQL-shortened relationship constraint names with long model names.
+- The same `test_postgres_legacy_downgrade_and_upgrade` failure was reproduced in a clean,
+  detached worktree of accepted main with the same environment: **1 failed, 1 warning**,
+  1.30 seconds. This establishes a baseline failure, not a passing regression or a proven
+  dependency-version root cause. No migration, model or existing test was changed to hide it.
+- Ruff lint and formatting passed (**277 local Python files**); whitespace checks passed.
+  Docker Compose configuration and the API image build passed.
+- Final contract/Markdown-link checks after recording this checkpoint: **70 passed, 1 warning**.
+
+The PostgreSQL runtime is isolated, disposable and unrelated to the user's demonstration
+database; no live AWS or production database was used. The baseline migration-check defect
+requires separately scoped investigation/repair before the full-regression gate can pass.
+Independent review permission was requested and remains pending; no 6E reviewer was launched.
+No 6E commit, push, PR, CI result or merge is claimed. These outstanding gates prevent a COMPLETE
+or PR-ready declaration. Slices 6E.2/6E.3 and all later work remain unstarted.
+
+## 6E.1 authorized repair and streamlined validation — 2026-09-29
+
+The user approved repairing the reproduced baseline migration-check defect and one read-only
+independent reviewer, and requested automatic routine progression without repeated permissions.
+This supersedes the pending repair/review permission checkpoint above, not human merge approval
+or production safety boundaries. Keep 6E.2/6E.3 and later slices outside this change.
+
+Investigation identified Alembic 1.19.1's name-only CHECK comparison against SQLAlchemy-generated
+PostgreSQL-truncated names. The repair requires Alembic >=1.20, explicitly enables its named CHECK
+comparison plugin, and supplies a dialect-rendered private metadata copy. It neither disables
+comparison nor modifies historical migrations, ORM names, constraints, expressions or data.
+New tests prove equivalent emitted DDL, unchanged shared metadata, and detection of real missing
+and extra constraints. The documented name-only expression-comparison limitation is unchanged.
+
+`python -m scripts.validate` automates focused tests when supplied, mandatory full PostgreSQL
+regression, Ruff/formatting, whitespace, Compose and image validation with a task-owned disposable
+database and cleanup. Tests check isolation, cleanup and failure propagation. It never commits,
+pushes, merges or deploys. Routine in-scope repairs and validation proceed without another
+permission prompt; new policy/scope, destructive user-data actions and production/merge authority
+remain human decisions. One consolidated independent review covers 6E.1 and these repair/tools.
+
+### Reviewed local checkpoint
+
+The single authorized read-only reviewer returned **REVIEW_PASS**, with **0 CRITICAL, 0 HIGH,
+0 MEDIUM and 0 LOW** findings, covering the complete 6E.1 diff, comparison repair, validation
+runner and documentation. No further reviewer or specialty review was launched.
+
+The final automated run passed **108 focused tests, 20 warnings**, followed by **1,790 full
+regression tests, zero failures, zero skips, 20 warnings**, in 142.08 seconds for the full suite.
+This includes **88 PostgreSQL integration cases**, the S3 HTTP-to-persistence acceptance and all
+previously failing migration checks. Existing warnings concern TestClient/httpx and SQLite datetime
+deprecations. Ruff lint/format (**282 Python files**), whitespace, Compose configuration and the
+API image build passed. Scoped changed-file AWS-key/private-key and sensitive/local-path checks
+found no matches; this is not an exhaustive secret-scan guarantee.
+
+The first combined focused run also exposed nine new SQLite-test fixture lookup errors when
+explicit test paths mixed integration and unit collection. Explicitly registering the existing
+fixture in the new S3 module fixes independent collection without weakening any assertion; the
+subsequent focused and full runs above pass. The runner also waits for TCP readiness rather than
+PostgreSQL's initialization-only Unix socket. Its disposable database is removed after validation;
+the user's demonstration database and all live AWS/production systems remain untouched.
+
+This supersedes the earlier local failure/review-permission checkpoint, not the acceptance gates:
+no push, PR, new CI success or merge is claimed. Local reviewed changes may be checkpointed in
+logical commits. 6E.1 remains IN PROGRESS pending publication/CI and human acceptance. 6E.2/6E.3,
+6F and later sprints remain unstarted. Migration head is unchanged at `20260924_0004`.
 
 ## 6D publication authorization — 2026-09-29
 
