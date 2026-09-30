@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-29
+Last verified: 2026-09-30
 Accepted baseline: `main` at `ef4543d439ed3a33064c6bcf383db201a94d2881` (Sprints 0--4,
 accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
 evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
@@ -42,13 +42,15 @@ The user directed implementation of the prepared 6E.2 bundle after its policy ap
 6E.2 is IN PROGRESS, using explicit no-exemption initial policy and opt-in catalog `0.9.0`.
 Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and active-plan checkpoint
 record 1,873 passing tests including 102 PostgreSQL cases, successful quality/container gates,
-and pending independent review, publication/CI and merge acceptance. It is not yet COMPLETE.
+and independent REVIEW_PASS with zero findings. Publication/CI and human merge acceptance
+remain pending; it is not yet COMPLETE.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
-the active plan records authorization. 6E.3 retains its separate policy gate and is unstarted.
+the active plan records authorization. 6E.3 is unstarted; the user approved its prepared policy
+bundle on 2026-09-30, with implementation still gated on 6E.2 merge acceptance.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
-records its bounded S3-004 design and proposed classifier/KMS approval bundle. It does not
-authorize implementation or bypass pending 6E.2 review, CI and merge acceptance.
+records its bounded S3-004 design and classifier/KMS bundle; the subsequent approval checkpoint
+does not bypass pending 6E.2 publication, CI and merge acceptance.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -138,7 +140,8 @@ all 1,790 tests pass, including 88 PostgreSQL cases, and independent review has 
 PR #33 subsequently merged 6E.1 and its preparation handoff at
 `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`; merged-main CI passed. The user directed 6E.2
 implementation with the prepared policy/metadata bundle. This does not complete all of 6E;
-6E.3 classifier/encryption policy remains a separate required decision.
+The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30; implementation
+still awaits 6E.2 merge acceptance.
 Later slices remain unstarted.
 Migration head remains `20260924_0004`.
 

@@ -1,7 +1,37 @@
 # Sprint 6 — Production Security Controls
 
 Plan state: 6A through 6D and 6E.1 COMPLETE and merged. 6E.2 is IN PROGRESS under the
-prepared policy/metadata bundle. 6E.3 retains its policy gate; later slices remain unstarted.
+prepared policy/metadata bundle. 6E.3's prepared policy bundle is approved, but implementation
+awaits 6E.2 merge acceptance; later slices remain unstarted.
+
+## 6E.2 closeout and 6E.3 policy approval — 2026-09-30
+
+The user's instruction to proceed approves the preparation's bounded 6E.3 bundle: explicit
+`DataClassification=Restricted` classifier with no patterns/overrides, both AWS-managed and
+customer-managed KMS, `restricted_data_requires_kms=true`, and the proposed release metadata
+and decision table below. Recheck release availability and the sourced framework mapping before
+registration. This approval supersedes the preparation's pending-policy gate, not its baseline
+acceptance requirement. No classifier policy file or S3-004 runtime implementation is created.
+
+The same instruction authorizes one read-only independent 6E.2 review, necessary corrections,
+commit/push and PR publication, but not merging. The initial checkpoint is clean branch
+`codex/sprint-6e2-s3-exposure-control` at `d887d18a792e2261b13e6fd0236dc0f34a90442b`;
+live origin/main remains `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`, and 6E.2 is not yet
+published. Keep 6E.2 IN PROGRESS and
+6E.3 unstarted until the accepted-baseline workflow below is satisfied.
+
+One independent read-only reviewer returned **REVIEW_PASS: 0 CRITICAL, 0 HIGH, 0 MEDIUM,
+0 LOW findings**, covering the 6E.2 diff against `4b3d7355` through `d887d18`. It verified the
+canonical channel cases, exact source/identity/approval binding, shared persistence validation,
+history/recovery, real authenticated HTTP acceptance and compatibility boundaries. No runtime or
+test correction was required. The earlier pending-review checkpoint below is superseded.
+
+The recorded 153 focused / 1,873 full / 102 PostgreSQL results remain applicable to unchanged
+runtime/test code. Closeout validation passed all 72 contract/link tests (one existing dependency
+warning), Ruff lint, formatting (291 files) and whitespace checks. Credential-pattern inspection
+found no newly introduced credentials: its sole whole-file match was the unchanged documented
+`change-me` database placeholder. No environment, local policy, cache or database file is included.
+Publication and final-head CI are still separate gates; human merge acceptance is required.
 
 ## 6E.3 implementation preparation — 2026-09-30
 
