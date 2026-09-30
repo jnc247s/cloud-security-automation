@@ -9,6 +9,14 @@ accepted `main` baseline `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merge
 
 ## Authentication
 
+S3-002 in opt-in `0.9.0` evaluates configured policy/ACL exposure against explicit immutable
+bucket-scoped approvals; it is not a complete effective-permissions simulation. Same-owner
+principals are not external, uncertainty cannot become PASS, and missing approvals cannot
+silently become an empty policy. Assessment proofs bind historical policy/profile checksums
+without copying unrelated approval records. No AWS write, permission or authentication change;
+operator policy files remain sensitive and outside Git. See
+[6E.2 metadata](docs/controls/sprint-6e2-metadata.md).
+
 The approved 6A policy-file boundary is operator configuration, not an HTTP input. Store the
 complete policy envelope outside Git with restrictive permissions and mount it read-only in
 containers. It contains sensitive security policy, never credentials. Only local UTF-8 JSON up

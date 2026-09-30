@@ -106,4 +106,11 @@ def resolve_catalog(catalog_id: str, version: str):
         for control_id in S3_CONFIGURATION_IDS:
             registry.register(S3ConfigurationRule(control_id))
         return build_s3_configuration_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.9.0"):
+        from app.assessment.s3_exposure_control import build_exposure_catalog
+        from app.rules.s3_exposure import S3ExposureRule
+
+        _, registry = resolve_catalog(catalog_id, "0.8.0")
+        registry.register(S3ExposureRule())
+        return build_exposure_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

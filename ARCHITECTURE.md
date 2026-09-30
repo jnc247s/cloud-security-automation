@@ -36,6 +36,13 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
+Approved 6E.2 adds S3-002 only in opt-in catalog `0.9.0`. Closed proof schema `1.6.0`
+retains direct policy/ACL channels, exact bucket/home-Region source bindings, effective
+neutralizers and immutable approval/profile checksums. Engine and persistence recompute the
+same result; a known unapproved channel outranks another unknown channel, while disappearance
+invalidates the bucket snapshot. No collector, permission, migration, API or auth change.
+See [6E.2 metadata](docs/controls/sprint-6e2-metadata.md). S3-004 remains unregistered.
+
 Approved 6E.1 adds opt-in S3-001/003 in catalog `0.8.0`, evaluator `1.0.0`. Closed execution
 schema `1.5.0` binds global bucket discovery, exact bucket-home Region/owner admission and
 the required account/bucket configuration source IDs, states and artifact digests. BPA combines
@@ -43,7 +50,7 @@ each flag across account and bucket, retaining unavailable outcomes without trea
 false. HTTPS evaluation uses only the bounded explicit-Deny contract. Engine and persistence
 recompute the same result; older evidence strategies remain unchanged. No collector, AWS
 permission, migration, service, route or authentication change is introduced. See
-[6E.1 contract](docs/controls/sprint-6e1-metadata.md). S3-002/004 remain unregistered.
+[6E.1 contract](docs/controls/sprint-6e1-metadata.md). Its historical release remains unchanged.
 
 Approved 6D.1 adds opt-in NET-003/004/005 in catalog `0.6.0`. Execution schema `1.3.0`
 binds complete security-group/VPC discovery, exact admitted configuration and the same-scan

@@ -6,6 +6,12 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+6E.2 catalog `0.9.0` adds S3-002 -> PR.AA-05 in separately checksummed subset `2.0+subset.8`,
+reusing the same verified NIST CSWP 29 reference below. It contributes direct exposure
+configuration evidence only, not full least privilege, actual access or compliance. Files are
+`app/assessment/data/nist_csf_2_0_subset_8.json` and its `_manifest.json` companion; earlier
+bytes are unchanged. See [6E.2 metadata](../controls/sprint-6e2-metadata.md).
+
 6E.1 catalog `0.8.0` adds S3-001 -> PR.AA-05 and S3-003 -> PR.DS-02 in separately checksummed
 local subset `2.0+subset.7`. Source: NIST CSWP 29 version 2.0, Appendix A printed page 20,
 inspected 2026-09-29. Files are `app/assessment/data/nist_csf_2_0_subset_7.json` and its

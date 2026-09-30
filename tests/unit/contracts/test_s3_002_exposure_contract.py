@@ -187,7 +187,16 @@ def test_s3_002_contract_is_fail_closed_and_analyzer_is_supplementary() -> None:
 def test_s3_002_contract_separates_5e_evidence_from_rule_implementation() -> None:
     contract = _contract()
 
-    assert "not implemented or enabled" in contract
-    assert "does not add" in contract
-    assert "an executable rule" in contract
-    assert "producer now collects its direct AWS evidence" in contract
+    assert "implemented in opt-in catalog `0.9.0` by 6E.2" in contract
+    assert "it is not enabled by default" in contract
+    assert "producer still collects facts without evaluating this contract" in contract
+
+    from app.rules.registry import resolve_catalog
+
+    for version in ("0.2.1", "0.8.0"):
+        catalog, registry = resolve_catalog("aws-cloud-security-controls", version)
+        assert "S3-002" not in {c.control_id for c in catalog.controls}
+        assert "S3-002" not in {r.control_id for r in registry.rules}
+    catalog, registry = resolve_catalog("aws-cloud-security-controls", "0.9.0")
+    assert catalog.get("S3-002").technical.execution_contract.schema_version == "1.6.0"
+    assert registry.get("S3-002").control_id == "S3-002"

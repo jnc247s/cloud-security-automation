@@ -14,6 +14,12 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Opt-in catalog `0.9.0` adds S3-002 through the same authenticated generic interfaces, without
+new routes or response fields. Its evidence payload includes exact source citations, bucket
+identity, channel outcomes, effective BPA and historical approval/profile checksums. It does
+not expose the approval records for unrelated buckets. ADMIN can scan; ANALYST remains denied.
+See [6E.2 metadata](controls/sprint-6e2-metadata.md). Defaults and role capabilities are unchanged.
+
 Opt-in catalog `0.8.0` adds S3-001/003 through the existing scan, resource/history,
 assessment/evidence, finding and control/framework routes. Evidence binds exact same-scan
 account/bucket sources and home-Region identity. No API, role or capability changes; ADMIN

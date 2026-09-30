@@ -1,9 +1,194 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6D COMPLETE and merged. 6E.1 policy and metadata approved;
-6E.1 IN PROGRESS, with local implementation, validation and independent review passed;
-the branch is pushed, with PR creation, final CI and human merge acceptance pending.
-6E.2/6E.3 retain their policy gates; later implementation slices remain proposed.
+Plan state: 6A through 6D and 6E.1 COMPLETE and merged. 6E.2 is IN PROGRESS under the
+prepared policy/metadata bundle. 6E.3's prepared policy bundle is approved, but implementation
+awaits 6E.2 merge acceptance; later slices remain unstarted.
+
+## 6E.2 closeout and 6E.3 policy approval — 2026-09-30
+
+The user's instruction to proceed approves the preparation's bounded 6E.3 bundle: explicit
+`DataClassification=Restricted` classifier with no patterns/overrides, both AWS-managed and
+customer-managed KMS, `restricted_data_requires_kms=true`, and the proposed release metadata
+and decision table below. Recheck release availability and the sourced framework mapping before
+registration. This approval supersedes the preparation's pending-policy gate, not its baseline
+acceptance requirement. No classifier policy file or S3-004 runtime implementation is created.
+
+The same instruction authorizes one read-only independent 6E.2 review, necessary corrections,
+commit/push and PR publication, but not merging. The initial checkpoint is clean branch
+`codex/sprint-6e2-s3-exposure-control` at `d887d18a792e2261b13e6fd0236dc0f34a90442b`;
+live origin/main remains `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`, and 6E.2 is not yet
+published. Keep 6E.2 IN PROGRESS and
+6E.3 unstarted until the accepted-baseline workflow below is satisfied.
+
+One independent read-only reviewer returned **REVIEW_PASS: 0 CRITICAL, 0 HIGH, 0 MEDIUM,
+0 LOW findings**, covering the 6E.2 diff against `4b3d7355` through `d887d18`. It verified the
+canonical channel cases, exact source/identity/approval binding, shared persistence validation,
+history/recovery, real authenticated HTTP acceptance and compatibility boundaries. No runtime or
+test correction was required. The earlier pending-review checkpoint below is superseded.
+
+The recorded 153 focused / 1,873 full / 102 PostgreSQL results remain applicable to unchanged
+runtime/test code. Closeout validation passed all 72 contract/link tests (one existing dependency
+warning), Ruff lint, formatting (291 files) and whitespace checks. Credential-pattern inspection
+found no newly introduced credentials: its sole whole-file match was the unchanged documented
+`change-me` database placeholder. No environment, local policy, cache or database file is included.
+Publication and final-head CI are still separate gates; human merge acceptance is required.
+
+Publication checkpoint: implementation, preparation and review/approval commits through
+`7a70cbed8aca7b8316b37e2f6688804db0f028f0` were pushed to the matching origin branch with
+upstream tracking and no force-push. GitHub again refused PR creation with HTTP 403,
+`Resource not accessible by integration`; no PR exists at this checkpoint and no credentials or
+permissions were changed. [Open the 6E.2 PR manually](https://github.com/jnc247s/cloud-security-automation/compare/main...codex/sprint-6e2-s3-exposure-control?expand=1).
+The [initial push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36766067251)
+was in progress when this publication note was written. Verify CI for the final pushed HEAD,
+including this documentation-only note, before merge; do not infer success from older results.
+No merge occurred, and 6E.3 implementation remains unstarted.
+
+## 6E.3 implementation preparation — 2026-09-30
+
+Analysis only, requested by the user; no S3-004 rule or deployment policy is approved by this
+section. The roadmap and current plan agree: 6E.2 remains IN PROGRESS, 6E.3 is unstarted.
+The inspected working tree was clean on `codex/sprint-6e2-s3-exposure-control` at
+`ea6dd6ea2540b0248bfb4eebcfe1ac3fa5bb94d0`. A live remote-reference check still reports main at
+`4b3d7355dafe6eceab50214ee2281b0b4f96fa81` and no published 6E.2 branch. Migration head is
+`20260924_0004`. Finish 6E.2 independent review, publication/CI and human merge acceptance first.
+Then synchronize clean main, verify the merged SHA/CI and create
+`codex/sprint-6e3-sensitive-bucket-kms`. Do not stack implementation on this unaccepted branch.
+
+### Bounded scope and inspected integration
+
+Implement **S3-004 only**, preserving S3-900, S3-001/002/003, prior catalogs and default `0.2.1`.
+Use the [canonical classifier](../../controls/s3-004-sensitive-bucket-classifier.md) unchanged:
+exact owner/home-Region/ARN/stable identity, reviewed overrides, restricted name patterns and
+exact tag pairs. Missing tags differ from complete empty tags; a positive identity/name signal
+does not become unknown merely because tag collection failed. Never accept a caller-supplied
+classification without recomputing its sensitivity, reason and matches from historical inputs.
+
+Inspected seams: `SensitiveBucketClassifier.classify`, `SensitiveBucketEvidence`, schema-2
+profiles, immutable classifier registration/loading in `app/database/catalogs.py`, S3 source
+normalization and `encrypted_with` edges, the shared evidence reader/execution contracts,
+catalog registry, pending-scan recovery and existing classifier/persistence/HTTP test fixtures.
+The [6E preflight](../../controls/sprint-6e-preflight.md#authoritative-contracts) already resolves
+the old classifier document's future-tense profile/storage narrative: accepted 6A supplies that
+storage. Reuse it, not another registry or a rewritten migration.
+
+The evidence matrix already covers discovery/location, tags, default-encryption rules and
+referenced KMS metadata. Bind every required observation to exact same-scan source IDs/digests.
+For explicit KMS references, verify the matching declared DescribeKey evidence, resolved
+`encrypted_with` edge and exact key identity/home Region; never guess the owner or key manager.
+The implicit AWS-managed path has no fabricated KMS resource or required fictitious edge.
+Introduce a closed, separately versioned classifier/KMS proof, shared by engine and persistence,
+including applicability checks. Do not modify earlier proof strategies or add a scheduler.
+No new dependency, collector, AWS permission, API/auth change or migration is currently needed.
+
+### Proposed policy bundle for approval
+
+These are proposals, not defaults or approved control semantics:
+
+- Classifier: require an explicit nonempty schema `1.0.0` artifact and new profile version.
+  Candidate initial rule: exact `DataClassification=Restricted`, no name patterns or exact
+  overrides. This is not an inferred organization convention: the user must approve it or
+  provide the actual tag pairs, patterns or exact bucket identities. Do not read/commit live
+  policy data or use an empty classifier as a workaround.
+- KMS requirement: accept both AWS-managed and customer-managed KMS; do not silently interpret
+  the existing boolean as a customer-managed-only requirement. Keep
+  `restricted_data_requires_kms=true` in the proposed initial profile. If a stricter manager
+  policy is selected, revisit versioned policy serialization before implementation.
+- Release proposal: HIGH severity, evaluator `1.0.0`, opt-in catalog `0.10.0`, closed execution
+  schema `1.7.0`, independently checksummed NIST subset `2.0+subset.9`, proposed PR.DS-01 mapping.
+  Recheck availability and source/approve the mapping before registration. Configuration
+  evidence contributes data-at-rest context, never a complete compliance claim.
+- Guidance: review workload compatibility and key access before any separately authorized
+  encryption change. This slice performs no AWS writes or object re-encryption.
+
+Proposed decision order, after complete identity/discovery and valid classifier/profile binding:
+
+| Condition | Proposed result |
+| --- | --- |
+| Complete empty bucket population | NOT_APPLICABLE |
+| Classifier lacks required evidence | INSUFFICIENT_EVIDENCE, even if the KMS boolean is false |
+| Proven NOT_SENSITIVE | NOT_APPLICABLE; do not require irrelevant encryption/key evidence |
+| Proven SENSITIVE and `restricted_data_requires_kms=false` | NOT_APPLICABLE, not PASS |
+| SENSITIVE, requirement true, complete SSE-KMS or DSSE-KMS with no explicit key reference | PASS for the retained implicit AWS-managed configuration; no invented DescribeKey result |
+| Same, with an explicit reference | PASS only with the exact resolved key/source proof and supported AWS/CUSTOMER manager; incomplete/mismatched proof is INSUFFICIENT_EVIDENCE |
+| SENSITIVE, requirement true, complete SSE-S3 or confirmed absence of a KMS default | FAIL; this does not claim the bucket is unencrypted |
+| Missing, denied, malformed, conflicting, disappeared or unsupported required evidence | INSUFFICIENT_EVIDENCE; never select the first conflicting encryption rule |
+
+Preserve all encryption rules. A blocked-encryption-only rule is not a KMS default;
+`NONE`/`SSE-C` blocking and Bucket Keys are retained context, not substitute proof. The proposed
+scope checks default configuration, not existing object encryption, upload-policy enforcement,
+key-policy permissions, key availability or rotation. These limits prevent an overbroad PASS claim.
+AWS's [default-encryption API](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ServerSideEncryptionByDefault.html)
+and [DSSE-KMS guidance](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingDSSEncryption.html)
+were checked for algorithm, key-reference and Region distinctions; those facts do not approve
+the organization's classifier or KMS acceptance policy.
+
+### Implementation and acceptance sequence
+
+1. After baseline acceptance and bundle approval, register a new opt-in contract/catalog/profile;
+   keep classifier schema/semantics and historical bytes unchanged.
+2. Bind classification and conditional encryption/key evidence in one bounded pure evaluator;
+   share recomputation and exact profile/classifier checksums with persistence, including N/A.
+3. Cover canonical classifier precedence, unavailable/empty tags, both algorithms/managers,
+   implicit/explicit references, denied/malformed/disappeared sources, ambiguous rules,
+   exact owner/Region identity and resolved/unresolved key relationships with offline AWS.
+4. Prove immutable classifier history, forged classification/result/proof rejection with rollback,
+   pending-scan recovery, finding lifecycle and real bearer/capability HTTP-to-PostgreSQL reads.
+5. Run targeted then full regression, disposable PostgreSQL, Ruff, docs/whitespace and container
+   gates; complete one authorized independent review, final CI and human merge acceptance.
+
+This preparation adds no runtime or test code, does not repeat the 6E.2 full suite, and does not
+authorize review agents, publication or merge. 6E.3 and 6F--6H remain unstarted. Only lightweight
+documentation validation is required for this preparation itself.
+
+Preparation validation: 72 contract/link tests passed (one existing deprecation warning);
+Ruff lint, formatting (291 files) and whitespace checks passed. The recorded 6E.2 full-regression
+results apply to unchanged runtime/test code; no new full-regression or CI result is claimed.
+
+## 6E.1 acceptance and 6E.2 authorization — 2026-09-29
+
+### 6E.2 implementation checkpoint
+
+S3-002 is implemented in opt-in `0.9.0` with closed proof `1.6.0`, explicit immutable
+approval/profile binding and separately checksummed NIST subset `2.0+subset.8`. See
+[approved release metadata](../../controls/sprint-6e2-metadata.md). All 21 canonical cases run
+through the unchanged collectors. Same-owner/service exclusions, exact scoped approvals,
+unknown-plus-confirmed aggregation, deletion/conflicts, version substitution, source/result
+forgery, history/recovery, finding lifecycle and real bearer/capability HTTP are covered.
+Only AWS is replaced in acceptance; no live policy file, migration, collector, permission,
+service, route or authentication change. Default `0.2.1` and historical catalogs are preserved.
+
+Final automated validation: **153 focused tests passed**, followed by **1,873 full tests
+passed, zero skipped, 20 existing deprecation warnings**, including **102 disposable PostgreSQL
+tests** (14 new S3-002 cases). Ruff lint and formatting passed (291 Python files), all 72
+contract/link checks passed, whitespace and Compose configuration passed, and the API image
+built successfully. The runner removed its disposable database; user databases were untouched.
+Changed-file credential-pattern checks found zero matches; no secrets/local policy were added.
+
+The initial full run caught the old documentation assertion that S3-002 was not implemented;
+that assertion now verifies the explicit new release and absence from historical/default
+registries. Final validation above includes that correction and closed AWS-principal syntax
+and independent canonical-user ownership proof fixes. No failing acceptance was suppressed.
+
+Independent review remains pending the requested authorization for one read-only reviewer.
+Do not claim REVIEW_PASS, PR readiness, CI success for this branch or merge acceptance yet.
+Keep 6E.2 IN PROGRESS. No push/PR/merge or 6E.3, 6F or later-sprint work in this checkpoint.
+
+PR #33 merged 6E.1 at `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`.
+[Merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36611975078).
+This supersedes the earlier pending-PR/CI/merge checkpoints; zero independent-review findings
+remain. Clean main was synchronized before creating `codex/sprint-6e2-s3-exposure-control`.
+
+After the explicit approval prompt the user repeated the instruction to implement 6E.2; proceed
+with the presented bundle: explicit empty exposure approvals (schema/policy `1.0.0`), HIGH
+severity, evaluator `1.0.0`, opt-in catalog `0.9.0`, independently checksummed reporting subset
+`2.0+subset.8` and PR.AA-05 metadata/guidance from the preparation. This policy is explicit
+operator input, never an implicit default when the artifact is missing.
+
+Implement S3-002 only under its canonical channel tables and bounded same-scan proofs. Preserve
+all prior catalogs/defaults, finding resolution, exact policy recovery and generic authenticated
+API/persistence. No collectors, permissions, migrations or later controls are authorized. Run
+targeted and full automated acceptance, one consolidated independent review, and final CI before
+human merge acceptance. S3-004/LOG-004 and all later slices remain unstarted.
 
 ## 6E.1 publication and 6E.2 preparation — 2026-09-29
 

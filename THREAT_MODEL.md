@@ -8,6 +8,15 @@ Last reviewed: 2026-09-23
 
 ## Scope and security objectives
 
+6E.2 addresses false-safe S3 exposure aggregation and historical approval substitution in opt-in
+`0.9.0`. Independent coherent violations outrank unknown channels; contradictory sources retain
+uncertainty and detected disappearance invalidates the bucket snapshot. Exact home-Region/owner
+identity, immutable policy checksums and shared engine/persistence recomputation prevent forged
+exemptions or decisions from being accepted. Access Analyzer and operational exceptions do not
+approve direct exposure. Residual exclusions include object ACLs, access points and full effective
+IAM/SCP/RCP evaluation; see the [canonical contract](docs/controls/s3-002-exposure-aggregation.md).
+No new AWS credential, write, authentication or authorization surface is introduced.
+
 Approved 6A adds an operator-controlled local policy-file input and immutable artifact registry.
 Threats include replacing policy content under reused versions, substituting current policy on
 restart, fabricated evidence citations, and destructive rollback of extended history. Mitigations
