@@ -33,6 +33,16 @@ found no newly introduced credentials: its sole whole-file match was the unchang
 `change-me` database placeholder. No environment, local policy, cache or database file is included.
 Publication and final-head CI are still separate gates; human merge acceptance is required.
 
+Publication checkpoint: implementation, preparation and review/approval commits through
+`7a70cbed8aca7b8316b37e2f6688804db0f028f0` were pushed to the matching origin branch with
+upstream tracking and no force-push. GitHub again refused PR creation with HTTP 403,
+`Resource not accessible by integration`; no PR exists at this checkpoint and no credentials or
+permissions were changed. [Open the 6E.2 PR manually](https://github.com/jnc247s/cloud-security-automation/compare/main...codex/sprint-6e2-s3-exposure-control?expand=1).
+The [initial push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36766067251)
+was in progress when this publication note was written. Verify CI for the final pushed HEAD,
+including this documentation-only note, before merge; do not infer success from older results.
+No merge occurred, and 6E.3 implementation remains unstarted.
+
 ## 6E.3 implementation preparation — 2026-09-30
 
 Analysis only, requested by the user; no S3-004 rule or deployment policy is approved by this

@@ -42,15 +42,16 @@ The user directed implementation of the prepared 6E.2 bundle after its policy ap
 6E.2 is IN PROGRESS, using explicit no-exemption initial policy and opt-in catalog `0.9.0`.
 Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and active-plan checkpoint
 record 1,873 passing tests including 102 PostgreSQL cases, successful quality/container gates,
-and independent REVIEW_PASS with zero findings. Publication/CI and human merge acceptance
-remain pending; it is not yet COMPLETE.
+and independent REVIEW_PASS with zero findings. The branch is published; GitHub's integration
+blocked PR creation with HTTP 403. Final-head CI and human PR/merge acceptance remain separate
+gates; it is not yet COMPLETE.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
 the active plan records authorization. 6E.3 is unstarted; the user approved its prepared policy
 bundle on 2026-09-30, with implementation still gated on 6E.2 merge acceptance.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
 records its bounded S3-004 design and classifier/KMS bundle; the subsequent approval checkpoint
-does not bypass pending 6E.2 publication, CI and merge acceptance.
+does not bypass pending 6E.2 PR/CI and merge acceptance.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
