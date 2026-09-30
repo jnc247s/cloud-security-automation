@@ -46,6 +46,9 @@ and pending independent review, publication/CI and merge acceptance. It is not y
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
 the active plan records authorization. 6E.3 retains its separate policy gate and is unstarted.
+The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
+records its bounded S3-004 design and proposed classifier/KMS approval bundle. It does not
+authorize implementation or bypass pending 6E.2 review, CI and merge acceptance.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 

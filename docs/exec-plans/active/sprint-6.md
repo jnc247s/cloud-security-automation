@@ -3,6 +3,107 @@
 Plan state: 6A through 6D and 6E.1 COMPLETE and merged. 6E.2 is IN PROGRESS under the
 prepared policy/metadata bundle. 6E.3 retains its policy gate; later slices remain unstarted.
 
+## 6E.3 implementation preparation — 2026-09-30
+
+Analysis only, requested by the user; no S3-004 rule or deployment policy is approved by this
+section. The roadmap and current plan agree: 6E.2 remains IN PROGRESS, 6E.3 is unstarted.
+The inspected working tree was clean on `codex/sprint-6e2-s3-exposure-control` at
+`ea6dd6ea2540b0248bfb4eebcfe1ac3fa5bb94d0`. A live remote-reference check still reports main at
+`4b3d7355dafe6eceab50214ee2281b0b4f96fa81` and no published 6E.2 branch. Migration head is
+`20260924_0004`. Finish 6E.2 independent review, publication/CI and human merge acceptance first.
+Then synchronize clean main, verify the merged SHA/CI and create
+`codex/sprint-6e3-sensitive-bucket-kms`. Do not stack implementation on this unaccepted branch.
+
+### Bounded scope and inspected integration
+
+Implement **S3-004 only**, preserving S3-900, S3-001/002/003, prior catalogs and default `0.2.1`.
+Use the [canonical classifier](../../controls/s3-004-sensitive-bucket-classifier.md) unchanged:
+exact owner/home-Region/ARN/stable identity, reviewed overrides, restricted name patterns and
+exact tag pairs. Missing tags differ from complete empty tags; a positive identity/name signal
+does not become unknown merely because tag collection failed. Never accept a caller-supplied
+classification without recomputing its sensitivity, reason and matches from historical inputs.
+
+Inspected seams: `SensitiveBucketClassifier.classify`, `SensitiveBucketEvidence`, schema-2
+profiles, immutable classifier registration/loading in `app/database/catalogs.py`, S3 source
+normalization and `encrypted_with` edges, the shared evidence reader/execution contracts,
+catalog registry, pending-scan recovery and existing classifier/persistence/HTTP test fixtures.
+The [6E preflight](../../controls/sprint-6e-preflight.md#authoritative-contracts) already resolves
+the old classifier document's future-tense profile/storage narrative: accepted 6A supplies that
+storage. Reuse it, not another registry or a rewritten migration.
+
+The evidence matrix already covers discovery/location, tags, default-encryption rules and
+referenced KMS metadata. Bind every required observation to exact same-scan source IDs/digests.
+For explicit KMS references, verify the matching declared DescribeKey evidence, resolved
+`encrypted_with` edge and exact key identity/home Region; never guess the owner or key manager.
+The implicit AWS-managed path has no fabricated KMS resource or required fictitious edge.
+Introduce a closed, separately versioned classifier/KMS proof, shared by engine and persistence,
+including applicability checks. Do not modify earlier proof strategies or add a scheduler.
+No new dependency, collector, AWS permission, API/auth change or migration is currently needed.
+
+### Proposed policy bundle for approval
+
+These are proposals, not defaults or approved control semantics:
+
+- Classifier: require an explicit nonempty schema `1.0.0` artifact and new profile version.
+  Candidate initial rule: exact `DataClassification=Restricted`, no name patterns or exact
+  overrides. This is not an inferred organization convention: the user must approve it or
+  provide the actual tag pairs, patterns or exact bucket identities. Do not read/commit live
+  policy data or use an empty classifier as a workaround.
+- KMS requirement: accept both AWS-managed and customer-managed KMS; do not silently interpret
+  the existing boolean as a customer-managed-only requirement. Keep
+  `restricted_data_requires_kms=true` in the proposed initial profile. If a stricter manager
+  policy is selected, revisit versioned policy serialization before implementation.
+- Release proposal: HIGH severity, evaluator `1.0.0`, opt-in catalog `0.10.0`, closed execution
+  schema `1.7.0`, independently checksummed NIST subset `2.0+subset.9`, proposed PR.DS-01 mapping.
+  Recheck availability and source/approve the mapping before registration. Configuration
+  evidence contributes data-at-rest context, never a complete compliance claim.
+- Guidance: review workload compatibility and key access before any separately authorized
+  encryption change. This slice performs no AWS writes or object re-encryption.
+
+Proposed decision order, after complete identity/discovery and valid classifier/profile binding:
+
+| Condition | Proposed result |
+| --- | --- |
+| Complete empty bucket population | NOT_APPLICABLE |
+| Classifier lacks required evidence | INSUFFICIENT_EVIDENCE, even if the KMS boolean is false |
+| Proven NOT_SENSITIVE | NOT_APPLICABLE; do not require irrelevant encryption/key evidence |
+| Proven SENSITIVE and `restricted_data_requires_kms=false` | NOT_APPLICABLE, not PASS |
+| SENSITIVE, requirement true, complete SSE-KMS or DSSE-KMS with no explicit key reference | PASS for the retained implicit AWS-managed configuration; no invented DescribeKey result |
+| Same, with an explicit reference | PASS only with the exact resolved key/source proof and supported AWS/CUSTOMER manager; incomplete/mismatched proof is INSUFFICIENT_EVIDENCE |
+| SENSITIVE, requirement true, complete SSE-S3 or confirmed absence of a KMS default | FAIL; this does not claim the bucket is unencrypted |
+| Missing, denied, malformed, conflicting, disappeared or unsupported required evidence | INSUFFICIENT_EVIDENCE; never select the first conflicting encryption rule |
+
+Preserve all encryption rules. A blocked-encryption-only rule is not a KMS default;
+`NONE`/`SSE-C` blocking and Bucket Keys are retained context, not substitute proof. The proposed
+scope checks default configuration, not existing object encryption, upload-policy enforcement,
+key-policy permissions, key availability or rotation. These limits prevent an overbroad PASS claim.
+AWS's [default-encryption API](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ServerSideEncryptionByDefault.html)
+and [DSSE-KMS guidance](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingDSSEncryption.html)
+were checked for algorithm, key-reference and Region distinctions; those facts do not approve
+the organization's classifier or KMS acceptance policy.
+
+### Implementation and acceptance sequence
+
+1. After baseline acceptance and bundle approval, register a new opt-in contract/catalog/profile;
+   keep classifier schema/semantics and historical bytes unchanged.
+2. Bind classification and conditional encryption/key evidence in one bounded pure evaluator;
+   share recomputation and exact profile/classifier checksums with persistence, including N/A.
+3. Cover canonical classifier precedence, unavailable/empty tags, both algorithms/managers,
+   implicit/explicit references, denied/malformed/disappeared sources, ambiguous rules,
+   exact owner/Region identity and resolved/unresolved key relationships with offline AWS.
+4. Prove immutable classifier history, forged classification/result/proof rejection with rollback,
+   pending-scan recovery, finding lifecycle and real bearer/capability HTTP-to-PostgreSQL reads.
+5. Run targeted then full regression, disposable PostgreSQL, Ruff, docs/whitespace and container
+   gates; complete one authorized independent review, final CI and human merge acceptance.
+
+This preparation adds no runtime or test code, does not repeat the 6E.2 full suite, and does not
+authorize review agents, publication or merge. 6E.3 and 6F--6H remain unstarted. Only lightweight
+documentation validation is required for this preparation itself.
+
+Preparation validation: 72 contract/link tests passed (one existing deprecation warning);
+Ruff lint, formatting (291 files) and whitespace checks passed. The recorded 6E.2 full-regression
+results apply to unchanged runtime/test code; no new full-regression or CI result is claimed.
+
 ## 6E.1 acceptance and 6E.2 authorization — 2026-09-29
 
 ### 6E.2 implementation checkpoint
