@@ -1,8 +1,8 @@
 # Current known limitations
 
-This register records accepted Sprint 0--5 implementation reality, including the shared
-evidence-graph foundation and evidence producers. These items are not silently repaired by
-documentation work.
+This register records accepted Sprint 0--5 and Sprint 6A--6E implementation reality, including
+the shared evidence graph, evidence producers, and opt-in production controls. These items are
+not silently repaired by documentation work.
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
@@ -235,16 +235,16 @@ Collection remains all-or-nothing for most Sprint 0--4 collectors. One malformed
 item discards that collector's otherwise valid in-memory resources, marks its coverage incomplete,
 and leaves independent collectors running. The 5A EC2/EBS, 5B network, 5C IAM, 5D Access
 Analyzer, and accepted 5E S3/KMS producers validate, persist, and return source-level
-outcomes and artifacts while retaining independently valid sibling facts; no current rule
-consumes that new evidence. Each later collector slice must integrate its declared source
-manifest atomically, and Sprint 6 must
-add separately reviewed result-sensitive rule behavior. Existing graph support is never
-permission to reinterpret `PARTIAL` as complete.
+outcomes and artifacts while retaining independently valid sibling facts. Accepted opt-in
+Sprint 6 controls consume only their explicitly versioned source and relationship proofs;
+unrelated failures do not waive a required source, and graph support is never permission to
+reinterpret `PARTIAL` as complete.
 
 Accepted 5F adds matching per-source CloudTrail behavior through a shared bundle while preserving
 the accepted direct and pending pre-5F paths. It was merged in pull request 24 at `main` commit
 `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 is `COMPLETE`, its 5G closure was
-accepted in pull request 25, and no Sprint 6 rule consumes the new source outcomes yet.
+accepted in pull request 25, and the accepted controls through 6E preserve these fail-closed
+source boundaries. CloudTrail controls LOG-002 through LOG-004 remain planned for 6F.
 
 ### Single-region request model — PLANNED LIMIT
 
@@ -283,7 +283,7 @@ tested Alembic downgrade path. Do not fabricate policy values, strip metadata, d
 disable history guards, or stamp revisions merely to force rollback. This is not permission to
 mutate production or overwrite a live database from backup.
 
-### Sprint 0–5F HTTP acceptance coverage
+### Current HTTP acceptance coverage
 
 The PostgreSQL integration suite contains one authoritative acceptance test that starts with real
 development bearer authentication and authorization, drives `POST /api/v1/scans` through the real
@@ -298,10 +298,11 @@ python -m pytest tests/integration/test_persistence_postgres.py::test_authentica
 `TEST_DATABASE_URL` must be set as described in the repository test instructions; CI supplies
 PostgreSQL 16. This coverage remains an integration regression test, not live-AWS validation.
 Accepted 5F extends the same authenticated PostgreSQL boundary through CloudTrail source and
-relationship readback. Pull request 24 passed that acceptance and CI gate before merge; the
-accepted 5G closure in pull request 25 revalidated it alongside the Sprint-wide performance gates.
-Merged-main CI passed all 1,396 tests, including all 20 PostgreSQL integration tests. This does
-not remove the operational limitations documented here or enable a Sprint 6 rule.
+relationship readback. Subsequent Sprint 6 slices preserve real authentication, execution,
+persistence and public reads while replacing only AWS with deterministic offline fakes. Accepted
+6E.3 validation passed 1,957 tests including 122 PostgreSQL integration cases, and its merged-main
+CI passed the complete workflow. This does not remove the operational limitations documented here
+or authorize live AWS mutation.
 
 ### Build provenance and dependency reproducibility — LOW
 

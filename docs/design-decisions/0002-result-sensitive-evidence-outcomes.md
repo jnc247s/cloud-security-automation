@@ -6,9 +6,11 @@ Date: 2026-09-14
 Implementation update: the Sprint 5 shared foundation integrates this contract into the optional
 inventory evidence graph, Alembic revision `20260915_0003`, transactional persistence, and
 authenticated generic reads. The accepted 5A EC2/EBS and 5B network producers emit source
-manifests, artifacts, and outcomes; the accepted 5C IAM and 5D Access Analyzer producers do
-likewise. The remaining Sprint 0--4 legacy collectors retain their accepted graphless behavior,
-and no Sprint 6 rule consumes source outcomes yet.
+manifests, artifacts, and outcomes; the accepted 5C IAM, 5D Access Analyzer, 5E S3/KMS, and 5F
+CloudTrail producers do likewise. Unintegrated Sprint 0--4 legacy collectors retain their accepted graphless behavior.
+At the 2026-09-14 acceptance checkpoint, the operative statement was "no Sprint 6 rule consumes source outcomes yet".
+Accepted opt-in Sprint 6 controls now consume them only through their exact versioned proof
+contracts.
 
 ## Context
 
@@ -230,9 +232,10 @@ append-only schema without rewriting an accepted migration or historical row.
 Collector integration remains slice-specific work in 5A--5F. It must construct the complete
 declared-source manifest atomically. The accepted 5A through 5F producers construct their complete
 manifests. The 5F CloudTrail producer was accepted and merged in pull request 24 at `main` commit
-`29aeea59b9cceff957adac4fba75cb8ca2c4a592`; every deterministic Sprint 6 rule remains
-unimplemented merely because the storage, read, and factual-evidence boundaries exist. Sprint 5
-is `COMPLETE`; the bounded 5G closure was accepted in pull request 25 without changing this contract.
+`29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Sprint 5 is `COMPLETE`; the bounded 5G closure was
+accepted in pull request 25 without changing this contract. Accepted opt-in controls through 6E
+subsequently added separately reviewed deterministic consumers; the storage, read, and factual
+evidence boundaries alone still never make a control executable.
 
 ## Validation
 

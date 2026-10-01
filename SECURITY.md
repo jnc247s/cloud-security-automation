@@ -1,11 +1,10 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules and the accepted Sprint 0--4 boundary,
-the accepted Sprint 5 shared evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C
-IAM, 5D IAM Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers at the
-accepted `main` baseline `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the bounded
-5G closure in pull request #25. Sprint 5 is complete. Threats and residual risks are tracked in
-[THREAT_MODEL.md](THREAT_MODEL.md).
+This document defines permanent repository security rules for accepted Sprints 0--5 and Sprint 6
+slices 6A through 6E at the accepted `main` baseline
+`c861713a665669da09d5bc7b5b282b04c16cac1d`. That baseline includes the versioned assessment
+foundation and opt-in IAM, EC2, network, and S3 controls through S3-004; default catalog `0.2.1`
+remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Authentication
 
@@ -167,7 +166,8 @@ subnet, and Flow Log sources. `security_groups` and `vpc_network_evidence` remai
 collector boundaries so failure of one source family cannot falsely complete—or unnecessarily
 erase—the other. One failed or malformed source does not authorize omission of its outcome or
 promotion of the collector to complete. Independently validated sibling resources may be retained
-with a `PARTIAL` rollup; unknown evidence remains unknown and no Sprint 6 rule consumes it yet.
+with a `PARTIAL` rollup. Accepted opt-in Sprint 6 controls consume only their declared,
+version-bound proofs; unknown or unrelated evidence never becomes an invented complete source.
 
 The accepted 5D implementation applies the same boundary to Regional IAM Access Analyzer
 evidence. It queries only the requested Region and additional Regions proved by same-scan
@@ -265,15 +265,13 @@ reconstructable from the persisted outcome and digest-bound admission metadata. 
 future rules fail closed instead of treating the pruned resource set as complete or treating
 `PRESENT` alone as proof of an admitted projection.
 
-The accepted 5B through 5F collectors preserve facts and
-provenance only. They do not decide whether a default group, Flow Log, public-IP setting, network
-permission, IAM policy, root-account flag, tag, external-access finding, bucket policy, ACL,
-Block Public Access setting, encryption configuration, or CloudTrail configuration passes a
-planned control, and they do
-not add an executable Sprint 6 rule. The IAM collector retains access-key identifiers only as
-resource identity and evidence; it never requests or stores secret access-key material. Provider
-failures and malformed facts remain sanitized. Sprint 5 is `COMPLETE`; its foundation, 5A through
-5F, and bounded 5G closure are accepted on `main`. Sprint 6 is `NEXT`, not started.
+The accepted 5B through 5F collectors preserve facts and provenance only; they never decide
+technical results. Separately versioned Sprint 6 rules through 6E now evaluate retained network,
+EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM collector retains
+access-key identifiers only as resource identity and evidence; it never requests or stores secret
+access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
+`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6E accepted and logging/governance slices
+still unstarted.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

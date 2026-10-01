@@ -1,12 +1,11 @@
 # Architecture
 
-This document describes the accepted Sprint 0--4 implementation, the accepted Sprint 5 shared
-evidence-graph foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, 5D IAM Access Analyzer,
-5E S3/referenced-KMS, and 5F CloudTrail producers. The accepted baseline is `main` commit
-`ef4543d439ed3a33064c6bcf383db201a94d2881`, which merged the accepted 5G closure in pull
-request #25. Sprint 5 is complete. Approved Sprint 6A adds the versioned assessment foundation
-below. Approved 6B.1 adds four opt-in IAM controls; the five default controls remain unchanged.
-Approved 6B.2 adds IAM-004 in opt-in catalog `0.4.0`, retaining prior catalog definitions.
+This document describes the accepted Sprint 0--5 implementation and accepted Sprint 6 slices 6A
+through 6E. The accepted baseline is `main` commit
+`c861713a665669da09d5bc7b5b282b04c16cac1d`, which merged S3-004 in pull request #35 after the
+Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
+control slices. Sprint 6 remains in progress because 6F through 6H have not started. All Sprint 6
+controls remain opt-in; the five-control default catalog is unchanged.
 
 ## Sprint 6A assessment integration
 
@@ -21,7 +20,8 @@ persistence boundaries. Regional account settings are assessment-only `ec2/aws_a
 not collector resources or graph endpoints. Exact resource families retain observed identities.
 All declared required sources and edges must be complete; legacy whole-collector guards and
 full-scope finding resolution are unchanged. This adds no control, collector, permission, or
-dependency scheduler. The foundation remains subject to the active plan's validation/review gate.
+dependency scheduler. The foundation passed its validation, independent-review, and merged-main
+gates before later control slices were accepted.
 
 ## Sprint 6B.1 opt-in IAM controls
 
@@ -165,8 +165,8 @@ an exact reference to a digest-bound normalized artifact; every relationship is 
 one `PRESENT` outcome. The accepted 5A producer is the first AWS collector to populate that
 boundary; 5B extends it to security groups, VPCs, subnets, and Flow Logs without changing the
 generic persistence or API model. Remaining Sprint 0--4 collectors retain the all-or-nothing
-behavior above and emit no graph fragment, and no current rule treats a source outcome as
-result-sensitive evidence.
+behavior above and emit no graph fragment. Accepted opt-in Sprint 6 rules consume graph evidence
+only through their closed, versioned source-proof strategies.
 
 ## Scan execution
 
@@ -380,7 +380,8 @@ outside the requested Region is bound to exact same-scan location evidence, and 
 Region coverage consumes discovery/location completeness rather than unrelated S3 enrichment
 status. Older pending scans are selected by their persisted service tuple and make no new 5E
 calls. The slice adds no migration or service-specific route. All Sprint 6 rule execution remains
-unimplemented.
+outside the fact-only collector; accepted opt-in 6E rules consume these facts through the shared
+assessment engine.
 
 The accepted 5F implementation preserves the accepted `cloudtrail_trails` projection and
 adds a separate graph-aware `cloudtrail_evidence` projection over one shared per-scan collection

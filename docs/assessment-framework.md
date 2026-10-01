@@ -97,25 +97,30 @@ These thresholds and exceptions are organization or project policy. NIST CSF 2.0
 universally mandate the default tag names, a 90-day stale-key threshold, particular management
 CIDRs, project-specific EC2 exceptions, or this project's KMS rule. Current controls use only the
 `enabled_controls` profile field in the default catalog. Opt-in catalog `0.3.0` also uses
-`stale_key_days` for IAM-002 and explicit `max_unused_access_key_days` for IAM-003. Other fields
-remain versioned inputs for later controls.
+`stale_key_days` for IAM-002 and explicit `max_unused_access_key_days` for IAM-003. Later accepted
+opt-in catalogs consume only the additional versioned inputs named by their EC2, network, and S3
+contracts; fields reserved for unimplemented controls remain inert.
 
-The pre-Sprint-5 contracts also define two standalone future policy artifacts:
+The pre-Sprint-5 contracts also defined two standalone policy artifacts:
 [bucket-scoped S3 exposure approvals](controls/s3-002-exposure-aggregation.md) and the
 [sensitive-bucket classifier](controls/s3-004-sensitive-bucket-classifier.md). Their exact bucket
 entries bind account, bucket-home Region, ARN/name, and canonical stable resource ID, and their
 strict history containers reject reuse of a version with changed content. They remain absent
 from legacy `AssessmentProfile`. 6A's explicit `ExtendedAssessmentProfile` schema `2.0.0` can retain
-their complete content/checksums and selects no new control. The immutable persisted artifact
-registry prevents version reuse across profiles. Old profile definitions remain loadable without
-applying current policy to historical scans. See [6A assessment foundation](assessment-foundation.md).
+their complete content/checksums and selects no new control by itself. Accepted S3-002 and S3-004
+consume those artifacts only when their opt-in catalogs and controls are explicitly selected. The
+immutable persisted artifact registry prevents version reuse across profiles. Old profile
+definitions remain loadable without applying current policy to historical scans. See
+[6A assessment foundation](assessment-foundation.md).
 
 ## Control contracts
 
 The default control catalog is `aws-cloud-security-controls/0.2.1`; opt-in release `0.3.0` adds
 IAM-002/003/005/006 with [approved metadata](controls/sprint-6b1-metadata.md). Opt-in `0.4.0` adds
 IAM-004 with [approved policy metadata](controls/sprint-6b2-metadata.md), preserving prior releases.
-Each control has a
+Cumulative releases `0.5.0` through `0.10.0` add the accepted EC2, network, and S3 controls; the
+[canonical control catalog](controls/catalog.md) owns their exact membership and contracts. Each
+control has a
 framework-independent `TechnicalControlContract` covering:
 
 1. what the control measures;
@@ -133,8 +138,8 @@ unknown references, wrong framework versions, and mapping gaps between control a
 catalogs.
 
 The Sprint 2 encryption prototype was deliberately moved from `S3-002` to non-core `S3-900`
-before persistence. Its behavior is preserved, while canonical `S3-002` remains reserved for the
-roadmap's future unapproved public/external bucket-exposure control. See the
+before persistence. Its behavior is preserved, while canonical `S3-002` now implements the
+separately reviewed public/external bucket-exposure control in opt-in catalog `0.9.0`. See the
 [control catalog](controls/catalog.md) for all permanent S3 identifier meanings.
 
 ## Framework catalog

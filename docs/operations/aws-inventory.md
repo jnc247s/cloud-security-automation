@@ -4,7 +4,7 @@ The accepted Sprint 1 inventory and accepted Sprint 5A EC2/EBS, 5B network, 5C I
 Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers provide a read-only,
 on-demand AWS inventory run. The bounded 5F producer was accepted and merged in pull request 24 at
 `main` commit `29aeea59b9cceff957adac4fba75cb8ca2c4a592`. Sprint 5 is `COMPLETE`, its 5G
-closure was accepted in pull request 25, and Sprint 6 is `NEXT`, not started. The
+closure was accepted in pull request 25, and Sprint 6 slices 6A through 6E are accepted. The
 standalone command returns a normalized in-memory snapshot and prints only an aggregate summary.
 It does not judge compliance, create
 control-plane findings, write to PostgreSQL, or modify AWS; the authorized scan executor
@@ -304,10 +304,9 @@ reference, key-management classification, bucket-key flag, and optional
 empty, multi-value, or unknown states are malformed rather than guessed. These are collected
 facts, not Sprint 6 assessment results.
 
-AWS now applies SSE-S3 as baseline encryption to new and existing general-purpose buckets.
-Before implementing the future S3 encryption control, its policy should express the desired
-encryption standard (for example, customer-managed KMS) rather than assuming unencrypted modern
-buckets are common.
+AWS now applies SSE-S3 as baseline encryption to new and existing general-purpose buckets. The
+accepted opt-in S3-004 policy therefore expresses the required encryption standard for classified
+sensitive buckets rather than assuming unencrypted modern buckets are common.
 
 ## Inventory boundaries
 
@@ -343,15 +342,15 @@ buckets are common.
   instance-to-subnet, instance-to-VPC, security-group-to-VPC, VPC-to-subnet, and VPC-to-Flow-Log
   observations. Missing, ambiguous, or non-authoritative ownership evidence remains
   `TARGET_IDENTITY_INCOMPLETE`; the collector never substitutes the collection account.
-- EC2/EBS facts are evidence only. `EC2-001` through `EC2-004` remain non-executable until Sprint
-  6 supplies separately reviewed deterministic rules and profile integration.
-- The 5B network facts are evidence only. `NET-003` through `NET-006` and network-tag use by
-  `GOV-001` remain non-executable until Sprint 6 supplies separately reviewed deterministic rules
-  and profile integration. Existing `NET-001` and `NET-002` behavior is unchanged.
+- EC2/EBS collectors emit evidence only. Separately reviewed `EC2-001` through `EC2-004` consume
+  it only when opt-in catalog `0.5.0` or newer is explicitly selected.
+- The 5B network collectors emit evidence only. Separately reviewed `NET-003` through `NET-006`
+  consume it in opt-in catalogs `0.6.0`/`0.7.0` or newer. Network-tag use by `GOV-001` remains
+  unimplemented, and existing `NET-001` and `NET-002` behavior is unchanged.
 - The 5D Analyzer facts are supplementary investigation context only. Their
   `references_resource` relationship resolves only to an exact same-scan S3 bucket; unresolved
-  targets are retained without fabrication. They do not decide `S3-002`. Accepted 5E
-  supplies its direct evidence but still does not register or execute the control.
+  targets are retained without fabrication. They do not decide `S3-002`; accepted opt-in 6E.2
+  evaluates the direct 5E S3 evidence instead.
 - `POST /api/v1/scans` invokes this inventory through the authorized background executor;
   resource API routes query only persisted results. `/health` and `/ready` never trigger AWS calls.
 - Docker Compose does not mount local AWS credential files. This avoids silently exposing host

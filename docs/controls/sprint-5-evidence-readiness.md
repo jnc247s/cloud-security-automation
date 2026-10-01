@@ -2,7 +2,8 @@
 
 Status: canonical evidence-readiness plan with accepted 5A through 5F evidence producers
 reflected. The bounded 5G closure was accepted and merged in pull request 25 at
-`main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`; no Sprint 6 rule is enabled.
+`main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`. Accepted Sprint 6 consumers through
+6E are identified below; logging and governance rules remain unimplemented.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -10,7 +11,7 @@ vocabulary; the scheduling text before the slash is not a state:
 
 | State | Exact meaning |
 | --- | --- |
-| `CURRENT` | The current runtime provides the named decision-relevant fact. Only that fact is current; any separately named later-slice normalization, relationship, enrichment, or executable rule remains unimplemented unless stated otherwise. This state never claims a rule exists beyond the accepted Sprint 0--4 controls. |
+| `CURRENT` | The current runtime provides the named decision-relevant fact. Only that fact is current; any separately named later-slice normalization, relationship, enrichment, or executable rule remains unimplemented unless its cell explicitly identifies accepted behavior. |
 | `EXPAND` | The required AWS source and normalized evidence contract are identified, but the Sprint 5 collector, persistence, and integration work has not been implemented or accepted. |
 | `CONTRACT_READY` | A formerly blocking domain or policy decision has an accepted standalone contract. This is not an implementation-completion state: the Sprint 5 evidence producer/persistence and Sprint 6 executable rule remain unimplemented unless separately identified as accepted behavior. |
 
@@ -45,14 +46,15 @@ produce `FAIL` despite a different unknown source only when the control's exact 
 contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness bypass. The shared
 domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D Access
 Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source graph, and accepted
-5F adds the CloudTrail source graph. No Sprint 6 rule consumes source outcomes yet.
+5F adds the CloudTrail source graph. Accepted opt-in Sprint 6 controls through 6E consume only
+their declared, version-bound source proofs; 6F logging and 6G governance remain unimplemented.
 
 ## IAM controls
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `IAM-001` | `ListUsers`, `ListMFADevices`; `iam:ListUsers`, `iam:ListMFADevices` | IAM global; users emitted once per account | accepted complete `mfa_devices[]` remains embedded for Sprint 0--4 compatibility; 5C normalizes each observed device as a top-level `iam_mfa_device` `Resource` + `ResourceSnapshot` and emits user -> MFA-device | Incomplete user/MFA enumeration or malformed device identity -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1; 5C relationship normalization / `CURRENT` |
-| `IAM-002` | `ListAccessKeys`; `iam:ListAccessKeys` | IAM global | accepted key facts remain embedded for Sprint 0--4 compatibility; 5C normalizes each observed key ID, `status`, and `create_date` as a top-level `iam_access_key` `Resource` + `ResourceSnapshot`, emits user -> access-key, and uses snapshot collection time as the age anchor | Incomplete enumeration or missing active-key status/date -> `INSUFFICIENT_EVIDENCE` | 5C verification and relationship normalization / `CURRENT` |
+| `IAM-002` | `ListAccessKeys`; `iam:ListAccessKeys` | IAM global | accepted key facts remain embedded for Sprint 0--4 compatibility; 5C normalizes each observed key ID, `status`, and `create_date` as a top-level `iam_access_key` `Resource` + `ResourceSnapshot`, emits user -> access-key, and uses snapshot collection time as the age anchor | Incomplete enumeration or missing active-key status/date -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; 6B.1 opt-in rule implemented / `CURRENT` |
 | `IAM-003` | `ListAccessKeys`, `GetAccessKeyLastUsed`; `iam:ListAccessKeys`, `iam:GetAccessKeyLastUsed` | IAM global | access-key `Resource` + `ResourceSnapshot`; key creation date/status; last-used date; explicit successful `no_recorded_use` state; user -> access key; observation time | Failed lookup or ambiguous missing last-use/creation state -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; 6B.1 opt-in rule implemented / `CURRENT` |
 | `IAM-004` | `ListUsers`, `GetUser`, `ListGroups`, paginated `GetGroup`, `ListRoles`, `GetRole`, `ListPolicies(Scope=Local)`, `GetPolicy`, `GetPolicyVersion`, all `ListAttached*Policies`, all `List*Policies`, `GetUserPolicy`, `GetGroupPolicy`, `GetRolePolicy`, and `ListPolicyTags`/`ListRoleTags`; corresponding `iam:` actions | IAM global | every user, group, role, managed policy, inline policy, permissions boundary target, and policy version used by an edge is a top-level `Resource` + `ResourceSnapshot`; managed policy ARN + default VersionId/document; inline owner + policy name/document + snapshot/content digest; exact policy structures; identity -> managed/inline policy and boundary, managed policy -> default version, user -> group | Incomplete enumeration, undecodable/malformed document, missing managed default version, missing inline owner/name/snapshot/digest, or unresolved in-scope relationship -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; 6B.2 opt-in rule implemented / `CURRENT` |
 | `IAM-005` | `GetAccountSummary`; `iam:GetAccountSummary` | Account/global; one observation per account | `AccountAccessKeysPresent` strictly validated as AWS's integer `0`/`1` presence flag, then normalized to boolean | Missing key, any value other than integer `0`/`1`, or failed summary call -> `INSUFFICIENT_EVIDENCE` | 5C evidence current; 6B.1 opt-in rule implemented / `CURRENT` |
@@ -144,10 +146,10 @@ resource.
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `S3-001` | `ListBuckets`; bucket-client `GetPublicAccessBlock`; account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:ListAllMyBuckets`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock` | Account discovery once; account BPA once; bucket follow-up in bucket Region | all four account and bucket BPA booleans plus explicit absent configuration; account -> bucket context | Expected `NoSuchPublicAccessBlockConfiguration` is a complete all-false factual state, not a collection failure; denied, partial, malformed, or unexpected failures -> `INSUFFICIENT_EVIDENCE` | 5E evidence accepted; Sprint 6 rule pending / `CURRENT` |
-| `S3-002` | `GetBucketPolicy`, `GetBucketPolicyStatus`, `GetBucketAcl`, bucket `GetPublicAccessBlock`, and account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:GetBucketPolicy`, `s3:GetBucketPolicyStatus`, `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock`; Analyzer facts remain supplementary | Bucket-home-Region direct facts; account BPA once; Regional analyzer context is non-decisive | complete decoded policy/principals/actions/resources/conditions and digest; `IsPublic`; ACL owner/grants; four account+bucket BPA flags; exact versioned `s3_exposure_approvals`; stable policy/ACL evidence references | Expected no-policy/no-BPA responses are explicit absence/all-false facts. One coherent unapproved channel can `FAIL`; otherwise any denied, malformed, contradictory, unsupported, or required-missing channel -> `INSUFFICIENT_EVIDENCE` under the canonical table | 5E direct evidence accepted; canonical evaluator and Sprint 6 rule pending / `CURRENT` |
-| `S3-003` | `GetBucketPolicy`; `s3:GetBucketPolicy` | Bucket-home Region | `policy_present`; complete decoded statements preserving effect, principal, actions, bucket/object resources, and `aws:SecureTransport` conditions | Expected `NoSuchBucketPolicy` is complete `policy_present = false`, not a collection failure; denied, undecodable, malformed, or partial evidence -> `INSUFFICIENT_EVIDENCE` | 5E evidence accepted; Sprint 6 rule pending / `CURRENT` |
-| `S3-004` | `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | exact account/Region/ARN/stable bucket identity and complete tags consumed by classifier schema `1.0.0`; explicit no-configuration versus `AES256`, `aws:kms`, or `aws:kms:dsse`; bucket-key flag; optional `BlockedEncryptionTypes.EncryptionType` normalized as exactly one `NONE` or `SSE-C` value per rule; KMS key ID/ARN and `KeyManager`; S3 bucket -> KMS key | Expected no-encryption/no-tag responses, SSE-S3, AWS-managed KMS, customer-managed KMS, and blocked-encryption-type facts are distinct. Missing configured classification metadata -> classifier `INSUFFICIENT_EVIDENCE`; operational/malformed encryption or KMS evidence remains incomplete. No encryption state maps to Sprint 6 `PASS`/`FAIL` in this preflight | 5E classifier evidence accepted; Sprint 6 rule/policy pending / `CURRENT` |
+| `S3-001` | `ListBuckets`; bucket-client `GetPublicAccessBlock`; account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:ListAllMyBuckets`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock` | Account discovery once; account BPA once; bucket follow-up in bucket Region | all four account and bucket BPA booleans plus explicit absent configuration; account -> bucket context | Expected `NoSuchPublicAccessBlockConfiguration` is a complete all-false factual state, not a collection failure; denied, partial, malformed, or unexpected failures -> `INSUFFICIENT_EVIDENCE` | 5E evidence accepted; 6E.1 opt-in rule implemented in catalog 0.8.0 / `CURRENT` |
+| `S3-002` | `GetBucketPolicy`, `GetBucketPolicyStatus`, `GetBucketAcl`, bucket `GetPublicAccessBlock`, and account-level `s3control.GetPublicAccessBlock(AccountId=...)`; `s3:GetBucketPolicy`, `s3:GetBucketPolicyStatus`, `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:GetAccountPublicAccessBlock`; Analyzer facts remain supplementary | Bucket-home-Region direct facts; account BPA once; Regional analyzer context is non-decisive | complete decoded policy/principals/actions/resources/conditions and digest; `IsPublic`; ACL owner/grants; four account+bucket BPA flags; exact versioned `s3_exposure_approvals`; stable policy/ACL evidence references | Expected no-policy/no-BPA responses are explicit absence/all-false facts. One coherent unapproved channel can `FAIL`; otherwise any denied, malformed, contradictory, unsupported, or required-missing channel -> `INSUFFICIENT_EVIDENCE` under the canonical table | 5E direct evidence accepted; 6E.2 opt-in rule implemented in catalog 0.9.0 / `CURRENT` |
+| `S3-003` | `GetBucketPolicy`; `s3:GetBucketPolicy` | Bucket-home Region | `policy_present`; complete decoded statements preserving effect, principal, actions, bucket/object resources, and `aws:SecureTransport` conditions | Expected `NoSuchBucketPolicy` is complete `policy_present = false`, not a collection failure; denied, undecodable, malformed, or partial evidence -> `INSUFFICIENT_EVIDENCE` | 5E evidence accepted; 6E.1 opt-in rule implemented in catalog 0.8.0 / `CURRENT` |
+| `S3-004` | `GetBucketEncryption`, `GetBucketTagging`, and deduplicated `DescribeKey` for each explicit KMS key reference; `s3:GetEncryptionConfiguration`, `s3:GetBucketTagging`, `kms:DescribeKey` | Bucket-home Region; referenced KMS key Region | exact account/Region/ARN/stable bucket identity and complete tags consumed by classifier schema `1.0.0`; explicit no-configuration versus `AES256`, `aws:kms`, or `aws:kms:dsse`; bucket-key flag; optional `BlockedEncryptionTypes.EncryptionType` normalized as exactly one `NONE` or `SSE-C` value per rule; KMS key ID/ARN and `KeyManager`; S3 bucket -> KMS key | Expected no-encryption/no-tag responses, SSE-S3, AWS-managed KMS, customer-managed KMS, and blocked-encryption-type facts are distinct. Missing configured classification metadata -> classifier `INSUFFICIENT_EVIDENCE`; operational/malformed encryption or KMS evidence remains incomplete. No encryption state maps to Sprint 6 `PASS`/`FAIL` in the Sprint 5 preflight by itself; accepted 6E.3 adds the separately versioned evaluator | 5E classifier evidence accepted; 6E.3 opt-in rule implemented in catalog 0.10.0 / `CURRENT` |
 
 Supporting S3 context uses `GetBucketLocation` (`s3:GetBucketLocation`), `GetBucketVersioning`
 (`s3:GetBucketVersioning`), and `GetBucketOwnershipControls`
@@ -167,10 +169,11 @@ to exact full bucket identities, restricted full-name patterns, and exact tags; 
 those facts without classifying the bucket. The historical
 `CONTRACT_READY` label refers only to this evidence-facing classifier prerequisite; the row is
 now `CURRENT` solely for the named 5E facts, not final Sprint 6 KMS `PASS`/`FAIL` semantics.
-Sprint 5 must preserve no-explicit-configuration, `AES256`, AWS-managed KMS, customer-managed KMS,
+The evidence layer preserves no-explicit-configuration, `AES256`, AWS-managed KMS, customer-managed KMS,
 exact `NONE`/`SSE-C` blocked-
-encryption-type facts, unavailable, and malformed states without assigning compliance. Neither
-S3 contract enables a rule or changes an existing control.
+encryption-type facts, unavailable, and malformed states without assigning compliance. The
+Sprint 5 contracts themselves enable no rule; accepted 6E releases consume those facts through
+separately versioned evaluators and policy.
 
 ## Logging controls
 
@@ -200,8 +203,8 @@ organization-wide coverage when the scanner cannot establish that scope. `ListTa
 batched by the API's `ResourceIdList` limit and the result remains attributable to each trail ARN.
 
 `LOG-004` is `CURRENT` only for its accepted Sprint 5 facts and relationship. The composed
-technical result still requires the future canonical `S3-002` assessment for the exact destination
-snapshot; neither `S3-002` nor `LOG-004` is registered or executable before Sprint 6.
+technical result requires the accepted canonical `S3-002` assessment for the exact destination
+snapshot. S3-002 is available in opt-in catalog `0.9.0`; LOG-004 remains unimplemented pending 6F.
 
 ## Governance control
 
@@ -269,16 +272,18 @@ exact same-scan bucket resolves, while a complete stable target or typed unresol
 retained when it does not. The collection account, analyzer owner, and
 `resourceOwnerAccount` remain separate. Analyzer discovery artifacts bind the sorted required-
 Region set and the S3 bucket-discovery completeness input so persisted coverage can be
-reconstructed. The accepted 5E producer supplies the direct S3 evidence while keeping
-Analyzer evidence supplementary; it does not register or execute `S3-002`.
+reconstructed. The accepted 5E producer supplies the direct S3 evidence. Analyzer evidence is
+supplementary and does not decide `S3-002`; accepted 6E.2 evaluates the direct S3 evidence in
+opt-in catalog `0.9.0`.
 
 ## Assessment Profile planning
 
-The documentation task does not alter the immutable `AssessmentProfile` model or profile
-`1.0.0`. Sprint 5 collects policy-neutral facts. Sprint 6 must introduce any new serialized fields
-with a reviewed schema/version transition and a new profile version.
+The Sprint 5 documentation task did not alter the immutable `AssessmentProfile` model or profile
+`1.0.0`; Sprint 5 collects policy-neutral facts. Accepted 6A subsequently introduced schema
+`2.0.0` and versioned extensions for the approved 6B--6E policy inputs. Any further field still
+requires a reviewed schema/version transition and a new profile version.
 
-| Policy meaning | Serialized field | State before Sprint 5 | Controls |
+| Policy meaning | Serialized field | Current/accepted profile state | Controls |
 | --- | --- | --- | --- |
 | Enabled catalog entries | `enabled_controls` | Existing | all controls |
 | Maximum active-key age | existing `stale_key_days` (approved semantic name `max_access_key_age_days`) | Existing, default 90 | `IAM-002` |
@@ -293,9 +298,10 @@ with a reviewed schema/version transition and a new profile version.
 | Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact account/Region/ARN/stable bucket identities, restricted name patterns, and exact tag pairs only | `S3-004` |
 | Restricted-data KMS consequence | `restricted_data_requires_kms` | Existing boolean; does not itself classify a bucket | `S3-004` |
 
-No new severity is assigned here. New controls also have no NIST mapping until a separate review
-can provide authoritative mapping provenance and scope rationale. Those gaps do not change the AWS
-facts Sprint 5 must preserve.
+Sprint 5 assigned no new severity or NIST mapping. Accepted Sprint 6 controls through 6E have
+separately reviewed severity and versioned mapping metadata; pending logging and governance
+controls still require that review. Those reporting decisions do not change the AWS facts Sprint 5
+must preserve.
 
 ## Global and Regional execution plan
 
@@ -440,10 +446,12 @@ API boundary. The accepted 5A through 5F producers supply their named evidence t
 graph, persistence, and generic API boundaries. The 5D supporting evidence remains supplementary
 and does not decide `S3-002`. Accepted 5E supplies the direct S3 and referenced-KMS facts, and
 accepted 5F supplies the planned CloudTrail factual graph. Every one of the 25 named factual
-prerequisites is now `CURRENT`; this does not register or execute any pending Sprint 6 rule.
+prerequisites is now `CURRENT`. That evidence-readiness result did not itself register a rule;
+accepted Sprint 6 consumers are identified in the rows above.
 
 Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
-Sprint 6 is `NEXT`, not started.
+Sprint 6 is `IN PROGRESS`: slices 6A through 6E are accepted; LOG-002 through LOG-004 and
+GOV-001 remain unimplemented.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

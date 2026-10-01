@@ -54,7 +54,7 @@ historical findings and integrations cannot acquire conflicting meanings:
 | `S3-001` | Required Block Public Access configuration missing | Implemented in opt-in 0.8.0 |
 | `S3-002` | Unapproved public/external bucket exposure | Implemented in opt-in 0.9.0 |
 | `S3-003` | Secure transport not enforced | Implemented in opt-in 0.8.0 |
-| `S3-004` | Sensitive-data KMS requirement not met | Implemented in opt-in 0.10.0; acceptance pending |
+| `S3-004` | Sensitive-data KMS requirement not met | Accepted in opt-in 0.10.0 |
 | `S3-900` | Legacy explicit default-encryption configuration prototype | Implemented, non-core |
 
 Never reuse a reserved ID for another meaning. In particular, the obsolete prototype meaning
@@ -98,18 +98,19 @@ relationship, and sub-sprint planning detail.
 Normalized resource edges use the approved
 [canonical generic relationship contract](../design-decisions/0001-generic-resource-relationships.md).
 That contract fixes direction, stable and per-scan identity, Region, resolution, and provenance;
-its collector and persistence integration remains Sprint 5 work.
+its collector and persistence integration was accepted in Sprint 5 and is reused by the opt-in
+Sprint 6 controls.
 
-Except for approved 6B.1, 6B.2 and 6C metadata, new contracts have no severity or NIST mapping yet.
-Severity is project policy and
-must not be inferred from NIST. A future mapping requires separate authoritative provenance and
-review; no mapping metadata is needed to collect Sprint 5 facts.
+Accepted releases through 6E have approved severity, guidance and independently versioned NIST
+mapping metadata. Pending LOG-002 through LOG-004 and GOV-001 still require that metadata before
+registration. Severity is project policy and must not be inferred from NIST; mappings remain
+reporting context and never determine technical results.
 
-## Canonical planned Sprint 6 contracts
+## Canonical Sprint 6 contracts
 
 ### `IAM-002` — Active IAM access key exceeds maximum age
 
-- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
+- **Status:** accepted in opt-in catalog `0.3.0`; default unchanged.
 - **Scope/resource type:** one IAM user, using the complete set of that user's active access keys.
 - **Required evidence:** user identity; access-key identifier; key status; key creation timestamp;
   deterministic observation time; complete key enumeration; and common provenance.
@@ -134,15 +135,15 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-003` — Active IAM access key unused beyond allowed period
 
-- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
+- **Status:** accepted in opt-in catalog `0.3.0`; default unchanged.
 - **Scope/resource type:** one IAM user, using the complete set of that user's active access keys.
 - **Required evidence:** key identifier, status, creation timestamp, last-used timestamp when
   present, an explicit `no_recorded_use` state after a successful lookup returns no
   `LastUsedDate`, deterministic observation time, complete enumeration, and common provenance.
 - **Relationships:** IAM user -> access key. Both endpoints are top-level normalized `Resource` +
   `ResourceSnapshot` observations for the same scan.
-- **Assessment Profile:** `enabled_controls` and a future versioned
-  `max_unused_access_key_days` input, now supported by extended schema `2.0.0` and a new explicit
+- **Assessment Profile:** `enabled_controls` and the versioned `max_unused_access_key_days`
+  input supported by extended schema `2.0.0` and a new explicit
   organization profile version; the approved deployment value is 90, not a rule constant.
 - **PASS:** every active key was used within the threshold, or has `no_recorded_use` but is no
   older than the threshold.
@@ -159,7 +160,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-004` — IAM policy grants explicit full administrative access
 
-- **Status:** implemented in opt-in catalog `0.4.0`; validation in progress; default unchanged.
+- **Status:** accepted in opt-in catalog `0.4.0`; default unchanged.
 - **Scope/resource type:** one complete in-scope IAM permissions-policy document. V1 scope covers
   customer-managed policies, AWS-managed policies referenced by an identity attachment or
   permissions-boundary ARN, and user, group, or role inline identity policies. Role trust policies
@@ -209,7 +210,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-005` — Root account access key exists
 
-- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
+- **Status:** accepted in opt-in catalog `0.3.0`; default unchanged.
 - **Scope/resource type:** AWS account; global IAM evidence.
 - **Required evidence:** a complete account summary containing the authoritative
   `AccountAccessKeysPresent` value, plus common global provenance.
@@ -226,7 +227,7 @@ review; no mapping metadata is needed to collect Sprint 5 facts.
 
 ### `IAM-006` — Root account MFA is not enabled
 
-- **Status:** implemented in opt-in catalog `0.3.0`; validation in progress; default unchanged.
+- **Status:** accepted in opt-in catalog `0.3.0`; default unchanged.
 - **Scope/resource type:** AWS account; global IAM evidence.
 - **Required evidence:** a complete account summary containing authoritative
   `AccountMFAEnabled`, plus common global provenance.
@@ -643,14 +644,14 @@ buckets makes the control not applicable.
 This is legacy prototype behavior from Sprint 2, not a canonical future control. Before any
 persistence existed, Sprint 2.1 deliberately migrated its ID from `S3-002` to the non-core
 `S3-900`. This preserves the implemented behavior while reserving canonical `S3-002` for the
-roadmap's future unapproved public/external bucket-exposure control. The IDs must not be silently
-repurposed.
+roadmap's public/external bucket-exposure control, now accepted in opt-in catalog `0.9.0`. The IDs
+must not be silently repurposed.
 
 Amazon S3 already provides SSE-S3 baseline encryption for new uploads, so the absence of an
 explicit bucket default does not prove that objects are unencrypted. This prototype also does not
 assess algorithm, KMS key ownership, bucket-policy enforcement, sensitive-data classification, or
-existing object history. A future KMS requirement must use the assessment profile's organization
-policy and the versioned
+existing object history. The accepted S3-004 KMS requirement uses the assessment profile's
+organization policy and the versioned
 [S3-004 sensitive-bucket classifier](s3-004-sensitive-bucket-classifier.md).
 
 ## `IAM-001` — IAM user without MFA
@@ -696,6 +697,6 @@ turn unknown coverage into `PASS`, `FAIL`, or `NOT_APPLICABLE`. The legacy failu
 raises instead. Persisted scan-level collection status and provenance belong to Sprint 3.
 
 Sprint 2.1 intentionally excluded assessment persistence, lifecycle management, scan/control API
-endpoints, and authentication; Sprints 3 and 4 now supply those foundations. AWS resource/API
-scope expansion, additional controls, Terraform, remediation, frontend work, and AI functionality
-remain deferred.
+endpoints, and authentication; Sprints 3 and 4 now supply those foundations. Remaining logging
+and governance controls, further AWS resource/API scope expansion, Terraform, remediation,
+frontend work, and AI functionality remain deferred.

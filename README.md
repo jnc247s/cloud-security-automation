@@ -9,14 +9,13 @@ provide certification or claim organization-wide NIST compliance.
 
 ## Status
 
-Sprints 0 through 4 are complete and merged. **Sprint 5 — AWS Evidence Expansion** is
-`COMPLETE`: its shared evidence-graph foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and
-5D IAM Access Analyzer evidence slices are accepted, as is the fact-only 5E S3 and referenced-KMS
-evidence slice. The bounded fact-only 5F CloudTrail slice is also accepted and merged. The 5G
-closure is accepted and merged in pull request 25. The
-[completed plan](docs/exec-plans/completed/sprint-5.md) records acceptance and retained limitations.
-Sprint 6 is `IN PROGRESS` for approved 6A assessment integration only. No new control is enabled.
-[ROADMAP.md](ROADMAP.md) is the only authoritative progress source.
+Sprints 0 through 5 are complete and merged. The
+[completed Sprint 5 plan](docs/exec-plans/completed/sprint-5.md) records its accepted evidence
+expansion and retained limitations. Sprint 6 is `IN PROGRESS`: slices 6A through 6E are complete
+and merged. Slice 6E.3 added S3-004 through pull request 35; its independent review and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36825207102)
+passed. Later Sprint 6 slices have not started. [ROADMAP.md](ROADMAP.md) is the only authoritative
+progress source.
 
 The current implementation includes:
 
@@ -31,23 +30,38 @@ The current implementation includes:
   occurrences, explicit exceptions, and append-only audit history;
 - OIDC/JWT authentication, development-auth safeguards, role/capability authorization, and
   versioned APIs for scans, resources/history, assessments, findings, controls, frameworks, and
-  exceptions; and
+  exceptions;
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
 - generic immutable source-outcome/artifact and relationship history, populated by the accepted
   5A EC2/EBS, 5B network-evidence, 5C IAM, 5D Access Analyzer, 5E S3/KMS, and 5F CloudTrail
   producers.
 
-Current controls are `IAM-001`, `LOG-001`, `NET-001`, `NET-002`, and legacy non-core `S3-900`.
-Canonical `S3-001` through `S3-004` are reserved for later roadmap meanings and are not
-implemented. The collected 5A/5B/5C evidence does not make `IAM-002` through `IAM-006`,
-`EC2-001` through `EC2-004`, or `NET-003` through `NET-006` executable; those rules and their
-profile policy remain Sprint 6 work. Access Analyzer findings are supplementary facts only and do
-not implement or decide `S3-002`; the new direct S3 facts likewise do not register or execute any
-`S3-001` through `S3-004` rule. The 5F CloudTrail facts do not register or execute `LOG-002`
-through `LOG-004`, change `LOG-001`, or extend `GOV-001` profile policy.
+The default catalog remains `aws-cloud-security-controls/0.2.1` with `IAM-001`, `LOG-001`,
+`NET-001`, `NET-002`, and legacy non-core `S3-900`. New Sprint 6 controls are available only
+through explicit, versioned catalog/profile selection. The opt-in releases are cumulative:
 
-No Terraform deployment, dashboard, remediation, or AI functionality exists yet. AWS resources
-are never modified.
+| Catalog | Controls added | State |
+| --- | --- | --- |
+| `0.3.0` | `IAM-002`, `IAM-003`, `IAM-005`, `IAM-006` | Accepted |
+| `0.4.0` | `IAM-004` | Accepted |
+| `0.5.0` | `EC2-001` through `EC2-004` | Accepted |
+| `0.6.0` | `NET-003`, `NET-004`, `NET-005` | Accepted |
+| `0.7.0` | `NET-006` | Accepted |
+| `0.8.0` | `S3-001`, `S3-003` | Accepted |
+| `0.9.0` | `S3-002` | Accepted |
+| `0.10.0` | `S3-004` | Accepted |
+
+See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
+contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not
+decide `S3-002`. `LOG-002` through `LOG-004` and `GOV-001` are not implemented; existing
+CloudTrail facts do not register those controls or change `LOG-001`.
+
+Key operating limits include one API process and one Region per request; cross-account assume-role
+and full multi-region orchestration are not implemented. The deployment is one trust domain: all
+recognized roles can read its security data, and query filters are not object- or account-level
+authorization. No production Terraform, dashboard, governance mutation API, remediation,
+distributed worker, or AI runtime exists yet. AWS resources are never modified. See
+[known limitations](docs/operations/known-limitations.md) before production use.
 
 ## Documentation
 
@@ -104,7 +118,9 @@ are never modified.
 │   ├── exec-plans/completed/
 │   ├── frameworks/
 │   └── operations/
-├── scripts/run_inventory.py
+├── scripts/
+│   ├── run_inventory.py
+│   └── validate.py
 ├── tests/
 ├── terraform/               # Placeholder only; no infrastructure exists
 ├── .github/workflows/ci.yml
@@ -205,7 +221,15 @@ installed, use:
 .\.venv\Scripts\python.exe -m scripts.validate
 ```
 
-Optionally run slice-specific tests first with `--focused tests/unit/rules/test_s3_configuration.py`.
+Optionally run the 6E.3 checks first with:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.validate --focused `
+  tests/unit/rules/test_s3_sensitive_kms.py `
+  tests/unit/database/test_s3_sensitive_kms.py `
+  tests/integration/test_s3_sensitive_kms_postgres.py
+```
+
 The runner always performs Ruff, formatting, the full regression (including PostgreSQL and
 Markdown/link contracts), whitespace checks, Compose validation and the image build. It creates
 its own loopback-only PostgreSQL 16 container with a random password and temporary memory-backed
@@ -236,17 +260,25 @@ Configuration comes from environment variables and optional local `.env`; the ex
 all fields. Never put AWS keys, bearer tokens, OIDC secrets, database production passwords, or
 other credentials in `.env` or Git.
 
-`ASSESSMENT_PROFILE_VERSION` selects the immutable `default` policy definition used by new scans
-and must be a numeric `X.Y.Z` value. An existing deployment with unchanged `REQUIRED_TAGS` and
-`STALE_ACCESS_KEY_DAYS` can retain version `1.0.0`. Whenever either policy setting changes, choose
-and deploy a new reviewed profile version at the same time—for example, move from `1.0.0` to
-`1.1.0`. Reusing an existing version with different policy content is rejected with a sanitized
-HTTP 409 response; stored profiles and historical scans are never overwritten.
+With `ASSESSMENT_PROFILE_FILE` unset, `ASSESSMENT_PROFILE_VERSION` selects the immutable `default`
+policy definition built from the environment and must be a numeric `X.Y.Z` value. An existing
+deployment with unchanged `REQUIRED_TAGS` and `STALE_ACCESS_KEY_DAYS` can retain version `1.0.0`.
+Whenever either policy setting changes, choose and deploy a new reviewed profile version at the
+same time—for example, move from `1.0.0` to `1.1.0`. Reusing an existing version with different
+policy content is rejected with a sanitized HTTP 409 response; stored profiles and historical
+scans are never overwritten.
 
 Pending scans retain the exact profile selected when they were created. A restarted executor
 loads that persisted definition instead of rebuilding it from the deployment's current
 environment. This roll-forward requires no database migration because the existing schema already
 stores complete legacy profile content and scan provenance. The additive 6A schema extension
-requires migration `20260924_0004`; see [versioned assessment configuration](docs/assessment-foundation.md)
-for the optional protected local `ASSESSMENT_PROFILE_FILE`, its exact catalog/profile envelope,
-and the legacy-compatible default behavior.
+requires migration `20260924_0004`.
+
+When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
+`0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains
+a complete checksum-bearing profile whose embedded version must match
+`ASSESSMENT_PROFILE_VERSION`. Legacy and schema-2 profiles are supported, but controls that need
+extension policy—including S3-004—require schema 2. Use a new immutable profile version whenever
+policy content or enabled-control membership changes. The file wholly owns its policy inputs;
+`REQUIRED_TAGS` and `STALE_ACCESS_KEY_DAYS` do not merge into it. See
+[versioned assessment configuration](docs/assessment-foundation.md) for the complete contract.
