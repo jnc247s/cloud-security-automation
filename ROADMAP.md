@@ -104,11 +104,11 @@ review requested one MEDIUM exact-destination coverage correction and one LOW re
 correction. Both are locally implemented; fresh validation passed 355 focused and 2,212 full
 tests (201 PostgreSQL, no skips), plus quality/container gates. The same reviewer confirms both
 findings resolved after 94 independent diagnostics and returned REVIEW_PASS with zero unresolved
-introduced findings. All changes remain uncommitted,
-including untracked
-source/test files, and no publication or merge has occurred. The
-[correction checkpoint](docs/exec-plans/active/sprint-6.md#6f2-review-correction-checkpoint--2026-10-01)
-records the tested tree and required revalidation sequence. 6F.2 remains IN PROGRESS;
+introduced findings. Reviewed implementation commit `28b9bb4af17577993951761e7db73c64430fa765`
+is normally pushed in [pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38).
+CI and merge remain pending; no acceptance is claimed. The
+[publication checkpoint](docs/exec-plans/active/sprint-6.md#6f2-publication-checkpoint--2026-10-01)
+records the tested tree and required final-head sequence. 6F.2 remains IN PROGRESS;
 the persistent Goal continues under the approved scope. 6G/6H remain unstarted.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion

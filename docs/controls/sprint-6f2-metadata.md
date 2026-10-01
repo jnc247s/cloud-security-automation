@@ -55,4 +55,6 @@ The same reviewer returned REVIEW_PASS with zero unresolved introduced findings 
 independent diagnostics. Documentation-only reconciliation passed all 76 contract/link checks
 again. See the
 [correction checkpoint](../exec-plans/active/sprint-6.md#6f2-review-correction-checkpoint--2026-10-01).
-No 6F.2 publication or merge yet.
+Reviewed implementation `28b9bb4af17577993951761e7db73c64430fa765` is normally pushed in
+[pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38). Exact final-head
+CI, conditional merge and merged-main CI are pending; implementation is not yet accepted.

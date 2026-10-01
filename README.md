@@ -58,7 +58,7 @@ through explicit, versioned catalog/profile selection. The opt-in releases are c
 | `0.9.0` | `S3-002` | Accepted |
 | `0.10.0` | `S3-004` | Accepted |
 | `0.11.0` | `LOG-002`, `LOG-003` | Accepted through PR #37; merged-main CI passed |
-| `0.12.0` | `LOG-004` | Local validation and independent review passed; CI/merge pending |
+| `0.12.0` | `LOG-004` | Validation/review passed; [PR #38](https://github.com/jnc247s/cloud-security-automation/pull/38) CI/merge pending |
 
 See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
 contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not

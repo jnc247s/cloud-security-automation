@@ -72,6 +72,23 @@ merge SHA. 6F.1 is COMPLETE; migration head is `20261001_0005`.
 main in the reused closeout worktree. Original 6E.3 worktree and unrelated parent `.agents/`
 skill files remain preserved and excluded. No 6G/6H implementation has begun.
 
+## 6F.2 publication checkpoint — 2026-10-01
+
+Reviewed implementation committed as `28b9bb4af17577993951761e7db73c64430fa765`
+(`feat: add exact CloudTrail destination exposure composition (6F.2)`) and normally pushed on
+`codex/sprint-6f2-cloudtrail-destination-exposure`. Exactly 35 scoped files were committed;
+unrelated parent `.agents/` files and original 6E.3 worktree were preserved. The working tree
+was clean before this documentation-only publication record.
+
+[Pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38) is OPEN against
+accepted base `3a053ff396a2c112aa254842cb25730fe3879ecc`. Full local gates and independent
+REVIEW_PASS from the correction record remain applicable: runtime/tests are unchanged.
+Initial push/PR CI is running, not yet accepted. This publication record must be normally
+committed/pushed and checked by the same reviewer; exact final-head CI must pass before any
+conditional merge. Recheck PR head/base, current checks/reviews and mergeability; no admin
+bypass or force-push. Merged-main CI must pass before 6G. 6F.2 remains IN PROGRESS; 6G/6H
+are authorized but unstarted, and no later-sprint implementation or production operation occurred.
+
 ## 6F.2 review correction checkpoint — 2026-10-01
 
 The primary implemented both requested corrections without expanding scope. An offline fixture
