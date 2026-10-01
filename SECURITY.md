@@ -8,6 +8,16 @@ remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](T
 
 ## Authentication
 
+Local, not-yet-accepted 6F.1 LOG-002/003 use same-scan source-bound management coverage and
+explicit integrity settings, not inferred delivery or verified digest integrity. Missing
+required evidence cannot pass. New-schema projection/proof validation preserves exact JSON types;
+numeric substitutes for booleans do not match, even when a forged artifact is rehashed.
+No credential, permission, authentication or AWS-write change
+was introduced. The separately approved migration `20261001_0005` repairs unresolved-reference
+persistence without inventing a Region, owner or stable target. Complete identities stay strict;
+lossy downgrades are blocked before DDL and error messages remain sanitized. See
+[6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
+
 S3-004 in opt-in `0.10.0` evaluates only classified sensitive buckets' default KMS
 configuration. Missing classifier inputs or required key evidence cannot prove PASS. Exact
 same-scan key/source/edge and classifier checks prevent substituted owners or policy versions;
@@ -270,8 +280,8 @@ technical results. Separately versioned Sprint 6 rules through 6E now evaluate r
 EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM collector retains
 access-key identifiers only as resource identity and evidence; it never requests or stores secret
 access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
-`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6E accepted and logging/governance slices
-still unstarted.
+`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6E accepted and local 6F.1 undergoing
+acceptance. LOG-004/6F.2 and governance remain unstarted.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

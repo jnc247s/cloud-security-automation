@@ -1,5 +1,16 @@
 # Persistence and assessment history
 
+Local 6F.1 catalog `0.11.0` shares source-bound coverage/integrity recomputation with the engine.
+Acceptance is incomplete. The separately approved additive `20261001_0005` migration repairs
+the existing scope/Region constraint for unresolved references only; the mapper and collectors
+retain exact unknown facts. Complete identities, provenance and append-only guards remain.
+SQLite rebuilds the child table transactionally with FK enforcement and exact triggers restored;
+PostgreSQL alters only the CHECK. Pre-DDL downgrade guards exclude concurrent writers and reject
+history that the predecessor cannot represent; offline downgrades across this boundary are
+blocked. Earlier migrations are unchanged. See the
+[open limitation](operations/known-limitations.md#unresolved-regional-relationship-persistence--open)
+and [6F.1 metadata](controls/sprint-6f1-metadata.md).
+
 6E.3 adds opt-in `0.10.0` and sensitive-KMS proof `1.7.0` without a migration.
 Shared recomputation rejects forged classifier matches, source/key/edge proofs and results
 atomically. Exact classifier versions remain in existing immutable profile/policy storage,

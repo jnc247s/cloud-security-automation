@@ -27,6 +27,7 @@ script_directory = ScriptDirectory.from_config(config)
 _PENDING_SCAN_INVENTORY_REVISION: Final = "20260904_0002"
 _EVIDENCE_GRAPH_REVISION: Final = "20260915_0003"
 _ASSESSMENT_EXECUTION_REVISION: Final = "20260924_0004"
+_UNRESOLVED_REGION_REVISION: Final = "20261001_0005"
 _RECOVERY_DOCUMENT: Final = "docs/operations/known-limitations.md"
 _UNSAFE_DOWNGRADE_MESSAGE: Final = (
     "Downgrade blocked before revision 20260904_0002: retained scan history contains "
@@ -126,6 +127,50 @@ def _assert_assessment_execution_downgrade_safe(connection: Connection) -> None:
             "Downgrade blocked before revision 20260924_0004: retained assessment policy or "
             "execution history cannot be represented by the older schema. No schema or data "
             "changes were applied. Keep this revision, verify backups, and follow "
+            "docs/operations/known-limitations.md."
+        )
+
+
+def _downgrades_unresolved_region(current_revisions) -> bool:
+    if not current_revisions:
+        return False
+    try:
+        destination = context.get_revision_argument()
+        return any(
+            revision.revision == _UNRESOLVED_REGION_REVISION
+            for revision in script_directory.iterate_revisions(
+                current_revisions, destination, select_for_downgrade=True
+            )
+        )
+    except (KeyError, RangeNotAncestorError):
+        return False
+
+
+def _assert_unresolved_region_downgrade_safe(connection: Connection) -> None:
+    if connection.dialect.name == "postgresql":
+        # Match the graph writer's parent-to-child ordering. Hold through transition.
+        connection.execute(
+            text(
+                "LOCK TABLE scans, scan_scope_manifests, resources, resource_snapshots, "
+                "scan_source_contracts, source_evidence_artifacts, source_evidence_outcomes, "
+                "resource_relationship_observations IN ACCESS EXCLUSIVE MODE"
+            )
+        )
+    elif connection.dialect.name == "sqlite":
+        if not connection.connection.driver_connection.in_transaction:
+            connection.execute(text("BEGIN IMMEDIATE"))
+        else:
+            connection.execute(text("UPDATE alembic_version SET version_num = version_num WHERE 0"))
+    if connection.scalar(
+        text(
+            "SELECT EXISTS (SELECT 1 FROM resource_relationship_observations "
+            "WHERE target_scope = 'regional' AND target_region IS NULL)"
+        )
+    ):
+        raise util.CommandError(
+            "Downgrade blocked before revision 20261001_0005: retained unresolved regional "
+            "relationship history cannot be represented by the older schema. No schema or "
+            "data changes were applied. Keep this revision, verify backups, and follow "
             "docs/operations/known-limitations.md."
         )
 
@@ -248,6 +293,11 @@ def run_migrations_offline() -> None:
         raise util.CommandError(_OFFLINE_EVIDENCE_GRAPH_DOWNGRADE_MESSAGE)
     if _downgrades_pending_scan_inventory(starting_revision):
         raise util.CommandError(_OFFLINE_DOWNGRADE_MESSAGE)
+    if _downgrades_unresolved_region(starting_revision):
+        raise util.CommandError(
+            "Offline downgrade blocked before revision 20261001_0005: retained relationship "
+            "compatibility requires an online check. Follow docs/operations/known-limitations.md."
+        )
     with context.begin_transaction():
         context.run_migrations()
 
@@ -271,6 +321,8 @@ def run_migrations_online() -> None:
                 _assert_evidence_graph_downgrade_safe(supplied_connection)
             if _downgrades_pending_scan_inventory(current_heads):
                 _assert_pending_scan_downgrade_safe(supplied_connection)
+            if _downgrades_unresolved_region(current_heads):
+                _assert_unresolved_region_downgrade_safe(supplied_connection)
             context.run_migrations()
         return
 
@@ -294,6 +346,8 @@ def run_migrations_online() -> None:
                 _assert_evidence_graph_downgrade_safe(connection)
             if _downgrades_pending_scan_inventory(current_heads):
                 _assert_pending_scan_downgrade_safe(connection)
+            if _downgrades_unresolved_region(current_heads):
+                _assert_unresolved_region_downgrade_safe(connection)
             context.run_migrations()
 
 

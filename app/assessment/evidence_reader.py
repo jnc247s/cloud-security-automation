@@ -107,6 +107,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.8.0":
+            from app.assessment.cloudtrail_evidence import cloudtrail_proof
+
+            return cloudtrail_proof(self, contract, target)
         if contract.schema_version == "1.7.0":
             from app.assessment.s3_sensitive_kms_evidence import sensitive_kms_proof
 
@@ -239,6 +243,17 @@ class AssessmentEvidenceReader:
             expected = self.proof(contract, target)
             network_expected = None
             s3_expected = None
+            cloudtrail_expected = None
+            if contract.schema_version == "1.8.0":
+                from app.rules.cloudtrail import cloudtrail_result
+
+                control_id = {
+                    "cloudtrail_management_coverage_v1": "LOG-002",
+                    "cloudtrail_integrity_v1": "LOG-003",
+                }[contract.validation_strategy]
+                if candidate.control_id != control_id:
+                    raise ValueError("CloudTrail control differs from its execution contract")
+                cloudtrail_expected = cloudtrail_result(control_id, expected)
             if contract.schema_version == "1.7.0":
                 from app.rules.s3_sensitive_kms import sensitive_kms_result
 
@@ -289,6 +304,18 @@ class AssessmentEvidenceReader:
                     "incomplete required sources require an insufficient assessment"
                 ) from None
             return
+        if cloudtrail_expected is not None:
+            if candidate.result is not cloudtrail_expected:
+                raise ValueError("CloudTrail result differs from retained source evidence")
+            if (
+                candidate.result
+                in {
+                    AssessmentResult.NOT_APPLICABLE,
+                    AssessmentResult.INSUFFICIENT_EVIDENCE,
+                }
+                and candidate.evidence_artifacts
+            ):
+                raise ValueError("nondecisive CloudTrail results must not carry decisive evidence")
         if s3_expected is not None:
             if candidate.result is not s3_expected:
                 raise ValueError("S3 result differs from retained source evidence")
@@ -320,11 +347,23 @@ class AssessmentEvidenceReader:
         ):
             raise ValueError("observed IAM credentials or root controls cannot be not applicable")
         for artifact in candidate.evidence_artifacts:
+            if (
+                cloudtrail_expected is not None
+                and artifact.payload.get("evaluation_version") != "1.0.0"
+            ):
+                raise ValueError("CloudTrail evaluation version differs from contract")
             if (network_expected is not None or s3_expected is not None) and artifact.payload.get(
                 "evaluation_version"
             ) != "1.0.0":
                 raise ValueError("network evaluation version differs from contract")
-            if artifact.payload.get("source_proof") != expected:
+            proof = artifact.payload.get("source_proof")
+            if contract.schema_version == "1.8.0":
+                from app.assessment.cloudtrail_evidence import exact_json_equal
+
+                proof_matches = exact_json_equal(proof, expected)
+            else:
+                proof_matches = proof == expected
+            if not proof_matches:
                 raise ValueError("assessment source proof differs from retained evidence")
             if ec2_facts_value is not None:
                 from app.assessment.ec2_evidence import canonical

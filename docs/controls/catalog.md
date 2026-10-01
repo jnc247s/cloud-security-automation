@@ -34,7 +34,9 @@ in [the authoritative 6E.1 contract](sprint-6e1-metadata.md). Approved 6E.2 adds
 opt-in `0.9.0`; [6E.2 metadata](sprint-6e2-metadata.md) records HIGH severity, exact approvals,
 proof version and sourced reporting metadata. Approved 6E.3 adds S3-004 in opt-in `0.10.0`;
 [6E.3 metadata](sprint-6e3-metadata.md) records exact classifier/default-KMS semantics and
-reporting metadata. Other planned controls stay unregistered.
+reporting metadata. Local 6F.1 registers LOG-002/003 only in opt-in `0.11.0`, pending
+acceptance, with a separately approved bounded persistence repair; see
+[6F.1 metadata](sprint-6f1-metadata.md). Other planned controls stay unregistered.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -102,8 +104,9 @@ its collector and persistence integration was accepted in Sprint 5 and is reused
 Sprint 6 controls.
 
 Accepted releases through 6E have approved severity, guidance and independently versioned NIST
-mapping metadata. Pending LOG-002 through LOG-004 and GOV-001 still require that metadata before
-registration. Severity is project policy and must not be inferred from NIST; mappings remain
+mapping metadata. The approved local 6F.1 bundle gives LOG-002 HIGH / PR.PS-04 and LOG-003
+MEDIUM / PR.DS-01, subset `2.0+subset.10`, pending acceptance. LOG-004 and GOV-001 still require
+approved metadata before registration. Severity is project policy and must not be inferred from NIST; mappings remain
 reporting context and never determine technical results.
 
 ## Canonical Sprint 6 contracts
@@ -420,7 +423,7 @@ reporting context and never determine technical results.
 
 ### `LOG-002` — Required multi-Region CloudTrail management-event coverage is missing
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** local implementation in opt-in `0.11.0`; acceptance incomplete, default unchanged.
 - **Scope/resource type:** AWS account, using all relevant trails without an ambiguous "primary
   trail" concept.
 - **Required evidence:** complete trail identity/home Region, `IsMultiRegionTrail`,
@@ -440,7 +443,7 @@ reporting context and never determine technical results.
 - **FAIL:** complete account-wide CloudTrail evidence exists and no trail meets all conditions.
 - **NOT_APPLICABLE:** never for a normal AWS account assessment.
 - **INSUFFICIENT_EVIDENCE:** trail enumeration, status, home-Region enrichment, or event-selector
-  evidence is incomplete or malformed. An advanced-selector combination outside the future
+  evidence is incomplete or malformed. An advanced-selector combination outside the v1
   evaluator's explicitly supported semantics is also insufficient; partial or simplified
   selector data cannot produce `PASS` or `FAIL`.
 - **Limitations:** this does not prove delivery, retention, alerting, data-event coverage, or
@@ -477,7 +480,7 @@ dimension, and two selectors excluding disjoint sources can jointly prove it. Va
 values are the exact AWS values `kms.amazonaws.com` and `rdsdata.amazonaws.com`; an unknown,
 duplicate, non-string, or malformed value makes selector evidence `INSUFFICIENT_EVIDENCE`.
 
-The future evaluator must aggregate read and write coverage across every selector of the one valid
+The v1 evaluator must aggregate read and write coverage across every selector of the one valid
 returned form. `NotEquals`, `StartsWith`,
 `EndsWith`, `NotStartsWith`, and `NotEndsWith` values are preserved, but a valid trail whose
 coverage relies on one of those operators for `eventCategory` or `readOnly` is outside v1's proof
@@ -497,7 +500,7 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `LOG-003` — CloudTrail log-file integrity validation is disabled
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** local implementation in opt-in `0.11.0`; acceptance incomplete, default unchanged.
 - **Scope/resource type:** CloudTrail trail.
 - **Required evidence:** stable trail identity and explicit `LogFileValidationEnabled`, with
   common trail/home-Region provenance.
