@@ -67,10 +67,11 @@ LOG-004 exact same-scan S3-002 composition. Metadata, the bounded composition se
 empty-population LOG-004 clarification were initially pending. The user's subsequent
 `implement 6f1` request approves the prepared LOG-002/003 bundle and authorizes 6F.1 only.
 6F.1 is IN PROGRESS in opt-in catalog `0.11.0`; independent review has passed with zero
-unresolved findings. The user has authorized committing, pushing and opening the 6F.1 pull request;
-publication is pending. LOG-004/6F.2 and 6G--6H remain unstarted and
+unresolved findings. The authorized implementation is published in
+[pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37). LOG-004/6F.2 and 6G--6H remain unstarted and
 unapproved by the implementation request.
-Local LOG-002/003 implementation and new acceptance tests are preserved uncommitted.
+The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
+on the scoped feature branch; unrelated parent-checkout skill files remain excluded and preserved.
 Initial acceptance was blocked by a pre-existing domain/database mismatch for unresolved
 regional CloudTrail destination references; see [6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
 The user subsequently approved the narrowly scoped persistence repair, including an additive
@@ -84,8 +85,10 @@ the same reviewer verified it and returned REVIEW_PASS with zero unresolved find
 Post-review acceptance passes 274 focused checks and 2,125 regression tests, including all 171
 PostgreSQL integration cases, with no skips. Ruff, formatting, documentation contracts,
 whitespace, Compose and the API image build pass. The disposable database was removed;
-no operator database or live AWS account was used. Changes remain uncommitted and unpublished;
-final-commit CI and human merge acceptance remain pending. The active plan records the exact checkpoint.
+no operator database or live AWS account was used. Implementation commit
+`f299966f7166a202922341bc5c05f56f962a41ad` is pushed; PR #37 is open against `main` with auto-merge disabled.
+GitHub CI is tracked on that pull request and must pass on the final head before acceptance.
+Human merge acceptance remains pending. The active plan records the publication checkpoint.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 

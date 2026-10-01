@@ -4,8 +4,8 @@ Approved by the user's `implement 6f1` request on 2026-10-01 following the
 [6F preflight](sprint-6f-preflight.md). [ROADMAP.md](../../ROADMAP.md) owns progress;
 the [active plan](../exec-plans/active/sprint-6.md) records authorization and validation.
 Local implementation acceptance checks and independent review pass with zero unresolved findings.
-Publication is authorized and pending; final-commit CI and human merge acceptance remain pending.
-The slice is not accepted.
+The reviewed slice is published in [PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37),
+which tracks final-head GitHub CI. Human merge acceptance remains pending; the slice is not accepted.
 No deployment policy was enabled.
 
 ## Approved immutable bundle
@@ -181,3 +181,18 @@ Only the existing 35-file slice may be published; unrelated skill files remain e
 No force-push, merge, production operation or later-slice work is authorized. Publication,
 final-commit CI and human merge acceptance remain pending; recorded validation/review remains
 applicable to unchanged runtime/tests. 6F.1 remains IN PROGRESS.
+
+## Publication checkpoint — 2026-10-01
+
+The authorized 35-file implementation is committed as `f299966f7166a202922341bc5c05f56f962a41ad`
+and normally pushed on `codex/sprint-6f1-cloudtrail-coverage-integrity`.
+[PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37) is open against `main`,
+with auto-merge disabled. Unrelated parent skill files are excluded and preserved; the accepted
+6E.3 checkout is unchanged. No force-push, merge, live AWS or production operation occurred.
+Publication metadata is a separate documentation-only commit; runtime/tests remain unchanged.
+
+Local 274 focused / 2,125 full / 171 PostgreSQL no-skip validation and independent REVIEW_PASS
+remain applicable. Final-head GitHub CI is tracked on the pull request and must succeed before
+human merge acceptance. Earlier uncommitted/unpublished notes are historical checkpoints.
+6F.1 remains IN PROGRESS; later slices remain unstarted. The accepted migration baseline stays
+`20260924_0004` until acceptance/merge; the published slice adds `20261001_0005`.

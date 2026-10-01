@@ -17,8 +17,9 @@ and merged. Slice 6E.3 added S3-004 through pull request 35; its independent rev
 passed. Slice 6F.1 (LOG-002/003) has passed local implementation acceptance checks,
 including its explicitly approved [persistence repair](docs/controls/sprint-6f1-metadata.md).
 All 2,125 regression tests pass, including 171 PostgreSQL cases, with no skips; quality and
-container gates pass. Independent review passed with zero unresolved findings. Publication,
-final-commit CI and human merge acceptance remain pending; the slice is not accepted.
+container gates pass. Independent review passed with zero unresolved findings. The reviewed
+implementation is published in [pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37),
+which tracks GitHub CI; human merge acceptance remains pending and the slice is not accepted.
 6F.2, 6G and 6H have not started. [ROADMAP.md](ROADMAP.md) is the only authoritative
 progress source.
 
@@ -55,7 +56,7 @@ through explicit, versioned catalog/profile selection. The opt-in releases are c
 | `0.8.0` | `S3-001`, `S3-003` | Accepted |
 | `0.9.0` | `S3-002` | Accepted |
 | `0.10.0` | `S3-004` | Accepted |
-| `0.11.0` | `LOG-002`, `LOG-003` | Local checks and independent review passed; not yet accepted/merged |
+| `0.11.0` | `LOG-002`, `LOG-003` | PR #37 open; local checks and independent review passed; not merged |
 
 See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
 contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not

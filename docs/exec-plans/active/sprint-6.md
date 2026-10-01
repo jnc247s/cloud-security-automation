@@ -3,6 +3,37 @@
 Plan state: 6A through 6E COMPLETE and merged. 6F.1 is authorized and IN PROGRESS;
 6F.2, 6G and 6H remain unstarted.
 
+## 6F.1 publication checkpoint — 2026-10-01
+
+The user-authorized implementation was committed as `f299966f7166a202922341bc5c05f56f962a41ad`
+(`feat: add CloudTrail coverage and integrity controls (6F.1)`) and normally pushed on
+`codex/sprint-6f1-cloudtrail-coverage-integrity`. Exactly the 35 reviewed task files were staged;
+the unrelated parent skill files were excluded, and the accepted 6E.3 checkout was preserved.
+Origin `main` was rechecked at accepted `49500c95c78870d72e6179882bae4e6379cdd6d0`.
+No force-push, replacement checkout, data reset, live AWS or production action occurred.
+
+[PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37) is open, non-draft, against
+`main`, with the exact implementation commit as its initial head and auto-merge disabled.
+At creation, both push and pull-request CI runs were in progress. The latest checks on PR #37
+are the final-head CI evidence; require success before human merge acceptance, and do not
+confuse an older run with the final documentation head. Publication metadata is a separate
+documentation-only commit; runtime/tests remain unchanged from the successful local validation
+and independently verified correction. No additional reviewer agent was launched.
+
+Recorded validation remains **274 focused / 2,125 full / 171 PostgreSQL**, no skips, with
+quality/container gates and independent REVIEW_PASS, zero unresolved findings. Publication
+authorization and checkpoint prose passed **75 contract/link checks**, Ruff lint, formatting
+and whitespace before publication. Final publication metadata closeout also passed **75
+contract/link checks** (one existing Starlette warning), Ruff lint, formatting (**312 files**)
+and whitespace. Only owner documentation changed; runtime/tests are identical to the reviewed
+implementation commit. The final-commit GitHub CI result is reported with the PR handoff;
+no merge is authorized by publishing.
+
+This supersedes earlier uncommitted/unpublished and publication-authorization blockers without
+rewriting their historical records. 6F.1 remains IN PROGRESS, not COMPLETE, awaiting human
+merge acceptance. Accepted migration head remains `20260924_0004`; the published local slice
+adds `20261001_0005`. LOG-004/6F.2, 6G, 6H and later work remain unstarted.
+
 ## 6F.1 publication authorization — 2026-10-01
 
 After independent REVIEW_PASS and the successful final local acceptance checkpoint below,
