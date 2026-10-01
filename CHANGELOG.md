@@ -12,6 +12,15 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+### Sprint 6 (in progress)
+
+- Accepted the versioned assessment foundation and opt-in IAM, EC2, network, and S3 controls
+  through slices 6A--6E. The default five-control catalog remains `0.2.1`; cumulative opt-in
+  catalog `0.10.0` adds S3-004 after the preceding releases.
+- S3-004 merged in pull request #35 at
+  `c861713a665669da09d5bc7b5b282b04c16cac1d`. Its merged-main workflow passed on the unchanged
+  retry after a transient dependency-download timeout. Slices 6F through 6H have not started.
+
 ## Sprint 5 — 2026-09-23
 
 - Added the shared, versioned source-outcome and relationship evidence graph, immutable history,

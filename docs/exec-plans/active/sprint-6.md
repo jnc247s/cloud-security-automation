@@ -1,7 +1,6 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6D and 6E.1/6E.2 COMPLETE and merged. 6E.3 is IN PROGRESS under
-the approved classifier/KMS bundle; later slices remain unstarted.
+Plan state: 6A through 6E COMPLETE and merged. 6F through 6H remain unstarted.
 
 ## 6E.3 implementation authorization — 2026-09-30
 
@@ -75,6 +74,27 @@ GitHub returned a [new-PR link](https://github.com/jnc247s/cloud-security-automa
 but no PR was created and no merge occurred. This documentation-only publication record follows
 the reviewed implementation commit. Verify CI for the final pushed branch head, including this
 record, before human merge acceptance. No 6F or later-slice work is authorized or started.
+
+### 6E.3 acceptance checkpoint — 2026-10-01
+
+PR #35 was subsequently created and human-merged. It merged the reviewed branch through
+publication commit `447eeb1` into `main` at
+`c861713a665669da09d5bc7b5b282b04c16cac1d`, superseding the publication checkpoint's
+no-PR/no-merge state. No automatic merge was performed.
+
+The [merged-main CI run](https://github.com/jnc247s/cloud-security-automation/actions/runs/36825207102)
+completed successfully on attempt 2. Attempt 1 completed the code and PostgreSQL gates but its
+API image build timed out while downloading a build dependency from `files.pythonhosted.org`.
+The failed job was rerun unchanged and passed, including the image build. The reviewed local
+acceptance remains **156 focused checks** and **1,957 full regression tests**, including all
+**122 PostgreSQL integration cases**, with no skips; independent review has zero unresolved
+findings. Migration head remains `20260924_0004`, and default catalog `0.2.1` is unchanged.
+
+The separate README commit `949ce48` postdated PR #35 and therefore was not part of its merge.
+The focused closeout branch carries that README content forward from clean merged main and updates
+the roadmap, active plan and catalog status to the accepted state. This documentation repair does
+not alter runtime or tests. With review, merge and merged-main CI complete, 6E.3 and all of 6E are
+COMPLETE. No 6F or later-slice implementation has started.
 
 ## 6E.2 closeout and 6E.3 policy approval — 2026-09-30
 

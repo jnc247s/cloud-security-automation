@@ -1,6 +1,6 @@
 # Sprint 6B.1 approved control metadata
 
-Prepared and approved: 2026-09-27. Status: approved; implementation/validation in progress.
+Prepared and approved: 2026-09-27. Status: accepted in opt-in catalog `0.3.0`.
 Sprint state belongs to [ROADMAP.md](../../ROADMAP.md); implementation scope belongs to the
 [active plan](../exec-plans/active/sprint-6.md). The [canonical catalog](catalog.md) retains all
 existing truth tables, evidence requirements, applicability, and limitations unchanged.
@@ -38,7 +38,7 @@ AWS guidance sources, inspected 2026-09-27:
 - [Root user best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/root-user-best-practices.html):
   root-key avoidance, MFA, and centralized removal of member-account root credentials.
 
-These sources support the proposed operator guidance; they do not prescribe the project's
+These sources support the approved operator guidance; they do not prescribe the project's
 90-day threshold or severities. Canonical API evidence contracts are not redefined here.
 
 ## Approved framework mappings
@@ -48,7 +48,7 @@ published 2024-02-26. Source content inspected on 2026-09-27. The relationships 
 interpretations of credential-management and authentication outcomes, not official NIST mappings
 of these project control IDs. The user approved these mappings before executable registration.
 
-| Control | CSF reference | Proposed scoped rationale |
+| Control | CSF reference | Scoped rationale |
 | --- | --- | --- |
 | IAM-002 | PR.AA-01 | Comparing active-key age with explicit organization policy contributes credential-lifecycle evidence; it does not prove safe credential distribution or complete identity management. |
 | IAM-003 | PR.AA-01 | Assessing active credentials against a last-use policy contributes credential-lifecycle review evidence; recorded use does not establish authorization or business necessity. |
@@ -77,7 +77,8 @@ Mappings never determine technical results. Follow the existing
 
 ## Approval and stopping point
 
-Impact/guidance, evaluation versions, scoped mappings, and additive release identities are approved.
-The initial preparation changed documentation only; runtime implementation now follows in the
-same scoped branch. Independent review waits for whole-6B readiness by user instruction; merge
-approval remains required. IAM-004 remains separate 6B.2 work and is not implemented here.
+Impact/guidance, evaluation versions, scoped mappings, and additive release identities are
+approved. The initial preparation changed documentation only; the accepted 6B.1 implementation
+subsequently added these four controls in opt-in catalog `0.3.0`. Whole-6B independent review,
+final CI, and human merge acceptance passed before 6C began. IAM-004 remained a separate 6B.2
+slice and is available only in later opt-in catalog `0.4.0` or newer.

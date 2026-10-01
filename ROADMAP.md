@@ -3,12 +3,9 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-09-30
-Accepted baseline: `main` at `ef4543d439ed3a33064c6bcf383db201a94d2881` (Sprints 0--4,
-accepted pre-Sprint-5 repairs, the shared Sprint 5 evidence-graph foundation, accepted 5A EC2/EBS
-evidence, accepted 5B network evidence, accepted 5C IAM evidence, and accepted 5D IAM Access
-Analyzer evidence, accepted 5E S3 and referenced-KMS evidence, and accepted 5F CloudTrail
-evidence, and the accepted 5G Sprint-wide closure)
+Last verified: 2026-10-01
+Accepted baseline: `main` at `c861713a665669da09d5bc7b5b282b04c16cac1d` (Sprints 0--5 and
+accepted Sprint 6 slices 6A through 6E, including S3-004 in opt-in catalog `0.10.0`)
 
 ## Current state
 
@@ -48,17 +45,20 @@ earlier publication-permission blocker; no automatic merge was performed.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
 the active plan records authorization. The user approved the 6E.3 policy bundle on 2026-09-30
-and requested implementation after 6E.2 acceptance. 6E.3 is IN PROGRESS for S3-004 only.
-Local implementation now passes 1,957 regression tests including 122 PostgreSQL cases and
-quality/container gates. Independent review passed with zero unresolved findings after two LOW
-documentation inconsistencies were corrected and verified. The reviewed implementation commit
-`66f39f5` is pushed on `codex/sprint-6e3-sensitive-bucket-kms` with upstream tracking and no
-force-push. Final-head CI, PR review and human merge acceptance remain pending; the
-[active-plan checkpoint](docs/exec-plans/active/sprint-6.md#6e3-implementation-checkpoint--2026-09-30)
-records exact results and the preserved original checkout.
+and requested implementation after 6E.2 acceptance. 6E.3 is COMPLETE: PR #35 merged the reviewed
+S3-004 implementation through `447eeb1` into `main` at
+`c861713a665669da09d5bc7b5b282b04c16cac1d`. The
+[merged-main CI run](https://github.com/jnc247s/cloud-security-automation/actions/runs/36825207102)
+succeeded on attempt 2 after attempt 1's only failure was a transient package-download timeout
+during the API image build. Local acceptance passed 1,957 regression tests including 122
+PostgreSQL cases and quality/container gates. Independent review passed with zero unresolved
+findings after two LOW documentation inconsistencies were corrected and verified. The
+[active-plan checkpoint](docs/exec-plans/active/sprint-6.md#6e3-acceptance-checkpoint--2026-10-01)
+records the merge and final gate.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
-records its bounded S3-004 design and classifier/KMS bundle; the subsequent approval checkpoint
-is now authorized by the implementation checkpoint. Later slices remain unstarted.
+records its bounded S3-004 design and classifier/KMS bundle; the active plan's authorization,
+implementation, and acceptance checkpoints record its approval and completion. Later slices
+remain unstarted.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -148,9 +148,10 @@ all 1,790 tests pass, including 88 PostgreSQL cases, and independent review has 
 PR #33 subsequently merged 6E.1 and its preparation handoff at
 `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`; merged-main CI passed. The user directed 6E.2
 implementation with the prepared policy/metadata bundle. This does not complete all of 6E;
-The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30; implementation
-is authorized after accepted 6E.2 PR #34. S3-004 is IN PROGRESS; acceptance gates remain.
-Later slices remain unstarted.
+The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30 and accepted through
+PR #35 at `c861713a665669da09d5bc7b5b282b04c16cac1d`; merged-main CI passed. S3-004 is
+available in opt-in catalog `0.10.0`, while default `0.2.1` remains unchanged. Slices 6A through
+6E are COMPLETE; 6F through 6H remain unstarted.
 Migration head remains `20260924_0004`.
 
 ## Pre-Sprint 5 attention

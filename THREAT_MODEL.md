@@ -1,10 +1,8 @@
 # Threat model
 
-Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidence-graph
-foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer evidence
-producers, plus the merged 5E S3 and referenced-KMS, 5F CloudTrail, and 5G closure
-Baseline: `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881` (5G merged in pull request #25)
-Last reviewed: 2026-09-30
+Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6E
+Baseline: `main` commit `c861713a665669da09d5bc7b5b282b04c16cac1d` (S3-004 merged in pull request #35)
+Last reviewed: 2026-10-01
 
 ## Scope and security objectives
 
@@ -41,10 +39,11 @@ OIDC/development authentication, capability authorization, FastAPI, and the in-p
 executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fact-only
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
-production deployment, frontend, Terraform infrastructure, remediation
-execution, or AI agent is implemented. The merged 5E and 5F producers collect facts only. The 5F
-change adds no AWS write, authentication, authorization, route, migration, or assessment-profile
-behavior. The bounded 5G closure is accepted and merged without changing these boundaries.
+production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
+implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
+consume the 5E facts, while 6F logging controls have not started. The 5F change adds no AWS write,
+authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
+closure is accepted and merged without changing these boundaries.
 
 Protect:
 
