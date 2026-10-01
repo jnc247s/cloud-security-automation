@@ -309,7 +309,8 @@ class ResourceRelationshipObservation(Base):
         ),
         CheckConstraint(
             "target_scope IS NULL OR "
-            "(target_scope = 'regional' AND target_region IS NOT NULL) OR "
+            "(target_scope = 'regional' AND "
+            "(target_region IS NOT NULL OR target_identity_state = 'unresolved')) OR "
             "(target_scope = 'global' AND target_region IS NULL)",
             name="target_scope_region_consistent",
         ),

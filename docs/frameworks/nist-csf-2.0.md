@@ -6,6 +6,16 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+Local 6F.1 catalog `0.11.0`, pending acceptance, adds LOG-002 -> PR.PS-04 and LOG-003 ->
+PR.DS-01 in separately checksummed subset `2.0+subset.10`. Source: official NIST CSWP 29
+version 2.0, Appendix A, inspected 2026-10-01. Files are
+`app/assessment/data/nist_csf_2_0_subset_10.json` and its `_manifest.json` companion;
+exact subset SHA-256 is `21a393bdce87a3417134a1c4b9cd9c0c2cc1d49ef2a41e0259d4ec39342e3282`.
+Project mappings contribute management-log generation and integrity-setting context only,
+not continuous monitoring, verified digests, complete data security or compliance.
+Earlier framework bytes and technical results are independent. See
+[6F.1 metadata](../controls/sprint-6f1-metadata.md).
+
 6E.3 catalog `0.10.0` adds S3-004 -> PR.DS-01 in separately checksummed local subset
 `2.0+subset.9`. Source: NIST CSWP 29 version 2.0, Appendix A, Protect / Data Security,
 inspected 2026-09-30. Files are `app/assessment/data/nist_csf_2_0_subset_9.json` and its

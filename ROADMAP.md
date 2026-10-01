@@ -4,8 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-01
-Accepted baseline: `main` at `c861713a665669da09d5bc7b5b282b04c16cac1d` (Sprints 0--5 and
-accepted Sprint 6 slices 6A through 6E, including S3-004 in opt-in catalog `0.10.0`)
+Accepted baseline: `main` at `49500c95c78870d72e6179882bae4e6379cdd6d0` (README/documentation
+closeout; unchanged runtime accepted at `c861713a665669da09d5bc7b5b282b04c16cac1d`, Sprints 0--5
+and Sprint 6 slices 6A through 6E, including S3-004 in opt-in catalog `0.10.0`)
 
 ## Current state
 
@@ -57,8 +58,37 @@ findings after two LOW documentation inconsistencies were corrected and verified
 records the merge and final gate.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
 records its bounded S3-004 design and classifier/KMS bundle; the active plan's authorization,
-implementation, and acceptance checkpoints record its approval and completion. Later slices
-remain unstarted.
+implementation, and acceptance checkpoints record its approval and completion. PR #36 merged
+the separate README/documentation repair at `49500c95c78870d72e6179882bae4e6379cdd6d0`; its
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36900929958)
+passed. The user requested 6F preparation on 2026-10-01. The
+[analysis-only preflight](docs/controls/sprint-6f-preflight.md) proposes LOG-002/003 first, then
+LOG-004 exact same-scan S3-002 composition. Metadata, the bounded composition seam and the
+empty-population LOG-004 clarification were initially pending. The user's subsequent
+`implement 6f1` request approves the prepared LOG-002/003 bundle and authorizes 6F.1 only.
+6F.1 is IN PROGRESS in opt-in catalog `0.11.0`; independent review has passed with zero
+unresolved findings. The authorized implementation is published in
+[pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37). LOG-004/6F.2 and 6G--6H remain unstarted and
+unapproved by the implementation request.
+The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
+on the scoped feature branch; unrelated parent-checkout skill files remain excluded and preserved.
+Initial acceptance was blocked by a pre-existing domain/database mismatch for unresolved
+regional CloudTrail destination references; see [6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
+The user subsequently approved the narrowly scoped persistence repair, including an additive
+migration if needed, and resumption of 6F.1 validation. The active plan records its preservation,
+upgrade and rollback requirements; no production operation or acceptance is authorized by it.
+The local repair adds migration `20261001_0005`, preserving unresolved facts, strict complete
+identities, immutable history and downgrade safety. The user authorized one read-only independent
+reviewer, who found one MEDIUM boolean/numeric proof-binding defect. Its scoped correction keeps
+strict JSON types in the new `1.8.0` projection/proof path without changing historical schemas;
+the same reviewer verified it and returned REVIEW_PASS with zero unresolved findings.
+Post-review acceptance passes 274 focused checks and 2,125 regression tests, including all 171
+PostgreSQL integration cases, with no skips. Ruff, formatting, documentation contracts,
+whitespace, Compose and the API image build pass. The disposable database was removed;
+no operator database or live AWS account was used. Implementation commit
+`f299966f7166a202922341bc5c05f56f962a41ad` is pushed; PR #37 is open against `main` with auto-merge disabled.
+GitHub CI is tracked on that pull request and must pass on the final head before acceptance.
+Human merge acceptance remains pending. The active plan records the publication checkpoint.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -151,8 +181,11 @@ implementation with the prepared policy/metadata bundle. This does not complete 
 The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30 and accepted through
 PR #35 at `c861713a665669da09d5bc7b5b282b04c16cac1d`; merged-main CI passed. S3-004 is
 available in opt-in catalog `0.10.0`, while default `0.2.1` remains unchanged. Slices 6A through
-6E are COMPLETE; 6F through 6H remain unstarted.
-Migration head remains `20260924_0004`.
+6E are COMPLETE. 6F preparation is recorded in the
+[preflight](docs/controls/sprint-6f-preflight.md) and active plan. The user's implementation request
+authorizes the prepared 6F.1 bundle only; 6F.1 is IN PROGRESS. 6F.2, 6G and 6H remain unstarted.
+The separately approved local persistence repair advances migration head to `20261001_0005`;
+accepted baseline head is still `20260924_0004` until this slice passes its acceptance gates.
 
 ## Pre-Sprint 5 attention
 

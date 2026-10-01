@@ -14,6 +14,15 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Local opt-in catalog `0.11.0`, pending acceptance, adds LOG-002/003 through the same generic
+interfaces. LOG-002 is a global account assessment; LOG-003 uses exact trail snapshots or the
+complete-empty account fallback. Decisive payloads contain `source_proof` schema `1.8.0` and
+`evaluation_version` `1.0.0`, with exact same-scan source citations and trail identity/facts.
+N/A/insufficient retain the existing artifact convention. The approved persistence repair
+lets the existing relationship union return unresolved regional references with a null Region;
+it does not fabricate a stable resource, prove resolution or add response fields/routes.
+Authentication/capabilities are unchanged. See [6F.1 metadata](controls/sprint-6f1-metadata.md).
+
 Opt-in catalog `0.10.0` adds S3-004 through these same generic authenticated interfaces,
 without new routes or fields. Decisive evidence binds classifier identity/version/checksum,
 classification reason/matches, profile checksum and same-scan bucket/key/source/edge proofs.

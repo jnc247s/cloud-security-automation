@@ -1,6 +1,341 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6E COMPLETE and merged. 6F through 6H remain unstarted.
+Plan state: 6A through 6E COMPLETE and merged. 6F.1 is authorized and IN PROGRESS;
+6F.2, 6G and 6H remain unstarted.
+
+## 6F.1 publication checkpoint — 2026-10-01
+
+The user-authorized implementation was committed as `f299966f7166a202922341bc5c05f56f962a41ad`
+(`feat: add CloudTrail coverage and integrity controls (6F.1)`) and normally pushed on
+`codex/sprint-6f1-cloudtrail-coverage-integrity`. Exactly the 35 reviewed task files were staged;
+the unrelated parent skill files were excluded, and the accepted 6E.3 checkout was preserved.
+Origin `main` was rechecked at accepted `49500c95c78870d72e6179882bae4e6379cdd6d0`.
+No force-push, replacement checkout, data reset, live AWS or production action occurred.
+
+[PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37) is open, non-draft, against
+`main`, with the exact implementation commit as its initial head and auto-merge disabled.
+At creation, both push and pull-request CI runs were in progress. The latest checks on PR #37
+are the final-head CI evidence; require success before human merge acceptance, and do not
+confuse an older run with the final documentation head. Publication metadata is a separate
+documentation-only commit; runtime/tests remain unchanged from the successful local validation
+and independently verified correction. No additional reviewer agent was launched.
+
+Recorded validation remains **274 focused / 2,125 full / 171 PostgreSQL**, no skips, with
+quality/container gates and independent REVIEW_PASS, zero unresolved findings. Publication
+authorization and checkpoint prose passed **75 contract/link checks**, Ruff lint, formatting
+and whitespace before publication. Final publication metadata closeout also passed **75
+contract/link checks** (one existing Starlette warning), Ruff lint, formatting (**312 files**)
+and whitespace. Only owner documentation changed; runtime/tests are identical to the reviewed
+implementation commit. The final-commit GitHub CI result is reported with the PR handoff;
+no merge is authorized by publishing.
+
+This supersedes earlier uncommitted/unpublished and publication-authorization blockers without
+rewriting their historical records. 6F.1 remains IN PROGRESS, not COMPLETE, awaiting human
+merge acceptance. Accepted migration head remains `20260924_0004`; the published local slice
+adds `20261001_0005`. LOG-004/6F.2, 6G, 6H and later work remain unstarted.
+
+## 6F.1 publication authorization — 2026-10-01
+
+After independent REVIEW_PASS and the successful final local acceptance checkpoint below,
+the user approved committing, pushing and opening the 6F.1 pull request. Publish only the
+reviewed LOG-002/003 slice, its separately approved persistence repair, tests and owner
+documentation on `codex/sprint-6f1-cloudtrail-coverage-integrity`, based on accepted
+`49500c95c78870d72e6179882bae4e6379cdd6d0`. The 35-file scope excludes the unrelated
+parent-checkout skill files and preserves the accepted 6E.3 checkout. Use a normal push;
+do not force-push or merge. Main, production, live AWS and later slices remain out of scope.
+
+Publication is pending. The recorded 274 focused / 2,125 full / 171 PostgreSQL no-skip result,
+quality/container gates and independent review remain applicable to unchanged runtime/tests;
+authorization-only documentation edits require fresh contract/link and whitespace checks.
+Verify final-commit GitHub CI before human merge acceptance. This supersedes earlier publication
+authorization blockers only; 6F.1 stays IN PROGRESS until the remaining acceptance gates pass.
+
+## 6F.1 independent review and final local checkpoint — 2026-10-01
+
+The single user-authorized read-only reviewer inspected all 35 changed files, including every
+untracked source/test/documentation file, and the relevant source-of-truth contracts. Initial
+result: **0 CRITICAL, 0 HIGH, 1 MEDIUM, 0 LOW**. Ordinary Python equality admitted integer or
+floating-point substitutes for boolean projection/proof values. The reviewer reproduced both
+a malformed projection still producing a decisive result and a rehashed LOG-003 proof containing
+integer `1` being persisted. This broke exact JSON type binding, not the underlying source's
+explicit enabled/disabled setting. No other actionable finding was identified.
+
+The correction uses strict boolean projection identity, recursively type-sensitive selector
+projection comparison, and exact JSON type comparison for candidate proofs only in new schema
+`1.8.0`. Immutable evidence containers remain supported; historical schema comparison behavior
+is unchanged. No contract/profile/catalog/evaluator version, source requirement, collector,
+permission, API/auth interface or migration changed. Regression coverage adds **52 tests**:
+20 engine projection cases, 16 SQLite atomic rehashed-proof rejection cases and 16 equivalent
+PostgreSQL cases, covering integer/float substitutes for true/false and nested selector values.
+All **36 new engine/SQLite tests failed before the correction**, then passed after it.
+
+The same reviewer independently passed **36 correction tests**, replayed the original
+reproducers, inspected the complete correction and returned **REVIEW_PASS with zero unresolved
+findings**. Its original bounded diagnostic run also passed 55 rule/migration tests. Each
+reviewer test run reported one existing Starlette warning. The reviewer made no checkout edits,
+created no container, accessed no live AWS/operator database, and did not delegate further.
+
+After the runtime correction, the unchanged `scripts.validate` runner reran the complete
+focused command recorded below with a fresh task-owned temporary directory and its own
+loopback-only disposable PostgreSQL 16 runtime. **274 focused checks passed**, no skips:
+150 rule/SQLite/HTTP/migration/foundation checks, 42 PostgreSQL control/persistence/HTTP checks,
+seven PostgreSQL migration checks and 75 documentation/contract checks. Ruff lint and formatting
+passed (**312 Python files**). The full `python -m pytest` run passed **2,125 tests**, including
+all **171 PostgreSQL integration cases**, **no skips**, in 258.04 seconds. Focused and full
+runs each reported 20 existing dependency warnings. Whitespace, Compose and the API image build
+passed. The runner removed only its uniquely named disposable database; no user database,
+production migration or live AWS operation was performed. No runtime/test file changed after
+this successful run; only final documentation closeout follows it.
+
+This supersedes the pending-review and earlier 2,073-test checkpoint without rewriting those
+historical records. Current README, roadmap, metadata and design/security owners distinguish
+the reviewed local implementation from the accepted baseline. Final closeout passed **75
+documentation/contract checks** (one existing Starlette warning), Ruff lint, formatting and
+tracked/untracked whitespace across all 35 changed files. Private-key/AWS-key marker inspection
+found no matches, and the exact subset-10 manifest hash matched. The README-inclusive local
+image rebuild passed. The same reviewer checked final documentation/governance consistency
+and confirmed prior REVIEW_PASS remains applicable with zero unresolved findings. These
+documentation-only edits do not invalidate the recorded runtime/PostgreSQL regression result.
+
+Git remains local/uncommitted on `codex/sprint-6f1-cloudtrail-coverage-integrity`, HEAD/base
+`49500c95c78870d72e6179882bae4e6379cdd6d0`. The unrelated parent skill files and accepted 6E.3
+checkout remain preserved. Local migration head is `20261001_0005`; accepted baseline head is
+still `20260924_0004`. No commit, push, PR or merge occurred. Publication is unauthorized;
+final-commit CI and human merge acceptance remain pending. 6F.1 remains IN PROGRESS, not
+COMPLETE; 6F.2, 6G, 6H and later work were not started.
+
+## 6F.1 independent review authorization — 2026-10-01
+
+After all local validation gates passed, the user answered yes to launching one read-only
+independent reviewer for 6F.1 and its separately approved persistence repair. Review all
+tracked changes and untracked source/test/documentation files against accepted base
+`49500c95c78870d72e6179882bae4e6379cdd6d0`, covering correctness, security, data integrity,
+historical compatibility, migration safety, acceptance coverage and documentation consistency.
+The reviewer may report findings and perform safe diagnostic checks, but must not edit the
+checkout, publish, merge, touch production/live AWS, start later slices or delegate further.
+Review is pending. This supersedes earlier review-authorization blockers only; publication,
+merge approval and later-slice authorization remain separate. 6F.1 stays IN PROGRESS.
+
+## 6F.1 PostgreSQL and container validation checkpoint — 2026-10-01
+
+The user reported that Docker was running. The engine responded successfully (29.5.2), and
+the preserved branch, HEAD/base and uncommitted changes matched the persistence-repair
+checkpoint below. This checkpoint supersedes its Docker/PostgreSQL/image blocker; it does not
+change earlier validation records or authorize review, publication, merging or later slices.
+
+The unchanged `scripts.validate` runner completed the exact focused command recorded below,
+using a fresh task-owned pytest temporary directory and its own loopback-only, disposable
+PostgreSQL 16 container. It never reused an operator `DATABASE_URL` or `TEST_DATABASE_URL`.
+All **222 focused checks passed**, no skips: 114 rule/SQLite control/HTTP/migration/foundation
+checks, 26 PostgreSQL control/persistence/HTTP checks, seven PostgreSQL migration checks and
+75 documentation/contract checks. Ruff lint passed and formatting passed for **312 Python files**.
+The complete `python -m pytest` regression passed **2,073 tests**, including all **155
+PostgreSQL integration cases**, **no skips**, in 242.40 seconds. Focused and full runs each
+reported 20 existing dependency warnings (one Starlette and 19 SQLite datetime-adapter warnings).
+
+Tracked whitespace, Docker Compose configuration and the API image build passed. The runner
+removed only its uniquely named disposable database; no user database, Docker data reset,
+production migration or live AWS operation occurred. No runtime or test correction was needed
+after the recorded repair. Post-run README/roadmap/plan/metadata closeout passed all **75
+documentation/contract checks**, one existing Starlette warning, Ruff lint and formatting.
+Tracked/untracked whitespace and private-key/AWS-key marker inspection passed for all **35
+changed files**, and the subset-10 hash matched its exact manifest. Documentation-only edits
+do not invalidate the recorded full runtime/PostgreSQL result; the local image was rebuilt
+to include the final README.
+
+LOG-002/003 remain opt-in in `0.11.0`, with shared engine/persistence source proofs. Default
+and historical releases, collectors, AWS permissions, authentication and generic API fields
+remain unchanged. Local migration head is `20261001_0005`; accepted baseline head remains
+`20260924_0004` until this slice is accepted and merged. The earlier four migrations remain
+unchanged. The unrelated parent-checkout skill files and accepted 6E.3 checkout are preserved.
+
+Git remains uncommitted on `codex/sprint-6f1-cloudtrail-coverage-integrity`, HEAD/base
+`49500c95c78870d72e6179882bae4e6379cdd6d0`, in the reused worktree. No agent was launched,
+and independent review remains separately unauthorized and pending. No commit, push, PR or
+merge occurred. 6F.1 remains IN PROGRESS, not COMPLETE; 6F.2, 6G, 6H and later work were not
+started. The next gate is explicit authorization for independent read-only review.
+
+## 6F.1 bounded persistence repair authorization — 2026-10-01
+
+The user approved the proposed narrowly scoped shared persistence fix, including an additive
+migration if needed, and continuation of 6F.1 validation. This supersedes the earlier stop gate
+only for the unresolved regional relationship mismatch. Permit a null target Region for an
+explicitly unresolved reference, retain strict complete identity/provenance and immutability,
+preserve every retained fact and established migration, and add pre-DDL downgrade protection
+for newly representable history. Validate populated upgrade, atomic failure/retry, constraints,
+SQLite/PostgreSQL history and authenticated HTTP, then full regression/quality/container gates.
+Planned additive revision: `20261001_0005`, after `20260924_0004`.
+No production migration, publishing, reviewer agent, LOG-004 or later-slice work is authorized.
+
+### 6F.1 persistence-repair checkpoint — 2026-10-01
+
+The authorized repair is implemented in additive revision `20261001_0005`; the established
+four migrations remain byte-unchanged. The ORM matches the new CHECK, allowing an unknown
+Region only for unresolved regional references. Complete identities, provenance, FKs and
+append-only guards remain strict. SQLite uses a transactionally rebuilt child table with FK
+enforcement enabled and exact triggers restored; PostgreSQL changes only the constraint.
+Online downgrade preflight serializes graph writers in parent-to-child order and blocks
+incompatible retained history before any DDL. Offline downgrade is blocked. The collector,
+mapper, AWS permissions, authentication and generic service/API fields remain unchanged.
+LOG-002/003 proof/evaluator/catalog metadata and old releases are unchanged from the approved
+bundle. The empty LOG-003 fallback also checks exact account identity explicitly.
+
+The targeted rule, SQLite control/persistence/real HTTP, new migration and established migration/
+foundation checks passed **114 tests**, no skips, with 20 existing dependency warnings.
+This includes the four original acceptance failures, populated migration preservation,
+compatible round-trip, incompatible/sanitized downgrade, strict identity scope and atomic
+failed-transition/retry tests. New HTTP acceptance retrieves the retained unresolved
+destination through the real relationship API without inventing a target resource.
+
+The full collected suite (`python -m pytest -q --tb=short -p no:cacheprovider`, with a fresh
+task-owned base-temp folder and unavailable `TEST_DATABASE_URL`) passed **1,918 tests**,
+**155 skipped**, 20 existing warnings, no failures. The skips are the established PostgreSQL
+availability gate, not new skip annotations. This is not PostgreSQL acceptance. Docker Desktop
+was installed but stopped; starting it hidden crashed the backend while initializing its
+`dockerInference` socket. Read-only diagnostics confirmed the startup error and no native
+PostgreSQL alternative. Only the two hung task-owned diagnostic clients were stopped.
+No Docker reset/data deletion, installation or configuration change was attempted. The user
+was asked to restore the engine; disposable PostgreSQL and image build remain unverified.
+The unchanged acceptance runner is ready to perform these gates once the engine is available.
+
+Ruff lint and formatting passed (**312 Python files**); documentation/contract checks passed
+**75 tests**, and tracked whitespace plus the exact subset-10 manifest hash passed.
+Compose configuration also passed via the installed standalone Compose executable (no daemon
+required). Tracked/untracked whitespace checks passed for all 35 changed files, and changed-file
+private-key/AWS-key marker inspection found no matches. No API image build is claimed.
+Documentation owners and README now record the authorized migration and local, unaccepted
+6F.1 implementation. Changes after the full collected suite are documentation-only.
+Self-review is not independent reviewer approval: no agent was launched, and independent
+review remains separately authorized/pending.
+
+Git remains local/uncommitted on `codex/sprint-6f1-cloudtrail-coverage-integrity`, HEAD/base
+`49500c95c78870d72e6179882bae4e6379cdd6d0`, in the reused worktree. Original unrelated skill
+files and the accepted 6E.3 checkout are preserved. No commit, push, PR, merge, production
+migration or live AWS operation occurred. Local migration head is `20261001_0005`, accepted
+baseline head remains `20260924_0004`. 6F.1 remains IN PROGRESS; 6F.2, 6G, 6H and later work
+were not started. Do not mark COMPLETE before missing acceptance, review and merge gates.
+
+When the local Docker engine is restored, resume the unchanged acceptance runner with a fresh
+task-owned pytest temporary directory. It creates and removes only its own disposable database:
+
+```text
+python -m scripts.validate --focused tests/unit/rules/test_cloudtrail_controls.py tests/unit/database/test_cloudtrail_controls.py tests/unit/database/test_unresolved_region_migration.py tests/unit/database/test_migrations.py tests/unit/database/test_assessment_foundation.py tests/integration/test_cloudtrail_controls_postgres.py tests/integration/test_unresolved_region_migration_postgres.py tests/unit/contracts
+```
+
+Resolve any new PostgreSQL/full-regression failure and rerun invalidated gates. Only after all
+local gates succeed request separate authorization for independent read-only review; do not
+publish or advance 6F.2 based on this checkpoint.
+
+## 6F.1 implementation authorization — 2026-10-01
+
+The user's `implement 6f1` request, following the prepared bundle/implementation approval prompt,
+approves LOG-002 HIGH / PR.PS-04 and LOG-003 MEDIUM / PR.DS-01, evaluator `1.0.0`, opt-in
+catalog `0.11.0`, closed schema `1.8.0` and separately checksummed local NIST subset
+`2.0+subset.10`. Implement the canonical coverage/integrity truth tables and shared engine/
+persistence proofs only. There are no new organization inputs for these two controls.
+Preserve collectors, permissions, default/historical catalogs, LOG-001, pending-scan intent,
+authentication, generic APIs and migration head `20260924_0004`.
+
+Origin main was rechecked at accepted `49500c95c78870d72e6179882bae4e6379cdd6d0`.
+Scoped branch `codex/sprint-6f1-cloudtrail-coverage-integrity` starts at that SHA in the reused
+worktree, carrying only the known local preparation documents forward without discarding them.
+Original unrelated skill files and the 6E.3 checkout remain untouched. This request does not
+approve LOG-004 or its empty-population clarification, reviewer agents, publication or merging.
+Run focused/full, disposable PostgreSQL, real authenticated HTTP/history/integrity, quality and
+container gates; independent review remains a separate authorization/acceptance gate.
+
+### 6F.1 local implementation checkpoint — 2026-10-01
+
+Local opt-in `0.11.0` now registers LOG-002/003 with closed proof/execution `1.8.0`,
+evaluator `1.0.0` and separately checksummed NIST subset `2.0+subset.10`.
+[Implementation metadata](../../controls/sprint-6f1-metadata.md) records exact approved
+severities, mappings, required source/target bindings, canonical selector aggregation and limits.
+The shared reader and pure evaluator are used by both engine and persistence. Account coverage
+does not create a collected graph endpoint; integrity emits a result per observed trail.
+No collector, AWS permission, service/API/auth interface, default/historical catalog, mapper,
+ORM constraint or migration was changed. LOG-001 and partial-scan resolution guards remain.
+
+Final bounded checkpoint command:
+
+```text
+python -m pytest tests/unit/rules/test_cloudtrail_controls.py tests/unit/database/test_cloudtrail_controls.py tests/unit/contracts -q --tb=no -p no:cacheprovider --basetemp <fresh-task-owned-folder>
+```
+
+Result: **144 passed, 4 failed, no skips** (47 new rule tests, 22 successful SQLite
+persistence/rejection checks and 75 documentation/contract checks). The four failing SQLite
+tests are history, lifecycle, recovery and real authenticated HTTP. They expose the same
+pre-existing accepted-baseline persistence mismatch: an unresolved regional destination bucket
+has no known Region, but `ck_resource_relationship_observations_target_scope_region_consistent`
+requires a Region even for unresolved references. The domain permits the exact partial
+identity emitted by the unchanged CloudTrail collector. ORM and migration `20260915_0003`
+have the same conflicting constraint at accepted base `49500c95c78870d72e6179882bae4e6379cdd6d0`.
+Persistence rolls back; HTTP retains sanitized `SCAN_EXECUTION_FAILED`. No failing test was
+deleted, skipped or weakened, and no relationship/identity was dropped or invented.
+
+Initial new-test failures caused by frozen-JSON inspection, artifact-constructor enum handling
+and the empty-target guard's exact diagnostic were corrected. The final failures above remain
+real integration failures. Ruff lint and formatting (**309 Python files**) passed, as did
+tracked whitespace checks and the framework manifest hash. The one reported warning is the
+existing Starlette TestClient deprecation. README, architecture, security/threat owners,
+catalog/framework documentation, evidence readiness, persistence and the limitations register
+now distinguish this unaccepted local slice from the accepted baseline.
+
+Per the approved no-schema-change boundary and the preflight's explicit stop gate, implementation
+stops pending approval of a narrowly scoped shared persistence repair, potentially an additive
+migration with upgrade/regression validation. Alembic head remains `20260924_0004`.
+Full regression, PostgreSQL, Compose/image and independent review gates have not completed for
+this slice; historical 6E.3 green results do not validate the new runtime. New PostgreSQL
+acceptance tests are present but not yet run. No reviewer agent was launched.
+
+All changes remain local and uncommitted on `codex/sprint-6f1-cloudtrail-coverage-integrity`,
+HEAD/base `49500c95c78870d72e6179882bae4e6379cdd6d0`, in the reused
+`.tmp/sprint-6e3-readme-closeout` worktree. Original untracked skill files and the clean 6E.3
+checkout are preserved. No push, PR, merge, live AWS or production operation occurred.
+6F.1 remains IN PROGRESS, not COMPLETE; 6F.2/LOG-004, 6G, 6H and later sprints were not started.
+
+## 6F implementation preparation — 2026-10-01
+
+The user requested preparation, not implementation. PR #36 merged the separate README and
+documentation closeout into `main` at `49500c95c78870d72e6179882bae4e6379cdd6d0`;
+[merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36900929958).
+Runtime remains the accepted PR #35 implementation at `c861713a665669da09d5bc7b5b282b04c16cac1d`.
+This supersedes the earlier README-pending text without rewriting historical checkpoints.
+
+The [6F preflight](../../controls/sprint-6f-preflight.md) records source/target contracts,
+canonical truth tables, callers, integration risks and acceptance requirements. Recommend
+6F.1 LOG-002/003 first, then accepted-baseline 6F.2 LOG-004. Retained 5F facts already suffice;
+no collector, permission, dependency package, API/auth or migration change is planned.
+LOG-004 requires a bounded internal dependency/context seam and shared engine/persistence
+validation of the exact same-scan S3-002 destination result. It cannot duplicate exposure logic,
+load historical results, silently enable S3-002 or relax its complete-collector requirements.
+
+The proposed bundle awaits approval: LOG-002 HIGH / PR.PS-04, LOG-003 MEDIUM / PR.DS-01,
+LOG-004 HIGH / PR.AA-05; evaluator `1.0.0`; cumulative opt-in catalogs `0.11.0` then `0.12.0`;
+closed schemas `1.8.0` then `1.9.0`; independently sourced local NIST subsets `2.0+subset.10`
+then `2.0+subset.11`; unchanged canonical selector subset and explicit retained S3 approval
+policy. Also approve the preflight's proposed LOG-004 account N/A fallback for complete empty
+trail discovery, distinct from its prohibition of N/A for an observed trail. No release or
+deployment policy is registered by preparation; default `0.2.1` and migration head
+`20260924_0004` remain unchanged.
+
+The reused clean worktree `.tmp/sprint-6e3-readme-closeout` was switched from accepted main to
+`codex/sprint-6f-logging-preflight` at `49500c95c78870d72e6179882bae4e6379cdd6d0`.
+Preparation edits remain local/uncommitted. Original untracked `.agents/` skill files and the
+existing `.tmp/sprint-6e3` checkout remain untouched. No independent agents, publication, merge,
+live AWS or later-slice implementation is authorized by this request.
+
+Preparation baseline checks: **245 tests passed**, no skips, covering CloudTrail collection,
+LOG-001, engine/registry/four-state contracts, S3-002 and foundation/SQLite recovery/authenticated
+HTTP acceptance. One existing Starlette deprecation remains. The initial sandboxed run had
+seven temporary-folder permission setup errors; the same tests passed using an isolated
+task-owned folder without runtime/test changes. Documentation closeout passed **74 contract/link
+tests**, with the same existing warning and no skips. Ruff lint, format checking (**300 Python
+files**) and tracked/untracked whitespace checks passed. No runtime/test file changed.
+Recorded 6E.3 full regression/PostgreSQL/container acceptance remains applicable to unchanged
+runtime; implementation must run fresh targeted/full and relevant integration gates.
+
+Stop after preparation until the user approves the bundle and requests implementation.
+Independent review and publication require their own authorization; merge remains human-controlled.
 
 ## 6E.3 implementation authorization — 2026-09-30
 

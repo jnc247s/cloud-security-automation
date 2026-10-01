@@ -77,7 +77,7 @@ from tests.unit.database.factories import (
 
 pytestmark = pytest.mark.integration
 
-_CURRENT_REVISION = "20260924_0004"
+_CURRENT_REVISION = "20261001_0005"
 _PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"

@@ -7,6 +7,37 @@ not silently repaired by documentation work.
 
 ## Data and migration integrity
 
+### Unresolved regional relationship persistence — OPEN
+
+6F.1 acceptance testing on 2026-10-01 exposed an accepted-baseline discrepancy: the relationship
+domain and CloudTrail collector permit an unresolved regional S3 destination reference with no
+known owner or Region, but the database scope/Region constraint requires a Region for every
+regional target, including unresolved references. Persistence rolls back; real HTTP scan
+execution reports sanitized `SCAN_EXECUTION_FAILED`. This is not a LOG-002/003 decision
+dependency and must not be hidden by fabricating a Region or dropping retained relationships.
+The user separately approved the bounded repair. Local revision `20261001_0005` now permits
+null Regions only for unresolved references, retaining all existing complete-identity,
+provenance and immutable-history rules. Original migrations, collector and mapper are unchanged.
+This item remains OPEN at the accepted baseline until local 6F.1 acceptance/merge is complete.
+
+Before any authorized downgrade across `20261001_0005`, stop/quiesce writers, take and verify
+a restorable backup, and use the current Alembic environment. It checks compatibility before
+any DDL, taking PostgreSQL graph locks in parent-to-child order or a SQLite reserved writer lock.
+This read-only diagnostic returns only whether incompatible history exists:
+
+```sql
+SELECT EXISTS (
+    SELECT 1 FROM resource_relationship_observations
+    WHERE target_scope = 'regional' AND target_region IS NULL
+) AS incompatible_relationship_history;
+```
+
+If true, remain at this revision. Do not delete observations, invent identity fields or bypass
+the guard. Offline downgrade generation is blocked; SQLite constraint repair must run online.
+Compatible populated downgrades and re-upgrades preserve history and triggers. Production
+migration/rollback still requires explicit human authorization. See
+[6F.1 checkpoint](../controls/sprint-6f1-metadata.md#acceptance-blocker--2026-10-01).
+
 ### Guarded populated downgrade from `20260915_0003` — RESOLVED
 
 Revision `20260915_0003` adds the shared source-manifest, source-artifact/outcome, relationship,

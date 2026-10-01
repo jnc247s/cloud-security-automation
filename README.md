@@ -14,7 +14,13 @@ Sprints 0 through 5 are complete and merged. The
 expansion and retained limitations. Sprint 6 is `IN PROGRESS`: slices 6A through 6E are complete
 and merged. Slice 6E.3 added S3-004 through pull request 35; its independent review and
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36825207102)
-passed. Later Sprint 6 slices have not started. [ROADMAP.md](ROADMAP.md) is the only authoritative
+passed. Slice 6F.1 (LOG-002/003) has passed local implementation acceptance checks,
+including its explicitly approved [persistence repair](docs/controls/sprint-6f1-metadata.md).
+All 2,125 regression tests pass, including 171 PostgreSQL cases, with no skips; quality and
+container gates pass. Independent review passed with zero unresolved findings. The reviewed
+implementation is published in [pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37),
+which tracks GitHub CI; human merge acceptance remains pending and the slice is not accepted.
+6F.2, 6G and 6H have not started. [ROADMAP.md](ROADMAP.md) is the only authoritative
 progress source.
 
 The current implementation includes:
@@ -50,11 +56,13 @@ through explicit, versioned catalog/profile selection. The opt-in releases are c
 | `0.8.0` | `S3-001`, `S3-003` | Accepted |
 | `0.9.0` | `S3-002` | Accepted |
 | `0.10.0` | `S3-004` | Accepted |
+| `0.11.0` | `LOG-002`, `LOG-003` | PR #37 open; local checks and independent review passed; not merged |
 
 See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
 contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not
-decide `S3-002`. `LOG-002` through `LOG-004` and `GOV-001` are not implemented; existing
-CloudTrail facts do not register those controls or change `LOG-001`.
+decide `S3-002`. LOG-002/003 require explicit opt-in selection and are not yet accepted;
+see [6F.1 metadata](docs/controls/sprint-6f1-metadata.md). `LOG-004` and `GOV-001` remain
+unimplemented. Existing `LOG-001` behavior is unchanged.
 
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
@@ -273,6 +281,9 @@ loads that persisted definition instead of rebuilding it from the deployment's c
 environment. This roll-forward requires no database migration because the existing schema already
 stores complete legacy profile content and scan provenance. The additive 6A schema extension
 requires migration `20260924_0004`.
+The local 6F.1 release also adds `20261001_0005` for unresolved relationship persistence;
+apply current migrations only to an explicitly authorized environment. See
+[persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--open).
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
 `0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains

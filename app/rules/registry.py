@@ -120,4 +120,12 @@ def resolve_catalog(catalog_id: str, version: str):
         _, registry = resolve_catalog(catalog_id, "0.9.0")
         registry.register(S3SensitiveKMSRule())
         return build_sensitive_kms_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.11.0"):
+        from app.assessment.cloudtrail_controls import build_cloudtrail_catalog
+        from app.rules.cloudtrail import CloudTrailRule
+
+        _, registry = resolve_catalog(catalog_id, "0.10.0")
+        for control_id in ("LOG-002", "LOG-003"):
+            registry.register(CloudTrailRule(control_id))
+        return build_cloudtrail_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

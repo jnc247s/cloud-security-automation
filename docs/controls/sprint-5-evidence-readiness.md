@@ -3,7 +3,8 @@
 Status: canonical evidence-readiness plan with accepted 5A through 5F evidence producers
 reflected. The bounded 5G closure was accepted and merged in pull request 25 at
 `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`. Accepted Sprint 6 consumers through
-6E are identified below; logging and governance rules remain unimplemented.
+6E are identified below. Local 6F.1 LOG-002/003 implementation is pending acceptance;
+LOG-004 and governance remain unimplemented.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -47,7 +48,10 @@ contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness b
 domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D Access
 Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source graph, and accepted
 5F adds the CloudTrail source graph. Accepted opt-in Sprint 6 controls through 6E consume only
-their declared, version-bound source proofs; 6F logging and 6G governance remain unimplemented.
+their declared, version-bound source proofs. Local 6F.1 LOG-002/003 implementation is in progress
+in opt-in `0.11.0`, pending acceptance with an approved local
+[persistence repair](sprint-6f1-metadata.md).
+LOG-004 and 6G governance remain unimplemented.
 
 ## IAM controls
 
@@ -180,8 +184,8 @@ separately versioned evaluators and policy.
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `LOG-001` | `ListTrails`, `GetTrail`, `GetTrailStatus`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus` | Account discovery with per-trail home-Region enrichment | trail ARN/home Region and explicit `is_logging`; complete collection-account trail coverage set (not a persisted relationship) | Incomplete enumeration/status -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
-| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; Sprint 6 rule pending / `CURRENT` |
-| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; Sprint 6 rule pending / `CURRENT` |
+| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 local opt-in 0.11.0 rule implemented, acceptance pending / `CURRENT` |
+| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 local opt-in 0.11.0 rule implemented, acceptance pending / `CURRENT` |
 | `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E direct evidence + 5F relationship evidence accepted; Sprint 6 composed assessments/rule pending / `CURRENT` |
 
 “Account to trails” in this matrix means the complete discovery set bound to the verified
@@ -450,8 +454,8 @@ prerequisites is now `CURRENT`. That evidence-readiness result did not itself re
 accepted Sprint 6 consumers are identified in the rows above.
 
 Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
-Sprint 6 is `IN PROGRESS`: slices 6A through 6E are accepted; LOG-002 through LOG-004 and
-GOV-001 remain unimplemented.
+Sprint 6 is `IN PROGRESS`: slices 6A through 6E are accepted; local 6F.1 LOG-002/003
+implementation is not accepted. LOG-004 and GOV-001 remain unimplemented.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

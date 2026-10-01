@@ -53,7 +53,9 @@ class ExecutionContract(BaseModel):
     """The only 6A strategy requires every declared source and edge to be complete."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    schema_version: Literal["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0"]
+    schema_version: Literal[
+        "1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0"
+    ]
     target_kind: Literal["global_account", "regional_account", "resources"]
     target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
@@ -69,12 +71,36 @@ class ExecutionContract(BaseModel):
         "s3_transport_v1",
         "s3_exposure_v1",
         "s3_sensitive_kms_v1",
+        "cloudtrail_management_coverage_v1",
+        "cloudtrail_integrity_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        logging_strategies = {"cloudtrail_management_coverage_v1", "cloudtrail_integrity_v1"}
+        if (self.schema_version == "1.8.0") != (self.validation_strategy in logging_strategies):
+            raise ValueError("CloudTrail proofs require execution schema 1.8")
+        if self.schema_version == "1.8.0":
+            from app.assessment.cloudtrail_evidence import CLOUDTRAIL_SOURCES
+
+            coverage = self.validation_strategy == "cloudtrail_management_coverage_v1"
+            if (
+                self.account_service != "cloudtrail"
+                or self.target_kind != ("global_account" if coverage else "resources")
+                or self.resource_families
+                != (
+                    ()
+                    if coverage
+                    else (ResourceFamily(service="cloudtrail", resource_type="cloudtrail_trail"),)
+                )
+                or self.required_sources != CLOUDTRAIL_SOURCES[self.validation_strategy]
+                or self.required_relationships
+            ):
+                raise ValueError(
+                    "execution schema 1.8 is restricted to CloudTrail coverage/integrity"
+                )
         if self.schema_version == "1.7.0":
             from app.assessment.s3_sensitive_kms_evidence import SENSITIVE_KMS_SOURCES
 

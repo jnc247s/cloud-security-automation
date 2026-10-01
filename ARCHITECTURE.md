@@ -4,7 +4,8 @@ This document describes the accepted Sprint 0--5 implementation and accepted Spr
 through 6E. The accepted baseline is `main` commit
 `c861713a665669da09d5bc7b5b282b04c16cac1d`, which merged S3-004 in pull request #35 after the
 Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
-control slices. Sprint 6 remains in progress because 6F through 6H have not started. All Sprint 6
+control slices. Local 6F.1 implementation is in progress and not accepted; 6F.2 through 6H
+have not started. All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
 ## Sprint 6A assessment integration
@@ -35,6 +36,19 @@ and [approved control metadata](docs/controls/sprint-6b1-metadata.md). Source su
 weaken whole-scan finding-resolution requirements; framework metadata never controls results.
 
 ## System context
+
+Local 6F.1 adds LOG-002/003 in opt-in catalog `0.11.0`, closed execution/proof `1.8.0`.
+Shared pure evidence/result validation binds complete admitted trail discovery, exact owner/home
+Region and the named required sources; coverage is account-scoped, integrity per-trail.
+New-schema projection/proof comparisons preserve exact JSON scalar types, including booleans;
+historical schema comparison behavior is unchanged.
+LOG-001, collectors, permissions and generic APIs are unchanged. Acceptance exposed a
+pre-existing mismatch between allowed unresolved regional relationships and the persisted
+scope/Region constraint. The separately authorized additive migration `20261001_0005`
+allows unknown Regions only for unresolved references, preserving complete-identity rules,
+original triggers and retained facts. Pre-DDL downgrade guards serialize writers and block
+incompatible history. Earlier migrations and collector/API behavior are unchanged; see
+[6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
 
 Approved 6E.3 adds S3-004 in opt-in catalog `0.10.0`, closed proof `1.7.0`.
 The unchanged classifier runs before conditional encryption/KMS requirements. Exact referenced

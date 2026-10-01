@@ -6,6 +6,19 @@ Last reviewed: 2026-10-01
 
 ## Scope and security objectives
 
+Local 6F.1 implementation addresses fabricated trail coverage, incomplete discovery treated
+as empty, cross-trail selector unions and substituted identity/source proofs. Shared engine/
+persistence recomputation is under acceptance testing, not accepted. LOG-003 does not mistake
+an enabled setting for verified digests. Strict new-schema projection/proof type comparisons
+reject boolean/numeric substitution even when an artifact's digest is recomputed; historical
+schema behavior remains unchanged. The new acceptance path exposes a pre-existing
+availability/integrity mismatch for unresolved regional destination references. The separately
+approved migration `20261001_0005` retains unknown Regions only for unresolved references;
+complete identities, provenance and immutability remain strict. Writer-serialized pre-DDL
+downgrade checks prevent newly representable history from being lost or misrepresented.
+No source proof can treat an unresolved reference as a resolved endpoint. See
+[6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
+
 6E.3 addresses false-safe sensitive-bucket classification and unresolved/substituted KMS
 references in opt-in `0.10.0`. Shared engine/persistence recomputation binds classifier
 version/checksum, exact owner/home Region, matched inputs and same-scan key/source/edge proof.
@@ -41,7 +54,8 @@ security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
 production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
 implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
-consume the 5E facts, while 6F logging controls have not started. The 5F change adds no AWS write,
+consume the 5E facts, while local 6F.1 implementation is in progress and not accepted.
+6F.2 is unstarted. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
 
