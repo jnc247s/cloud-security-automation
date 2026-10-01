@@ -14,6 +14,13 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
+Opt-in catalog `0.10.0` adds S3-004 through these same generic authenticated interfaces,
+without new routes or fields. Decisive evidence binds classifier identity/version/checksum,
+classification reason/matches, profile checksum and same-scan bucket/key/source/edge proofs.
+N/A retains policy via immutable scan/profile history, not a new decisive evidence artifact.
+ADMIN can scan; ANALYST remains denied. No default or role change.
+See [6E.3 metadata](controls/sprint-6e3-metadata.md).
+
 Opt-in catalog `0.9.0` adds S3-002 through the same authenticated generic interfaces, without
 new routes or response fields. Its evidence payload includes exact source citations, bucket
 identity, channel outcomes, effective BPA and historical approval/profile checksums. It does

@@ -1,6 +1,11 @@
 # S3-004 sensitive-bucket classifier contract
 
-Status: approved preflight contract; S3-004 remains reserved and is not implemented
+Status: approved classifier contract, unchanged in the opt-in S3-004 evaluator
+
+[6E.3 metadata](sprint-6e3-metadata.md) now owns approved evaluator policy and release details.
+Its implementation reuses accepted 6A profile/policy storage, not a new migration. The original
+preflight's future-tense integration and undecided evaluator statements below are historical;
+they do not override the approved 6E.3 decision table. [ROADMAP.md](../../ROADMAP.md) owns status.
 
 This document is the canonical definition of the classifier that determines whether the future
 `S3-004` control applies to an S3 bucket. The executable contract mirror is

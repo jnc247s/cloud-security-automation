@@ -1,8 +1,67 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6D and 6E.1 COMPLETE and merged. 6E.2 is IN PROGRESS under the
-prepared policy/metadata bundle. 6E.3's prepared policy bundle is approved, but implementation
-awaits 6E.2 merge acceptance; later slices remain unstarted.
+Plan state: 6A through 6D and 6E.1/6E.2 COMPLETE and merged. 6E.3 is IN PROGRESS under
+the approved classifier/KMS bundle; later slices remain unstarted.
+
+## 6E.3 implementation authorization — 2026-09-30
+
+The user requested implementation of 6E.3. PR #34 merged 6E.2 at
+`3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`; [merged-main CI passed](https://github.com/jnc247s/cloud-security-automation/actions/runs/36776996492).
+This supersedes the pending-merge notes below. The prepared policy bundle and decision table
+are approved by the 2026-09-30 checkpoint below. Implement S3-004 only in opt-in `0.10.0`,
+closed proof `1.7.0`, evaluator `1.0.0`, HIGH severity and sourced reporting subset
+`2.0+subset.9` / PR.DS-01. Preserve the classifier schema, historical/default catalogs,
+collectors, permissions, migrations, generic API and authentication.
+
+A clean worktree on `codex/sprint-6e3-sensitive-bucket-kms` starts at the merged SHA; the
+uncommitted repository skill remains untouched in the original checkout. Migration head stays
+`20260924_0004`. Run focused/full regression, disposable PostgreSQL, HTTP/history/integrity,
+Ruff, documentation/container gates and required independent review before acceptance.
+No merge, live AWS, remediation or later-slice implementation is authorized.
+
+### 6E.3 implementation checkpoint — 2026-09-30
+
+Implemented the approved S3-004-only release; [metadata](../../controls/sprint-6e3-metadata.md)
+records policy, truth table, provenance and limits. Catalog `0.10.0` / proof `1.7.0` reuse
+the unchanged classifier and shared engine/persistence validation. Explicit referenced keys
+require their own DescribeKey/source and resolved same-scan relationship, exact owner and
+bucket home Region. The implicit AWS-managed case creates no key/edge. N/A/insufficient retain
+the established artifact convention and exact immutable classifier/profile history.
+
+The existing acceptance runner passed **156 focused checks** (43 rule, 20 SQLite
+persistence/HTTP, 20 PostgreSQL persistence/HTTP, 73 documentation/contract checks) and
+**1,957 full regression tests**, including all **122 PostgreSQL integration cases**, with
+no skips. The full run reported 20 existing dependency deprecation warnings: one Starlette
+TestClient warning and 19 SQLite datetime-adapter warnings. Ruff lint passed; formatting
+passed for 299 files. Markdown/local links, whitespace, Compose validation and the API image
+build passed. Credential/private-key pattern inspection found no matches in changed files.
+The isolated test container was removed; no operator database or live AWS account was used.
+
+Initial focused failures exposed fixture-shape/digest construction mistakes and stale
+preflight wording, corrected without weakening accepted assertions or production boundaries.
+The successful results above apply after those corrections. Earlier catalog/framework
+content, collectors, AWS permissions, API/auth contracts and migration head `20260924_0004`
+remain unchanged.
+
+The single authorized independent read-only reviewer examined every tracked diff and untracked
+file. Initial result: **0 CRITICAL, 0 HIGH, 0 MEDIUM and 2 LOW** findings, both documentation
+governance inconsistencies. The authoritative NIST document now records subset `2.0+subset.9`,
+its exact manifest hash/source and S3-004 -> PR.DS-01 scope. Architecture no longer describes
+S3-004 as pre-implementation or uninvoked, and the threat-model review date is current. The same
+reviewer verified both corrections and returned **REVIEW_PASS with zero unresolved findings**.
+No runtime or test file changed after the successful validation above.
+
+Post-review documentation closeout passed all **73 contract/Markdown-link tests**, Ruff lint,
+Ruff formatting (**299 Python files**) and whitespace checks. The run reported the existing
+Starlette dependency warning plus a local pytest-cache warning; neither affected assertions.
+Because the verified corrections changed documentation only, the recorded 1,957-test full run
+and 122 PostgreSQL cases remain applicable under the validation policy.
+
+The implementation is local and uncommitted on `codex/sprint-6e3-sensitive-bucket-kms`
+in `.tmp/sprint-6e3`, based on accepted `3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`.
+The original checkout's untracked repository skill was preserved. No commit, push, PR or
+merge has been made for 6E.3. Publication/final-head CI and human merge acceptance remain gates;
+this checkpoint does not mark 6E.3 COMPLETE or start 6F--6H.
 
 ## 6E.2 closeout and 6E.3 policy approval — 2026-09-30
 

@@ -1,5 +1,12 @@
 # Sprint 6A assessment foundation
 
+6E.3 adds S3-004 in opt-in `0.10.0`, closed `s3_sensitive_kms_v1` proof `1.7.0`.
+An explicit new schema-2 profile supplies the unchanged immutable sensitive-bucket classifier
+and KMS requirement. No default policy is inferred or installed. Classification precedes
+conditional source/key requirements; engine and persistence share applicability and result
+computation. Existing exact historical recovery and policy-version conflict checks apply,
+including N/A. See [6E.3 metadata and validation](controls/sprint-6e3-metadata.md).
+
 6E.2 adds S3-002 in explicit catalog `0.9.0` with closed `s3_exposure_v1` schema `1.6.0`.
 The existing schema-2 profile must contain an explicit immutable `s3_exposure_approvals`
 artifact, including when no exemptions are allowed. No deployment default changes. Exact

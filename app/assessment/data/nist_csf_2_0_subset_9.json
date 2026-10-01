@@ -1,0 +1,37 @@
+{
+  "framework": {
+    "framework_id": "nist-csf",
+    "name": "NIST Cybersecurity Framework",
+    "version": "2.0+subset.9",
+    "source": "https://doi.org/10.6028/NIST.CSWP.29"
+  },
+  "references": [
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.9",
+      "reference_id": "PR",
+      "level": "function",
+      "title": "Protect",
+      "description": "Safeguards to manage the organization’s cybersecurity risks are used",
+      "parent_reference_id": null
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.9",
+      "reference_id": "PR.DS",
+      "level": "category",
+      "title": "Data Security",
+      "description": "Data are managed consistent with the organization’s risk strategy to protect the confidentiality, integrity, and availability of information",
+      "parent_reference_id": "PR"
+    },
+    {
+      "framework_id": "nist-csf",
+      "framework_version": "2.0+subset.9",
+      "reference_id": "PR.DS-01",
+      "level": "subcategory",
+      "title": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "description": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "parent_reference_id": "PR.DS"
+    }
+  ]
+}

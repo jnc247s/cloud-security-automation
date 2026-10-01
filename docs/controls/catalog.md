@@ -32,7 +32,9 @@ opt-in catalog `0.6.0`. Approved 6D.2 adds NET-006 in opt-in catalog `0.7.0`.
 Approved 6E.1 adds S3-001/003 in opt-in `0.8.0`, with the exact decision tables and metadata
 in [the authoritative 6E.1 contract](sprint-6e1-metadata.md). Approved 6E.2 adds S3-002 in
 opt-in `0.9.0`; [6E.2 metadata](sprint-6e2-metadata.md) records HIGH severity, exact approvals,
-proof version and sourced reporting metadata. Other planned controls stay unregistered.
+proof version and sourced reporting metadata. Approved 6E.3 adds S3-004 in opt-in `0.10.0`;
+[6E.3 metadata](sprint-6e3-metadata.md) records exact classifier/default-KMS semantics and
+reporting metadata. Other planned controls stay unregistered.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -50,9 +52,9 @@ historical findings and integrations cannot acquire conflicting meanings:
 | Control ID | Permanent semantic meaning | Current state |
 | --- | --- | --- |
 | `S3-001` | Required Block Public Access configuration missing | Implemented in opt-in 0.8.0 |
-| `S3-002` | Unapproved public/external bucket exposure | Implemented in opt-in 0.9.0; acceptance pending |
+| `S3-002` | Unapproved public/external bucket exposure | Implemented in opt-in 0.9.0 |
 | `S3-003` | Secure transport not enforced | Implemented in opt-in 0.8.0 |
-| `S3-004` | Sensitive-data KMS requirement not met | Reserved; not implemented |
+| `S3-004` | Sensitive-data KMS requirement not met | Implemented in opt-in 0.10.0; acceptance pending |
 | `S3-900` | Legacy explicit default-encryption configuration prototype | Implemented, non-core |
 
 Never reuse a reserved ID for another meaning. In particular, the obsolete prototype meaning
@@ -69,14 +71,12 @@ now approved in two focused contracts:
   reconstruction requirements.
 
 These contracts do not change default catalog `0.2.1`, add an AWS call, or alter the five
-accepted Sprint 0--4 controls. S3-002 is executable only through opt-in `0.9.0`; S3-004 remains
-a planned contract, not an executable control.
-The S3-004 approval is specifically the evidence-facing classifier prerequisite. It does not
-decide whether an AWS-managed or only a customer-managed KMS key satisfies organization policy,
-or which technical result applies when `restricted_data_requires_kms` is false. That boolean
-never classifies a bucket by itself. Sprint 6 must approve and version those result semantics
-before registering S3-004; inventing them in this preflight would change an organization-policy
-contract outside the authorized scope.
+accepted Sprint 0--4 controls. S3-002 is introduced in opt-in `0.9.0`; S3-004 in `0.10.0`.
+The original classifier preflight did not decide whether an AWS-managed or only a customer-managed KMS key
+satisfies organization policy. Approved
+[6E.3 metadata](sprint-6e3-metadata.md) now accepts both AWS-managed and customer-managed KMS
+and defines `restricted_data_requires_kms=false` as N/A only after a decisive classification.
+That boolean never classifies a bucket by itself.
 
 ## Planned-contract interpretation
 

@@ -9,6 +9,14 @@ accepted `main` baseline `ef4543d439ed3a33064c6bcf383db201a94d2881`, which merge
 
 ## Authentication
 
+S3-004 in opt-in `0.10.0` evaluates only classified sensitive buckets' default KMS
+configuration. Missing classifier inputs or required key evidence cannot prove PASS. Exact
+same-scan key/source/edge and classifier checks prevent substituted owners or policy versions;
+both AWS-managed and customer-managed KMS are approved, not customer-managed-only.
+No key access/availability, object-encryption or compliance claim is made. No AWS write,
+credential, API/auth or permission change; real classifier/policy files remain outside Git.
+See [6E.3 metadata](docs/controls/sprint-6e3-metadata.md).
+
 S3-002 in opt-in `0.9.0` evaluates configured policy/ACL exposure against explicit immutable
 bucket-scoped approvals; it is not a complete effective-permissions simulation. Same-owner
 principals are not external, uncertainty cannot become PASS, and missing approvals cannot
