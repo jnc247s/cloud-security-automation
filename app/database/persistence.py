@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
+from app.assessment.composition import assessment_order, validated_context
 from app.assessment.controls import ControlCatalog as CatalogInput
 from app.assessment.evidence_reader import AssessmentEvidenceReader
 from app.assessment.execution import account_target
@@ -236,6 +237,17 @@ def _validate_bundle(
     seen: set[tuple[str, UUID]] = set()
     expected_inventory_sha256 = inventory_sha256(snapshot)
     expected_catalog_sha256 = control_catalog_sha256(catalog)
+    context = None
+    try:
+        assessment_order(catalog, profile.enabled_controls)
+        if any(
+            catalog.get(control_id).technical.execution_contract is not None
+            and catalog.get(control_id).technical.execution_contract.assessment_dependencies
+            for control_id in profile.enabled_controls
+        ):
+            context = validated_context(evidence_reader, profile, catalog, assessments)
+    except (ValueError, KeyError) as error:
+        raise ScanPersistenceError("assessment prerequisite is invalid") from error
     for candidate in assessments:
         if candidate.scan_id != snapshot.scan_id:
             raise ScanPersistenceError("assessment belongs to another scan")
@@ -255,7 +267,9 @@ def _validate_bundle(
         execution = contract.technical.execution_contract
         if execution is not None:
             try:
-                evidence_reader.validate_candidate(execution, candidate, profile=profile)
+                evidence_reader.validate_candidate(
+                    execution, candidate, profile=profile, context=context
+                )
             except ValueError as error:
                 raise ScanPersistenceError("assessment source evidence is invalid") from error
         key = (candidate.control_id, candidate.resource_snapshot_id)

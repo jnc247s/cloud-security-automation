@@ -227,7 +227,7 @@ def test_versioned_registration_preserves_prior_definitions_and_defaults():
     default, _ = resolve_catalog(old.catalog_id, "0.2.1")
     assert len(default.controls) == 5 and "LOG-004" not in {c.control_id for c in new.controls}
     with pytest.raises(ValueError, match="unsupported"):
-        resolve_catalog(old.catalog_id, "0.12.0")
+        resolve_catalog(old.catalog_id, "0.99.0")
     with pytest.raises(ValueError, match="explicit"):
         CloudTrailRule("LOG-002").evaluate(logging_bundle()["snapshot"])
 

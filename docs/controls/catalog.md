@@ -34,9 +34,10 @@ in [the authoritative 6E.1 contract](sprint-6e1-metadata.md). Approved 6E.2 adds
 opt-in `0.9.0`; [6E.2 metadata](sprint-6e2-metadata.md) records HIGH severity, exact approvals,
 proof version and sourced reporting metadata. Approved 6E.3 adds S3-004 in opt-in `0.10.0`;
 [6E.3 metadata](sprint-6e3-metadata.md) records exact classifier/default-KMS semantics and
-reporting metadata. Local 6F.1 registers LOG-002/003 only in opt-in `0.11.0`, pending
-acceptance, with a separately approved bounded persistence repair; see
-[6F.1 metadata](sprint-6f1-metadata.md). Other planned controls stay unregistered.
+reporting metadata. Accepted 6F.1 registers LOG-002/003 only in opt-in `0.11.0`, with
+a separately approved bounded persistence repair; see
+[6F.1 metadata](sprint-6f1-metadata.md). Local 6F.2 registers LOG-004 in opt-in `0.12.0`,
+pending acceptance; see [6F.2 metadata](sprint-6f2-metadata.md). GOV-001 remains unregistered.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -105,8 +106,8 @@ Sprint 6 controls.
 
 Accepted releases through 6E have approved severity, guidance and independently versioned NIST
 mapping metadata. The approved local 6F.1 bundle gives LOG-002 HIGH / PR.PS-04 and LOG-003
-MEDIUM / PR.DS-01, subset `2.0+subset.10`, pending acceptance. LOG-004 and GOV-001 still require
-approved metadata before registration. Severity is project policy and must not be inferred from NIST; mappings remain
+MEDIUM / PR.DS-01, subset `2.0+subset.10`, accepted. LOG-004 and GOV-001 have approved
+metadata for their authorized upcoming slices. Severity is project policy and must not be inferred from NIST; mappings remain
 reporting context and never determine technical results.
 
 ## Canonical Sprint 6 contracts
@@ -423,7 +424,7 @@ reporting context and never determine technical results.
 
 ### `LOG-002` — Required multi-Region CloudTrail management-event coverage is missing
 
-- **Status:** local implementation in opt-in `0.11.0`; acceptance incomplete, default unchanged.
+- **Status:** accepted in opt-in `0.11.0`; default unchanged.
 - **Scope/resource type:** AWS account, using all relevant trails without an ambiguous "primary
   trail" concept.
 - **Required evidence:** complete trail identity/home Region, `IsMultiRegionTrail`,
@@ -500,7 +501,7 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `LOG-003` — CloudTrail log-file integrity validation is disabled
 
-- **Status:** local implementation in opt-in `0.11.0`; acceptance incomplete, default unchanged.
+- **Status:** accepted in opt-in `0.11.0`; default unchanged.
 - **Scope/resource type:** CloudTrail trail.
 - **Required evidence:** stable trail identity and explicit `LogFileValidationEnabled`, with
   common trail/home-Region provenance.
@@ -517,7 +518,9 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `LOG-004` — CloudTrail log storage has unapproved public/external exposure
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** local implementation in opt-in `0.12.0`; acceptance pending, default unchanged.
+- **Approved metadata:** HIGH/logging, evaluator `1.0.0`, closed proof `1.9.0`,
+  PR.AA-05 in subset `2.0+subset.11`; [6F.2 metadata](sprint-6f2-metadata.md).
 - **Scope/resource type:** CloudTrail trail joined to its S3 destination.
 - **Required evidence:** trail identity and S3 bucket name; resolved stable bucket identity;
   complete canonical S3 public/external-exposure evidence; relationship provenance; and complete
@@ -531,7 +534,9 @@ enumeration is complete and every relevant trail is deterministically non-qualif
   exact persisted destination bucket snapshot is `PASS`.
 - **FAIL:** the relationship is complete and that exact canonical `S3-002` assessment is `FAIL`.
 - **NOT_APPLICABLE:** never for a trail; a missing destination is uncertainty, not
-  non-applicability.
+  non-applicability. Complete empty admitted trail discovery has an explicit account fallback
+  NOT_APPLICABLE, with no invented destination/dependency. This clarification was approved
+  with the remaining Sprint 6 bundle on 2026-10-01.
 - **INSUFFICIENT_EVIDENCE:** destination identity or relationship resolution is unavailable, or
   the corresponding canonical S3-002 assessment is unavailable or `INSUFFICIENT_EVIDENCE`.
 - **Limitations:** the rule composes the S3-002 result and does not independently evaluate or

@@ -1,10 +1,13 @@
 # Sprint 6F — CloudTrail control implementation preparation
 
-Current follow-up: the user subsequently approved implementation of the 6F.1 bundle only.
+Current follow-up: 6F.1 is accepted through PR #37 with green merged-main CI. The user
+subsequently approved the remaining Sprint 6 bundle, including 6F.2 metadata, the bounded
+composition seam and complete-empty account N/A clarification. 6F.2 is IN PROGRESS; see
+[6F.2 metadata](sprint-6f2-metadata.md).
 The [active plan](../exec-plans/active/sprint-6.md) records authorization and the
-[6F.1 metadata](sprint-6f1-metadata.md) records the local implementation and acceptance blocker.
-The original analysis and proposed 6F.2 decisions below are preserved; LOG-004 and its
-empty-population clarification remain unapproved. The user subsequently approved the narrowly
+[6F.1 metadata](sprint-6f1-metadata.md) records the accepted implementation and repaired blocker.
+The original analysis and proposed decisions below are preserved as historical predictions.
+The user separately approved the narrowly
 scoped repair of the discovered persistence constraint mismatch and resumption of 6F.1 checks.
 The additive `20261001_0005` repair is the recorded implemented difference from the original
 no-migration prediction below; collectors, APIs and permission scope remain unchanged.

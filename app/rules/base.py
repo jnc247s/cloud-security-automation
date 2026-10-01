@@ -72,6 +72,10 @@ class SecurityRule(ABC):
             for finding in self.evaluate(snapshot)
         )
 
+    def assess_with_context(self, snapshot, profile, *, context=None):
+        """Internal additive seam; legacy rules retain their existing assess interface."""
+        return self.assess(snapshot, profile)
+
     def assessment_for_resource(
         self,
         snapshot: InventorySnapshot,

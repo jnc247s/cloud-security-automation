@@ -1,9 +1,198 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6E COMPLETE and merged. 6F.1 is authorized and IN PROGRESS;
-6F.2, 6G and 6H remain unstarted.
+Plan state: 6A through 6F.1 COMPLETE and merged. 6F.2 is authorized and IN PROGRESS;
+6G and 6H are authorized but unstarted. Sprint 6 remains IN PROGRESS.
+
+## Remaining Sprint 6 authorization and 6F.1 acceptance — 2026-10-01
+
+The user approved the proposed policy bundle and persistent Goal, including bounded conditional
+merge authority. This supersedes earlier no-automatic-merge restrictions only for PR #37 and the
+remaining Sprint 6-only implementation/closeout PRs. The primary agent is the sole writer.
+One consolidated read-only independent reviewer per remaining slice is authorized, including
+safe diagnostics and correction rechecks by that same reviewer; no reviewer edits or delegation.
+Scoped fixes, documentation, logical commits, normal pushes and PRs are authorized.
+
+Sequence: accept 6F.1 and its merged-main CI, then 6F.2, 6G and 6H, each on a scoped `codex/`
+branch from clean current accepted main. Do not advance until the prior slice's acceptance and
+merged-main CI pass. Every merge requires the exact final reviewed HEAD, all mandatory local
+gates and current CI PASS, independent REVIEW_PASS with zero unresolved newly introduced
+findings, current owner documentation and no outstanding human-review requirement. Recheck
+head/base and match the head at merge; no admin override, force push or protection changes.
+Main currently has no server-enforced protections, so all project gates are enforced manually.
+
+Approved 6F.2: LOG-004 composes only the validated same-scan/profile canonical S3-002 result for
+the exact destination bucket snapshot. All four required CloudTrail/S3 collectors and exact
+source/relationship proofs must be complete for an observed trail. PASS/FAIL mirrors the exact
+dependency; missing/unresolved/ambiguous destination, absent/disabled/nondecisive dependency or
+incomplete required evidence is INSUFFICIENT_EVIDENCE. Complete empty admitted trail discovery
+has an account NOT_APPLICABLE fallback, never N/A for an observed trail. Retain the explicit
+initial no-exemption approval artifact; never overwrite operator/deployed approval content or
+implicitly enable S3-002. HIGH/logging, evaluator `1.0.0`, catalog `0.12.0`, closed execution/proof
+`1.9.0`, strategy `cloudtrail_destination_exposure_v1`, NIST subset `2.0+subset.11`, PR.AA-05.
+The bounded internal dependency/context seam is approved; no duplicate exposure evaluator,
+historical-result lookup, general workflow engine, collector or migration is planned for 6F.2.
+
+Approved 6G: GOV-001 requires exact case-sensitive `Owner` and `Environment`, each a string with
+at least one non-whitespace character; preserve original case/whitespace. Govern all 11 canonical
+selectors: `ec2_instance`, `ebs_volume`, `vpc`, `subnet`, `security_group`, `vpc_flow_log`,
+`s3_bucket`, `iam_user`, `iam_role`, `iam_customer_managed_policy`, `cloudtrail_trail`.
+Complete missing/unusable tags FAIL; missing/incomplete/malformed required evidence is
+insufficient; ungoverned types/proven empty governed populations are N/A. `aws:` keys are
+ineligible. No ownership truth, authorization or CMDB-consistency claim. MEDIUM, new `governance`
+category, evaluator `1.0.0`, catalog `0.13.0`, closed proof `1.10.0`, NIST subset `2.0+subset.12`,
+ID.AM-02 with limited inventory-context rationale. Explicit approval covers the additive public
+category enum and narrow new migration after `20261001_0005`, preserving old values, history,
+constraints, triggers, caller transaction ownership and pre-DDL lossy-downgrade blocking.
+Use the existing schema-2 profile fields; no unrelated migration or operator deployment change.
+
+Approved 6H: acceptance for all 25 core controls plus supported legacy S3-900, historical
+catalog/profile and pending recovery, proofs/history, finding/exception behavior and actual
+authenticated generic APIs. Default `0.2.1` stays unchanged and additions opt-in. Update README
+and owners, archive this plan preserving its predictions and implemented differences, mark
+Sprint 6 COMPLETE only after acceptance/merges, and promote Sprint 7 NEXT without implementing it.
+Accepted baseline limitations remain documented and outside this work.
+
+Targeted tests precede full regression with disposable PostgreSQL and no unjustified skips;
+real authenticated HTTP keeps only AWS offline. Ruff, format, docs/links, whitespace and relevant
+Compose/image gates remain mandatory. Reuse unchanged validation only while applicable; rerun
+invalidated gates. Record tested HEAD, exact results, review, CI and next action at checkpoints.
+Stop/report for conflicting requirements, new authority or unavailable safe validation; do not
+weaken checks. No production/live AWS changes, deployment, secrets, destructive cleanup,
+unrelated work, broad permission changes or later-sprint implementation is authorized.
+
+PR #37 merged reviewed final head `2879ea8ae25dd00bd7229976fea5a65f2b48f3c7` into main at
+`3a053ff396a2c112aa254842cb25730fe3879ecc`, under that conditional approval. Its unchanged local
+274 focused / 2,125 full checks (171 PostgreSQL, no skips), quality/container gates and independent
+REVIEW_PASS remain applicable. Both final-head CI runs passed before merge. The
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
+passed 2,125 tests (20 existing warnings, no skips), lint, format and image build at the exact
+merge SHA. 6F.1 is COMPLETE; migration head is `20261001_0005`.
+
+6F.2 branch `codex/sprint-6f2-cloudtrail-destination-exposure` starts from that clean accepted
+main in the reused closeout worktree. Original 6E.3 worktree and unrelated parent `.agents/`
+skill files remain preserved and excluded. No 6G/6H implementation has begun.
+
+## 6F.2 publication checkpoint — 2026-10-01
+
+Reviewed implementation committed as `28b9bb4af17577993951761e7db73c64430fa765`
+(`feat: add exact CloudTrail destination exposure composition (6F.2)`) and normally pushed on
+`codex/sprint-6f2-cloudtrail-destination-exposure`. Exactly 35 scoped files were committed;
+unrelated parent `.agents/` files and original 6E.3 worktree were preserved. The working tree
+was clean before this documentation-only publication record.
+
+[Pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38) is OPEN against
+accepted base `3a053ff396a2c112aa254842cb25730fe3879ecc`. Full local gates and independent
+REVIEW_PASS from the correction record remain applicable: runtime/tests are unchanged.
+Initial push/PR CI is running, not yet accepted. This publication record must be normally
+committed/pushed and checked by the same reviewer; exact final-head CI must pass before any
+conditional merge. Recheck PR head/base, current checks/reviews and mergeability; no admin
+bypass or force-push. Merged-main CI must pass before 6G. 6F.2 remains IN PROGRESS; 6G/6H
+are authorized but unstarted, and no later-sprint implementation or production operation occurred.
+
+## 6F.2 review correction checkpoint — 2026-10-01
+
+The primary implemented both requested corrections without expanding scope. An offline fixture
+collects two real S3 buckets with mixed PASS/FAIL and three trails (distinct and shared bucket,
+cross-Region), then checks exact per-trail dependency snapshot/evidence IDs and digests under
+reversed registry/resource/candidate order. SQLite and disposable PostgreSQL acceptance share
+the same persistence checks; owner/Region substitutions must reject the entire bundle before
+SQL, and retained assessment proofs must exactly match the validated inputs.
+
+Composition now seals only the revalidated reader's private resource JSON before binding its
+inventory digest once. Existing graph payloads are already immutable. Original caller data and
+legacy readers are unchanged. Tests retain scalar-type, profile, inventory substitution and
+deep nested mutation guards. Deterministic operation-count tests require two composition hashes
+for engine assessment at 1/2/4/8 trails (one rule reader, one validation reader) and one for
+persistence, rather than repeated per-trail inventory hashing.
+
+After correcting test-fixture lookup/Region selection, the targeted command
+`python -m pytest tests/unit/rules/test_cloudtrail_destination.py tests/unit/database/test_cloudtrail_destination.py -q`
+passed 56 tests (one existing FastAPI warning, no skips). Fresh full `scripts.validate` with the
+same focused paths recorded below completed with exit 0: **355 focused checks**, **2,212 full
+regression tests**, including all **201 PostgreSQL cases**, no skips and 20 existing regression
+warnings. Ruff, formatting (322 Python files), documentation contracts, whitespace, Compose and
+image build passed. Its uniquely named disposable database was removed; user databases and live
+AWS were untouched. Corrected implementation fingerprint (same 19-path method below):
+`a9d4f86fbf0bea2bddc5906b12ecf4fd0a22df14718305220b0f97d4f236433b`.
+The same reviewer independently passed 94 focused diagnostics, confirmed both original findings
+resolved, matched this fingerprint, and returned **REVIEW_PASS with zero unresolved introduced
+findings** (0 CRITICAL/HIGH/MEDIUM/LOW). It reviewed final owner docs and CHANGELOG, made no
+writes, and approved only this corrected slice. All 76 documentation contract/link checks and
+whitespace passed again after documentation-only reconciliation; runtime/tests remain unchanged.
+Initial full results below describe only the pre-correction tree. Git HEAD/base remains
+`3a053ff396a2c112aa254842cb25730fe3879ecc`; all task changes remain uncommitted/unpublished,
+migration head `20261001_0005` and historical defaults/artifacts are unchanged. 6G/6H have not
+started. Required next steps: scoped publication/exact final-head CI, conditional merge and
+merged-main CI before 6G. The earlier initial-review findings below are resolved by this record.
+
+## 6F.2 initial implementation and review checkpoint — 2026-10-01
+
+6F.2 is IN PROGRESS, not accepted. The persistent Goal is active under the remaining-Sprint-6
+approval above. Reused worktree: `.tmp/sprint-6e3-readme-closeout`, scoped branch
+`codex/sprint-6f2-cloudtrail-destination-exposure`, HEAD/base
+`3a053ff396a2c112aa254842cb25730fe3879ecc`. All 6F.2 source/test/doc additions are UNCOMMITTED,
+including new untracked files; preserve them. No 6F.2 commit, push, PR or merge has occurred.
+Parent `.agents/` skills and original `.tmp/sprint-6e3` remain untouched; migration head is
+unchanged at `20261001_0005`. 6G/6H implementation and later-sprint work have not started.
+
+Local opt-in `0.12.0` now registers LOG-004 with closed `1.9.0` destination proofs, a single
+S3-002 dependency, compatible context adapter and independent pre-SQL prerequisite validation.
+Shared CloudTrail source/identity checks bind exact destination configuration and one resolved
+GetTrail-provenance edge. Four required collectors must succeed for an observed trail; disabled,
+unavailable or nondecisive dependency remains insufficient. Complete empty discovery has the
+approved account N/A fallback. No duplicate exposure evaluator, historical lookup, AWS call,
+collector, permission/auth, public request/response field, default or migration change.
+All ten prior catalog SHA-256 values were verified unchanged. New NIST subset checksum is
+recorded in [6F.2 metadata](../../controls/sprint-6f2-metadata.md).
+
+Validation completed against the initial uncommitted implementation, before review corrections:
+
+- 165 focused new/old engine and foundation checks passed; dedicated 6F.2 unit/database/HTTP
+  checks then passed 45 tests after correcting two test-fixture mistakes (approval Region and
+  relationship-provenance construction), without weakening assertions.
+- The full `scripts.validate` gate passed 339 focused checks, Ruff, formatting (322 files),
+  2,196 regression cases including 196 disposable PostgreSQL cases, with no skips and 20 existing
+  warnings. Whitespace, Compose and API image build passed. Its uniquely named disposable database
+  was removed; operator/user databases and live AWS were not used.
+- Exact focused arguments: `tests/unit/rules/test_cloudtrail_destination.py`,
+  `tests/unit/database/test_cloudtrail_destination.py`,
+  `tests/integration/test_cloudtrail_destination_postgres.py`,
+  `tests/unit/rules/test_cloudtrail_controls.py`, `tests/unit/database/test_cloudtrail_controls.py`,
+  `tests/integration/test_cloudtrail_controls_postgres.py`,
+  `tests/unit/assessment/test_assessment_foundation.py`,
+  `tests/unit/database/test_assessment_foundation.py`, `tests/unit/contracts`.
+- After documentation-only reconciliation, all 76 documentation-contract/link checks and
+  whitespace passed again. Accepted 6F.1 owner state and repaired-limit guidance are updated;
+  README and other changes remain local, not yet published.
+- Tested changed implementation-file fingerprint (19 sorted `app/`/`tests/`/`scripts/` paths,
+  each bound to its SHA-256; newline-joined UTF-8 `path:digest` list hashed with SHA-256):
+  `7fed96d28b03d4f71e1624f75b2dcce4064c50d4bf10e82a256ae3635a2abbfe`.
+  This identifies the pre-correction source/test snapshot, not a final reviewed commit.
+
+Authorized read-only reviewer `/root/review_6f2` performed 88 independent focused diagnostics
+(one existing warning, no skips), made no writes, and requested changes: zero CRITICAL/HIGH,
+one MEDIUM acceptance-coverage gap and one LOW new performance issue. Approval is NOT granted.
+
+1. Add the explicitly approved two-real-bucket mixed PASS/FAIL collector-to-engine/persistence
+   case, with shared and distinct trails, exact per-trail dependency target/evidence IDs under
+   reversed ordering, and owner/Region substitution atomic rejection. Current shared-one-bucket
+   and reader-index injection tests do not fully satisfy this acceptance requirement.
+2. Remove repeated whole-inventory hashing in `ValidatedAssessmentContext.matches`: review
+   diagnostics measured 3/5/9/17 composition hashes for 1/2/4/8 trails in engine assessment.
+   Bind/check exact context once per revalidated reader/invocation, retaining substitution,
+   scalar-type and mutation guards; add deterministic operation-count coverage.
+
+Next action: primary alone implements these bounded corrections, reruns invalidated targeted/full
+and relevant quality/container/doc gates, and requests recheck from the SAME reviewer. Do not
+spawn another reviewer, publish/merge or advance to 6G while findings/gates remain unresolved.
+After REVIEW_PASS, commit only scoped changes, normally push/open the Sprint 6F.2 PR, verify exact
+final-head CI and merge conditions, then use conditional merge authority and wait for merged-main
+CI before beginning 6G. Earlier validation above remains evidence of the pre-correction tree,
+not acceptance of later edits. No production operation or future-sprint expansion is authorized.
 
 ## 6F.1 publication checkpoint — 2026-10-01
+
+The newer acceptance record above supersedes this historical publication checkpoint.
 
 The user-authorized implementation was committed as `f299966f7166a202922341bc5c05f56f962a41ad`
 (`feat: add CloudTrail coverage and integrity controls (6F.1)`) and normally pushed on

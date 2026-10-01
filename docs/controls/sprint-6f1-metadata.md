@@ -4,8 +4,11 @@ Approved by the user's `implement 6f1` request on 2026-10-01 following the
 [6F preflight](sprint-6f-preflight.md). [ROADMAP.md](../../ROADMAP.md) owns progress;
 the [active plan](../exec-plans/active/sprint-6.md) records authorization and validation.
 Local implementation acceptance checks and independent review pass with zero unresolved findings.
-The reviewed slice is published in [PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37),
-which tracks final-head GitHub CI. Human merge acceptance remains pending; the slice is not accepted.
+The reviewed slice merged in [PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37)
+at `3a053ff396a2c112aa254842cb25730fe3879ecc` under the user's conditional merge approval.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
+passed all 2,125 tests (20 existing warnings, no skips), lint/format and image build.
+6F.1 is accepted; the active plan retains the superseded historical pending checkpoints.
 No deployment policy was enabled.
 
 ## Approved immutable bundle
@@ -79,7 +82,7 @@ targets with a null Region, including unresolved references. An ordinary scan wi
 unobserved destination therefore rolls back; HTTP reports sanitized `SCAN_EXECUTION_FAILED`.
 Neither the collector, mapper, constraint nor established migration was changed by 6F.1.
 
-The [known limitation](../operations/known-limitations.md#unresolved-regional-relationship-persistence--open)
+The [repaired limitation](../operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired)
 records the discrepancy. Per repository/preflight instructions, stop for a separately scoped
 shared persistence fix, potentially an additive migration, rather than inventing a Region,
 dropping relationships or changing fixtures to hide the failure. Migration head remains
@@ -101,7 +104,7 @@ restored. Failed upgrade/downgrade attempts roll back and are retryable. The onl
 preflight excludes writers in fixed parent-to-child order and rejects retained regional targets
 whose Region is unknown before any DDL. Errors reveal no identities or connection values.
 Offline downgrades are blocked; the SQLite constraint transition requires online execution.
-See [recovery guidance](../operations/known-limitations.md#unresolved-regional-relationship-persistence--open).
+See [recovery guidance](../operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
 
 Targeted control/history/HTTP and migration compatibility checks passed **114 tests** after the
 repair. The initial new HTTP test used a resource-type attribute on the snapshot instead of

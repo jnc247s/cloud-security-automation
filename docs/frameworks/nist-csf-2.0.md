@@ -6,7 +6,16 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
-Local 6F.1 catalog `0.11.0`, pending acceptance, adds LOG-002 -> PR.PS-04 and LOG-003 ->
+Local 6F.2 catalog `0.12.0`, pending acceptance, adds LOG-004 -> PR.AA-05 in separate
+subset `2.0+subset.11`. Source: official NIST CSWP 29 version 2.0, Appendix A printed page 20
+(PDF index 24), inspected 2026-10-01. Artifact `app/assessment/data/nist_csf_2_0_subset_11.json`
+and companion manifest have SHA-256
+`2bb52393030d78513a656a806d37fe7ec44ad876112f1c18dd66b48e1133a782`.
+This project inference contributes destination access-policy review context, not complete least
+privilege or compliance. Earlier framework bytes and technical results remain independent.
+See [6F.2 metadata](../controls/sprint-6f2-metadata.md).
+
+Accepted 6F.1 catalog `0.11.0` adds LOG-002 -> PR.PS-04 and LOG-003 ->
 PR.DS-01 in separately checksummed subset `2.0+subset.10`. Source: official NIST CSWP 29
 version 2.0, Appendix A, inspected 2026-10-01. Files are
 `app/assessment/data/nist_csf_2_0_subset_10.json` and its `_manifest.json` companion;

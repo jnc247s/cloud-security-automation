@@ -82,7 +82,7 @@ def _resolved(reader, required, target):
     return payload, citation
 
 
-def cloudtrail_proof(reader, contract, target):
+def cloudtrail_proof(reader, contract, target, *, destination=False):
     """Bind coverage and decision facts to exact admitted trail snapshots and source digests."""
     discovery, citation = _resolved(reader, DISCOVERY, target)
     resources = tuple(
@@ -166,13 +166,19 @@ def cloudtrail_proof(reader, contract, target):
         configuration = values[CONFIGURATION.evidence_kind]
         require(configuration.get("name") == trail.name)
         fields = (
-            ("is_multi_region_trail", "is_organization_trail")
+            ("s3_bucket_name",)
+            if destination
+            else ("is_multi_region_trail", "is_organization_trail")
             if account
             else ("log_file_validation_enabled",)
         )
         for field in fields:
-            require(type(configuration.get(field)) is bool)
-            require(trail.configuration.get(field) is configuration[field])
+            if destination:
+                require(isinstance(configuration.get(field), str) and bool(configuration[field]))
+                require(trail.configuration.get(field) == configuration[field])
+            else:
+                require(type(configuration.get(field)) is bool)
+                require(trail.configuration.get(field) is configuration[field])
         item = {
             "resource_snapshot_id": str(reader._target_id(trail)),
             "trail_arn": trail.arn,

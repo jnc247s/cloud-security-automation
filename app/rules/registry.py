@@ -128,4 +128,11 @@ def resolve_catalog(catalog_id: str, version: str):
         for control_id in ("LOG-002", "LOG-003"):
             registry.register(CloudTrailRule(control_id))
         return build_cloudtrail_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.12.0"):
+        from app.assessment.cloudtrail_destination_control import build_destination_catalog
+        from app.rules.cloudtrail_destination import CloudTrailDestinationRule
+
+        _, registry = resolve_catalog(catalog_id, "0.11.0")
+        registry.register(CloudTrailDestinationRule())
+        return build_destination_catalog(), registry
     raise ValueError("unsupported assessment catalog version")

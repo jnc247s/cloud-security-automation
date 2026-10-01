@@ -1,13 +1,13 @@
 # Current known limitations
 
-This register records accepted Sprint 0--5 and Sprint 6A--6E implementation reality, including
+This register records accepted Sprint 0--5 and Sprint 6A--6F.1 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
 
-### Unresolved regional relationship persistence — OPEN
+### Unresolved regional relationship persistence — REPAIRED
 
 6F.1 acceptance testing on 2026-10-01 exposed an accepted-baseline discrepancy: the relationship
 domain and CloudTrail collector permit an unresolved regional S3 destination reference with no
@@ -18,7 +18,9 @@ dependency and must not be hidden by fabricating a Region or dropping retained r
 The user separately approved the bounded repair. Local revision `20261001_0005` now permits
 null Regions only for unresolved references, retaining all existing complete-identity,
 provenance and immutable-history rules. Original migrations, collector and mapper are unchanged.
-This item remains OPEN at the accepted baseline until local 6F.1 acceptance/merge is complete.
+6F.1 acceptance and PR #37 merge are complete at accepted main
+`3a053ff396a2c112aa254842cb25730fe3879ecc`; merged-main CI passed. This discrepancy is repaired.
+The operational downgrade safety requirements below remain applicable.
 
 Before any authorized downgrade across `20261001_0005`, stop/quiesce writers, take and verify
 a restorable backup, and use the current Alembic environment. It checks compatibility before
