@@ -57,11 +57,24 @@ Starlette dependency warning plus a local pytest-cache warning; neither affected
 Because the verified corrections changed documentation only, the recorded 1,957-test full run
 and 122 PostgreSQL cases remain applicable under the validation policy.
 
-The implementation is local and uncommitted on `codex/sprint-6e3-sensitive-bucket-kms`
-in `.tmp/sprint-6e3`, based on accepted `3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`.
-The original checkout's untracked repository skill was preserved. No commit, push, PR or
-merge has been made for 6E.3. Publication/final-head CI and human merge acceptance remain gates;
-this checkpoint does not mark 6E.3 COMPLETE or start 6F--6H.
+At this implementation checkpoint the change was local and uncommitted on
+`codex/sprint-6e3-sensitive-bucket-kms` in `.tmp/sprint-6e3`, based on accepted
+`3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`. The original checkout's untracked repository skill
+was preserved. The publication checkpoint below supersedes the original no-commit/no-push state.
+This checkpoint does not mark 6E.3 COMPLETE or start 6F--6H.
+
+### 6E.3 publication checkpoint — 2026-10-01
+
+The user authorized GitHub publication. The complete reviewed implementation and documentation
+were committed as `66f39f5` (`feat: implement Sprint 6E.3 sensitive bucket KMS control`) and
+pushed without force to `origin/codex/sprint-6e3-sensitive-bucket-kms`; the local branch now
+tracks that remote branch. The original checkout's unrelated untracked repository skill remains
+separate and was not committed.
+
+GitHub returned a [new-PR link](https://github.com/jnc247s/cloud-security-automation/compare/main...codex/sprint-6e3-sensitive-bucket-kms?expand=1),
+but no PR was created and no merge occurred. This documentation-only publication record follows
+the reviewed implementation commit. Verify CI for the final pushed branch head, including this
+record, before human merge acceptance. No 6F or later-slice work is authorized or started.
 
 ## 6E.2 closeout and 6E.3 policy approval — 2026-09-30
 

@@ -51,8 +51,9 @@ the active plan records authorization. The user approved the 6E.3 policy bundle 
 and requested implementation after 6E.2 acceptance. 6E.3 is IN PROGRESS for S3-004 only.
 Local implementation now passes 1,957 regression tests including 122 PostgreSQL cases and
 quality/container gates. Independent review passed with zero unresolved findings after two LOW
-documentation inconsistencies were corrected and verified. Publication/final-head CI and human
-merge acceptance remain pending; the
+documentation inconsistencies were corrected and verified. The reviewed implementation commit
+`66f39f5` is pushed on `codex/sprint-6e3-sensitive-bucket-kms` with upstream tracking and no
+force-push. Final-head CI, PR review and human merge acceptance remain pending; the
 [active-plan checkpoint](docs/exec-plans/active/sprint-6.md#6e3-implementation-checkpoint--2026-09-30)
 records exact results and the preserved original checkout.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
