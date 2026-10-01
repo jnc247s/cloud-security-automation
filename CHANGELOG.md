@@ -19,7 +19,16 @@ record the development history. Sprint state itself is authoritative only in
   catalog `0.10.0` adds S3-004 after the preceding releases.
 - S3-004 merged in pull request #35 at
   `c861713a665669da09d5bc7b5b282b04c16cac1d`. Its merged-main workflow passed on the unchanged
-  retry after a transient dependency-download timeout. Slices 6F through 6H have not started.
+  retry after a transient dependency-download timeout.
+- Accepted 6F.1 LOG-002/003 in opt-in catalog `0.11.0` through
+  [pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37), merged at
+  `3a053ff396a2c112aa254842cb25730fe3879ecc`. Exact source-bound coverage/integrity proofs and
+  strict JSON scalar checks preserve previous catalog behavior. The separately approved
+  migration `20261001_0005` retains unresolved regional references without inventing identity;
+  complete identities and guarded downgrade remain strict. Merged-main CI passed 2,125 tests,
+  including 171 PostgreSQL cases, with no skips, plus quality/image gates.
+- 6F.2 LOG-004 is locally implemented but unaccepted/unpublished; 6G and 6H are authorized
+  but unstarted. Default catalog `0.2.1` and read-only scanner permissions remain unchanged.
 
 ## Sprint 5 — 2026-09-23
 

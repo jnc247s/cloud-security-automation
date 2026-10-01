@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 from app.assessment.models import AssessmentCandidate, AssessmentResult
 from app.assessment.relationships import RelationshipType
@@ -54,7 +54,7 @@ class ExecutionContract(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
     schema_version: Literal[
-        "1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0"
+        "1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0"
     ]
     target_kind: Literal["global_account", "regional_account", "resources"]
     target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
@@ -73,12 +73,39 @@ class ExecutionContract(BaseModel):
         "s3_sensitive_kms_v1",
         "cloudtrail_management_coverage_v1",
         "cloudtrail_integrity_v1",
+        "cloudtrail_destination_exposure_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
+    assessment_dependencies: tuple[Literal["S3-002"], ...] = ()
+
+    @model_serializer(mode="wrap")
+    def historical_definition(self, handler):
+        document = handler(self)
+        if not self.assessment_dependencies:
+            document.pop("assessment_dependencies", None)
+        return document
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        destination = self.validation_strategy == "cloudtrail_destination_exposure_v1"
+        if (self.schema_version == "1.9.0") != destination:
+            raise ValueError("destination composition requires execution schema 1.9")
+        if destination:
+            from app.assessment.cloudtrail_evidence import CONFIGURATION, DISCOVERY, IDENTITY
+
+            if (
+                self.target_kind != "resources"
+                or self.account_service != "cloudtrail"
+                or self.resource_families
+                != (ResourceFamily(service="cloudtrail", resource_type="cloudtrail_trail"),)
+                or self.required_sources != (DISCOVERY, IDENTITY, CONFIGURATION)
+                or self.required_relationships != (RelationshipType.DELIVERS_TO_BUCKET,)
+                or self.assessment_dependencies != ("S3-002",)
+            ):
+                raise ValueError("execution schema 1.9 is restricted to destination composition")
+        elif self.assessment_dependencies:
+            raise ValueError("only destination composition supports assessment dependencies")
         logging_strategies = {"cloudtrail_management_coverage_v1", "cloudtrail_integrity_v1"}
         if (self.schema_version == "1.8.0") != (self.validation_strategy in logging_strategies):
             raise ValueError("CloudTrail proofs require execution schema 1.8")

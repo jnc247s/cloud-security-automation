@@ -1,5 +1,6 @@
 """Deterministic orchestration for registered security controls."""
 
+from app.assessment.composition import assessment_order, validated_context
 from app.assessment.controls import ControlCatalog, build_default_control_catalog
 from app.assessment.evidence_reader import AssessmentEvidenceReader
 from app.assessment.execution import validate_execution_targets
@@ -110,23 +111,41 @@ class RuleEngine:
                 "enabled controls require a versioned technical catalog contract"
             )
 
-        for rule in self.registry.rules:
-            if rule.control_id not in profile.enabled_controls:
-                continue
-
-            rule_assessments = rule.assess(snapshot, profile)
+        try:
+            ordered_ids = assessment_order(catalog, profile.enabled_controls)
+        except (ValueError, KeyError) as error:
+            raise RuleContractError("assessment dependency contract was violated") from error
+        for control_id in ordered_ids:
+            rule = self.registry.get(control_id)
+            execution = catalog.get(rule.control_id).technical.execution_contract
+            context = None
+            if execution is not None and execution.assessment_dependencies:
+                # Publish only fully validated and digest-bound prior results. No implicit enable.
+                try:
+                    for required_id in (rule.control_id, *execution.assessment_dependencies):
+                        if (
+                            required_id in profile.enabled_controls
+                            and getattr(self.registry.get(required_id), "contract", None)
+                            != catalog.get(required_id).technical
+                        ):
+                            raise ValueError("dependency rule/catalog binding differs")
+                    context = validated_context(evidence_reader, profile, catalog, assessments)
+                except ValueError as error:
+                    raise RuleContractError("assessment prerequisite is invalid") from error
+            rule_assessments = rule.assess_with_context(snapshot, profile, context=context)
             if not rule_assessments:
                 raise RuleContractError(
                     f"{rule.control_id} returned no assessment; PASS and NOT_APPLICABLE "
                     "must be explicit"
                 )
 
-            execution = catalog.get(rule.control_id).technical.execution_contract
             if execution is not None:
                 try:
                     validate_execution_targets(snapshot, execution, rule_assessments)
                     for candidate in rule_assessments:
-                        evidence_reader.validate_candidate(execution, candidate, profile=profile)
+                        evidence_reader.validate_candidate(
+                            execution, candidate, profile=profile, context=context
+                        )
                 except ValueError as error:
                     raise RuleContractError("assessment execution contract was violated") from error
 

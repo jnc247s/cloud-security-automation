@@ -1,14 +1,22 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--5 and Sprint 6
-slices 6A through 6E at the accepted `main` baseline
-`c861713a665669da09d5bc7b5b282b04c16cac1d`. That baseline includes the versioned assessment
-foundation and opt-in IAM, EC2, network, and S3 controls through S3-004; default catalog `0.2.1`
+slices 6A through 6F.1 at the accepted `main` baseline
+`3a053ff396a2c112aa254842cb25730fe3879ecc`. That baseline includes the versioned assessment
+foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
+
+Local 6F.2 composition admits only validated same-scan/profile/catalog/inventory S3-002 results
+for the exact resolved bucket snapshot. Missing/disabled/nondecisive prerequisites or partial
+required collectors cannot pass. Source/edge/dependency evidence IDs/digests and explicit approval
+identity are bound in a strict-type proof. Persistence reconstructs context before any SQL and
+never trusts caller order/context. Operator approval artifacts remain unchanged; exceptions never
+become approvals or rewrite FAIL. No AWS call/write, permission/auth or migration change.
+Acceptance is pending; see [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
 
 ## Authentication
 
-Local, not-yet-accepted 6F.1 LOG-002/003 use same-scan source-bound management coverage and
+Accepted 6F.1 LOG-002/003 use same-scan source-bound management coverage and
 explicit integrity settings, not inferred delivery or verified digest integrity. Missing
 required evidence cannot pass. New-schema projection/proof validation preserves exact JSON types;
 numeric substitutes for booleans do not match, even when a forged artifact is rehashed.
@@ -280,8 +288,8 @@ technical results. Separately versioned Sprint 6 rules through 6E now evaluate r
 EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM collector retains
 access-key identifiers only as resource identity and evidence; it never requests or stores secret
 access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
-`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6E accepted and local 6F.1 undergoing
-acceptance. LOG-004/6F.2 and governance remain unstarted.
+`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6F.1 accepted. LOG-004/6F.2 is authorized
+and in progress; governance is authorized but unstarted.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

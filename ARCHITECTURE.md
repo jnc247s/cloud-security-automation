@@ -1,12 +1,24 @@
 # Architecture
 
 This document describes the accepted Sprint 0--5 implementation and accepted Sprint 6 slices 6A
-through 6E. The accepted baseline is `main` commit
-`c861713a665669da09d5bc7b5b282b04c16cac1d`, which merged S3-004 in pull request #35 after the
+through 6F.1. The accepted baseline is `main` commit
+`3a053ff396a2c112aa254842cb25730fe3879ecc`, which merged LOG-002/003 in pull request #37 after the
 Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
-control slices. Local 6F.1 implementation is in progress and not accepted; 6F.2 through 6H
-have not started. All Sprint 6
+control slices. 6F.2 is authorized and in progress; 6G and 6H are authorized but unstarted.
+All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
+
+Local 6F.2 adds LOG-004 in opt-in `0.12.0` with closed execution/proof `1.9.0` and only
+the S3-002 prerequisite. The internal context-aware adapter preserves `assess(snapshot, profile)`
+for existing rules; only enabled prerequisites run and final results retain stable ordering.
+The invocation-local read-only context contains identity/profile/catalog/inventory/source/result-
+validated prerequisites. Persistence independently constructs it before SQL regardless of tuple
+order. Composition seals only its revalidated reader's private resource JSON and binds the
+inventory digest once per reader, without mutating caller resources or changing legacy readers.
+Exact trail discovery/configuration, one resolved GetTrail-provenance edge and complete
+CloudTrail/S3 collector outcomes bind the destination. No historical result lookup, duplicate
+exposure evaluator, workflow engine, collector, permission, public API or migration is added.
+Acceptance is pending; see [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
 
 ## Sprint 6A assessment integration
 
@@ -37,7 +49,7 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
-Local 6F.1 adds LOG-002/003 in opt-in catalog `0.11.0`, closed execution/proof `1.8.0`.
+Accepted 6F.1 adds LOG-002/003 in opt-in catalog `0.11.0`, closed execution/proof `1.8.0`.
 Shared pure evidence/result validation binds complete admitted trail discovery, exact owner/home
 Region and the named required sources; coverage is account-scoped, integrity per-trail.
 New-schema projection/proof comparisons preserve exact JSON scalar types, including booleans;
@@ -451,7 +463,7 @@ The foundation preserves the collector/rule boundary defined by the
 [result-sensitive source-outcome decision](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md).
 Sprint 5 collectors continue to collect only the versioned facts and provenance named by the
 evidence-readiness matrix. Approved 6E.2 and 6E.3 rules apply the selected policy artifacts;
-future LOG-004 may consume the exact S3-002 result only after its separate authorization.
+the authorized local LOG-004 composes that exact validated same-invocation S3-002 result.
 Missing required facts and unresolved required edges remain `INSUFFICIENT_EVIDENCE`; neither a
 policy artifact nor a relationship authorizes a fabricated resource, inferred AWS state, or
 historical rewrite.

@@ -4,9 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-01
-Accepted baseline: `main` at `49500c95c78870d72e6179882bae4e6379cdd6d0` (README/documentation
-closeout; unchanged runtime accepted at `c861713a665669da09d5bc7b5b282b04c16cac1d`, Sprints 0--5
-and Sprint 6 slices 6A through 6E, including S3-004 in opt-in catalog `0.10.0`)
+Accepted baseline: `main` at `3a053ff396a2c112aa254842cb25730fe3879ecc` (PR #37;
+Sprints 0--5 and Sprint 6 slices 6A through 6F.1, including LOG-002/003 in opt-in `0.11.0`
+and additive migration `20261001_0005`; merged-main CI passed)
 
 ## Current state
 
@@ -66,10 +66,15 @@ passed. The user requested 6F preparation on 2026-10-01. The
 LOG-004 exact same-scan S3-002 composition. Metadata, the bounded composition seam and the
 empty-population LOG-004 clarification were initially pending. The user's subsequent
 `implement 6f1` request approves the prepared LOG-002/003 bundle and authorizes 6F.1 only.
-6F.1 is IN PROGRESS in opt-in catalog `0.11.0`; independent review has passed with zero
-unresolved findings. The authorized implementation is published in
-[pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37). LOG-004/6F.2 and 6G--6H remain unstarted and
-unapproved by the implementation request.
+6F.1 is COMPLETE in opt-in catalog `0.11.0`; independent review passed with zero unresolved
+findings. [Pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37) merged
+at the accepted baseline above, with green final-head and merged-main CI. The user subsequently
+approved the remaining Sprint 6 policy bundle and persistent Goal, scoped publication, one
+read-only independent reviewer per slice and conditional merges after all mandatory gates.
+LOG-004/6F.2 is authorized and IN PROGRESS; 6G and 6H are authorized but unstarted. The
+[active-plan authorization](docs/exec-plans/active/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01)
+records the exact policies, boundaries and merge conditions. No later-sprint implementation is
+authorized.
 The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
 on the scoped feature branch; unrelated parent-checkout skill files remain excluded and preserved.
 Initial acceptance was blocked by a pre-existing domain/database mismatch for unresolved
@@ -86,9 +91,25 @@ Post-review acceptance passes 274 focused checks and 2,125 regression tests, inc
 PostgreSQL integration cases, with no skips. Ruff, formatting, documentation contracts,
 whitespace, Compose and the API image build pass. The disposable database was removed;
 no operator database or live AWS account was used. Implementation commit
-`f299966f7166a202922341bc5c05f56f962a41ad` is pushed; PR #37 is open against `main` with auto-merge disabled.
-GitHub CI is tracked on that pull request and must pass on the final head before acceptance.
-Human merge acceptance remains pending. The active plan records the publication checkpoint.
+`f299966f7166a202922341bc5c05f56f962a41ad` and reviewed final documentation head
+`2879ea8ae25dd00bd7229976fea5a65f2b48f3c7` are merged through PR #37 under the user's bounded
+conditional merge approval. [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
+passed 2,125 tests (20 existing warnings, no skips), lint, format and image build. The active plan
+retains historical publication checkpoints and the superseding acceptance record.
+
+Local 6F.2 implements LOG-004 in opt-in `0.12.0`, with closed same-invocation S3-002 dependency
+proofs and no migration/default change. The initial gate passed 339 focused and 2,196 regression
+checks, including 196 disposable PostgreSQL cases, plus quality/container gates. Independent
+review requested one MEDIUM exact-destination coverage correction and one LOW repeated-hashing
+correction. Both are locally implemented; fresh validation passed 355 focused and 2,212 full
+tests (201 PostgreSQL, no skips), plus quality/container gates. The same reviewer confirms both
+findings resolved after 94 independent diagnostics and returned REVIEW_PASS with zero unresolved
+introduced findings. All changes remain uncommitted,
+including untracked
+source/test files, and no publication or merge has occurred. The
+[correction checkpoint](docs/exec-plans/active/sprint-6.md#6f2-review-correction-checkpoint--2026-10-01)
+records the tested tree and required revalidation sequence. 6F.2 remains IN PROGRESS;
+the persistent Goal continues under the approved scope. 6G/6H remain unstarted.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -183,9 +204,10 @@ PR #35 at `c861713a665669da09d5bc7b5b282b04c16cac1d`; merged-main CI passed. S3-
 available in opt-in catalog `0.10.0`, while default `0.2.1` remains unchanged. Slices 6A through
 6E are COMPLETE. 6F preparation is recorded in the
 [preflight](docs/controls/sprint-6f-preflight.md) and active plan. The user's implementation request
-authorizes the prepared 6F.1 bundle only; 6F.1 is IN PROGRESS. 6F.2, 6G and 6H remain unstarted.
-The separately approved local persistence repair advances migration head to `20261001_0005`;
-accepted baseline head is still `20260924_0004` until this slice passes its acceptance gates.
+initially authorized the prepared 6F.1 bundle only; 6F.1 is now COMPLETE through PR #37 and
+green merged-main CI. The subsequent remaining-Sprint-6 approval authorizes 6F.2 (IN PROGRESS),
+6G and 6H (unstarted) with the bounded gates recorded above. Accepted migration head is
+`20261001_0005`; no 6F.2 migration or later-sprint implementation is planned.
 
 ## Pre-Sprint 5 attention
 

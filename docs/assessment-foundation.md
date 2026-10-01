@@ -1,5 +1,16 @@
 # Sprint 6A assessment foundation
 
+Local 6F.2 adds opt-in `0.12.0` / LOG-004 and closed composition proof `1.9.0`.
+Only the canonical S3-002 dependency is supported. Its new metadata field is omitted from all
+historical definitions when absent. The internal context adapter delegates unchanged old rule
+calls; lexical order changes only to execute an explicitly enabled prerequisite first, with stable
+final results. Context binds validated exact scan/inventory/catalog/profile/target/source/result
+and dependency evidence digests. Persistence constructs the same read-only invocation-local index
+independently before SQL, not from caller ordering or historical database assessments.
+Exact resolved destination plus complete required collectors composes PASS/FAIL; all gaps are
+insufficient. Complete empty discovery alone proves account N/A. No default/profile schema or
+migration change; acceptance pending. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
+
 6E.3 adds S3-004 in opt-in `0.10.0`, closed `s3_sensitive_kms_v1` proof `1.7.0`.
 An explicit new schema-2 profile supplies the unchanged immutable sensitive-bucket classifier
 and KMS requirement. No default policy is inferred or installed. Classification precedes

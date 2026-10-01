@@ -10,7 +10,7 @@ from app.assessment.evidence_graph import (
 )
 from app.assessment.execution import ExecutionContract, RequiredSource
 from app.assessment.identities import resource_snapshot_id
-from app.assessment.models import AssessmentCandidate, AssessmentResult
+from app.assessment.models import AssessmentCandidate, AssessmentResult, _freeze_json
 from app.assessment.source_outcomes import (
     AccountEvidenceSubject,
     EvidenceSourceState,
@@ -37,6 +37,7 @@ class AssessmentEvidenceReader:
         self._provenance = {}
         self.resources = {self._target_id(r): r for r in self.snapshot.resources}
         self._iam_policy_coverage = None
+        self._composition_inventory_digest = None
         if self.graph is not None:
             self._outcomes = {o.source_outcome_id: o for o in self.graph.source_outcomes}
             self._artifacts = {a.evidence_reference: a for a in self.graph.artifacts}
@@ -47,6 +48,22 @@ class AssessmentEvidenceReader:
                 )
             for edge in self.graph.relationships:
                 self._edges[(edge.source.resource_snapshot_id, edge.relationship_type)].append(edge)
+
+    def composition_inventory_sha256(self):
+        """Seal this reader's private validated JSON before binding composition once.
+
+        Legacy readers remain unchanged. The graph is already deeply immutable; only
+        resource JSON needs sealing. Caller-owned resources are never modified, and
+        a different reader must independently validate and bind its own snapshot.
+        """
+        if self._composition_inventory_digest is None:
+            from app.assessment.identities import inventory_sha256
+
+            for resource in self.snapshot.resources:
+                for field in ("tags", "configuration", "raw_configuration"):
+                    object.__setattr__(resource, field, _freeze_json(getattr(resource, field)))
+            self._composition_inventory_digest = inventory_sha256(self.snapshot)
+        return self._composition_inventory_digest
 
     def _subject_matches(
         self, subject, required: RequiredSource, target: NormalizedResource
@@ -101,12 +118,18 @@ class AssessmentEvidenceReader:
             "evidence_sha256": artifact.evidence_sha256,
         }
 
-    def proof(self, contract: ExecutionContract, target: NormalizedResource) -> dict:
+    def proof(
+        self, contract: ExecutionContract, target: NormalizedResource, *, context=None, profile=None
+    ) -> dict:
         """Resolve every mandatory source and edge, binding the proof to immutable IDs/digests."""
         if self.graph is None:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.9.0":
+            from app.assessment.cloudtrail_destination_evidence import destination_proof
+
+            return destination_proof(self, contract, target, context=context, profile=profile)
         if contract.schema_version == "1.8.0":
             from app.assessment.cloudtrail_evidence import cloudtrail_proof
 
@@ -228,7 +251,13 @@ class AssessmentEvidenceReader:
         )
 
     def validate_candidate(
-        self, contract: ExecutionContract, candidate: AssessmentCandidate, *, profile=None
+        self,
+        contract: ExecutionContract,
+        candidate: AssessmentCandidate,
+        *,
+        profile=None,
+        context=None,
+        exact_proof=False,
     ) -> None:
         """Persistence and engine share the same exact-reference validation, not a second rule."""
         target = NormalizedResource(
@@ -240,10 +269,16 @@ class AssessmentEvidenceReader:
             region=candidate.region,
         )
         try:
-            expected = self.proof(contract, target)
+            expected = self.proof(contract, target, context=context, profile=profile)
             network_expected = None
             s3_expected = None
             cloudtrail_expected = None
+            if contract.schema_version == "1.9.0":
+                from app.assessment.cloudtrail_destination_evidence import destination_result
+
+                if candidate.control_id != "LOG-004":
+                    raise ValueError("destination control differs from execution contract")
+                cloudtrail_expected = destination_result(expected)
             if contract.schema_version == "1.8.0":
                 from app.rules.cloudtrail import cloudtrail_result
 
@@ -357,7 +392,7 @@ class AssessmentEvidenceReader:
             ) != "1.0.0":
                 raise ValueError("network evaluation version differs from contract")
             proof = artifact.payload.get("source_proof")
-            if contract.schema_version == "1.8.0":
+            if contract.schema_version in {"1.8.0", "1.9.0"} or exact_proof:
                 from app.assessment.cloudtrail_evidence import exact_json_equal
 
                 proof_matches = exact_json_equal(proof, expected)

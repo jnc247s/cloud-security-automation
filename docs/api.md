@@ -14,7 +14,15 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
-Local opt-in catalog `0.11.0`, pending acceptance, adds LOG-002/003 through the same generic
+Local opt-in catalog `0.12.0`, pending acceptance, adds LOG-004 through the same generic
+authenticated interfaces, without new request/response fields, routes or capabilities. Decisive
+payloads contain strict-type proof `1.9.0`, exact source/destination relationship citations and
+the validated same-scan S3-002 dependency result/target/evidence digests and policy/profile
+identity. The new versioned execution metadata declares only that dependency; historical
+definitions omit the additive metadata field. Missing/disabled dependencies remain insufficient;
+no control is implicitly enabled. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
+
+Accepted opt-in catalog `0.11.0` adds LOG-002/003 through the same generic
 interfaces. LOG-002 is a global account assessment; LOG-003 uses exact trail snapshots or the
 complete-empty account fallback. Decisive payloads contain `source_proof` schema `1.8.0` and
 `evaluation_version` `1.0.0`, with exact same-scan source citations and trail identity/facts.
