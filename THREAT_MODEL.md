@@ -4,9 +4,18 @@ Status: living model for the accepted Sprint 0--4 baseline, the Sprint 5 evidenc
 foundation, and the merged 5A EC2/EBS, 5B network, 5C IAM, and 5D IAM Access Analyzer evidence
 producers, plus the merged 5E S3 and referenced-KMS, 5F CloudTrail, and 5G closure
 Baseline: `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881` (5G merged in pull request #25)
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-30
 
 ## Scope and security objectives
+
+6E.3 addresses false-safe sensitive-bucket classification and unresolved/substituted KMS
+references in opt-in `0.10.0`. Shared engine/persistence recomputation binds classifier
+version/checksum, exact owner/home Region, matched inputs and same-scan key/source/edge proof.
+Unknown tags are not empty tags, a disabled KMS requirement cannot hide unknown classification,
+and bucket disappearance invalidates applicability. Historical classifier substitution and
+rehashing a forged assessment do not bypass validation. Residual limits: default configuration
+does not prove existing-object encryption, upload enforcement, key access/availability or
+rotation. No new AWS write or authentication surface. See [6E.3 metadata](docs/controls/sprint-6e3-metadata.md).
 
 6E.2 addresses false-safe S3 exposure aggregation and historical approval substitution in opt-in
 `0.9.0`. Independent coherent violations outrank unknown channels; contradictory sources retain

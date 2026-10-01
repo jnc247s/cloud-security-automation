@@ -53,7 +53,7 @@ class ExecutionContract(BaseModel):
     """The only 6A strategy requires every declared source and edge to be complete."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
-    schema_version: Literal["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0"]
+    schema_version: Literal["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0"]
     target_kind: Literal["global_account", "regional_account", "resources"]
     target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
@@ -68,12 +68,26 @@ class ExecutionContract(BaseModel):
         "s3_bpa_v1",
         "s3_transport_v1",
         "s3_exposure_v1",
+        "s3_sensitive_kms_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        if self.schema_version == "1.7.0":
+            from app.assessment.s3_sensitive_kms_evidence import SENSITIVE_KMS_SOURCES
+
+            if (
+                self.validation_strategy != "s3_sensitive_kms_v1"
+                or self.target_kind != "resources"
+                or self.account_service != "s3"
+                or self.resource_families
+                != (ResourceFamily(service="s3", resource_type="s3_bucket"),)
+                or self.required_sources != SENSITIVE_KMS_SOURCES
+                or self.required_relationships
+            ):
+                raise ValueError("execution schema 1.7 is restricted to S3 sensitive KMS proofs")
         if self.schema_version == "1.6.0":
             from app.assessment.s3_exposure_evidence import EXPOSURE_SOURCES
 

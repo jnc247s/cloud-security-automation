@@ -6,6 +6,16 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
+6E.3 catalog `0.10.0` adds S3-004 -> PR.DS-01 in separately checksummed local subset
+`2.0+subset.9`. Source: NIST CSWP 29 version 2.0, Appendix A, Protect / Data Security,
+inspected 2026-09-30. Files are `app/assessment/data/nist_csf_2_0_subset_9.json` and its
+`_manifest.json` companion; the reviewed subset SHA-256 is
+`aa0182df9353da42065fbcab9cfae7a1342cb0c562b86e802df6beedcdbfda07`. This mapping contributes
+sensitive-bucket default-KMS configuration evidence only, not existing-object protection,
+key access/availability, organization-wide data security or compliance. Severity and technical
+results are independent; earlier framework bytes remain unchanged. See
+[approved 6E.3 metadata](../controls/sprint-6e3-metadata.md).
+
 6E.2 catalog `0.9.0` adds S3-002 -> PR.AA-05 in separately checksummed subset `2.0+subset.8`,
 reusing the same verified NIST CSWP 29 reference below. It contributes direct exposure
 configuration evidence only, not full least privilege, actual access or compliance. Files are

@@ -39,19 +39,26 @@ protection and bounded explicit HTTPS-denial evaluation for 6E.1. The subsequent
 approval authorized opt-in catalog `0.8.0`; 6E.1 is COMPLETE, merged through PR #33 at
 `4b3d7355dafe6eceab50214ee2281b0b4f96fa81` with green merged-main CI and zero review findings.
 The user directed implementation of the prepared 6E.2 bundle after its policy approval prompt;
-6E.2 is IN PROGRESS, using explicit no-exemption initial policy and opt-in catalog `0.9.0`.
+6E.2 is COMPLETE, accepted through PR #34 at `3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`,
+with green merged-main CI. It uses explicit no-exemption initial policy and opt-in catalog `0.9.0`.
 Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and active-plan checkpoint
 record 1,873 passing tests including 102 PostgreSQL cases, successful quality/container gates,
-and independent REVIEW_PASS with zero findings. The branch is published; GitHub's integration
-blocked PR creation with HTTP 403. Final-head CI and human PR/merge acceptance remain separate
-gates; it is not yet COMPLETE.
+and independent REVIEW_PASS with zero findings. The human-created PR and merge supersede the
+earlier publication-permission blocker; no automatic merge was performed.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
-the active plan records authorization. 6E.3 is unstarted; the user approved its prepared policy
-bundle on 2026-09-30, with implementation still gated on 6E.2 merge acceptance.
+the active plan records authorization. The user approved the 6E.3 policy bundle on 2026-09-30
+and requested implementation after 6E.2 acceptance. 6E.3 is IN PROGRESS for S3-004 only.
+Local implementation now passes 1,957 regression tests including 122 PostgreSQL cases and
+quality/container gates. Independent review passed with zero unresolved findings after two LOW
+documentation inconsistencies were corrected and verified. The reviewed implementation commit
+`66f39f5` is pushed on `codex/sprint-6e3-sensitive-bucket-kms` with upstream tracking and no
+force-push. Final-head CI, PR review and human merge acceptance remain pending; the
+[active-plan checkpoint](docs/exec-plans/active/sprint-6.md#6e3-implementation-checkpoint--2026-09-30)
+records exact results and the preserved original checkout.
 The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
 records its bounded S3-004 design and classifier/KMS bundle; the subsequent approval checkpoint
-does not bypass pending 6E.2 PR/CI and merge acceptance.
+is now authorized by the implementation checkpoint. Later slices remain unstarted.
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -142,7 +149,7 @@ PR #33 subsequently merged 6E.1 and its preparation handoff at
 `4b3d7355dafe6eceab50214ee2281b0b4f96fa81`; merged-main CI passed. The user directed 6E.2
 implementation with the prepared policy/metadata bundle. This does not complete all of 6E;
 The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30; implementation
-still awaits 6E.2 merge acceptance.
+is authorized after accepted 6E.2 PR #34. S3-004 is IN PROGRESS; acceptance gates remain.
 Later slices remain unstarted.
 Migration head remains `20260924_0004`.
 

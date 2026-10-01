@@ -36,12 +36,20 @@ weaken whole-scan finding-resolution requirements; framework metadata never cont
 
 ## System context
 
+Approved 6E.3 adds S3-004 in opt-in catalog `0.10.0`, closed proof `1.7.0`.
+The unchanged classifier runs before conditional encryption/KMS requirements. Exact referenced
+DescribeKey/ENCRYPTED_WITH proofs preserve key ownership and home Region; implicit AWS-managed
+defaults never fabricate key resources. Engine and persistence recompute applicability,
+classification matches and result against immutable policy/profile and same-scan inputs.
+Existing policy storage/recovery and generic APIs are reused without migration, collector,
+permission or authentication changes. See [6E.3 metadata](docs/controls/sprint-6e3-metadata.md).
+
 Approved 6E.2 adds S3-002 only in opt-in catalog `0.9.0`. Closed proof schema `1.6.0`
 retains direct policy/ACL channels, exact bucket/home-Region source bindings, effective
 neutralizers and immutable approval/profile checksums. Engine and persistence recompute the
 same result; a known unapproved channel outranks another unknown channel, while disappearance
 invalidates the bucket snapshot. No collector, permission, migration, API or auth change.
-See [6E.2 metadata](docs/controls/sprint-6e2-metadata.md). S3-004 remains unregistered.
+See [6E.2 metadata](docs/controls/sprint-6e2-metadata.md).
 
 Approved 6E.1 adds opt-in S3-001/003 in catalog `0.8.0`, evaluator `1.0.0`. Closed execution
 schema `1.5.0` binds global bucket discovery, exact bucket-home Region/owner admission and
@@ -410,23 +418,25 @@ not assessment results. The implementation adds no schema, dependency, route, au
 change, assessment-profile change, or Sprint 6 rule. It is accepted architecture on `main` at the
 baseline above.
 
-Two approved policy artifacts remain pre-implementation contracts for later roadmap work:
+Two approved S3 policy artifacts remain separate from collection and drive only their bounded,
+explicitly selected assessments:
 
-- [S3-002 exposure aggregation](docs/controls/s3-002-exposure-aggregation.md) defines the future
-  rule's deterministic policy/ACL/Block Public Access combination and its immutable,
+- [S3-002 exposure aggregation](docs/controls/s3-002-exposure-aggregation.md) defines the
+  deterministic policy/ACL/Block Public Access combination and its immutable,
   bucket-scoped approval artifact. Exact decisions bind account, bucket-home Region, ARN/name,
-  and canonical stable resource ID rather than the account-less ARN alone. It performs no AWS
-  calls and is not in the executable catalog.
+  and canonical stable resource ID rather than the account-less ARN alone. Opt-in catalog `0.9.0`
+  evaluates it without making AWS calls from the rule.
 - [S3-004 sensitive-bucket classification](docs/controls/s3-004-sensitive-bucket-classifier.md)
   defines a pure versioned classifier over exact full bucket identities, restricted name
   patterns, and exact tags. It assigns applicability only—not compliance, severity, or framework
-  status. 6A can retain its exact artifact in an explicitly selected extended profile and the
-  immutable artifact registry; no production assessment invokes the classifier yet.
+  status. Opt-in catalog `0.10.0` loads its exact artifact from the accepted 6A profile/registry,
+  then conditionally evaluates retained encryption and referenced-KMS evidence.
 
 The foundation preserves the collector/rule boundary defined by the
 [result-sensitive source-outcome decision](docs/design-decisions/0002-result-sensitive-evidence-outcomes.md).
-Sprint 5 collectors may collect only the versioned facts and provenance named by the
-evidence-readiness matrix. Later deterministic rules will apply the selected policy artifacts.
+Sprint 5 collectors continue to collect only the versioned facts and provenance named by the
+evidence-readiness matrix. Approved 6E.2 and 6E.3 rules apply the selected policy artifacts;
+future LOG-004 may consume the exact S3-002 result only after its separate authorization.
 Missing required facts and unresolved required edges remain `INSUFFICIENT_EVIDENCE`; neither a
 policy artifact nor a relationship authorizes a fabricated resource, inferred AWS state, or
 historical rewrite.

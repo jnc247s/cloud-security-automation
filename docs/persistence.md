@@ -1,5 +1,12 @@
 # Persistence and assessment history
 
+6E.3 adds opt-in `0.10.0` and sensitive-KMS proof `1.7.0` without a migration.
+Shared recomputation rejects forged classifier matches, source/key/edge proofs and results
+atomically. Exact classifier versions remain in existing immutable profile/policy storage,
+including N/A assessments; pending recovery never substitutes deployment policy. Decisive
+artifacts retain proof identity/checksums. Earlier catalogs and full-scan finding-resolution
+requirements are unchanged. See [6E.3 metadata](controls/sprint-6e3-metadata.md).
+
 6E.2 adds opt-in `0.9.0` and exposure proof `1.6.0`, without a migration. The same pure S3-002
 result/proof computation runs at engine and persistence boundaries, including exact retained
 approval identity/version/checksum and profile checksum. Forged decisions, sources or policy

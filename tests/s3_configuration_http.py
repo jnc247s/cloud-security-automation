@@ -23,7 +23,8 @@ from tests.integration.test_persistence_postgres import (
 from tests.s3_configuration_fixtures import failing_provider, s3_profile
 
 
-def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
+def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False, sensitive_kms=False):
+    assert not (exposure and sensitive_kms)
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     monkeypatch.setattr(database_session, "SessionLocal", factory)
     profile = s3_profile()
@@ -34,12 +35,17 @@ def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
 
         profile = exposure_profile()
         provider_factory = exposure_provider
+    if sensitive_kms:
+        from tests.s3_sensitive_kms_fixtures import sensitive_kms_profile, sensitive_kms_provider
+
+        profile = sensitive_kms_profile()
+        provider_factory = sensitive_kms_provider
     path = tmp_path / "s3-http-policy.json"
     path.write_text(
         json.dumps(
             {
                 "catalog_id": "aws-cloud-security-controls",
-                "catalog_version": "0.9.0" if exposure else "0.8.0",
+                "catalog_version": "0.10.0" if sensitive_kms else "0.9.0" if exposure else "0.8.0",
                 "profile": profile.model_dump(mode="json"),
             }
         ),
@@ -109,7 +115,7 @@ def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
                     rows = session.scalars(
                         select(ControlAssessment).where(ControlAssessment.scan_id == scan_id)
                     ).all()
-                    assert len(rows) == len(listing) == (1 if exposure else 2)
+                    assert len(rows) == len(listing) == (1 if exposure or sensitive_kms else 2)
                     assert {str(a.assessment_id) for a in rows} == {
                         a["assessment_id"] for a in listing
                     }
@@ -136,6 +142,15 @@ def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
                         assert detail["evidence"][0]["evidence_id"] == str(artifact.evidence_id)
                         proof = detail["evidence"][0]["payload"]["source_proof"]
                         assert proof["scan_id"] == str(scan_id)
+                        if sensitive_kms:
+                            assert (
+                                proof["classifier"]["content_checksum"]
+                                == profile.sensitive_bucket_classifier.content_checksum
+                            )
+                            assert proof["profile_checksum"] == profile.content_checksum
+                            assert proof["classification"]["sensitivity"] == "SENSITIVE"
+                            assert proof["classification"]["reason"] == "sensitive_tag"
+                            assert control_key == "S3-004"
                         if exposure:
                             assert (
                                 proof["approval_policy"]["content_checksum"]
@@ -161,10 +176,20 @@ def exercise_s3_http(engine, monkeypatch, tmp_path, *, exposure=False):
                         )
                         assert control_key in profile.enabled_controls
                         mapping = detail["framework_mappings"][0]
-                        version = "2.0+subset.8" if exposure else "2.0+subset.7"
+                        version = (
+                            "2.0+subset.9"
+                            if sensitive_kms
+                            else "2.0+subset.8"
+                            if exposure
+                            else "2.0+subset.7"
+                        )
                         assert mapping["framework_version"] == version
                         assert mapping["reference_key"] == (
-                            "PR.AA-05" if control_key in {"S3-001", "S3-002"} else "PR.DS-02"
+                            "PR.DS-01"
+                            if sensitive_kms
+                            else "PR.AA-05"
+                            if control_key in {"S3-001", "S3-002"}
+                            else "PR.DS-02"
                         )
                         assert get(f"frameworks/{mapping['framework_id']}")["version"] == version
                     events = session.scalars(

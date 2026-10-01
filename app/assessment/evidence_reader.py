@@ -107,6 +107,10 @@ class AssessmentEvidenceReader:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
             )
+        if contract.schema_version == "1.7.0":
+            from app.assessment.s3_sensitive_kms_evidence import sensitive_kms_proof
+
+            return sensitive_kms_proof(self, contract, target)
         if contract.schema_version == "1.6.0":
             from app.assessment.s3_exposure_evidence import exposure_proof
 
@@ -235,6 +239,12 @@ class AssessmentEvidenceReader:
             expected = self.proof(contract, target)
             network_expected = None
             s3_expected = None
+            if contract.schema_version == "1.7.0":
+                from app.rules.s3_sensitive_kms import sensitive_kms_result
+
+                if candidate.control_id != "S3-004" or profile is None:
+                    raise ValueError("sensitive KMS validation requires its exact control/profile")
+                s3_expected = sensitive_kms_result(expected, profile)
             if contract.schema_version == "1.6.0":
                 from app.rules.s3_exposure import exposure_result
 

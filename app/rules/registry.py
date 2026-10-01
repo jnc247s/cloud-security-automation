@@ -113,4 +113,11 @@ def resolve_catalog(catalog_id: str, version: str):
         _, registry = resolve_catalog(catalog_id, "0.8.0")
         registry.register(S3ExposureRule())
         return build_exposure_catalog(), registry
+    if (catalog_id, version) == ("aws-cloud-security-controls", "0.10.0"):
+        from app.assessment.s3_sensitive_kms_control import build_sensitive_kms_catalog
+        from app.rules.s3_sensitive_kms import S3SensitiveKMSRule
+
+        _, registry = resolve_catalog(catalog_id, "0.9.0")
+        registry.register(S3SensitiveKMSRule())
+        return build_sensitive_kms_catalog(), registry
     raise ValueError("unsupported assessment catalog version")
