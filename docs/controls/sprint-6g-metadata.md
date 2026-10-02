@@ -107,5 +107,7 @@ documentation corrections. The same reviewer verified all resolved, zero new fin
 post-correction validation passed **410 focused / 2,491 full tests**, including **238 disposable
 PostgreSQL cases**, no skips and 20 existing warnings; all quality/container gates passed.
 See the [post-review gate checkpoint](../exec-plans/active/sprint-6.md#6g-post-review-validation-checkpoint--2026-10-01).
-Final committed-head reviewer approval is pending. No 6G commit, push, PR, merge or acceptance
-has occurred. Earlier initial gate outcomes remain recorded in the active plan.
+Final committed-head reviewer approval and publication remain pending. The
+[commit checkpoint](../exec-plans/active/sprint-6.md#6g-commit-checkpoint--2026-10-01) records the
+scoped implementation commit; 6G is not accepted. Earlier initial gate outcomes remain recorded
+in the active plan.

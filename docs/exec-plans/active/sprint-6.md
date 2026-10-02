@@ -3,6 +3,24 @@
 Plan state: 6A through 6F COMPLETE and merged. 6G is authorized and IN PROGRESS;
 6H is authorized but unstarted. Sprint 6 remains IN PROGRESS.
 
+## 6G commit checkpoint — 2026-10-01
+
+The sole writer committed exactly 45 scoped files as
+`c17d9878d1bec4795e8dd697e71ca4e06ff8d4b1`
+(`feat: add source-bound required-tag governance control (6G)`), parent
+`3e5963fc57ca95041618dd0e571b1237892baadf`, on `codex/sprint-6g-required-tags`.
+The implementation worktree was clean immediately after the commit. Unrelated parent `.agents/`
+files and original 6E.3 checkout were reverified unchanged and excluded. The 27-file tested core
+fingerprint and fresh 410 focused / 2,491 full / 238 PostgreSQL / no-skip gates remain unchanged.
+Post-gate documentary edits passed all 77 contract/link checks and whitespace.
+
+This documentary checkpoint changes no runtime, tests or policy. The same authorized reviewer
+must verify the exact final committed head and return REVIEW_PASS with zero unresolved introduced
+findings before publication/conditional merge. Final-head CI and merged-main CI remain mandatory.
+No 6G push, PR, merge or acceptance yet. 6H and later-sprint work remain unstarted; no live AWS,
+production deployment, operator database or policy change occurred. Prior no-commit checkpoints
+below describe their historical state, not the current Git state.
+
 ## 6G post-review validation checkpoint — 2026-10-01
 
 The fresh `python -m scripts.validate --focused ...` gate completed with exit 0 after all review
