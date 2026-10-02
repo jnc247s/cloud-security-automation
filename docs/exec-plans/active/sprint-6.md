@@ -3,6 +3,26 @@
 Plan state: 6A through 6G COMPLETE and merged. 6H acceptance/closeout is authorized and
 IN PROGRESS. Sprint 6 remains IN PROGRESS; Sprint 7 implementation is unstarted.
 
+## 6H commit checkpoint — 2026-10-01
+
+The sole writer committed exactly 21 scoped files as
+`bf4a6cc54d34b543db56791952166e9a145de8ec`
+(`test: verify whole-sprint controls and historical recovery (6H)`), parent
+`5043f61b384c8c4499710d2033f7636676705deb`, on `codex/sprint-6h-acceptance-closeout`.
+The worktree was clean immediately afterward. Sixteen owner/acceptance documents and five
+test files are included; no app, Alembic, configuration, operator policy, permission or
+authentication change. The original clean 6E.3 checkout at `949ce487` and unrelated parent
+untracked `.agents/` files remain preserved and excluded.
+
+Fresh 138 focused / 2,533 full / 252 PostgreSQL / no-skip and quality/container gates apply to
+the unchanged reviewed five-test-file fingerprint. Final review-result documentary edits passed
+all 78 contracts/links (one existing warning, no skips) and whitespace. This two-file documentary
+commit checkpoint changes no tested behavior; the same authorized reviewer must return REVIEW_PASS
+on its exact final committed head before publication. Normal push/PR, exact-head CI, conditional
+merge, merged-main CI and canonical documentary closure remain required. Sprint 6 and 6H are
+IN PROGRESS; no push, PR, merge, acceptance or later-sprint implementation yet. Prior no-commit
+checkpoints below are historical.
+
 ## 6H independent-review checkpoint — 2026-10-01
 
 The ONE authorized consolidated reviewer returned REVIEW_PASS for the stable uncommitted

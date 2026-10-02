@@ -7,6 +7,12 @@ to [ROADMAP.md](../../ROADMAP.md); authorization and checkpoints remain in the
 [active plan](../exec-plans/active/sprint-6.md). Independent review/publication/merge and final
 documentary closure are still pending; no Sprint 6 completion is claimed.
 
+Implementation/tests and the 16-document owner reconciliation are committed as
+`bf4a6cc54d34b543db56791952166e9a145de8ec`, parent that accepted base, on
+`codex/sprint-6h-acceptance-closeout`. The
+[commit checkpoint](../exec-plans/active/sprint-6.md#6h-commit-checkpoint--2026-10-01) records scope
+and required exact final-head review. No publication or merge yet; earlier checkpoints are historical.
+
 ## Acceptance scope
 
 All 25 core IDs (`IAM-001`–`006`, `EC2-001`–`004`, `NET-001`–`006`, `S3-001`–`004`,
