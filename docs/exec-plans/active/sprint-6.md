@@ -3,6 +3,17 @@
 Plan state: 6A through 6G COMPLETE and merged. 6H acceptance/closeout is authorized and
 IN PROGRESS. Sprint 6 remains IN PROGRESS; Sprint 7 implementation is unstarted.
 
+## 6H final-head documentary correction — 2026-10-01
+
+The same authorized reviewer verified clean documentary head
+`b64c61ff9f54285f084869a24ba4383947d15379`, parent implementation `bf4a6cc`, and the unchanged
+21-file scope / five-test fingerprint. Independent 78 contracts passed, no skips, one existing
+warning. Final reading identified one further LOW wording defect: the 6H acceptance record had
+conflated catalog `0.2.1` with the default profile version. It now explicitly preserves catalog
+`0.2.1` and profile `default/1.0.0`, matching accepted code/configuration. No behavior changed.
+All other reviewed checks remained clear; exact final-head REVIEW_PASS is pending recheck of this
+narrow documentary correction. No publication, merge, acceptance or later-sprint implementation.
+
 ## 6H commit checkpoint — 2026-10-01
 
 The sole writer committed exactly 21 scoped files as

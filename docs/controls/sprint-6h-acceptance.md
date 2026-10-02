@@ -18,7 +18,8 @@ and required exact final-head review. No publication or merge yet; earlier check
 All 25 core IDs (`IAM-001`–`006`, `EC2-001`–`004`, `NET-001`–`006`, `S3-001`–`004`,
 `LOG-001`–`004`, `GOV-001`) plus supported legacy `S3-900` run through unchanged real collectors,
 rules, persistence, executor and generic APIs. Only AWS responses are offline. The default
-catalog/profile remains `0.2.1`; latest `0.13.0` remains explicitly opt-in. Test-only policy enables
+catalog remains `0.2.1`, and default profile identity/version remains `default/1.0.0`;
+latest catalog `0.13.0` remains explicitly opt-in. Test-only policy enables
 all supported controls with the previously approved inputs, without replacing operator files or
 immutable exposure/classifier artifacts. Accepted migration head remains `20261001_0006`.
 
