@@ -36,8 +36,8 @@ proof version and sourced reporting metadata. Approved 6E.3 adds S3-004 in opt-i
 [6E.3 metadata](sprint-6e3-metadata.md) records exact classifier/default-KMS semantics and
 reporting metadata. Accepted 6F.1 registers LOG-002/003 only in opt-in `0.11.0`, with
 a separately approved bounded persistence repair; see
-[6F.1 metadata](sprint-6f1-metadata.md). Local 6F.2 registers LOG-004 in opt-in `0.12.0`,
-pending acceptance; see [6F.2 metadata](sprint-6f2-metadata.md). GOV-001 remains unregistered.
+[6F.1 metadata](sprint-6f1-metadata.md). Accepted 6F.2 registers LOG-004 in opt-in `0.12.0`;
+see [6F.2 metadata](sprint-6f2-metadata.md). GOV-001 implementation is authorized and in progress.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -548,13 +548,15 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `GOV-001` — Required ownership or context tags are missing
 
-- **Status:** canonical design; not implemented or enabled.
+- **Status:** locally implemented in opt-in `0.13.0`, pending validation/review/acceptance.
+  MEDIUM/governance, evaluator `1.0.0`, closed proof `1.10.0`, strategy `governance_tags_v1`;
+  see [approved 6G metadata](sprint-6g-metadata.md).
 - **Scope/resource type:** each resource type explicitly governed by the selected profile.
 - **Required evidence:** stable resource identity/type and complete, case-sensitive resource tags
   with collector completeness and common provenance.
 - **Relationships:** none required for the result; resource relationships remain investigation
   context.
-- **Assessment Profile:** `enabled_controls`, existing non-empty `required_tags`, and a future
+- **Assessment Profile:** `enabled_controls`, existing non-empty `required_tags`, and the schema-2
   versioned, non-empty `governed_resource_types` tuple of exact canonical normalized resource-type
   identifiers. The first supported selector vocabulary is `ec2_instance`, `ebs_volume`, `vpc`,
   `subnet`, `security_group`, `vpc_flow_log`, `s3_bucket`, `iam_user`, `iam_role`,
@@ -569,11 +571,15 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 - **NOT_APPLICABLE:** the resource type is outside the profile's governed set, or there are no
   governed resources.
 - **INSUFFICIENT_EVIDENCE:** tag collection is incomplete, so absence cannot be distinguished from
-  collection failure, or the tag structure is malformed.
+  collection failure, the tag structure is malformed, or any governed family's required discovery
+  or exact target identity is unavailable/inconsistent. A failed enumeration is never proven empty.
 - **Limitations:** this checks presence and usable values, not truth, ownership authorization, or
   consistency with an external CMDB. Tag keys and governed resource-type identifiers are
   case-sensitive; IAM groups, AWS-managed policies, access-key resources, and account/Region
   setting observations are outside the initial taggable vocabulary.
+- **Mapping:** NIST CSF `2.0+subset.12` ID.AM-02, limited inventory-context contribution, not
+  ownership truth or compliance. Initial opt-in keys are exactly `Owner` and `Environment` for
+  all 11 selectors; no defaults or deployed policy changes.
 - **AWS reference:** [Tagging AWS resources](https://docs.aws.amazon.com/tag-editor/latest/userguide/tagging.html).
 
 Every executable contract defines a stable control ID, title, resource type, assessment type,

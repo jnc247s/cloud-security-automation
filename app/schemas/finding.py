@@ -25,6 +25,7 @@ class ControlCategory(StrEnum):
     STORAGE = "storage"
     IDENTITY = "identity"
     LOGGING = "logging"
+    GOVERNANCE = "governance"
 
 
 class FindingCandidate(BaseModel):

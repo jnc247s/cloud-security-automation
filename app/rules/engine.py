@@ -141,7 +141,9 @@ class RuleEngine:
 
             if execution is not None:
                 try:
-                    validate_execution_targets(snapshot, execution, rule_assessments)
+                    validate_execution_targets(
+                        snapshot, execution, rule_assessments, profile=profile
+                    )
                     for candidate in rule_assessments:
                         evidence_reader.validate_candidate(
                             execution, candidate, profile=profile, context=context

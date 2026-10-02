@@ -27,9 +27,13 @@ record the development history. Sprint state itself is authoritative only in
   migration `20261001_0005` retains unresolved regional references without inventing identity;
   complete identities and guarded downgrade remain strict. Merged-main CI passed 2,125 tests,
   including 171 PostgreSQL cases, with no skips, plus quality/image gates.
-- 6F.2 LOG-004 is published in [pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38)
-  but not yet accepted; 6G and 6H are authorized
-  but unstarted. Default catalog `0.2.1` and read-only scanner permissions remain unchanged.
+- Accepted 6F.2 LOG-004 in opt-in `0.12.0` through
+  [pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38), merged at
+  `3e5963fc57ca95041618dd0e571b1237892baadf`. Exact same-invocation S3-002 destination composition
+  preserves historical/default behavior without new AWS calls, permissions or migrations.
+  Local acceptance and merged-main CI passed 2,212 tests, including 201 PostgreSQL cases,
+  no skips and all quality/container gates; exact final-head review passed with zero findings.
+  6G is authorized and in progress; 6H is authorized but unstarted.
 
 ## Sprint 5 — 2026-09-23
 

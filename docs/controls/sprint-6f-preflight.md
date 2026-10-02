@@ -2,7 +2,8 @@
 
 Current follow-up: 6F.1 is accepted through PR #37 with green merged-main CI. The user
 subsequently approved the remaining Sprint 6 bundle, including 6F.2 metadata, the bounded
-composition seam and complete-empty account N/A clarification. 6F.2 is IN PROGRESS; see
+composition seam and complete-empty account N/A clarification. 6F.2 is COMPLETE through
+PR #38 with green merged-main CI; 6G is IN PROGRESS. See
 [6F.2 metadata](sprint-6f2-metadata.md).
 The [active plan](../exec-plans/active/sprint-6.md) records authorization and the
 [6F.1 metadata](sprint-6f1-metadata.md) records the accepted implementation and repaired blocker.

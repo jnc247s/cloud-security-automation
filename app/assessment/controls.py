@@ -245,6 +245,10 @@ class ControlCatalog(BaseModel):
 
     def validate_profile_inputs(self, profile: AssessmentProfile) -> None:
         """Reject missing declared policy before collection, evaluation, or persistence."""
+        if "GOV-001" in profile.enabled_controls:
+            from app.assessment.governance_evidence import validate_governance_policy
+
+            validate_governance_policy(profile)
         if "EC2-002" in profile.enabled_controls:
             from app.assessment.ec2_evidence import validate_public_ec2_allowlist
 

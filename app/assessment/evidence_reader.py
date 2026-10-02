@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from types import MappingProxyType
 
 from app.assessment.evidence_graph import (
     index_source_outcomes_by_provenance,
@@ -38,6 +39,8 @@ class AssessmentEvidenceReader:
         self.resources = {self._target_id(r): r for r in self.snapshot.resources}
         self._iam_policy_coverage = None
         self._composition_inventory_digest = None
+        self._governance_resource_families = None
+        self._governance_population_cache = {}
         if self.graph is not None:
             self._outcomes = {o.source_outcome_id: o for o in self.graph.source_outcomes}
             self._artifacts = {a.evidence_reference: a for a in self.graph.artifacts}
@@ -64,6 +67,24 @@ class AssessmentEvidenceReader:
                     object.__setattr__(resource, field, _freeze_json(getattr(resource, field)))
             self._composition_inventory_digest = inventory_sha256(self.snapshot)
         return self._composition_inventory_digest
+
+    def governance_resource_families(self):
+        """Index and seal only this operation's private validated resource observations.
+
+        Population proofs can then be reused without rescanning caller-owned inventory
+        or allowing nested JSON mutation to change cached admission facts. Historical
+        readers are unaffected unless the new governance proof is requested.
+        """
+        if self._governance_resource_families is None:
+            families = defaultdict(list)
+            for resource in self.snapshot.resources:
+                for field in ("tags", "configuration", "raw_configuration"):
+                    object.__setattr__(resource, field, _freeze_json(getattr(resource, field)))
+                families[(resource.service, resource.resource_type)].append(resource)
+            self._governance_resource_families = MappingProxyType(
+                {key: tuple(resources) for key, resources in families.items()}
+            )
+        return self._governance_resource_families
 
     def _subject_matches(
         self, subject, required: RequiredSource, target: NormalizedResource
@@ -122,6 +143,10 @@ class AssessmentEvidenceReader:
         self, contract: ExecutionContract, target: NormalizedResource, *, context=None, profile=None
     ) -> dict:
         """Resolve every mandatory source and edge, binding the proof to immutable IDs/digests."""
+        if contract.schema_version == "1.10.0":
+            from app.assessment.governance_evidence import governance_proof
+
+            return governance_proof(self, contract, target, profile=profile)
         if self.graph is None:
             raise IncompleteAssessmentEvidence(
                 "a source-aware assessment requires an evidence graph"
@@ -273,6 +298,13 @@ class AssessmentEvidenceReader:
             network_expected = None
             s3_expected = None
             cloudtrail_expected = None
+            governance_expected = None
+            if contract.schema_version == "1.10.0":
+                from app.assessment.governance_evidence import governance_result
+
+                if candidate.control_id != "GOV-001" or profile is None:
+                    raise ValueError("governance validation requires its exact control/profile")
+                governance_expected = governance_result(expected, profile)
             if contract.schema_version == "1.9.0":
                 from app.assessment.cloudtrail_destination_evidence import destination_result
 
@@ -339,6 +371,15 @@ class AssessmentEvidenceReader:
                     "incomplete required sources require an insufficient assessment"
                 ) from None
             return
+        if governance_expected is not None:
+            if candidate.result is not governance_expected:
+                raise ValueError("governance result differs from retained evidence/policy")
+            if (
+                candidate.result
+                in {AssessmentResult.NOT_APPLICABLE, AssessmentResult.INSUFFICIENT_EVIDENCE}
+                and candidate.evidence_artifacts
+            ):
+                raise ValueError("nondecisive governance results cannot carry decisive evidence")
         if cloudtrail_expected is not None:
             if candidate.result is not cloudtrail_expected:
                 raise ValueError("CloudTrail result differs from retained source evidence")
@@ -383,6 +424,11 @@ class AssessmentEvidenceReader:
             raise ValueError("observed IAM credentials or root controls cannot be not applicable")
         for artifact in candidate.evidence_artifacts:
             if (
+                governance_expected is not None
+                and artifact.payload.get("evaluation_version") != "1.0.0"
+            ):
+                raise ValueError("governance evaluation version differs from contract")
+            if (
                 cloudtrail_expected is not None
                 and artifact.payload.get("evaluation_version") != "1.0.0"
             ):
@@ -392,7 +438,7 @@ class AssessmentEvidenceReader:
             ) != "1.0.0":
                 raise ValueError("network evaluation version differs from contract")
             proof = artifact.payload.get("source_proof")
-            if contract.schema_version in {"1.8.0", "1.9.0"} or exact_proof:
+            if contract.schema_version in {"1.8.0", "1.9.0", "1.10.0"} or exact_proof:
                 from app.assessment.cloudtrail_evidence import exact_json_equal
 
                 proof_matches = exact_json_equal(proof, expected)

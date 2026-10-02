@@ -6,11 +6,20 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
-Local 6F.2 catalog `0.12.0`, pending acceptance, adds LOG-004 -> PR.AA-05 in separate
+Local 6G catalog `0.13.0`, pending acceptance, adds GOV-001 -> ID.AM-02 in separate subset
+`2.0+subset.12`. Source: official NIST CSWP 29 version 2.0, Appendix A printed page 18
+(PDF index 22), inspected 2026-10-01. The new JSON artifact has SHA-256
+`fd3cd6448531d44c73b86781dfd84736fa20726e88360463ac8767ef588c1d2e`; its companion manifest
+records that artifact digest. This project inference
+contributes ownership/environment inventory context, not complete maintained inventories,
+ownership truth or compliance. Earlier bytes and technical results remain independent.
+See [6G metadata](../controls/sprint-6g-metadata.md).
+
+Accepted 6F.2 catalog `0.12.0` adds LOG-004 -> PR.AA-05 in separate
 subset `2.0+subset.11`. Source: official NIST CSWP 29 version 2.0, Appendix A printed page 20
 (PDF index 24), inspected 2026-10-01. Artifact `app/assessment/data/nist_csf_2_0_subset_11.json`
-and companion manifest have SHA-256
-`2bb52393030d78513a656a806d37fe7ec44ad876112f1c18dd66b48e1133a782`.
+has SHA-256 `2bb52393030d78513a656a806d37fe7ec44ad876112f1c18dd66b48e1133a782`;
+its companion manifest records that artifact digest.
 This project inference contributes destination access-policy review context, not complete least
 privilege or compliance. Earlier framework bytes and technical results remain independent.
 See [6F.2 metadata](../controls/sprint-6f2-metadata.md).

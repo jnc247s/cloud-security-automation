@@ -28,6 +28,7 @@ _PENDING_SCAN_INVENTORY_REVISION: Final = "20260904_0002"
 _EVIDENCE_GRAPH_REVISION: Final = "20260915_0003"
 _ASSESSMENT_EXECUTION_REVISION: Final = "20260924_0004"
 _UNRESOLVED_REGION_REVISION: Final = "20261001_0005"
+_GOVERNANCE_CATEGORY_REVISION: Final = "20261001_0006"
 _RECOVERY_DOCUMENT: Final = "docs/operations/known-limitations.md"
 _UNSAFE_DOWNGRADE_MESSAGE: Final = (
     "Downgrade blocked before revision 20260904_0002: retained scan history contains "
@@ -175,6 +176,42 @@ def _assert_unresolved_region_downgrade_safe(connection: Connection) -> None:
         )
 
 
+def _downgrades_governance_category(current_revisions) -> bool:
+    if not current_revisions:
+        return False
+    try:
+        destination = context.get_revision_argument()
+        return any(
+            revision.revision == _GOVERNANCE_CATEGORY_REVISION
+            for revision in script_directory.iterate_revisions(
+                current_revisions, destination, select_for_downgrade=True
+            )
+        )
+    except (KeyError, RangeNotAncestorError):
+        return False
+
+
+def _assert_governance_category_downgrade_safe(connection: Connection) -> None:
+    if connection.dialect.name == "postgresql":
+        # One parent lock prevents new governance versions and their FK-bound history;
+        # no additional lock ordering is introduced into the control/history writer.
+        connection.execute(text("LOCK TABLE control_versions IN ACCESS EXCLUSIVE MODE"))
+    elif connection.dialect.name == "sqlite":
+        if not connection.connection.driver_connection.in_transaction:
+            connection.execute(text("BEGIN IMMEDIATE"))
+        else:
+            connection.execute(text("UPDATE alembic_version SET version_num = version_num WHERE 0"))
+    if connection.scalar(
+        text("SELECT EXISTS (SELECT 1 FROM control_versions WHERE category = 'governance')")
+    ):
+        raise util.CommandError(
+            "Downgrade blocked before revision 20261001_0006: retained governance control "
+            "history cannot be represented by the older category constraint. No schema or "
+            "data changes were applied. Keep this revision, verify backups, and follow "
+            "docs/operations/known-limitations.md."
+        )
+
+
 def _downgrades_evidence_graph(
     current_revisions: str | tuple[str, ...] | None,
 ) -> bool:
@@ -285,6 +322,11 @@ def run_migrations_offline() -> None:
         autogenerate_plugins=AUTOGENERATE_PLUGINS,
     )
     starting_revision = context.get_starting_revision_argument()
+    if _downgrades_governance_category(starting_revision):
+        raise util.CommandError(
+            "Offline downgrade blocked before revision 20261001_0006: retained category "
+            "compatibility requires an online check. Follow docs/operations/known-limitations.md."
+        )
     if _downgrades_assessment_execution(starting_revision):
         raise util.CommandError(
             "Offline downgrade across 20260924_0004 requires an online history compatibility check."
@@ -323,6 +365,8 @@ def run_migrations_online() -> None:
                 _assert_pending_scan_downgrade_safe(supplied_connection)
             if _downgrades_unresolved_region(current_heads):
                 _assert_unresolved_region_downgrade_safe(supplied_connection)
+            if _downgrades_governance_category(current_heads):
+                _assert_governance_category_downgrade_safe(supplied_connection)
             context.run_migrations()
         return
 
@@ -348,6 +392,8 @@ def run_migrations_online() -> None:
                 _assert_pending_scan_downgrade_safe(connection)
             if _downgrades_unresolved_region(current_heads):
                 _assert_unresolved_region_downgrade_safe(connection)
+            if _downgrades_governance_category(current_heads):
+                _assert_governance_category_downgrade_safe(connection)
             context.run_migrations()
 
 

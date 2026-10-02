@@ -158,6 +158,12 @@ boundary only.
 | frameworks | `framework_key`, `version` |
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
 
+Local 6G adds the public control category `governance`. Existing category values, response
+shapes, capabilities and generic control filtering are unchanged. The category migration is
+under validation; GOV-001 is locally registered, not yet accepted. Its generic resource-type
+filter uses the 11 declared execution families. No response field or route changes. See
+[6G metadata](controls/sprint-6g-metadata.md).
+
 Every list uses offset pagination with `limit` defaulting to 50, a maximum of 100, and `offset`
 defaulting to 0. Responses contain `items`, `total`, `limit`, and `offset`. Service queries use
 deterministic ordering, but offset pages and totals are not a transactionally frozen snapshot;

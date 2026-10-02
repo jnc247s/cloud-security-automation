@@ -54,10 +54,20 @@ class ExecutionContract(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid", strict=True)
     schema_version: Literal[
-        "1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0"
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0",
     ]
     target_kind: Literal["global_account", "regional_account", "resources"]
-    target_selection: Literal["all_observed_v1", "iam_policy_documents_v1"]
+    target_selection: Literal["all_observed_v1", "iam_policy_documents_v1", "governance_tags_v1"]
     account_service: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     resource_families: tuple[ResourceFamily, ...] = ()
     validation_strategy: Literal[
@@ -74,6 +84,7 @@ class ExecutionContract(BaseModel):
         "cloudtrail_management_coverage_v1",
         "cloudtrail_integrity_v1",
         "cloudtrail_destination_exposure_v1",
+        "governance_tags_v1",
     ]
     required_sources: tuple[RequiredSource, ...] = Field(min_length=1)
     required_relationships: tuple[RelationshipType, ...] = ()
@@ -88,6 +99,22 @@ class ExecutionContract(BaseModel):
 
     @model_validator(mode="after")
     def unambiguous_contract(self) -> Self:
+        governance = self.validation_strategy == "governance_tags_v1"
+        if (self.schema_version == "1.10.0") != governance:
+            raise ValueError("governance proofs require execution schema 1.10")
+        if governance:
+            from app.assessment.governance_evidence import GOVERNANCE_FAMILIES, GOVERNANCE_SOURCES
+
+            if (
+                self.target_kind != "resources"
+                or self.target_selection != "governance_tags_v1"
+                or self.account_service != "iam"
+                or self.resource_families != GOVERNANCE_FAMILIES
+                or self.required_sources != GOVERNANCE_SOURCES
+                or self.required_relationships
+                or self.assessment_dependencies
+            ):
+                raise ValueError("execution schema 1.10 is restricted to required-tag proofs")
         destination = self.validation_strategy == "cloudtrail_destination_exposure_v1"
         if (self.schema_version == "1.9.0") != destination:
             raise ValueError("destination composition requires execution schema 1.9")
@@ -192,7 +219,9 @@ class ExecutionContract(BaseModel):
                 or self.required_relationships != (RelationshipType.IN_VPC,)
             ):
                 raise ValueError("execution schema 1.3 is restricted to security-group proofs")
-        if self.schema_version != "1.2.0" and self.target_selection != "all_observed_v1":
+        if self.schema_version not in {"1.2.0", "1.10.0"} and (
+            self.target_selection != "all_observed_v1"
+        ):
             raise ValueError("legacy execution schemas require legacy target selection")
         if self.schema_version == "1.2.0":
             from app.assessment.iam_policy_evidence import POLICY_DISCOVERY, POLICY_FAMILIES
@@ -266,6 +295,8 @@ def account_target(snapshot: InventorySnapshot, contract: ExecutionContract) -> 
 def assessment_targets(
     snapshot: InventorySnapshot,
     contract: ExecutionContract,
+    *,
+    profile=None,
 ) -> tuple[NormalizedResource, ...]:
     """Pure canonical enumeration shared by engine and persistence; retain actual identities."""
 
@@ -284,6 +315,16 @@ def assessment_targets(
     )
     if len({r.identity for r in resources}) != len(resources):
         raise ValueError("duplicate assessment target in inventory")
+    if contract.target_selection == "governance_tags_v1":
+        from app.assessment.governance_evidence import validate_governance_policy
+
+        validate_governance_policy(profile)
+        if not any(r.resource_type in profile.governed_resource_types for r in resources):
+            # Keep observed ungoverned N/A targets, but never let them hide unavailable
+            # governed discovery. The proof distinguishes complete empty from a gap.
+            return tuple(
+                sorted((*resources, account_target(snapshot, contract)), key=lambda r: r.identity)
+            )
     return resources
 
 
@@ -291,10 +332,12 @@ def validate_execution_targets(
     snapshot: InventorySnapshot,
     contract: ExecutionContract,
     candidates: tuple[AssessmentCandidate, ...],
+    *,
+    profile=None,
 ) -> None:
     """No omitted/extra targets, and no collector failure can erase observed targets."""
 
-    targets = assessment_targets(snapshot, contract)
+    targets = assessment_targets(snapshot, contract, profile=profile)
     actual = [item.identity[1:] for item in candidates]
     if not targets:
         if len(candidates) != 1 or candidates[0].result not in {
