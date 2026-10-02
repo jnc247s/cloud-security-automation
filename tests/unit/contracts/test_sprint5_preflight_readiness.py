@@ -409,7 +409,10 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids == EXECUTABLE_CONTROL_IDS
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
-    assert "| Sprint 6 | Production Security Controls | **IN PROGRESS** |" in roadmap
+    assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
+    assert "| Sprint 7 | Dashboard / NIST Technical Posture | **NEXT** |" in roadmap
+    assert (ROOT / "docs/exec-plans/completed/sprint-6.md").is_file()
+    assert not (ROOT / "docs/exec-plans/active/sprint-6.md").exists()
     assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in roadmap
     assert "Final slice: **5G closure — COMPLETE**" in sprint_plan
     assert "Status: **COMPLETE**" in sprint_plan

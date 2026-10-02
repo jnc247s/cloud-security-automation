@@ -1,6 +1,6 @@
 # Sprint 6E.3 — S3-004 release metadata
 
-Approved bundle: 2026-09-30, recorded in the [active plan](../exec-plans/active/sprint-6.md).
+Approved bundle: 2026-09-30, recorded in the [completed plan](../exec-plans/completed/sprint-6.md).
 [ROADMAP.md](../../ROADMAP.md) owns progress. The [classifier schema](s3-004-sensitive-bucket-classifier.md)
 is unchanged; this release supplies its approved evaluator using accepted 6A policy storage.
 

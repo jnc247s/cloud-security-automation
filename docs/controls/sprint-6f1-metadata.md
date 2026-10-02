@@ -2,13 +2,13 @@
 
 Approved by the user's `implement 6f1` request on 2026-10-01 following the
 [6F preflight](sprint-6f-preflight.md). [ROADMAP.md](../../ROADMAP.md) owns progress;
-the [active plan](../exec-plans/active/sprint-6.md) records authorization and validation.
+the [completed plan](../exec-plans/completed/sprint-6.md) records authorization and validation.
 Local implementation acceptance checks and independent review pass with zero unresolved findings.
 The reviewed slice merged in [PR #37](https://github.com/jnc247s/cloud-security-automation/pull/37)
 at `3a053ff396a2c112aa254842cb25730fe3879ecc` under the user's conditional merge approval.
 [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
 passed all 2,125 tests (20 existing warnings, no skips), lint/format and image build.
-6F.1 is accepted; the active plan retains the superseded historical pending checkpoints.
+6F.1 is accepted; the completed plan retains the superseded historical pending checkpoints.
 No deployment policy was enabled.
 
 ## Approved immutable bundle
@@ -25,7 +25,8 @@ No deployment policy was enabled.
 
 Default `0.2.1`, catalogs through `0.10.0`, LOG-001, earlier framework artifact bytes,
 collector behavior, scanner permissions, generic API and authentication remain unchanged.
-LOG-004 and GOV-001 are not registered. No dependency scheduler or remediation was added.
+This `0.11.0` release does not register LOG-004 or GOV-001; later accepted `0.12.0`/`0.13.0`
+register them separately. No dependency scheduler or remediation was added by 6F.1.
 
 ## Required proofs and decisions
 

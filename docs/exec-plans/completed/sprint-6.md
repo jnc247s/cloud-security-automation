@@ -1,7 +1,90 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6G COMPLETE and merged. 6H acceptance/closeout is authorized and
-IN PROGRESS. Sprint 6 remains IN PROGRESS; Sprint 7 implementation is unstarted.
+Plan state: Sprint 6 COMPLETE; 6A through 6H are accepted and merged. This post-merge documentary
+closure archives the plan and promotes Sprint 7 NEXT without starting implementation.
+
+## 6H acceptance and Sprint 6 documentary closure — 2026-10-01
+
+Whole-sprint 6H merged in [PR #40](https://github.com/jnc247s/cloud-security-automation/pull/40)
+at `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` on 2026-10-02T02:08:02Z (2026-10-01
+America/Chicago). Verified merge parents are accepted `5043f61b384c8c4499710d2033f7636676705deb`
+and exact reviewed final head `7d80c57b21a62672a4404bd2af4d077d3990ec52`. Implementation
+`bf4a6cc54d34b543db56791952166e9a145de8ec` and its two documentary commits included exactly
+five test files and 16 documents, with no app/Alembic/configuration/deployed-policy/collector /
+permission/authentication change. The ONE authorized consolidated read-only reviewer returned
+exact-head REVIEW_PASS, zero unresolved introduced findings at every severity, after verifying
+both LOW documentary corrections. Independent 105 rule/SQLite/contract, 14 separate disposable
+PostgreSQL and final 78 contract/link checks passed, no skips, one existing warning per run.
+
+Fresh local acceptance passed 138 focused tests / 2,533 full tests in 524.79 seconds, including
+252 disposable PostgreSQL cases, no skips and 20 existing full-suite warnings. Ruff, 341-file
+formatting, docs/links, whitespace, Compose and image build passed. The five-test-file fingerprint
+remained `18ec4cdb50964a74babbdbb91cdde08e9b365e20c1c8bcf4b16e1245d9058515` through final review.
+Final-head push CI [36953191107](https://github.com/jnc247s/cloud-security-automation/actions/runs/36953191107)
+and PR CI [36953194830](https://github.com/jnc247s/cloud-security-automation/actions/runs/36953194830)
+passed all 2,533 tests, no skips, 20 existing warnings and every quality/image gate. Merge rechecked
+exact head/base, both CI runs, clean tree/mergeability and no human-review request/comment. No
+admin bypass, force push, branch-protection change or production operation.
+
+[Merged-main CI 36954205010](https://github.com/jnc247s/cloud-security-automation/actions/runs/36954205010)
+passed on exact merge `19c4cd1`: 2,533 tests in 522.00 seconds, 20 existing warnings, no skips,
+Ruff, 341-file formatting and image build. The primary verified locally that the merge tree
+exactly equals the reviewed feature tree. Only after this gate, clean accepted main was
+fast-forwarded and `codex/sprint-6-closeout` created in the reused worktree.
+
+The current closeout is documentation-only: record accepted 6H, update README/canonical owners,
+archive this plan with predictions and differences retained, repair all archive links, mark
+Sprint 6 COMPLETE and promote Sprint 7 NEXT. The existing documentary status guard now explicitly
+checks COMPLETE/NEXT and completed-plan presence/active-plan absence; its default/evidence
+boundary assertions remain unchanged. No application/runtime/artifact/default/migration change;
+default catalog `0.2.1`, profile `default/1.0.0` and migration head `20261001_0006` are unchanged.
+An initial documentary check passed 77 cases and failed only the old IN-PROGRESS status assertion;
+it was evolved to the approved transition, not removed or weakened.
+
+Fresh closeout validation completed with exit 0 using
+`python -m scripts.validate --focused tests/unit/contracts`: 78 focused checks and 2,533 full
+tests in 478.49 seconds, including all 252 disposable PostgreSQL cases, no skips and 20 existing
+full-suite warnings. Ruff, 341-file formatting, contracts/links, whitespace, Compose and image
+build passed; the uniquely owned disposable database was removed. No operator database was used.
+The SAME authorized 6H reviewer independently passed 91 contracts/catalog-golden checks and
+78 post-correction contracts, no skips and one existing warning per run. One LOW stale current
+6G-state / archived-plan-label finding was corrected and verified; stable-tree REVIEW_PASS has
+zero unresolved or new introduced findings at every severity. The reviewer independently
+verified the 2,119-line historical body exactly preserved and unchanged accepted test fingerprint.
+
+Exact committed documentary-head recheck, normal scoped publication, final-head CI, conditional
+merge and merged-main CI remain pending at this checkpoint; the unattended Goal is not yet
+complete and no closeout publication result is claimed. Original 6E.3 checkout and unrelated
+parent untracked skills remain preserved/excluded. No Sprint 7 code or preflight.
+
+### Material implemented differences from the original predictions
+
+- All 25 core controls plus supported legacy S3-900 are present in cumulative opt-in `0.13.0`;
+  the default five controls and historical catalog/profile/framework bytes remain unchanged.
+- The accepted 6A foundation required additive migration `20260924_0004` and versioned policy /
+  execution storage. Organization policies and new metadata were approved separately before
+  each dependent slice, rather than silently inferred from evidence readiness or NIST mappings.
+- 6B and 6D combined their bounded implementation slices at approved final PR boundaries,
+  preserving the recorded intermediate work and independent acceptance.
+- 6E.1 included the separately authorized migration-comparison baseline repair, not weakened
+  tests or a redefinition of evidence contracts. The original failed gate and fresh successful
+  validation remain recorded below.
+- 6F.1 needed the explicitly authorized unresolved-regional-reference persistence repair and
+  new migration `20261001_0005`; complete identities/history and guarded downgrade stayed strict.
+- 6F.2 added only the concrete closed S3-002 dependency/context seam. Review corrections bound
+  exact destination identity and made inventory hashing fixed-cost; no general scheduler.
+- 6G required the approved additive governance category/migration `20261001_0006`; review
+  added closed governed-population fallback coverage and bounded private indexes. Defaults,
+  operator policy, collectors and authentication were not broadened.
+- 6H added combined-control, all-supported-release golden/history/restart and real authenticated
+  generic API acceptance on SQLite/PostgreSQL, not new application behavior. LOW documentary
+  inconsistencies were corrected; accepted operational limitations remain explicitly deferred.
+- The user's recorded 2026-10-01 authorization superseded earlier human-publication/merge wait
+  instructions only for remaining Sprint 6 work, with one reviewer per slice, zero unresolved
+  introduced findings, exact-head green gates and matched conditional merges without bypass.
+
+All original forecasts, earlier `Current action` wording, initial failures and superseded
+pending checkpoints below are retained as historical evidence, not current sprint state.
 
 ## 6H final-head documentary correction — 2026-10-01
 

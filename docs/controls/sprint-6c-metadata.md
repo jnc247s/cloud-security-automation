@@ -1,7 +1,7 @@
 # Sprint 6C approved control metadata
 
 Approved 2026-09-28. State belongs to [ROADMAP.md](../../ROADMAP.md); scope belongs to the
-[active plan](../exec-plans/active/sprint-6.md). Preserve the [canonical truth tables](catalog.md).
+[completed plan](../exec-plans/completed/sprint-6.md). Preserve the [canonical truth tables](catalog.md).
 
 ## Decisions
 

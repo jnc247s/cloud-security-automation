@@ -1,7 +1,7 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6G
-Baseline: `main` commit `5043f61b384c8c4499710d2033f7636676705deb` (GOV-001 merged in PR #39)
+Status: living model for accepted Sprints 0--6
+Implementation baseline: `main` commit `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (6H merged in PR #40)
 Last reviewed: 2026-10-01
 
 ## Scope and security objectives
@@ -74,7 +74,8 @@ identity, and policy implementation, and the merged fact-only 5D IAM Access Anal
 production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
 implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
-6G required tags are accepted; 6H acceptance/closeout is in progress. The 5F change adds no AWS write,
+6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7
+is NEXT, unstarted. 6H changed no application/security behavior or residual risk. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
 

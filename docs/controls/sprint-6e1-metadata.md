@@ -1,7 +1,7 @@
 # Sprint 6E.1 approved policy and control metadata
 
 Approved 2026-09-29. [ROADMAP.md](../../ROADMAP.md) owns progress and the
-[active plan](../exec-plans/active/sprint-6.md) owns approved implementation scope.
+[completed plan](../exec-plans/completed/sprint-6.md) owns approved implementation scope.
 The user approved the policy directions and subsequently approved severity, guidance, release
 identities and reporting mappings. The default catalog remains unchanged.
 

@@ -2,7 +2,7 @@
 
 Prepared and approved: 2026-09-27. Status: accepted in opt-in catalog `0.3.0`.
 Sprint state belongs to [ROADMAP.md](../../ROADMAP.md); implementation scope belongs to the
-[active plan](../exec-plans/active/sprint-6.md). The [canonical catalog](catalog.md) retains all
+[completed plan](../exec-plans/completed/sprint-6.md). The [canonical catalog](catalog.md) retains all
 existing truth tables, evidence requirements, applicability, and limitations unchanged.
 
 ## Approved policy choices
