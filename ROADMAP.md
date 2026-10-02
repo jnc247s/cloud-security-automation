@@ -4,9 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-01
-Accepted baseline: `main` at `3e5963fc57ca95041618dd0e571b1237892baadf` (PR #38;
-Sprints 0--5 and Sprint 6 slices 6A through 6F, including LOG-004 in opt-in `0.12.0`
-and additive migration `20261001_0005`; merged-main CI passed)
+Accepted baseline: `main` at `5043f61b384c8c4499710d2033f7636676705deb` (PR #39;
+Sprints 0--5 and Sprint 6 slices 6A through 6G, including GOV-001 in opt-in `0.13.0`
+and additive migration `20261001_0006`; merged-main CI passed)
 
 ## Current state
 
@@ -71,22 +71,26 @@ findings. [Pull request #37](https://github.com/jnc247s/cloud-security-automatio
 at `3a053ff396a2c112aa254842cb25730fe3879ecc`, with green final-head and merged-main CI. The user subsequently
 approved the remaining Sprint 6 policy bundle and persistent Goal, scoped publication, one
 read-only independent reviewer per slice and conditional merges after all mandatory gates.
-LOG-004/6F.2 is COMPLETE. 6G is authorized and IN PROGRESS; 6H is authorized but unstarted. The
+LOG-004/6F.2 and GOV-001/6G are COMPLETE. 6H is authorized and IN PROGRESS. The
 [active-plan authorization](docs/exec-plans/active/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01)
 records the exact policies, boundaries and merge conditions. No later-sprint implementation is
 authorized.
-GOV-001 is locally registered in opt-in `0.13.0`, with closed proof `1.10.0`, exact initial
+Accepted GOV-001 is registered in opt-in `0.13.0`, with closed proof `1.10.0`, exact initial
 Owner/Environment policy across all 11 families, separate NIST subset `.12` and the approved
-additive `governance` category / `20261001_0006` migration. It is published in
-[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39), but not yet accepted.
+additive `governance` category / `20261001_0006` migration. It merged through
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) at the accepted baseline above.
 After the review corrections, fresh validation passed 410 focused and 2,491 regression tests,
 including 238 disposable PostgreSQL cases, with no skips and all quality/container gates green.
 The same reviewer verified all original findings resolved with zero new findings after 274
 independent checks and returned REVIEW_PASS for exact head
-`b1bf5cbe0868b7914d5f5c6680322a3437341ebe`. Final publication-document recheck and CI/merge gates
-remain pending; merged-main CI must pass before 6H.
+`d2874a38f7be468ddc3f307a8fb2251dac8c7d70`. Both exact final-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
+passed; main ran 2,491 tests with 20 existing warnings, no skips, Ruff, 335-file formatting and
+image build. The [acceptance checkpoint](docs/exec-plans/active/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
+records exact heads, review and gates.
 See [6G metadata](docs/controls/sprint-6g-metadata.md). No deployed policy,
-collector, AWS permission or authentication change; 6H and later-sprint work remain unstarted.
+collector, AWS permission or authentication change. 6H starts acceptance/closeout from clean
+verified main on `codex/sprint-6h-acceptance-closeout`; later-sprint implementation remains unstarted.
 The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
 on the scoped feature branch; unrelated parent-checkout skill files remain excluded and preserved.
 Initial acceptance was blocked by a pre-existing domain/database mismatch for unresolved
@@ -122,9 +126,17 @@ merged through reviewed final head `cfd8d0b28f0d2b44012a71c8f31a214710b55803` in
 Both final-head CI runs and [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36938144756)
 passed; main ran all 2,212 tests with 20 existing warnings and no skips, plus quality/image gates.
 The [acceptance checkpoint](docs/exec-plans/active/sprint-6.md#6f2-acceptance-and-6g-start--2026-10-01)
-records the exact merge and evidence. 6G starts from that clean accepted main on
+records the exact merge and evidence. 6G started from that clean accepted main on
 `codex/sprint-6g-required-tags`; it implements only the approved GOV-001 policy and narrow
-category migration. 6H and later-sprint implementation remain unstarted.
+category migration. The subsequent 6G acceptance checkpoint above authorizes the current 6H
+acceptance/closeout work; later-sprint implementation remains unstarted.
+
+Current 6H local acceptance passes 138 focused / 2,533 full tests, including 252 disposable
+PostgreSQL cases, no skips and all quality/container gates. The single authorized independent
+reviewer returned REVIEW_PASS after correcting one LOW owner-state inconsistency, with zero
+unresolved findings. Exact committed-head recheck, publication/CI/merge/merged-main gates and
+canonical documentary closure remain pending; Sprint 6 is not complete. See
+[6H acceptance](docs/controls/sprint-6h-acceptance.md).
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
 
@@ -221,8 +233,8 @@ available in opt-in catalog `0.10.0`, while default `0.2.1` remains unchanged. S
 [preflight](docs/controls/sprint-6f-preflight.md) and active plan. The user's implementation request
 initially authorized the prepared 6F.1 bundle only; 6F.1 is now COMPLETE through PR #37 and
 green merged-main CI. 6F.2 is subsequently COMPLETE through PR #38 and green merged-main CI.
-The remaining-Sprint-6 approval authorizes 6G (IN PROGRESS) and 6H (unstarted). Accepted migration head is
-`20261001_0005`; no 6F.2 migration or later-sprint implementation is planned.
+The remaining-Sprint-6 approval covers accepted 6G and current 6H acceptance/closeout. Accepted
+migration head is `20261001_0006`; no 6H migration or later-sprint implementation is planned.
 
 ## Pre-Sprint 5 attention
 

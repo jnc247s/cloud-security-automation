@@ -1,7 +1,128 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6F COMPLETE and merged. 6G is authorized and IN PROGRESS;
-6H is authorized but unstarted. Sprint 6 remains IN PROGRESS.
+Plan state: 6A through 6G COMPLETE and merged. 6H acceptance/closeout is authorized and
+IN PROGRESS. Sprint 6 remains IN PROGRESS; Sprint 7 implementation is unstarted.
+
+## 6H independent-review checkpoint — 2026-10-01
+
+The ONE authorized consolidated reviewer returned REVIEW_PASS for the stable uncommitted
+21-file tree at base/HEAD `5043f61b384c8c4499710d2033f7636676705deb`, with zero unresolved
+introduced findings at every severity. The one LOW owner-state inconsistency was corrected in
+all three locations and independently verified. Successful independent checks: 105 rule/SQLite /
+contract tests in 52.75 seconds, 14 new PostgreSQL cases in 60.22 seconds on a separate owned
+loopback-only disposable container (ownership label verified before removal), and 78 post-correction
+contracts in 0.22 seconds. Every run had no skips and one existing dependency warning. Initial
+reviewer-only temporary-path setup failures were corrected; no source change, reviewer edit,
+delegation or publication occurred.
+
+The reviewer independently matched the unchanged five-test-file fingerprint below. Fresh local
+138/2,533/252/no-skip and quality/container gates remain applicable; post-result documentary edits
+passed 78 contracts and whitespace. Next is the logical 21-file commit, the same reviewer's exact
+committed-head recheck, normal publication/PR/final-head CI, conditional merge and merged-main CI.
+Canonical documentary closure/archive follows accepted 6H; Sprint 6 remains IN PROGRESS and no
+Sprint 7 implementation is authorized. No 6H commit, push, PR, merge or acceptance yet.
+
+## 6H validation and review-correction checkpoint — 2026-10-01
+
+Fresh `python -m scripts.validate --focused ...` completed with exit 0 on uncommitted branch
+`codex/sprint-6h-acceptance-closeout`, unchanged base/HEAD
+`5043f61b384c8c4499710d2033f7636676705deb`. **138 focused tests passed** in 85.22 seconds,
+then **2,533 full regression tests passed** in 524.79 seconds, including **252 disposable
+PostgreSQL cases**, no skips and 20 existing full-suite warnings. Ruff, 341-file formatting,
+documentation/link contracts, whitespace, Docker Compose and image build passed. The uniquely
+named loopback-only PostgreSQL container was removed in the runner's `finally`; no operator
+database or live AWS account was used. Focused paths:
+
+```text
+tests/unit/rules/test_sprint6_acceptance.py
+tests/unit/database/test_sprint6_acceptance.py
+tests/integration/test_sprint6_acceptance_postgres.py
+tests/unit/services/test_scan_service.py
+tests/unit/contracts
+```
+
+The ONE authorized consolidated read-only 6H reviewer is running. Independent checks passed
+105 tests (27 new rule/SQLite acceptance plus 78 contracts), no skips, one existing warning,
+after reviewer-only temporary-folder setup errors were corrected without source changes.
+The reviewer identified one LOW owner-state inconsistency: stale accepted LOG-004 rows in API /
+control owners and stale GOV-001 readiness opening. All three statements now agree with accepted
+6F.2/6G and current 6H; fresh 78 contract/link checks passed in 0.22 seconds, one existing warning,
+and whitespace passed. The same reviewer is verifying the complete correction and separately
+testing the 14 new PostgreSQL cases; final approval has not yet been granted.
+
+The five changed/new test files have stable fingerprint
+`18ec4cdb50964a74babbdbb91cdde08e9b365e20c1c8bcf4b16e1245d9058515`, independently matched by
+the reviewer: sort repository-relative paths, SHA-256 each file, hash UTF-8 newline-separated
+`path:lowercase-file-SHA256` records without a final newline. No app/Alembic/default/deployed
+policy/collector/permission/authentication change. Documentary result/correction edits leave the
+tested core unchanged and require final contract/link/whitespace checks and exact-head review.
+
+Remaining: same-reviewer final REVIEW_PASS with zero unresolved introduced findings at every
+severity, scoped commits/publication/PR, exact final-head CI, conditional merge, merged-main CI,
+then canonical documentary closure/archive/Sprint 7 NEXT only (no implementation). Sprint 6 and
+6H remain IN PROGRESS. Unrelated parent skills and original 6E.3 checkout remain preserved and
+excluded. No publication, merge or acceptance is claimed by this checkpoint.
+
+## 6H local acceptance implementation checkpoint — 2026-10-01
+
+The sole writer added five test-only files for bounded whole-sprint acceptance: golden catalog
+digests/registry membership for all 12 supported releases, combined 26-control determinism and
+no-AWS assessment, retained version/history/artifact rollforward, public pending-scan recovery
+for every actual release after removal of its temporary policy file, and real bearer-authenticated
+HTTP readback for all 39 assessments plus sources, relationships, exact LOG-004 dependency,
+frameworks, findings, exceptions and audit. SQLite worker tests use file-backed connections;
+the same persistence/recovery/HTTP exercises are mirrored on disposable PostgreSQL.
+
+All 13 new rules/release checks passed initially. The expanded local run passed 26 checks after
+correcting a new test's frozen-tuple versus stored-JSON-list comparison and rerunning with ordinary
+temporary-directory access. Its only remaining failure was a new HTTP assumption that historical
+proof schemas all contain profile checksums; the corrected explicit schema-preserving test then
+passed. No accepted failing assertion or application behavior changed. See
+[6H acceptance](../../controls/sprint-6h-acceptance.md) for scope, exact sources and remaining gates.
+
+Owner documents now agree that 6G is accepted through PR #39 / main `5043f61`, and 6H is IN
+PROGRESS. These scoped changes are uncommitted/unpublished on `codex/sprint-6h-acceptance-closeout`
+from that unchanged accepted base. Fresh targeted/full/disposable PostgreSQL and quality/container
+gates are next; the one authorized consolidated read-only 6H reviewer has not yet been launched.
+No 6H acceptance, Sprint 6 completion or Sprint 7 implementation is claimed. No app, Alembic,
+default, collector, AWS permission, deployed policy or authentication change; original 6E.3
+checkout and unrelated parent skills remain preserved and excluded.
+
+## 6G acceptance and 6H start — 2026-10-01
+
+PR #39 merged exact reviewed final head `d2874a38f7be468ddc3f307a8fb2251dac8c7d70` into main at
+`5043f61b384c8c4499710d2033f7636676705deb` on 2026-10-02T01:04:51Z (2026-10-01 America/Chicago),
+under the recorded conditional approval. Verified parents are accepted
+`3e5963fc57ca95041618dd0e571b1237892baadf` and that exact final head. Implementation
+`c17d9878d1bec4795e8dd697e71ca4e06ff8d4b1` and its two documentary commits preserve the reviewed
+27-file core fingerprint. The same reviewer returned final REVIEW_PASS, zero unresolved
+introduced findings at every severity. All original MEDIUM/LOW findings were verified resolved.
+
+Fresh local 410 focused / 2,491 full / 238 disposable PostgreSQL checks, no skips, and all
+quality/security/container gates passed; subsequent documentary edits and final independent
+recheck each passed 77 contract/link checks. Both exact final-head CI runs passed: push
+[36948266037](https://github.com/jnc247s/cloud-security-automation/actions/runs/36948266037) and PR
+[36948268944](https://github.com/jnc247s/cloud-security-automation/actions/runs/36948268944).
+[Merged-main CI 36949198125](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
+passed all 2,491 tests in 363.83 seconds, 20 existing warnings, no skips, Ruff, 335-file formatting
+and image build on the exact merge SHA. No outstanding human-review request/comment, head/base
+change, protection bypass, force push or production operation. Earlier pending checkpoints below
+are historical. GOV-001/6G is COMPLETE; catalog `0.13.0` and migration `20261001_0006` are accepted,
+with default `0.2.1`, old releases and deployed policy unchanged.
+
+After that merged-main gate, the sole writer created `codex/sprint-6h-acceptance-closeout` from
+clean verified accepted main in the reused worktree. 6H is IN PROGRESS: bounded whole-Sprint-6
+acceptance for 25 core controls plus supported legacy S3-900, persisted composition, historical
+catalog/profile/pending recovery, proofs/history/findings/exceptions, and real authenticated
+generic APIs with only AWS offline. Reuse unchanged accepted gates where applicable, add bounded
+cross-control/version acceptance gaps, then fresh targeted/full/disposable PostgreSQL/quality /
+relevant container gates and ONE consolidated read-only independent reviewer. No app behavior,
+new control, migration, default, collector, permission or operator policy change is planned.
+
+Sprint 6 remains IN PROGRESS and this plan remains active until 6H acceptance/merge/merged-main
+CI and documentary closure pass. Preserve original predictions and record implemented differences
+when archiving; promote Sprint 7 NEXT only afterward, without implementing it. Original 6E.3
+checkout and unrelated parent skills remain preserved/excluded; later-sprint work is unstarted.
 
 ## 6G publication checkpoint — 2026-10-01
 

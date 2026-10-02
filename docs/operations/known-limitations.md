@@ -1,13 +1,13 @@
 # Current known limitations
 
-This register records accepted Sprint 0--5 and Sprint 6A--6F implementation reality, including
+This register records accepted Sprint 0--5 and Sprint 6A--6G implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
 
-### Governance category transition — LOCAL 6G, acceptance pending
+### Governance category transition — ACCEPTED 6G
 
 Revision `20261001_0006` adds only `governance` to the existing control-version category CHECK.
 Before an explicitly authorized rollback across that boundary, quiesce writers, verify a
