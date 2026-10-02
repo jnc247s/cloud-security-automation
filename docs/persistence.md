@@ -9,6 +9,12 @@ GOV-001 is accepted through PR #39 with green merged-main CI. Shared proof/resul
 exact retained tag policy and same-scan sources; historical profile recovery and full-scan
 finding-resolution requirements remain unchanged. See [6G metadata](controls/sprint-6g-metadata.md).
 
+Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 12 supported catalog releases through
+historical policy/evidence/source-artifact rollforward and public pending-scan restart after
+original temporary policy removal and changed deployment defaults. SQLite and disposable
+PostgreSQL run identical cases, plus whole-sprint authenticated public API readback. No 6H schema,
+catalog/profile/artifact mutation, lifecycle change or production database operation.
+
 Accepted 6F.2 catalog `0.12.0` adds a closed read-only same-invocation S3-002 dependency context.
 Prerequisites are independently validated for exact source/result/target/profile/catalog/inventory
 and artifact identity before LOG-004 validation, regardless of candidate ordering, before SQL.

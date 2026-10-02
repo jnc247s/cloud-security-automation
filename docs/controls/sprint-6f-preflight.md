@@ -3,9 +3,10 @@
 Current follow-up: 6F.1 is accepted through PR #37 with green merged-main CI. The user
 subsequently approved the remaining Sprint 6 bundle, including 6F.2 metadata, the bounded
 composition seam and complete-empty account N/A clarification. 6F.2 is COMPLETE through
-PR #38 with green merged-main CI; 6G is IN PROGRESS. See
+PR #38 with green merged-main CI. 6G and 6H are accepted through PRs #39 and #40 with green
+merged-main CI; Sprint 6 is COMPLETE. See
 [6F.2 metadata](sprint-6f2-metadata.md).
-The [active plan](../exec-plans/active/sprint-6.md) records authorization and the
+The [completed plan](../exec-plans/completed/sprint-6.md) records authorization and the
 [6F.1 metadata](sprint-6f1-metadata.md) records the accepted implementation and repaired blocker.
 The original analysis and proposed decisions below are preserved as historical predictions.
 The user separately approved the narrowly
@@ -15,7 +16,7 @@ no-migration prediction below; collectors, APIs and permission scope remain unch
 
 Prepared: 2026-10-01. Analysis only; no new control, policy, release or implementation is
 authorized by this document. [ROADMAP.md](../../ROADMAP.md) owns progress and the
-[active plan](../exec-plans/active/sprint-6.md) owns task scope. The canonical
+[completed plan](../exec-plans/completed/sprint-6.md) owns task scope. The canonical
 [LOG-002/003/004 contracts](catalog.md#log-002--required-multi-region-cloudtrail-management-event-coverage-is-missing)
 and [evidence matrix](sprint-5-evidence-readiness.md#logging-controls) remain authoritative.
 

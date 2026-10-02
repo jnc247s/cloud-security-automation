@@ -1,17 +1,24 @@
 # Sprint 6H — whole-sprint acceptance and closeout
 
-State: IN PROGRESS. Accepted base is `5043f61b384c8c4499710d2033f7636676705deb`
-(6G / PR #39), whose merged-main CI passed. This test/documentation-only slice does not add
-application behavior, controls, migrations, deployed policy or permissions. Sprint status belongs
-to [ROADMAP.md](../../ROADMAP.md); authorization and checkpoints remain in the
-[active plan](../exec-plans/active/sprint-6.md). Independent review/publication/merge and final
-documentary closure are still pending; no Sprint 6 completion is claimed.
+State: COMPLETE. Whole-sprint 6H acceptance merged in
+[PR #40](https://github.com/jnc247s/cloud-security-automation/pull/40) at
+`19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97`; exact-head review, both final-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36954205010)
+passed. Its accepted base was `5043f61b384c8c4499710d2033f7636676705deb` (6G / PR #39).
+This test/documentation-only slice adds no application behavior, controls, migrations, deployed
+policy or permissions. Sprint status belongs to [ROADMAP.md](../../ROADMAP.md); authorization,
+original predictions, implemented differences and historical checkpoints remain in the completed
+execution plan. Subsequent documentary closure archives that plan and promotes Sprint 7 NEXT
+without implementation. Its own exact-head review/CI/merge gates remain mandatory before the
+unattended Goal is complete; no documentary publication result is claimed in advance.
 
 Implementation/tests and the 16-document owner reconciliation are committed as
 `bf4a6cc54d34b543db56791952166e9a145de8ec`, parent that accepted base, on
 `codex/sprint-6h-acceptance-closeout`. The
-[commit checkpoint](../exec-plans/active/sprint-6.md#6h-commit-checkpoint--2026-10-01) records scope
-and required exact final-head review. No publication or merge yet; earlier checkpoints are historical.
+[commit checkpoint](../exec-plans/completed/sprint-6.md#6h-commit-checkpoint--2026-10-01) records scope
+and the historical pre-publication gates. Final reviewed head was
+`7d80c57b21a62672a4404bd2af4d077d3990ec52`; verified merge parents are that head and the accepted
+6G base. Earlier no-publication/no-merge checkpoints are historical.
 
 ## Acceptance scope
 
@@ -78,17 +85,37 @@ tests** in 524.79 seconds including **252 disposable PostgreSQL cases**, no skip
 warnings. Ruff, 341-file formatting, contracts/links, whitespace, Compose and image build passed.
 Both database backends passed the real bearer-authenticated HTTP cases. The disposable container
 was removed; operator databases were untouched. Exact command paths and five-test-file fingerprint
-are recorded in the [validation checkpoint](../exec-plans/active/sprint-6.md#6h-validation-and-review-correction-checkpoint--2026-10-01).
+are recorded in the [validation checkpoint](../exec-plans/completed/sprint-6.md#6h-validation-and-review-correction-checkpoint--2026-10-01).
 
-The one authorized read-only reviewer independently passed 105 checks and identified one LOW
-owner-state inconsistency, now corrected in API/control LOG-004 rows and the GOV-001 readiness
-opening. Post-correction 78 contract/link checks and whitespace passed. The same reviewer then
-passed all 14 new PostgreSQL cases on a separate owned disposable container, removed after the
-run, and returned REVIEW_PASS for the stable uncommitted 21-file tree with zero unresolved
-findings at every severity. All independent runs had no skips and one existing warning. The
-[review checkpoint](../exec-plans/active/sprint-6.md#6h-independent-review-checkpoint--2026-10-01)
-records exact diagnostics. Final committed-head recheck, exact-head CI, conditional merge and
-merged-main CI remain required; 6H is not accepted. After acceptance, record
-Sprint 6 COMPLETE, archive the plan while retaining original predictions and implemented
-differences, and promote Sprint 7 NEXT without starting implementation. Preserve unrelated
-parent skill files and the original 6E.3 checkout throughout.
+The one authorized read-only reviewer independently passed 105 rule/SQLite/contract checks and
+14 PostgreSQL cases on a separate owned disposable container, subsequently removed. Both LOW
+documentary findings (stale owner state and conflated default catalog/profile version) were
+corrected and independently verified. Exact final head `7d80c57` received REVIEW_PASS, zero
+unresolved/new findings at every severity; final 78 contracts/links and whitespace passed.
+All independent runs had no skips and one existing warning. The historical review/correction
+checkpoints retain exact diagnostics.
+
+Final-head push CI [36953191107](https://github.com/jnc247s/cloud-security-automation/actions/runs/36953191107)
+and PR CI [36953194830](https://github.com/jnc247s/cloud-security-automation/actions/runs/36953194830)
+passed all 2,533 tests (20 existing warnings, no skips), Ruff, 341-file formatting and image build.
+Conditional merge rechecked exact head/base, both current CI results, zero human-review requests /
+comments and clean mergeability, with no bypass/force push. Merge occurred 2026-10-02T02:08:02Z
+(2026-10-01 America/Chicago). Merged-main CI passed all 2,533 tests in 522.00 seconds, no skips,
+20 existing warnings and every quality/image step before documentary closure began.
+
+The post-merge documentary closeout marks Sprint 6 COMPLETE, archives the plan while retaining
+original predictions and implemented differences, and promotes Sprint 7 NEXT without starting
+implementation. Unrelated parent skill files and original clean 6E.3 checkout remain preserved.
+The completed plan records the separate documentary review/publication gates. Only the existing
+documentary status guard evolves to COMPLETE/NEXT and verifies plan archival; accepted control /
+workflow tests and application behavior remain unchanged. Fresh full validation covers this guard
+change. Known limitations remain explicit.
+
+Fresh closeout validation passed 78 targeted contracts and all 2,533 regression tests in
+478.49 seconds, including 252 disposable PostgreSQL cases, no skips and 20 existing warnings.
+Ruff, 341-file formatting, links, whitespace, Compose and image build passed; its owned database
+was removed. The same reviewer passed 91 independent contracts/catalog-golden checks and 78
+post-correction contracts, no skips and one existing warning per run. One LOW stale owner-state /
+archived-plan-label finding was corrected and verified; stable-tree REVIEW_PASS has zero unresolved
+introduced findings at every severity. Exact committed-head recheck and the documentary
+publication/CI/conditional-merge/merged-main gates are still required at this recorded checkpoint.

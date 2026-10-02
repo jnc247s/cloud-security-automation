@@ -5,9 +5,16 @@ Sprint 5 shared evidence-graph reads, and the accepted 5A EC2/EBS, 5B network, 5
 Access Analyzer, 5E S3/referenced-KMS, and 5F CloudTrail evidence producers. The accepted 5F
 producer projects through those same generic interfaces without adding a service-specific route.
 OpenAPI at `/openapi.json` is the exact generated schema; `/docs` and `/redoc` render it.
-All slices use the existing generic scan and read interfaces; no service-specific collector
-endpoint or Sprint 6 control is implied. Future interface changes must update this document and
+All slices use the existing generic scan and read interfaces; fact-only collection does not
+implicitly enable Sprint 6 controls. Accepted controls through `0.13.0` reuse those interfaces
+without per-control routes. Future interface changes must update this document and
 tests in the same change.
+
+Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
+through the real authenticated asynchronous scan and public resource/history, evidence/source,
+relationship, finding/exception and framework read APIs on SQLite and PostgreSQL. Only AWS is
+offline in these tests; development bearer authentication remains explicit test-only. No API
+shape, capability or production-authentication change was introduced by acceptance/closeout.
 
 The API is read-only apart from creating a scan. It cannot modify AWS resources, finding status,
 exceptions, controls, mappings, or audit history.

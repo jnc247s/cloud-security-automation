@@ -1,8 +1,10 @@
 # Current known limitations
 
-This register records accepted Sprint 0--5 and Sprint 6A--6G implementation reality, including
+This register records accepted Sprints 0--6 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
+Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
+Sprint 7 is NEXT and unstarted. See [6H acceptance](../controls/sprint-6h-acceptance.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity

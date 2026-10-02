@@ -1,7 +1,7 @@
 # Sprint 6D.1 approved control metadata
 
 Approved 2026-09-28. [ROADMAP.md](../../ROADMAP.md) owns state; the
-[active plan](../exec-plans/active/sprint-6.md) owns scope. Preserve the
+[completed plan](../exec-plans/completed/sprint-6.md) owns scope. Preserve the
 [canonical truth tables](catalog.md#net-003--security-group-permits-unrestricted-all-protocol-public-ingress).
 
 Opt-in catalog `0.6.0` extends `0.5.0` with NET-003/004/005, evaluator `1.0.0`.

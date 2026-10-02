@@ -1,10 +1,9 @@
 # Architecture
 
-This document describes the accepted Sprint 0--5 implementation and accepted Sprint 6 slices 6A
-through 6G. The accepted baseline is `main` commit
-`5043f61b384c8c4499710d2033f7636676705deb`, which merged GOV-001 in pull request #39 after the
-Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
-control slices. 6H acceptance/closeout is authorized and in progress.
+This document describes accepted Sprints 0--6. The accepted implementation baseline is `main`
+commit `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (whole-sprint 6H acceptance in PR #40), after
+the Sprint 5 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and
+documentation, not application behavior; merged-main CI passed. Sprint 7 is NEXT and unstarted.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 

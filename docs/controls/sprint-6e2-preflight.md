@@ -1,7 +1,7 @@
 # Sprint 6E.2 — S3 exposure implementation preparation
 
 Prepared: 2026-09-29. Analysis only; this document does not enable S3-002 or approve policy.
-[ROADMAP.md](../../ROADMAP.md) owns status; the [active plan](../exec-plans/active/sprint-6.md)
+[ROADMAP.md](../../ROADMAP.md) owns status; the [completed plan](../exec-plans/completed/sprint-6.md)
 owns task scope. The [canonical S3-002 contract](s3-002-exposure-aggregation.md) remains the
 authority for every channel/result decision. Do not redefine it here.
 

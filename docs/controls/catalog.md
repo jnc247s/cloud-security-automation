@@ -38,7 +38,8 @@ reporting metadata. Accepted 6F.1 registers LOG-002/003 only in opt-in `0.11.0`,
 a separately approved bounded persistence repair; see
 [6F.1 metadata](sprint-6f1-metadata.md). Accepted 6F.2 registers LOG-004 in opt-in `0.12.0`;
 see [6F.2 metadata](sprint-6f2-metadata.md). Accepted 6G registers GOV-001 in opt-in `0.13.0`;
-see [6G metadata](sprint-6g-metadata.md). Whole-sprint 6H acceptance/closeout is in progress.
+see [6G metadata](sprint-6g-metadata.md). Whole-sprint 6H acceptance/closeout is complete;
+see [6H acceptance](sprint-6h-acceptance.md). No later-sprint implementation.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -714,5 +715,5 @@ raises instead. Persisted scan-level collection status and provenance belong to 
 Sprint 2.1 intentionally excluded assessment persistence, lifecycle management, scan/control API
 endpoints, and authentication; Sprints 3 and 4 now supply those foundations. All 25 core controls
 and supported legacy behavior are available through accepted releases up to 6G; 6H whole-sprint
-acceptance/closeout is in progress. Further AWS resource/API scope expansion, Terraform,
+acceptance/closeout is complete. Further AWS resource/API scope expansion, Terraform,
 remediation, frontend work, and AI functionality remain deferred.

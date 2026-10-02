@@ -1,7 +1,7 @@
 # Sprint 6G required-tag control
 
 Sprint state belongs to [ROADMAP.md](../../ROADMAP.md). The
-[active plan](../exec-plans/active/sprint-6.md) records the user's 2026-10-01 approval.
+[completed plan](../exec-plans/completed/sprint-6.md) records the user's 2026-10-01 approval.
 6G is COMPLETE; GOV-001 merged through
 [PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) at
 `5043f61b384c8c4499710d2033f7636676705deb`, with green exact-head and merged-main CI.
@@ -102,17 +102,17 @@ The initial pre-review validation passed **362 focused / 2,443 full tests**, inc
 cases**, no skips and 20 existing full-suite warnings. Ruff, 335-file formatting, documentation
 links, whitespace, Compose and image build passed. Real bearer-authenticated HTTP ran on SQLite
 and PostgreSQL with only AWS offline. See the exact command scope/fingerprint in the
-[validation checkpoint](../exec-plans/active/sprint-6.md#6g-validation-checkpoint--2026-10-01).
+[validation checkpoint](../exec-plans/completed/sprint-6.md#6g-validation-checkpoint--2026-10-01).
 Independent review requested one MEDIUM subset-population correction and two LOW performance /
 documentation corrections. The same reviewer verified all resolved, zero new findings, after
 274 independent checks plus combined all-26-control and constant-work diagnostics. Fresh
 post-correction validation passed **410 focused / 2,491 full tests**, including **238 disposable
 PostgreSQL cases**, no skips and 20 existing warnings; all quality/container gates passed.
-See the [post-review gate checkpoint](../exec-plans/active/sprint-6.md#6g-post-review-validation-checkpoint--2026-10-01).
+See the [post-review gate checkpoint](../exec-plans/completed/sprint-6.md#6g-post-review-validation-checkpoint--2026-10-01).
 The same reviewer returned REVIEW_PASS for exact final head
 `d2874a38f7be468ddc3f307a8fb2251dac8c7d70`, zero unresolved findings. Both final-head CI runs and
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
 passed all 2,491 tests, no skips, 20 existing warnings and quality/image gates. The
-[acceptance checkpoint](../exec-plans/active/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
+[acceptance checkpoint](../exec-plans/completed/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
 records the exact scoped commits, PR, merge and review. Earlier initial gate outcomes remain
-historical in the active plan; 6H acceptance/closeout is in progress, not yet complete.
+historical in the completed plan; whole-sprint 6H acceptance/closeout is complete.

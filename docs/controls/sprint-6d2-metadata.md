@@ -1,7 +1,7 @@
 # Sprint 6D.2 approved control metadata
 
 Approved 2026-09-28. [ROADMAP.md](../../ROADMAP.md) owns state; the
-[active plan](../exec-plans/active/sprint-6.md) owns the stacked workflow and scope.
+[completed plan](../exec-plans/completed/sprint-6.md) owns the stacked workflow and scope.
 The [NET-006 contract](catalog.md#net-006--required-vpc-flow-logs-are-missing) owns its truth table.
 
 Opt-in catalog `0.7.0` extends `0.6.0` with NET-006, MEDIUM severity, evaluator `1.0.0`.

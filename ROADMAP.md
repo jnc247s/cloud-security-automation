@@ -4,9 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-01
-Accepted baseline: `main` at `5043f61b384c8c4499710d2033f7636676705deb` (PR #39;
-Sprints 0--5 and Sprint 6 slices 6A through 6G, including GOV-001 in opt-in `0.13.0`
-and additive migration `20261001_0006`; merged-main CI passed)
+Accepted implementation baseline: `main` at `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (PR #40;
+Sprints 0--6 accepted, including whole-sprint 6H acceptance, opt-in `0.13.0`
+and migration `20261001_0006`; merged-main CI passed)
 
 ## Current state
 
@@ -19,8 +19,8 @@ and additive migration `20261001_0006`; merged-main CI passed)
 | Sprint 3 | Persistence / History / Evidence / Findings / Exceptions / Audit | **COMPLETE** |
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
 | Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
-| Sprint 6 | Production Security Controls | **IN PROGRESS** |
-| Sprint 7 | Dashboard / NIST Technical Posture | **PLANNED** |
+| Sprint 6 | Production Security Controls | **COMPLETE** |
+| Sprint 7 | Dashboard / NIST Technical Posture | **NEXT** |
 | Sprint 8 | Human-Approved Remediation | **PLANNED** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
@@ -30,7 +30,8 @@ Sprint 5 is `COMPLETE`. Its shared 5G relationship/source-outcome evidence
 foundation and 5A EC2/EBS, 5B VPC/network, 5C IAM, and 5D IAM Access Analyzer evidence slices are
 accepted on `main`, as are the bounded fact-only 5E S3 and referenced-KMS and 5F CloudTrail
 evidence slices. The bounded 5G closure passed acceptance and was merged in pull request 25.
-Sprint 6 is `IN PROGRESS`. Slices 6A through 6D are COMPLETE and merged. Both 6D slices were
+Sprint 6 is `COMPLETE`. Slices 6A through 6H are accepted and merged; the historical slice
+checkpoints below retain their exact validation and approvals. Both 6D slices were
 accepted through PR #32 at `9ad7feab10d8f87f91d878920c6cf40a5d6fe51b`; merged-main CI passed.
 The user requested 6E implementation and approved combined account/bucket Block Public Access
 protection and bounded explicit HTTPS-denial evaluation for 6E.1. The subsequent metadata
@@ -39,13 +40,13 @@ approval authorized opt-in catalog `0.8.0`; 6E.1 is COMPLETE, merged through PR 
 The user directed implementation of the prepared 6E.2 bundle after its policy approval prompt;
 6E.2 is COMPLETE, accepted through PR #34 at `3eddcaf74fd26e08428464780a2c1a6dd7f6c1bf`,
 with green merged-main CI. It uses explicit no-exemption initial policy and opt-in catalog `0.9.0`.
-Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and active-plan checkpoint
+Its [implementation metadata](docs/controls/sprint-6e2-metadata.md) and completed-plan checkpoint
 record 1,873 passing tests including 102 PostgreSQL cases, successful quality/container gates,
 and independent REVIEW_PASS with zero findings. The human-created PR and merge supersede the
 earlier publication-permission blocker; no automatic merge was performed.
 The default catalog remains unchanged; all added controls require explicit catalog/profile
 selection. [6E.2 preparation](docs/controls/sprint-6e2-preflight.md) records its bounded scope;
-the active plan records authorization. The user approved the 6E.3 policy bundle on 2026-09-30
+the completed plan records authorization. The user approved the 6E.3 policy bundle on 2026-09-30
 and requested implementation after 6E.2 acceptance. 6E.3 is COMPLETE: PR #35 merged the reviewed
 S3-004 implementation through `447eeb1` into `main` at
 `c861713a665669da09d5bc7b5b282b04c16cac1d`. The
@@ -54,10 +55,10 @@ succeeded on attempt 2 after attempt 1's only failure was a transient package-do
 during the API image build. Local acceptance passed 1,957 regression tests including 122
 PostgreSQL cases and quality/container gates. Independent review passed with zero unresolved
 findings after two LOW documentation inconsistencies were corrected and verified. The
-[active-plan checkpoint](docs/exec-plans/active/sprint-6.md#6e3-acceptance-checkpoint--2026-10-01)
+[completed-plan checkpoint](docs/exec-plans/completed/sprint-6.md#6e3-acceptance-checkpoint--2026-10-01)
 records the merge and final gate.
-The [6E.3 preparation](docs/exec-plans/active/sprint-6.md#6e3-implementation-preparation--2026-09-30)
-records its bounded S3-004 design and classifier/KMS bundle; the active plan's authorization,
+The [6E.3 preparation](docs/exec-plans/completed/sprint-6.md#6e3-implementation-preparation--2026-09-30)
+records its bounded S3-004 design and classifier/KMS bundle; the completed plan's authorization,
 implementation, and acceptance checkpoints record its approval and completion. PR #36 merged
 the separate README/documentation repair at `49500c95c78870d72e6179882bae4e6379cdd6d0`; its
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36900929958)
@@ -71,14 +72,15 @@ findings. [Pull request #37](https://github.com/jnc247s/cloud-security-automatio
 at `3a053ff396a2c112aa254842cb25730fe3879ecc`, with green final-head and merged-main CI. The user subsequently
 approved the remaining Sprint 6 policy bundle and persistent Goal, scoped publication, one
 read-only independent reviewer per slice and conditional merges after all mandatory gates.
-LOG-004/6F.2 and GOV-001/6G are COMPLETE. 6H is authorized and IN PROGRESS. The
-[active-plan authorization](docs/exec-plans/active/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01)
+LOG-004/6F.2, GOV-001/6G and whole-sprint 6H acceptance are COMPLETE. The
+[completed-plan authorization](docs/exec-plans/completed/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01)
 records the exact policies, boundaries and merge conditions. No later-sprint implementation is
 authorized.
 Accepted GOV-001 is registered in opt-in `0.13.0`, with closed proof `1.10.0`, exact initial
 Owner/Environment policy across all 11 families, separate NIST subset `.12` and the approved
 additive `governance` category / `20261001_0006` migration. It merged through
-[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) at the accepted baseline above.
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) at
+`5043f61b384c8c4499710d2033f7636676705deb`.
 After the review corrections, fresh validation passed 410 focused and 2,491 regression tests,
 including 238 disposable PostgreSQL cases, with no skips and all quality/container gates green.
 The same reviewer verified all original findings resolved with zero new findings after 274
@@ -86,17 +88,17 @@ independent checks and returned REVIEW_PASS for exact head
 `d2874a38f7be468ddc3f307a8fb2251dac8c7d70`. Both exact final-head CI runs and
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
 passed; main ran 2,491 tests with 20 existing warnings, no skips, Ruff, 335-file formatting and
-image build. The [acceptance checkpoint](docs/exec-plans/active/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
+image build. The [acceptance checkpoint](docs/exec-plans/completed/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
 records exact heads, review and gates.
 See [6G metadata](docs/controls/sprint-6g-metadata.md). No deployed policy,
-collector, AWS permission or authentication change. 6H starts acceptance/closeout from clean
-verified main on `codex/sprint-6h-acceptance-closeout`; later-sprint implementation remains unstarted.
+collector, AWS permission or authentication change. 6H subsequently verified whole-sprint
+acceptance through PR #40 from that clean main; later-sprint implementation remains unstarted.
 The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
 on the scoped feature branch; unrelated parent-checkout skill files remain excluded and preserved.
 Initial acceptance was blocked by a pre-existing domain/database mismatch for unresolved
 regional CloudTrail destination references; see [6F.1 metadata](docs/controls/sprint-6f1-metadata.md).
 The user subsequently approved the narrowly scoped persistence repair, including an additive
-migration if needed, and resumption of 6F.1 validation. The active plan records its preservation,
+migration if needed, and resumption of 6F.1 validation. The completed plan records its preservation,
 upgrade and rollback requirements; no production operation or acceptance is authorized by it.
 The local repair adds migration `20261001_0005`, preserving unresolved facts, strict complete
 identities, immutable history and downgrade safety. The user authorized one read-only independent
@@ -110,7 +112,7 @@ no operator database or live AWS account was used. Implementation commit
 `f299966f7166a202922341bc5c05f56f962a41ad` and reviewed final documentation head
 `2879ea8ae25dd00bd7229976fea5a65f2b48f3c7` are merged through PR #37 under the user's bounded
 conditional merge approval. [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
-passed 2,125 tests (20 existing warnings, no skips), lint, format and image build. The active plan
+passed 2,125 tests (20 existing warnings, no skips), lint, format and image build. The completed plan
 retains historical publication checkpoints and the superseding acceptance record.
 
 Accepted 6F.2 implements LOG-004 in opt-in `0.12.0`, with closed same-invocation S3-002 dependency
@@ -125,17 +127,24 @@ merged through reviewed final head `cfd8d0b28f0d2b44012a71c8f31a214710b55803` in
 [pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38).
 Both final-head CI runs and [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36938144756)
 passed; main ran all 2,212 tests with 20 existing warnings and no skips, plus quality/image gates.
-The [acceptance checkpoint](docs/exec-plans/active/sprint-6.md#6f2-acceptance-and-6g-start--2026-10-01)
+The [acceptance checkpoint](docs/exec-plans/completed/sprint-6.md#6f2-acceptance-and-6g-start--2026-10-01)
 records the exact merge and evidence. 6G started from that clean accepted main on
 `codex/sprint-6g-required-tags`; it implements only the approved GOV-001 policy and narrow
-category migration. The subsequent 6G acceptance checkpoint above authorizes the current 6H
-acceptance/closeout work; later-sprint implementation remains unstarted.
+category migration. Subsequent accepted 6H and the documentary closure below finish Sprint 6;
+later-sprint implementation remains unstarted.
 
-Current 6H local acceptance passes 138 focused / 2,533 full tests, including 252 disposable
-PostgreSQL cases, no skips and all quality/container gates. The single authorized independent
-reviewer returned REVIEW_PASS after correcting one LOW owner-state inconsistency, with zero
-unresolved findings. Exact committed-head recheck, publication/CI/merge/merged-main gates and
-canonical documentary closure remain pending; Sprint 6 is not complete. See
+Accepted 6H passed 138 focused / 2,533 full tests, including 252 disposable PostgreSQL cases,
+no skips and all quality/container gates. The single authorized reviewer returned exact-head
+REVIEW_PASS for `7d80c57b21a62672a4404bd2af4d077d3990ec52`, with both LOW documentary findings
+corrected and zero unresolved findings at every severity. Both final-head CI runs passed;
+[PR #40](https://github.com/jnc247s/cloud-security-automation/pull/40) merged that reviewed head
+at `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97`, with verified accepted-base/reviewed-head parents.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36954205010)
+passed all 2,533 tests in 522.00 seconds, 20 existing warnings, no skips, Ruff, formatting and
+image build. This subsequent documentation-only closure archives the execution plan, preserves
+its predictions/implemented differences, marks Sprint 6 COMPLETE and promotes Sprint 7 NEXT.
+No application, migration, policy, permission, deployment or later-sprint implementation change.
+See
 [6H acceptance](docs/controls/sprint-6h-acceptance.md).
 
 ## Completed: Sprint 5 — AWS Evidence Expansion
@@ -185,13 +194,13 @@ pull request 25 at `ef4543d439ed3a33064c6bcf383db201a94d2881`. This post-merge c
 Sprint 5 `COMPLETE`, archives its execution plan, and promotes Sprint 6 to `NEXT`. Migration head
 remains `20260915_0003`.
 
-## Active: Sprint 6 — Production Security Controls
+## Completed: Sprint 6 — Production Security Controls
 
 Sprint 6 slice 6A was authorized on 2026-09-24. The 25-control evidence matrix is `CURRENT`;
 evidence readiness does not enable new rules or decide deferred Sprint 6 policy. The preceding
 Sprint 5 closeout did not implement Sprint 6; the subsequent approved 6A work is tracked below.
 
-The subsequent [Sprint 6 execution plan](docs/exec-plans/active/sprint-6.md) records the
+The subsequent [Sprint 6 execution plan](docs/exec-plans/completed/sprint-6.md) records the
 merged starting checkpoint, proposed implementation slices, compatibility work, and policy
 approval gates. Slice 6A is `COMPLETE`, merged in PR #27 at
 `1900dd4fd0968de5c130a65265ce2c8670a51a09`; merged-main CI succeeded. This checkpoint was
@@ -206,7 +215,7 @@ Whole-6B independent review passed; final branch CI and merged-main CI passed. T
 was verified on 2026-09-28. Migration head remains `20260924_0004`.
 
 The user approved 6C implementation and its bounded metadata/UUID allowlist decisions on
-2026-09-28. See [6C metadata](docs/controls/sprint-6c-metadata.md) and the active plan.
+2026-09-28. See [6C metadata](docs/controls/sprint-6c-metadata.md) and the completed plan.
 6C is COMPLETE: PR #30 merged at `c7d85e2a36a8e8aa0bc044a9fc22b7ea8cdbf01c` and
 merged-main CI passed. Its independent review has no unresolved findings.
 
@@ -230,11 +239,20 @@ The separate 6E.3 classifier/encryption bundle was approved on 2026-09-30 and ac
 PR #35 at `c861713a665669da09d5bc7b5b282b04c16cac1d`; merged-main CI passed. S3-004 is
 available in opt-in catalog `0.10.0`, while default `0.2.1` remains unchanged. Slices 6A through
 6E are COMPLETE. 6F preparation is recorded in the
-[preflight](docs/controls/sprint-6f-preflight.md) and active plan. The user's implementation request
+[preflight](docs/controls/sprint-6f-preflight.md) and completed plan. The user's implementation request
 initially authorized the prepared 6F.1 bundle only; 6F.1 is now COMPLETE through PR #37 and
 green merged-main CI. 6F.2 is subsequently COMPLETE through PR #38 and green merged-main CI.
-The remaining-Sprint-6 approval covers accepted 6G and current 6H acceptance/closeout. Accepted
-migration head is `20261001_0006`; no 6H migration or later-sprint implementation is planned.
+The remaining-Sprint-6 approval covered accepted 6G and 6H acceptance/closeout. Accepted migration
+head is `20261001_0006`; 6H added no migration or application behavior. The completed plan records
+whole-sprint acceptance and the post-merge documentary closure. Later-sprint work is unstarted.
+
+## Next: Sprint 7 — Dashboard / NIST Technical Posture
+
+Sprint 7 is NEXT, not IN PROGRESS. Its analysis-only preflight, approved execution plan and
+implementation authorization are still required before work begins. Future dashboard consumers
+must use the accepted generic services/API and preserve technical results, immutable evidence,
+finding/exception separation and limited NIST reporting claims. No Sprint 7 implementation or
+new infrastructure was added during Sprint 6 closeout.
 
 ## Pre-Sprint 5 attention
 

@@ -12,7 +12,7 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
-### Sprint 6 (in progress)
+### Sprint 6 — 2026-10-01
 
 - Accepted the versioned assessment foundation and opt-in IAM, EC2, network, and S3 controls
   through slices 6A--6E. The default five-control catalog remains `0.2.1`; cumulative opt-in
@@ -41,7 +41,16 @@ record the development history. Sprint state itself is authoritative only in
   preserve history, constraints, triggers and guarded downgrade. Local and merged-main gates
   passed 2,491 tests including 238 PostgreSQL cases, no skips; final-head independent review had
   zero unresolved findings. Default/historical catalogs and operator policy remain unchanged.
-  6H acceptance/closeout is in progress; later-sprint implementation is unstarted.
+- Accepted whole-sprint 6H through
+  [pull request #40](https://github.com/jnc247s/cloud-security-automation/pull/40), merged at
+  `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97`. Added all-26 combined-control, immutable catalog /
+  historical rollforward, every-supported-release restart and real bearer-authenticated generic
+  API acceptance on SQLite and disposable PostgreSQL; only AWS is offline. Local and merged-main
+  gates passed 2,533 tests, including 252 PostgreSQL cases, no skips and all quality/image gates.
+  Exact-head independent review had zero unresolved findings after two LOW documentary fixes.
+  No application, migration, default, operator policy, permission or security behavior changed.
+- Archived the completed Sprint 6 plan with its original predictions and implemented differences,
+  updated README/owners, marked Sprint 6 COMPLETE and promoted Sprint 7 NEXT without implementing it.
 
 ## Sprint 5 — 2026-09-23
 

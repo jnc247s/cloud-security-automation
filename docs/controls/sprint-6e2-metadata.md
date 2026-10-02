@@ -1,7 +1,7 @@
 # Sprint 6E.2 — S3-002 release metadata
 
 Approved implementation bundle: 2026-09-29; authorization and acceptance gates are recorded in
-the [active plan](../exec-plans/active/sprint-6.md). [ROADMAP.md](../../ROADMAP.md) alone owns
+the [completed plan](../exec-plans/completed/sprint-6.md). [ROADMAP.md](../../ROADMAP.md) alone owns
 progress. The [canonical channel contract](s3-002-exposure-aggregation.md) is unchanged.
 
 ## Release and policy

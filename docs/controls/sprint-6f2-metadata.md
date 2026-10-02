@@ -1,7 +1,7 @@
 # Sprint 6F.2 — approved destination exposure composition
 
 Approved with the remaining Sprint 6 policy/Goal bundle on 2026-10-01; see the
-[active-plan authorization](../exec-plans/active/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01).
+[completed-plan authorization](../exec-plans/completed/sprint-6.md#remaining-sprint-6-authorization-and-6f1-acceptance--2026-10-01).
 [ROADMAP.md](../../ROADMAP.md) owns progress. 6F.2 is COMPLETE through PR #38 and green merged-main CI.
 
 LOG-004 is HIGH/logging, evaluator `1.0.0`, cumulative opt-in catalog `0.12.0`, closed
@@ -43,8 +43,8 @@ the loader verifies exact bytes against its separate manifest. Earlier framework
 all ten earlier catalog checksums are unchanged.
 
 S3-002's access-point, object-ACL and effective-IAM limitations apply. This is not proof of
-log delivery, retention, digest verification, KMS protection or exception approval. Tests and
-review/CI results will be recorded at the implementation checkpoint before any acceptance claim.
+log delivery, retention, digest verification, KMS protection or exception approval. The accepted
+implementation, review and CI results are recorded below and in the completed plan.
 
 Initial gate passed 339 focused and 2,196 regression checks, including 196 disposable PostgreSQL
 cases, plus quality/container gates. Both requested review corrections are locally implemented:
@@ -54,11 +54,11 @@ inventory binding with deep mutation/substitution guards. Fresh validation passe
 The same reviewer returned REVIEW_PASS with zero unresolved introduced findings after 94
 independent diagnostics. Documentation-only reconciliation passed all 76 contract/link checks
 again. See the
-[correction checkpoint](../exec-plans/active/sprint-6.md#6f2-review-correction-checkpoint--2026-10-01).
+[correction checkpoint](../exec-plans/completed/sprint-6.md#6f2-review-correction-checkpoint--2026-10-01).
 Reviewed implementation `28b9bb4af17577993951761e7db73c64430fa765` is normally pushed in
 [pull request #38](https://github.com/jnc247s/cloud-security-automation/pull/38). Exact reviewed
 final head `cfd8d0b28f0d2b44012a71c8f31a214710b55803` merged at
 `3e5963fc57ca95041618dd0e571b1237892baadf`; both final-head and
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36938144756)
-passed. The [acceptance record](../exec-plans/active/sprint-6.md#6f2-acceptance-and-6g-start--2026-10-01)
+passed. The [acceptance record](../exec-plans/completed/sprint-6.md#6f2-acceptance-and-6g-start--2026-10-01)
 supersedes the retained initial/pending checkpoints. No 6F.2 migration or default change occurred.

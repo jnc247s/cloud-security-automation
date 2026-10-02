@@ -2,7 +2,7 @@
 
 Prepared: 2026-09-28. Analysis only; no S3 control is enabled by this document.
 [ROADMAP.md](../../ROADMAP.md) owns state and the
-[active Sprint 6 plan](../exec-plans/active/sprint-6.md) owns scope.
+[completed Sprint 6 plan](../exec-plans/completed/sprint-6.md) owns scope.
 
 ## Starting checkpoint and gate
 
