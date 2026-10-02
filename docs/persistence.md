@@ -1,11 +1,20 @@
 # Persistence and assessment history
 
-Local 6F.2 catalog `0.12.0` adds a closed read-only same-invocation S3-002 dependency context.
+Local 6G adds category `governance` and narrow migration `20261001_0006` after accepted
+`20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
+constraints and append-only triggers remain. SQLite retains foreign-key enforcement and
+caller-owned transactions through a checked savepoint rebuild. Online pre-DDL downgrade guards
+reject governance history that the predecessor cannot represent; offline crossing is blocked.
+GOV-001 is locally registered, not yet accepted. Shared proof/result recomputation binds its
+exact retained tag policy and same-scan sources; historical profile recovery and full-scan
+finding-resolution requirements remain unchanged. See [6G metadata](controls/sprint-6g-metadata.md).
+
+Accepted 6F.2 catalog `0.12.0` adds a closed read-only same-invocation S3-002 dependency context.
 Prerequisites are independently validated for exact source/result/target/profile/catalog/inventory
 and artifact identity before LOG-004 validation, regardless of candidate ordering, before SQL.
 Forged dependency/source/edge/policy bindings fail atomically. Existing immutable history,
 pending-scan recovery and whole-scan finding-resolution gates are retained. No new migration;
-acceptance is pending. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
+PR #38 and merged-main CI passed. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
 
 Accepted 6F.1 catalog `0.11.0` shares source-bound coverage/integrity recomputation with the engine.
 The separately approved additive `20261001_0005` migration repairs

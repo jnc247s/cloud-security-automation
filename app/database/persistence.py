@@ -209,7 +209,7 @@ def _validate_bundle(
         raise ScanPersistenceError("every enabled control requires an explicit assessment")
     try:
         catalog.validate_profile_inputs(profile)
-        validate_expected_assessments(snapshot, scope, catalog, assessments)
+        validate_expected_assessments(snapshot, scope, catalog, assessments, profile=profile)
     except ValueError as error:
         raise ScanPersistenceError(str(error)) from error
 

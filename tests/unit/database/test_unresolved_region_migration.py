@@ -77,8 +77,7 @@ def exercise_upgrade(engine, config_factory):
     persist(engine, bundle)
     before = state(engine)
     with engine.begin() as connection:
-        command.upgrade(config_factory(connection), "head")
-        command.check(config_factory(connection))
+        command.upgrade(config_factory(connection), CURRENT)
     after = state(engine)
     assert before["revision"] == PREVIOUS and after["revision"] == CURRENT
     assert before["rows"] == after["rows"]
@@ -95,6 +94,11 @@ def exercise_upgrade(engine, config_factory):
         assert load_evidence_graph(session, bundle["snapshot"].scan_id) == (
             bundle["snapshot"].evidence_graph
         )
+    # Keep the exact historical 0004 -> 0005 assertions above. Drift validation belongs
+    # at the current head, after subsequent independently tested additive migrations.
+    with engine.begin() as connection:
+        command.upgrade(config_factory(connection), "head")
+        command.check(config_factory(connection))
 
 
 def exercise_safe_round_trip(engine, config_factory):

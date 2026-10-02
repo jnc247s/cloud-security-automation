@@ -3,8 +3,8 @@
 Status: canonical evidence-readiness plan with accepted 5A through 5F evidence producers
 reflected. The bounded 5G closure was accepted and merged in pull request 25 at
 `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`. Accepted Sprint 6 consumers through
-6E are identified below. Local 6F.1 LOG-002/003 implementation is pending acceptance;
-LOG-004 and governance remain unimplemented.
+6F are identified below. LOG-002/003 and exact LOG-004 composition are accepted;
+GOV-001 implementation is authorized and in progress.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -48,10 +48,9 @@ contract permits it, as S3-002 does; `PARTIAL` is never a generic completeness b
 domain/persistence boundary and the accepted 5A EC2/EBS, 5B network, 5C IAM, and 5D Access
 Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source graph, and accepted
 5F adds the CloudTrail source graph. Accepted opt-in Sprint 6 controls through 6E consume only
-their declared, version-bound source proofs. Local 6F.1 LOG-002/003 implementation is in progress
-in opt-in `0.11.0`, pending acceptance with an approved local
+their declared, version-bound source proofs. Accepted 6F.1 LOG-002/003 use opt-in `0.11.0`, with the
 [persistence repair](sprint-6f1-metadata.md).
-LOG-004 and 6G governance remain unimplemented.
+Accepted 6F.2 LOG-004 uses opt-in `0.12.0`; 6G governance is authorized and in progress.
 
 ## IAM controls
 
@@ -184,9 +183,9 @@ separately versioned evaluators and policy.
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
 | `LOG-001` | `ListTrails`, `GetTrail`, `GetTrailStatus`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus` | Account discovery with per-trail home-Region enrichment | trail ARN/home Region and explicit `is_logging`; complete collection-account trail coverage set (not a persisted relationship) | Incomplete enumeration/status -> `INSUFFICIENT_EVIDENCE` | Existing Sprint 1 / `CURRENT` |
-| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 local opt-in 0.11.0 rule implemented, acceptance pending / `CURRENT` |
-| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 local opt-in 0.11.0 rule implemented, acceptance pending / `CURRENT` |
-| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E direct evidence + 5F relationship evidence accepted; Sprint 6 composed assessments/rule pending / `CURRENT` |
+| `LOG-002` | `ListTrails`, `GetTrail`, `GetTrailStatus`, `GetEventSelectors`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`, `cloudtrail:GetTrailStatus`, `cloudtrail:GetEventSelectors` | Account outcome; trails deduplicated by ARN and enriched in home Region | `is_logging`, `is_multi_region_trail`, `is_organization_trail`; exactly one non-empty selector form; basic raw presence plus defaults (`true`, `All`, empty exclusions) and source-set union, or advanced `FieldSelectors` with all operators; complete collection-account trail coverage set (not a persisted relationship) | Incomplete/mixed selectors, malformed or unknown exclusions/values, or an advanced set outside the catalog's exact unrestricted-management/readOnly proof subset (including another restricting field) yields `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 opt-in 0.11.0 accepted through PR #37 / `CURRENT` |
+| `LOG-003` | `GetTrail`; `cloudtrail:GetTrail` | Trail/home Region | explicit `log_file_validation_enabled` | Missing/malformed setting -> `INSUFFICIENT_EVIDENCE` | 5F evidence accepted; 6F.1 opt-in 0.11.0 accepted through PR #37 / `CURRENT` |
+| `LOG-004` | `ListTrails`, `GetTrail`; `cloudtrail:ListTrails`, `cloudtrail:GetTrail`; plus the canonical S3-002 direct evidence set above | Cross-service join: trail home Region -> bucket home Region, which may differ | trail `s3_bucket_name`; typed `delivers_to_bucket` edge; resolved stable bucket ID and exact bucket snapshot; shared S3-002 assessment/evidence | Missing destination, incomplete target identity, unresolved edge, incomplete S3 channel, or unavailable matching S3-002 result -> `INSUFFICIENT_EVIDENCE` | 5E direct evidence + 5F relationship evidence accepted; 6F.2 opt-in 0.12.0 accepted through PR #38 / `CURRENT` |
 
 “Account to trails” in this matrix means the complete discovery set bound to the verified
 collection account by the scan, source manifest, and account-level outcome. It does not authorize
@@ -208,13 +207,13 @@ batched by the API's `ResourceIdList` limit and the result remains attributable 
 
 `LOG-004` is `CURRENT` only for its accepted Sprint 5 facts and relationship. The composed
 technical result requires the accepted canonical `S3-002` assessment for the exact destination
-snapshot. S3-002 is available in opt-in catalog `0.9.0`; LOG-004 remains unimplemented pending 6F.
+snapshot. S3-002 is available in opt-in catalog `0.9.0`; LOG-004 is accepted in opt-in catalog `0.12.0`.
 
 ## Governance control
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, 5E S3, and 5F CloudTrail tags accepted; Sprint 6 rule/profile extension pending / `CURRENT` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, 5E S3, and 5F CloudTrail tags accepted; 6G opt-in 0.13.0 locally implemented; validation/review pending / `CURRENT` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -232,7 +231,7 @@ The initial governed-type vocabulary has one complete factual source per selecto
 | `iam_customer_managed_policy` | paginated `ListPolicyTags.Tags` |
 | `cloudtrail_trail` | batched, paginated `ListTags.ResourceTagList` joined by trail ARN |
 
-When `GOV-001` is enabled, future profile validation must require non-empty, unique
+When `GOV-001` is enabled, schema-2 profile validation requires non-empty, unique
 `required_tags` and `governed_resource_types`, and reject any governed selector without one of the
 complete sources above. Tags are compared using exact key spelling. A value is usable only when it
 is a string containing at least one non-whitespace character; the stored evidence is not silently
@@ -297,14 +296,14 @@ requires a reviewed schema/version transition and a new profile version.
 | Acceptable Flow Log traffic coverage | `acceptable_vpc_flow_log_traffic_types` | Explicit non-empty tuple constrained to exact `REJECT` and/or `ALL` | `NET-006` |
 | Public EC2 allowlist | `public_ec2_exceptions` | Existing policy field; not a Finding Exception | `EC2-002` |
 | Required tag keys | `required_tags` | Existing | `GOV-001` |
-| Resource types governed by required tags | `governed_resource_types` | Planned non-empty tuple restricted to the catalog's exact tag-source vocabulary | `GOV-001` |
+| Resource types governed by required tags | `governed_resource_types` | Explicit non-empty tuple restricted to the catalog's exact tag-source vocabulary; local 6G implementation pending acceptance | `GOV-001` |
 | Approved public/external S3 exposure | `s3_exposure_approvals` | Approved strict versioned artifact; exact account/Region/ARN/stable bucket identity plus separate public flag and principal tokens | `S3-002`, `LOG-004` |
 | Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact account/Region/ARN/stable bucket identities, restricted name patterns, and exact tag pairs only | `S3-004` |
 | Restricted-data KMS consequence | `restricted_data_requires_kms` | Existing boolean; does not itself classify a bucket | `S3-004` |
 
-Sprint 5 assigned no new severity or NIST mapping. Accepted Sprint 6 controls through 6E have
-separately reviewed severity and versioned mapping metadata; pending logging and governance
-controls still require that review. Those reporting decisions do not change the AWS facts Sprint 5
+Sprint 5 assigned no new severity or NIST mapping. Accepted Sprint 6 controls through 6F have
+separately reviewed severity and versioned mapping metadata; locally implemented governance
+remains under independent review. Those reporting decisions do not change the AWS facts Sprint 5
 must preserve.
 
 ## Global and Regional execution plan
@@ -454,8 +453,8 @@ prerequisites is now `CURRENT`. That evidence-readiness result did not itself re
 accepted Sprint 6 consumers are identified in the rows above.
 
 Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
-Sprint 6 is `IN PROGRESS`: slices 6A through 6E are accepted; local 6F.1 LOG-002/003
-implementation is not accepted. LOG-004 and GOV-001 remain unimplemented.
+Sprint 6 is `IN PROGRESS`: slices 6A through 6F are accepted. GOV-001 is authorized and in progress;
+6H acceptance and closeout remain unstarted.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

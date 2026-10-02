@@ -1,18 +1,28 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6F.1
-Baseline: `main` commit `3a053ff396a2c112aa254842cb25730fe3879ecc` (LOG-002/003 merged in PR #37)
+Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6F
+Baseline: `main` commit `3e5963fc57ca95041618dd0e571b1237892baadf` (LOG-004 merged in PR #38)
 Last reviewed: 2026-10-01
 
 ## Scope and security objectives
 
-Local 6F.2 addresses substituted destination/owner/Region snapshots, cross-scan/profile/catalog
+Local 6G addresses case-folded tag matches, blank values treated as usable, malformed/unavailable
+tags treated as absence or safety, failed family discovery hidden by other successful targets,
+and rehashed forged source/policy/applicability proofs. Exact same-scan source joins and shared
+engine/persistence recomputation retain uncertainty. Ungoverned targets do not become governed;
+AWS-reserved keys are ineligible. Lossless tag encoding is not redaction and preserves sensitive
+data. Narrow category migration must retain all history/integrity/transaction boundaries and
+reject incompatible downgrades before DDL. Configuration presence does not prove ownership,
+CMDB truth or compliance. Review/acceptance remain pending; see
+[6G metadata](docs/controls/sprint-6g-metadata.md).
+
+Accepted 6F.2 addresses substituted destination/owner/Region snapshots, cross-scan/profile/catalog
 dependency reuse, rehashed forged decisions/proofs and disabled prerequisites mistaken for safety.
 Only an exact GetTrail-provenance destination consumes a separately validated same-invocation
 S3-002 result; partial required collectors, ambiguous/unresolved destinations and unavailable
 dependency evidence stay insufficient. An observed trail cannot become N/A. Read-only contexts
 are independently reconstructed before persistence; no historical-result lookup or duplicate
-exposure evaluator. No AWS calls/writes or policy overwrite. Acceptance/review is pending.
+exposure evaluator. No AWS calls/writes or policy overwrite. Acceptance/review and main CI passed.
 See [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
 
 Accepted 6F.1 implementation addresses fabricated trail coverage, incomplete discovery treated
@@ -64,7 +74,7 @@ identity, and policy implementation, and the merged fact-only 5D IAM Access Anal
 production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
 implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F.1 evaluates retained CloudTrail evidence.
-6F.2 is authorized and in progress; 6G/6H are authorized but unstarted. The 5F change adds no AWS write,
+6G is authorized and in progress; 6H is authorized but unstarted. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
 

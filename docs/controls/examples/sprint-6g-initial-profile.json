@@ -1,0 +1,26 @@
+{
+  "catalog_id": "aws-cloud-security-controls",
+  "catalog_version": "0.13.0",
+  "profile": {
+    "profile_id": "sprint-6g-initial",
+    "version": "1.0.0",
+    "enabled_controls": ["GOV-001"],
+    "required_tags": ["Owner", "Environment"],
+    "stale_key_days": 90,
+    "approved_management_cidrs": [],
+    "public_ec2_exceptions": [],
+    "restricted_data_requires_kms": true,
+    "content_checksum": "90a65ea73748f02742bc7cde8684264b8999d8a562ce87729478138db6caf9a5",
+    "schema_version": "2.0.0",
+    "max_unused_access_key_days": null,
+    "high_risk_public_tcp_ports": null,
+    "vpc_flow_log_required_environments": null,
+    "acceptable_vpc_flow_log_traffic_types": null,
+    "governed_resource_types": [
+      "cloudtrail_trail", "ebs_volume", "ec2_instance", "iam_customer_managed_policy",
+      "iam_role", "iam_user", "s3_bucket", "security_group", "subnet", "vpc", "vpc_flow_log"
+    ],
+    "s3_exposure_approvals": null,
+    "sensitive_bucket_classifier": null
+  }
+}

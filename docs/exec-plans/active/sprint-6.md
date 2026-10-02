@@ -1,7 +1,159 @@
 # Sprint 6 — Production Security Controls
 
-Plan state: 6A through 6F.1 COMPLETE and merged. 6F.2 is authorized and IN PROGRESS;
-6G and 6H are authorized but unstarted. Sprint 6 remains IN PROGRESS.
+Plan state: 6A through 6F COMPLETE and merged. 6G is authorized and IN PROGRESS;
+6H is authorized but unstarted. Sprint 6 remains IN PROGRESS.
+
+## 6G post-review validation checkpoint — 2026-10-01
+
+The fresh `python -m scripts.validate --focused ...` gate completed with exit 0 after all review
+corrections on `codex/sprint-6g-required-tags`, unchanged base/HEAD
+`3e5963fc57ca95041618dd0e571b1237892baadf`. **410 focused checks passed** in 112.21 seconds;
+**2,491 full regression tests passed**, including **238 disposable PostgreSQL cases**, no skips
+and 20 existing full-suite warnings. Ruff, 335-file format checking, documentation/link contracts,
+whitespace, Docker Compose and image build passed. Real bearer-authenticated HTTP ran on SQLite
+and PostgreSQL with only AWS offline. The uniquely named loopback-only disposable database was
+removed; user databases were untouched. Focused paths are the same eleven modules/directories
+listed in the initial validation checkpoint below.
+
+The stable 27 changed/new app/Alembic/test-file fingerprint is
+`85b93c9887bd81939551439a16fed853f9dcfcb9a3b20edd79a3a04eaec918e0`, using the same path/file-hash
+algorithm below, independently matched by the reviewer. The same reviewer returned
+CORRECTION_RECHECK_PASS: all three original findings resolved and zero new introduced findings,
+after 274 independent diagnostics (no skips, one existing warning). Further in-memory checks
+enabled all 26 supported controls: 39 assessments, with the 28 non-GOV target/result triples
+unchanged when GOV was disabled. Population checks stayed exactly 22 at 1/2/4/8/16 instances.
+These are compatibility diagnostics, not a claim that 6H has started or Sprint 6 is complete.
+
+The mandatory final committed-head review is still pending. Documentation-only gate-result
+updates require fresh contract/link/whitespace checks. No 6G commit, push, PR, merge or acceptance
+yet. 6H and all later-sprint implementation remain unstarted; original 6E.3 checkout and unrelated
+parent skill files remain preserved and excluded. Earlier checkpoints remain historical.
+
+## 6G independent-review correction checkpoint — 2026-10-01
+
+The ONE authorized reviewer returned REQUEST_CHANGES: one MEDIUM subset-population gap and
+two LOW repeated-work / owner-documentation findings, with no CRITICAL/HIGH findings. Independent
+212 diagnostics passed after two temporary-folder setup errors were rerun; no skips, edits,
+publication or delegation. Review approval is still pending.
+
+The MEDIUM reproduction was confirmed independently: an S3-only governed profile with denied
+ListBuckets produced ten ungoverned N/A results and no insufficient result. The local correction
+adds closed `governance_tags_v1` target selection only to new execution `1.10.0`: keep observed
+known targets, and additionally require canonical global IAM account coverage when none is
+governed. Complete empty governed discovery yields account N/A; unavailable/missing discovery
+yields insufficient. Optional profile keywords preserve legacy callers/target behavior; engine
+and persistence atomically pass the exact retained policy and enforce the same matrix.
+
+The LOW correction seals and indexes only reader-private revalidated resource JSON once, caches
+whole-governed-population validation or sanitized failure by exact contract / fresh profile
+checksum, uses indexed membership, and copies citations into each proof. Target identity/tag
+checks remain independent. New deterministic engine and SQLite/PostgreSQL operation-count tests
+cover 1/2/4/8/16 instances; missing/failed/complete-empty subset coverage and forged account
+omission/N/A/identity/extra-target rejection are tested. Historical selectors/defaults/source
+artifacts and operator policy remain unchanged.
+
+Current ROADMAP/security/readiness paragraphs are reconciled to accepted 6F and local 6G;
+PR #37 now names its exact historical merge rather than the newer accepted baseline. Framework
+documentation distinguishes the JSON artifact digest from the companion manifest recording it.
+
+Initial corrected rules/contracts passed 177 tests. Expanded rules/contracts passed 199 with one
+new test assumption failure: a referenced customer-managed IAM policy remains independently
+admitted by GetPolicy after failed ListPolicies, correctly receiving insufficient rather than
+disappearing. The new test now explicitly checks that observed-target case and the absent-target
+account case separately; no established assertion was weakened. SQLite/contract checks passed
+51 tests. The expanded corrected rules/contracts/SQLite/documentation run then passed **311
+tests**, no skips, one existing warning; Ruff and 335-file format checking passed. Fresh complete
+targeted/regression/disposable PostgreSQL/security/quality/container
+gates and this same reviewer's correction/final-head recheck are required after these code edits.
+All changes remain uncommitted/unpublished. 6G is not accepted; 6H and later work are unstarted.
+
+## 6G validation checkpoint — 2026-10-01
+
+The fresh `python -m scripts.validate --focused ...` run completed with exit 0 on uncommitted
+branch `codex/sprint-6g-required-tags`, base/HEAD
+`3e5963fc57ca95041618dd0e571b1237892baadf`. **362 focused checks passed** in 77.32 seconds,
+then **2,443 full regression tests passed** in 362.39 seconds, including **226 disposable
+PostgreSQL cases**, no skips and 20 existing full-suite warnings. Ruff, 335-file format checking,
+documentation/link contracts, whitespace, Docker Compose and image build all passed. Real
+bearer-authenticated HTTP acceptance ran on both SQLite and PostgreSQL with only AWS offline.
+The uniquely named loopback-only disposable database was removed; user databases were untouched.
+
+Focused paths were the new required-tag rule/contract/SQLite/PostgreSQL modules, new category
+migration SQLite/PostgreSQL modules, existing unresolved-Region migration SQLite/PostgreSQL
+modules, unit/database assessment foundation and all `tests/unit/contracts`.
+The exact 24 changed/new app/Alembic/test-file fingerprint is
+`a5f51ef540cb221d41baba31cbdfc2e9ce3c9cab59973e52e0dee105db0df1ef`, unchanged through the gate:
+PowerShell-sorted repo-relative paths, newline-joined `path:lowercaseSHA256(file)` UTF-8 lines
+(no terminal newline), then SHA-256. Earlier framework artifacts and migrations, collectors,
+authentication, permissions, defaults and operator policy remain unchanged.
+
+The ONE authorized consolidated read-only reviewer is now auditing the entire 6G diff, including
+untracked files. No REVIEW_PASS or reviewer approval has been granted. Owner documents and the
+README record local implementation separately from accepted main. Documentation-only gate-result
+updates require contract/link/whitespace checks and the same reviewer's final-head recheck.
+No 6G commit, push, PR, merge or acceptance yet; 6H and all later-sprint implementation remain
+unstarted. The original 6E.3 checkout and unrelated parent skill files remain preserved.
+
+## 6G local implementation checkpoint — 2026-10-01
+
+Branch `codex/sprint-6g-required-tags` retains accepted base
+`3e5963fc57ca95041618dd0e571b1237892baadf`; all 6G changes are uncommitted, including new
+source/test/metadata files. GOV-001 is locally registered in opt-in `0.13.0`, MEDIUM/governance,
+evaluator `1.0.0`, closed execution/proof `1.10.0`, NIST subset `2.0+subset.12` / ID.AM-02.
+The exact initial Owner/Environment policy and all 11 selectors are retained in a separately
+identified, checksum-validated opt-in example; no operator policy is installed or overwritten.
+See [6G metadata](../../controls/sprint-6g-metadata.md).
+
+The shared pure proof/result computation requires complete discovery for every profile-governed
+family, then exact target admission and tag enrichment; missing families cannot disappear behind
+other successes. Ungoverned targets are N/A; empty fallback reuses the existing global IAM
+account assessment-only namespace without weakening scope checks. New lossless UTF-8 hex tag
+pairs preserve whitespace/case within the existing assessment envelope; original source/snapshot
+strings remain intact. Earlier definitions/serializers/defaults and collector/permission/auth
+behavior are unchanged. The approved `20261001_0006` migration alters only the category CHECK,
+with pre-DDL compatibility/writer guards, SQLite FK-on savepoint rebuild, preserved triggers and
+caller transaction ownership; earlier migrations are untouched.
+
+Initial focused rules/contracts passed 153 tests; the expanded combined run passed 190 before
+one new SQLite defer-state setup assertion failed. Diagnosis in a private in-memory database
+showed sqlite3 legacy mode had no physical caller transaction: SQLite resets the defer flag on
+metadata reads outside one. The test now explicitly establishes the caller transaction before
+setting its flag; the unchanged migration passes both ON/OFF cases and all 22 migration/policy
+checks. No assertion was removed or weakened and no accepted transaction behavior changed.
+Real bearer-authenticated SQLite HTTP acceptance passed after correcting new test assumptions to
+use the existing response schema and occurrence bridge; no public field or ORM interface changed.
+
+Additional exact source version/phase, malformed/count/type, Unicode, expected-absence and
+atomic forgery/history/recovery/lifecycle tests are implemented. Full fresh targeted/regression/
+disposable PostgreSQL and quality/container gates are next; independent review and publication
+remain pending. 6G is not accepted. No 6G commit/push/PR/merge, production/live AWS operation,
+6H implementation or later-sprint work has occurred. Parent skill files and original 6E.3
+checkout remain preserved and excluded.
+
+## 6F.2 acceptance and 6G start — 2026-10-01
+
+PR #38 merged reviewed final head `cfd8d0b28f0d2b44012a71c8f31a214710b55803` into main at
+`3e5963fc57ca95041618dd0e571b1237892baadf` on 2026-10-01T22:57:55Z under the recorded conditional
+approval. Its parents are accepted `3a053ff396a2c112aa254842cb25730fe3879ecc` and that exact head.
+Implementation commit `28b9bb4af17577993951761e7db73c64430fa765` plus the five-file documentary
+checkpoint preserve the reviewed runtime/tests. The same reviewer returned REVIEW_PASS with zero
+unresolved findings for the exact final head. Local 355 focused / 2,212 full tests (201 PostgreSQL,
+no skips) and all quality/container gates remain applicable; post-documentation 76 contract/link
+checks also passed. Both final-head CI runs passed: push
+[36937330458](https://github.com/jnc247s/cloud-security-automation/actions/runs/36937330458) and PR
+[36937334317](https://github.com/jnc247s/cloud-security-automation/actions/runs/36937334317).
+[Merged-main CI 36938144756](https://github.com/jnc247s/cloud-security-automation/actions/runs/36938144756)
+passed 2,212 tests, 20 existing warnings, no skips, Ruff, 322-file formatting and image build on the
+exact merge SHA. 6F.2 and whole 6F are COMPLETE. Earlier pending checkpoints below are historical.
+
+After that gate, the primary created `codex/sprint-6g-required-tags` from the clean verified main
+in the reused worktree. 6G is IN PROGRESS under the exact approved policy below. The current
+preflight checks all 11 source/identity/tag contracts, the generic API/category callers and
+the single `control_versions` category CHECK. The approved new migration must preserve all
+retained data, constraints and triggers on both PostgreSQL and SQLite, caller transaction
+ownership, writer serialization and pre-DDL lossy-downgrade blocking. Earlier migrations remain
+unchanged. No collector, AWS permission, deployment or operator policy change is authorized.
+Original 6E.3 checkout and unrelated parent skills remain preserved. 6H and Sprint 7 are unstarted.
 
 ## Remaining Sprint 6 authorization and 6F.1 acceptance — 2026-10-01
 

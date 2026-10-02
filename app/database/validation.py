@@ -50,6 +50,8 @@ def validate_expected_assessments(
     scope: ScanScopeManifestInput,
     catalog: ControlCatalog,
     assessments: Sequence[AssessmentCandidate],
+    *,
+    profile=None,
 ) -> None:
     """Reject omitted targets and scope claims unsupported by this invocation.
 
@@ -90,7 +92,9 @@ def validate_expected_assessments(
             raise ValueError(f"{control_id} requires an explicit assessment")
 
         if contract.execution_contract is not None:
-            validate_execution_targets(snapshot, contract.execution_contract, tuple(candidates))
+            validate_execution_targets(
+                snapshot, contract.execution_contract, tuple(candidates), profile=profile
+            )
             continue
 
         if contract.resource_type == "aws_account":

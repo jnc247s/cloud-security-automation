@@ -1,14 +1,29 @@
 # Architecture
 
 This document describes the accepted Sprint 0--5 implementation and accepted Sprint 6 slices 6A
-through 6F.1. The accepted baseline is `main` commit
-`3a053ff396a2c112aa254842cb25730fe3879ecc`, which merged LOG-002/003 in pull request #37 after the
+through 6F. The accepted baseline is `main` commit
+`3e5963fc57ca95041618dd0e571b1237892baadf`, which merged LOG-004 in pull request #38 after the
 Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
-control slices. 6F.2 is authorized and in progress; 6G and 6H are authorized but unstarted.
+control slices. 6G is authorized and in progress; 6H is authorized but unstarted.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
-Local 6F.2 adds LOG-004 in opt-in `0.12.0` with closed execution/proof `1.9.0` and only
+Local 6G adds GOV-001 in opt-in `0.13.0` and closed execution/proof `1.10.0`, pending acceptance.
+All 11 exact governed families reuse existing discovery/admission/tag sources and the shared
+engine/persistence result computation. A complete governed-population gate prevents failed-family
+enumeration from disappearing behind other successful targets. Ungoverned targets are N/A;
+complete empty populations reuse the existing global IAM account assessment-only namespace.
+The new `governance_tags_v1` target selector also requires that account coverage result when only
+ungoverned canonical resources are observed, so failed governed discovery remains insufficient.
+The shared target matrix binds the exact retained profile. Reader-private sealed family indexes
+and population caches avoid repeated inventory scans without caching target-specific tag checks.
+Lossless UTF-8 hex tag pairs preserve whitespace without changing the accepted assessment
+envelope; original tags remain in cited sources/snapshots. The explicitly approved additive
+category `governance` and migration `20261001_0006` change only the category CHECK, preserving
+history, foreign keys, exact triggers and caller transaction ownership. No collector, permission,
+deployment or new route. See [6G metadata](docs/controls/sprint-6g-metadata.md).
+
+Accepted 6F.2 adds LOG-004 in opt-in `0.12.0` with closed execution/proof `1.9.0` and only
 the S3-002 prerequisite. The internal context-aware adapter preserves `assess(snapshot, profile)`
 for existing rules; only enabled prerequisites run and final results retain stable ordering.
 The invocation-local read-only context contains identity/profile/catalog/inventory/source/result-
@@ -18,7 +33,7 @@ inventory digest once per reader, without mutating caller resources or changing 
 Exact trail discovery/configuration, one resolved GetTrail-provenance edge and complete
 CloudTrail/S3 collector outcomes bind the destination. No historical result lookup, duplicate
 exposure evaluator, workflow engine, collector, permission, public API or migration is added.
-Acceptance is pending; see [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
+All acceptance, review and merged-main gates passed; see [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
 
 ## Sprint 6A assessment integration
 

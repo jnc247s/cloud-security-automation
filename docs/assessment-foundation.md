@@ -1,6 +1,24 @@
 # Sprint 6A assessment foundation
 
-Local 6F.2 adds opt-in `0.12.0` / LOG-004 and closed composition proof `1.9.0`.
+Local 6G adds opt-in `0.13.0` / GOV-001 and closed proof `1.10.0`, pending acceptance.
+The unchanged schema-2 profile supplies exact required keys and governed selectors. All governed
+family discovery must be complete; per-target admission/tags are exact and same-scan. Shared pure
+result/proof recomputation binds the retained profile checksum before persistence. Lossless UTF-8
+hex tag pairs preserve case/whitespace without changing historical evidence serialization; raw
+strings remain in cited sources and snapshots. Empty fallback reuses the existing global IAM
+account target, not a new collected service/resource. Only the separately approved category enum
+and narrow `20261001_0006` category CHECK migration change. No default, collector or policy
+deployment change. See [6G metadata](controls/sprint-6g-metadata.md).
+
+New `governance_tags_v1` target selection is restricted to execution `1.10.0`. It requires the
+explicit retained profile, keeps observed ungoverned N/A targets, and additionally enumerates
+the canonical IAM account fallback whenever no governed target is observed. Exact discovery
+then proves empty N/A or insufficient coverage. Optional profile keywords preserve old target /
+matrix callers and selectors; engine and persistence pass the exact policy atomically. Private
+sealed family indexes and exact contract/profile population caches preserve independent
+per-target admission/tag checks, fresh checksum validation and historical reader behavior.
+
+Accepted 6F.2 adds opt-in `0.12.0` / LOG-004 and closed composition proof `1.9.0`.
 Only the canonical S3-002 dependency is supported. Its new metadata field is omitted from all
 historical definitions when absent. The internal context adapter delegates unchanged old rule
 calls; lexical order changes only to execute an explicitly enabled prerequisite first, with stable
@@ -9,7 +27,7 @@ and dependency evidence digests. Persistence constructs the same read-only invoc
 independently before SQL, not from caller ordering or historical database assessments.
 Exact resolved destination plus complete required collectors composes PASS/FAIL; all gaps are
 insufficient. Complete empty discovery alone proves account N/A. No default/profile schema or
-migration change; acceptance pending. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
+migration change; acceptance and merged-main CI passed. See [6F.2 metadata](controls/sprint-6f2-metadata.md).
 
 6E.3 adds S3-004 in opt-in `0.10.0`, closed `s3_sensitive_kms_v1` proof `1.7.0`.
 An explicit new schema-2 profile supplies the unchanged immutable sensitive-bucket classifier

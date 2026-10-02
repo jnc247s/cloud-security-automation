@@ -1,11 +1,32 @@
 # Current known limitations
 
-This register records accepted Sprint 0--5 and Sprint 6A--6F.1 implementation reality, including
+This register records accepted Sprint 0--5 and Sprint 6A--6F implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
+
+### Governance category transition — LOCAL 6G, acceptance pending
+
+Revision `20261001_0006` adds only `governance` to the existing control-version category CHECK.
+Before an explicitly authorized rollback across that boundary, quiesce writers, verify a
+restorable backup and use the current online Alembic environment. PostgreSQL takes the parent
+control-version exclusive lock; SQLite reserves the writer. The guard checks the entire downgrade
+path before DDL and refuses category history the predecessor cannot represent. This read-only
+diagnostic reports only compatibility:
+
+```sql
+SELECT EXISTS (
+    SELECT 1 FROM control_versions WHERE category = 'governance'
+) AS incompatible_governance_history;
+```
+
+If true, remain at the current revision; do not delete or recategorize immutable history or
+bypass the guard. Offline downgrades crossing this boundary are blocked. SQLite retains FK
+enforcement and requires an online checked transactional rebuild; PostgreSQL changes only the
+CHECK. This code work authorizes no production migration or rollback. See
+[6G metadata](../controls/sprint-6g-metadata.md).
 
 ### Unresolved regional relationship persistence — REPAIRED
 
