@@ -14,7 +14,7 @@ exceptions, controls, mappings, or audit history.
 
 ## Authentication
 
-Local opt-in catalog `0.12.0`, pending acceptance, adds LOG-004 through the same generic
+Accepted opt-in catalog `0.12.0` (PR #38; merged-main CI passed) adds LOG-004 through the same generic
 authenticated interfaces, without new request/response fields, routes or capabilities. Decisive
 payloads contain strict-type proof `1.9.0`, exact source/destination relationship citations and
 the validated same-scan S3-002 dependency result/target/evidence digests and policy/profile
@@ -158,9 +158,9 @@ boundary only.
 | frameworks | `framework_key`, `version` |
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
 
-Local 6G adds the public control category `governance`. Existing category values, response
-shapes, capabilities and generic control filtering are unchanged. The category migration is
-under validation; GOV-001 is locally registered, not yet accepted. Its generic resource-type
+Accepted 6G adds the public control category `governance`. Existing category values, response
+shapes, capabilities and generic control filtering are unchanged. The category migration and
+GOV-001 are accepted through PR #39 with green merged-main CI. Its generic resource-type
 filter uses the 11 declared execution families. No response field or route changes. See
 [6G metadata](controls/sprint-6g-metadata.md).
 

@@ -37,7 +37,8 @@ proof version and sourced reporting metadata. Approved 6E.3 adds S3-004 in opt-i
 reporting metadata. Accepted 6F.1 registers LOG-002/003 only in opt-in `0.11.0`, with
 a separately approved bounded persistence repair; see
 [6F.1 metadata](sprint-6f1-metadata.md). Accepted 6F.2 registers LOG-004 in opt-in `0.12.0`;
-see [6F.2 metadata](sprint-6f2-metadata.md). GOV-001 implementation is authorized and in progress.
+see [6F.2 metadata](sprint-6f2-metadata.md). Accepted 6G registers GOV-001 in opt-in `0.13.0`;
+see [6G metadata](sprint-6g-metadata.md). Whole-sprint 6H acceptance/closeout is in progress.
 The default catalog is unchanged. See [6B.2 metadata](sprint-6b2-metadata.md) and
 [6C metadata](sprint-6c-metadata.md), [6D.1 metadata](sprint-6d1-metadata.md) and
 [6D.2 metadata](sprint-6d2-metadata.md).
@@ -104,10 +105,10 @@ That contract fixes direction, stable and per-scan identity, Region, resolution,
 its collector and persistence integration was accepted in Sprint 5 and is reused by the opt-in
 Sprint 6 controls.
 
-Accepted releases through 6E have approved severity, guidance and independently versioned NIST
-mapping metadata. The approved local 6F.1 bundle gives LOG-002 HIGH / PR.PS-04 and LOG-003
-MEDIUM / PR.DS-01, subset `2.0+subset.10`, accepted. LOG-004 and GOV-001 have approved
-metadata for their authorized upcoming slices. Severity is project policy and must not be inferred from NIST; mappings remain
+Accepted releases through 6G have approved severity, guidance and independently versioned NIST
+mapping metadata. 6F.1 gives LOG-002 HIGH / PR.PS-04 and LOG-003 MEDIUM / PR.DS-01 in subset
+`2.0+subset.10`; 6F.2 gives LOG-004 HIGH / PR.AA-05 in subset `.11`; 6G gives GOV-001 MEDIUM /
+ID.AM-02 in subset `.12`. Severity is project policy and must not be inferred from NIST; mappings remain
 reporting context and never determine technical results.
 
 ## Canonical Sprint 6 contracts
@@ -518,7 +519,7 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `LOG-004` — CloudTrail log storage has unapproved public/external exposure
 
-- **Status:** local implementation in opt-in `0.12.0`; acceptance pending, default unchanged.
+- **Status:** accepted in opt-in `0.12.0` through PR #38 with green merged-main CI; default unchanged.
 - **Approved metadata:** HIGH/logging, evaluator `1.0.0`, closed proof `1.9.0`,
   PR.AA-05 in subset `2.0+subset.11`; [6F.2 metadata](sprint-6f2-metadata.md).
 - **Scope/resource type:** CloudTrail trail joined to its S3 destination.
@@ -548,7 +549,7 @@ enumeration is complete and every relevant trail is deterministically non-qualif
 
 ### `GOV-001` — Required ownership or context tags are missing
 
-- **Status:** locally implemented in opt-in `0.13.0`, pending validation/review/acceptance.
+- **Status:** accepted in opt-in `0.13.0` through PR #39 with green merged-main CI.
   MEDIUM/governance, evaluator `1.0.0`, closed proof `1.10.0`, strategy `governance_tags_v1`;
   see [approved 6G metadata](sprint-6g-metadata.md).
 - **Scope/resource type:** each resource type explicitly governed by the selected profile.
@@ -711,6 +712,7 @@ turn unknown coverage into `PASS`, `FAIL`, or `NOT_APPLICABLE`. The legacy failu
 raises instead. Persisted scan-level collection status and provenance belong to Sprint 3.
 
 Sprint 2.1 intentionally excluded assessment persistence, lifecycle management, scan/control API
-endpoints, and authentication; Sprints 3 and 4 now supply those foundations. Remaining logging
-and governance controls, further AWS resource/API scope expansion, Terraform, remediation,
-frontend work, and AI functionality remain deferred.
+endpoints, and authentication; Sprints 3 and 4 now supply those foundations. All 25 core controls
+and supported legacy behavior are available through accepted releases up to 6G; 6H whole-sprint
+acceptance/closeout is in progress. Further AWS resource/API scope expansion, Terraform,
+remediation, frontend work, and AI functionality remain deferred.

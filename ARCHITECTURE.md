@@ -1,14 +1,14 @@
 # Architecture
 
 This document describes the accepted Sprint 0--5 implementation and accepted Sprint 6 slices 6A
-through 6F. The accepted baseline is `main` commit
-`3e5963fc57ca95041618dd0e571b1237892baadf`, which merged LOG-004 in pull request #38 after the
+through 6G. The accepted baseline is `main` commit
+`5043f61b384c8c4499710d2033f7636676705deb`, which merged GOV-001 in pull request #39 after the
 Sprint 5 evidence expansion and the preceding Sprint 6 assessment, IAM, EC2, network, and S3
-control slices. 6G is authorized and in progress; 6H is authorized but unstarted.
+control slices. 6H acceptance/closeout is authorized and in progress.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
-Local 6G adds GOV-001 in opt-in `0.13.0` and closed execution/proof `1.10.0`, pending acceptance.
+Accepted 6G adds GOV-001 in opt-in `0.13.0` and closed execution/proof `1.10.0`.
 All 11 exact governed families reuse existing discovery/admission/tag sources and the shared
 engine/persistence result computation. A complete governed-population gate prevents failed-family
 enumeration from disappearing behind other successful targets. Ungoverned targets are N/A;

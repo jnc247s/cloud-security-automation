@@ -1,6 +1,6 @@
 # Sprint 6A assessment foundation
 
-Local 6G adds opt-in `0.13.0` / GOV-001 and closed proof `1.10.0`, pending acceptance.
+Accepted 6G adds opt-in `0.13.0` / GOV-001 and closed proof `1.10.0`; PR #39 and merged-main CI passed.
 The unchanged schema-2 profile supplies exact required keys and governed selectors. All governed
 family discovery must be complete; per-target admission/tags are exact and same-scan. Shared pure
 result/proof recomputation binds the retained profile checksum before persistence. Lossless UTF-8

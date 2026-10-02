@@ -1,8 +1,8 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--5 and Sprint 6
-slices 6A through 6F at the accepted `main` baseline
-`3e5963fc57ca95041618dd0e571b1237892baadf`. That baseline includes the versioned assessment
+slices 6A through 6G at the accepted `main` baseline
+`5043f61b384c8c4499710d2033f7636676705deb`. That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -14,14 +14,15 @@ never trusts caller order/context. Operator approval artifacts remain unchanged;
 become approvals or rewrite FAIL. No AWS call/write, permission/auth or migration change.
 Acceptance and merged-main CI passed; see [6F.2 metadata](docs/controls/sprint-6f2-metadata.md).
 
-Local 6G required-tag validation binds complete governed-family discovery, exact target identity,
+Accepted 6G required-tag validation binds complete governed-family discovery, exact target identity,
 tag-source IDs/digests and retained profile checksum. Incomplete/malformed evidence cannot pass;
 rehashed forged results and strict-type proof substitutions reject atomically before SQL.
 Lossless hex tag encoding preserves exact strings and is not secrecy protection: source/proof
 tags remain sensitive. Tags prove configuration presence, not ownership truth or authorization.
 The initial profile is explicit opt-in; no deployed policy, credential, capability or AWS
 permission changes. The approved category migration preserves integrity and blocks lossy
-downgrades before DDL. Acceptance is pending; see [6G metadata](docs/controls/sprint-6g-metadata.md).
+downgrades before DDL. Independent review and merged-main CI passed; see
+[6G metadata](docs/controls/sprint-6g-metadata.md). 6H acceptance/closeout is in progress.
 
 ## Authentication
 
@@ -297,8 +298,8 @@ technical results. Separately versioned Sprint 6 rules through 6E now evaluate r
 EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM collector retains
 access-key identifiers only as resource identity and evidence; it never requests or stores secret
 access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
-`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6F accepted. GOV-001/6G is locally
-implemented and under independent review, not yet accepted; 6H is authorized but unstarted.
+`COMPLETE`; Sprint 6 is `IN PROGRESS`, with 6A through 6G accepted. 6H whole-sprint
+acceptance and documentation closeout are authorized and in progress.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

@@ -6,7 +6,7 @@ in `docs/assessment-framework.md`.
 
 ## Scope and claim boundary
 
-Local 6G catalog `0.13.0`, pending acceptance, adds GOV-001 -> ID.AM-02 in separate subset
+Accepted 6G catalog `0.13.0` adds GOV-001 -> ID.AM-02 in separate subset
 `2.0+subset.12`. Source: official NIST CSWP 29 version 2.0, Appendix A printed page 18
 (PDF index 22), inspected 2026-10-01. The new JSON artifact has SHA-256
 `fd3cd6448531d44c73b86781dfd84736fa20726e88360463ac8767ef588c1d2e`; its companion manifest

@@ -2,8 +2,9 @@
 
 Sprint state belongs to [ROADMAP.md](../../ROADMAP.md). The
 [active plan](../exec-plans/active/sprint-6.md) records the user's 2026-10-01 approval.
-6G is IN PROGRESS; GOV-001 is published in
-[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39), but not yet accepted.
+6G is COMPLETE; GOV-001 merged through
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) at
+`5043f61b384c8c4499710d2033f7636676705deb`, with green exact-head and merged-main CI.
 
 ## Approved policy and claim
 
@@ -32,7 +33,7 @@ operator; collection and assessment remain read-only. Local execution uses exact
 discovery, identity and tag sources, with shared engine/persistence recomputation and atomic
 rejection of forged evidence, results and policy bindings.
 
-Local metadata is MEDIUM severity, additive `governance` category, evaluator `1.0.0`, opt-in
+Accepted metadata is MEDIUM severity, additive `governance` category, evaluator `1.0.0`, opt-in
 catalog `0.13.0`, closed execution proof `1.10.0`, and NIST subset `2.0+subset.12`.
 ID.AM-02 is limited reporting context: owner/environment
 tags contribute context to maintained inventories, not proof of the whole outcome. The source
@@ -77,7 +78,7 @@ strict proof recomputation rejects altered tags, numeric/boolean substitutions, 
 policy bindings and applicability. This is an encoding, not encryption or redaction; tag evidence
 remains sensitive. No established API fields, constructors, collector or permission changes.
 
-## Local additive category migration checkpoint
+## Accepted additive category migration
 
 The implementation adds only public category value `governance` and migration
 `20261001_0006`, following accepted `20261001_0005`. Only the named control-version category
@@ -108,9 +109,10 @@ documentation corrections. The same reviewer verified all resolved, zero new fin
 post-correction validation passed **410 focused / 2,491 full tests**, including **238 disposable
 PostgreSQL cases**, no skips and 20 existing warnings; all quality/container gates passed.
 See the [post-review gate checkpoint](../exec-plans/active/sprint-6.md#6g-post-review-validation-checkpoint--2026-10-01).
-The same reviewer returned REVIEW_PASS for exact published head
-`b1bf5cbe0868b7914d5f5c6680322a3437341ebe`, zero unresolved findings. The
-[publication checkpoint](../exec-plans/active/sprint-6.md#6g-publication-checkpoint--2026-10-01)
-records the scoped commits and PR. Final publication-document recheck, exact-head CI, conditional
-merge and merged-main CI remain required; 6G is not accepted. Earlier initial gate outcomes remain
-recorded in the active plan.
+The same reviewer returned REVIEW_PASS for exact final head
+`d2874a38f7be468ddc3f307a8fb2251dac8c7d70`, zero unresolved findings. Both final-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
+passed all 2,491 tests, no skips, 20 existing warnings and quality/image gates. The
+[acceptance checkpoint](../exec-plans/active/sprint-6.md#6g-acceptance-and-6h-start--2026-10-01)
+records the exact scoped commits, PR, merge and review. Earlier initial gate outcomes remain
+historical in the active plan; 6H acceptance/closeout is in progress, not yet complete.

@@ -33,7 +33,15 @@ record the development history. Sprint state itself is authoritative only in
   preserves historical/default behavior without new AWS calls, permissions or migrations.
   Local acceptance and merged-main CI passed 2,212 tests, including 201 PostgreSQL cases,
   no skips and all quality/container gates; exact final-head review passed with zero findings.
-  6G is authorized and in progress; 6H is authorized but unstarted.
+- Accepted 6G GOV-001 in opt-in `0.13.0` through
+  [pull request #39](https://github.com/jnc247s/cloud-security-automation/pull/39), merged at
+  `5043f61b384c8c4499710d2033f7636676705deb`. Exact required tags across all 11 canonical families
+  use closed profile/source-bound proofs, explicit empty/failed population coverage, and bounded
+  private indexes. The approved additive governance category and migration `20261001_0006`
+  preserve history, constraints, triggers and guarded downgrade. Local and merged-main gates
+  passed 2,491 tests including 238 PostgreSQL cases, no skips; final-head independent review had
+  zero unresolved findings. Default/historical catalogs and operator policy remain unchanged.
+  6H acceptance/closeout is in progress; later-sprint implementation is unstarted.
 
 ## Sprint 5 — 2026-09-23
 

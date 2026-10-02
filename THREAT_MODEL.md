@@ -1,19 +1,19 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6F
-Baseline: `main` commit `3e5963fc57ca95041618dd0e571b1237892baadf` (LOG-004 merged in PR #38)
+Status: living model for accepted Sprints 0--5 and Sprint 6 slices 6A through 6G
+Baseline: `main` commit `5043f61b384c8c4499710d2033f7636676705deb` (GOV-001 merged in PR #39)
 Last reviewed: 2026-10-01
 
 ## Scope and security objectives
 
-Local 6G addresses case-folded tag matches, blank values treated as usable, malformed/unavailable
+Accepted 6G addresses case-folded tag matches, blank values treated as usable, malformed/unavailable
 tags treated as absence or safety, failed family discovery hidden by other successful targets,
 and rehashed forged source/policy/applicability proofs. Exact same-scan source joins and shared
 engine/persistence recomputation retain uncertainty. Ungoverned targets do not become governed;
 AWS-reserved keys are ineligible. Lossless tag encoding is not redaction and preserves sensitive
 data. Narrow category migration must retain all history/integrity/transaction boundaries and
 reject incompatible downgrades before DDL. Configuration presence does not prove ownership,
-CMDB truth or compliance. Review/acceptance remain pending; see
+CMDB truth or compliance. Independent review and merged-main CI passed; see
 [6G metadata](docs/controls/sprint-6g-metadata.md).
 
 Accepted 6F.2 addresses substituted destination/owner/Region snapshots, cross-scan/profile/catalog
@@ -73,8 +73,8 @@ security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
 production deployment, frontend, Terraform infrastructure, remediation execution, or AI agent is
 implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
-consume the 5E facts, while accepted 6F.1 evaluates retained CloudTrail evidence.
-6G is authorized and in progress; 6H is authorized but unstarted. The 5F change adds no AWS write,
+consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
+6G required tags are accepted; 6H acceptance/closeout is in progress. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
 

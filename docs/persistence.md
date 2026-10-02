@@ -1,11 +1,11 @@
 # Persistence and assessment history
 
-Local 6G adds category `governance` and narrow migration `20261001_0006` after accepted
+Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
 constraints and append-only triggers remain. SQLite retains foreign-key enforcement and
 caller-owned transactions through a checked savepoint rebuild. Online pre-DDL downgrade guards
 reject governance history that the predecessor cannot represent; offline crossing is blocked.
-GOV-001 is locally registered, not yet accepted. Shared proof/result recomputation binds its
+GOV-001 is accepted through PR #39 with green merged-main CI. Shared proof/result recomputation binds its
 exact retained tag policy and same-scan sources; historical profile recovery and full-scan
 finding-resolution requirements remain unchanged. See [6G metadata](controls/sprint-6g-metadata.md).
 

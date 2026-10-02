@@ -9,24 +9,17 @@ provide certification or claim organization-wide NIST compliance.
 
 ## Status
 
-Sprints 0 through 5 are complete and merged. The
-[completed Sprint 5 plan](docs/exec-plans/completed/sprint-5.md) records its accepted evidence
-expansion and retained limitations. Sprint 6 is `IN PROGRESS`: slices 6A through 6F are complete
-and merged. Slice 6E.3 added S3-004 through pull request 35; its independent review and
-[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36825207102)
-passed. Slice 6F.1 (LOG-002/003) has passed local implementation acceptance checks,
-including its explicitly approved [persistence repair](docs/controls/sprint-6f1-metadata.md).
-All 2,125 regression tests pass, including 171 PostgreSQL cases, with no skips; quality and
-container gates pass. Independent review passed with zero unresolved findings. The reviewed
-implementation merged in [pull request #37](https://github.com/jnc247s/cloud-security-automation/pull/37);
-[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36930583998)
-passed all 2,125 tests and quality/image gates. LOG-004/6F.2 subsequently merged in
-[PR #38](https://github.com/jnc247s/cloud-security-automation/pull/38), with independent REVIEW_PASS,
-355 focused checks and 2,212 full tests (201 PostgreSQL, no skips). Both final-head CI runs and
-[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36938144756)
-passed. GOV-001/6G is authorized and in progress; 6H is authorized but unstarted.
-[ROADMAP.md](ROADMAP.md) is the only authoritative
-progress source.
+Sprints 0 through 5 are complete and merged; the
+[completed Sprint 5 plan](docs/exec-plans/completed/sprint-5.md) records accepted evidence and
+retained limitations. Sprint 6 is `IN PROGRESS`, with slices 6A through 6G accepted and merged.
+Latest opt-in catalog `0.13.0` contains all 25 core controls plus supported legacy `S3-900`.
+GOV-001/6G merged through [PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39)
+with exact-head independent REVIEW_PASS and 2,491 regression tests (238 PostgreSQL, no skips),
+plus all quality/container gates. Its
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36949198125)
+passed. Final 6H whole-sprint acceptance and documentation closeout are in progress, not yet
+accepted. No later-sprint implementation has started. [ROADMAP.md](ROADMAP.md) alone owns progress;
+the [active plan](docs/exec-plans/active/sprint-6.md) records exact approvals, gates and history.
 
 The current implementation includes:
 
@@ -63,19 +56,21 @@ through explicit, versioned catalog/profile selection. The opt-in releases are c
 | `0.10.0` | `S3-004` | Accepted |
 | `0.11.0` | `LOG-002`, `LOG-003` | Accepted through PR #37; merged-main CI passed |
 | `0.12.0` | `LOG-004` | Accepted through PR #38; merged-main CI passed |
-| `0.13.0` | `GOV-001` | Published in PR #39; final CI/acceptance pending |
+| `0.13.0` | `GOV-001` | Accepted through PR #39; merged-main CI passed |
 
 See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
 contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not
 decide `S3-002`. LOG-002/003 are accepted and require explicit opt-in selection;
 see [6F.1 metadata](docs/controls/sprint-6f1-metadata.md). `LOG-004` is accepted;
-`GOV-001` is locally implemented and in progress, not yet accepted. It checks the exact required
+`GOV-001` is accepted in opt-in catalog `0.13.0`. It checks the exact required
 `Owner` and `Environment` tags across 11 explicitly governed resource families, with complete
 source proofs; see [6G metadata](docs/controls/sprint-6g-metadata.md) and the
 [initial opt-in profile](docs/controls/examples/sprint-6g-initial-profile.json).
 LOG-004 composes only a validated same-scan S3-002
 assessment for the exact destination bucket; missing/disabled dependencies cannot pass.
 See [6F.2 metadata](docs/controls/sprint-6f2-metadata.md). Existing `LOG-001` behavior is unchanged.
+The [6H acceptance record](docs/controls/sprint-6h-acceptance.md) tracks combined-control,
+historical-release recovery and authenticated API validation; Sprint 6 is not yet closed.
 
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all

@@ -3,8 +3,8 @@
 Status: canonical evidence-readiness plan with accepted 5A through 5F evidence producers
 reflected. The bounded 5G closure was accepted and merged in pull request 25 at
 `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`. Accepted Sprint 6 consumers through
-6F are identified below. LOG-002/003 and exact LOG-004 composition are accepted;
-GOV-001 implementation is authorized and in progress.
+6G are identified below. LOG-002/003, exact LOG-004 composition and GOV-001 required tags are
+accepted. Whole-sprint 6H acceptance/closeout is authorized and in progress.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -50,7 +50,7 @@ Analyzer producers are integrated. Accepted 5E adds the direct S3/KMS source gra
 5F adds the CloudTrail source graph. Accepted opt-in Sprint 6 controls through 6E consume only
 their declared, version-bound source proofs. Accepted 6F.1 LOG-002/003 use opt-in `0.11.0`, with the
 [persistence repair](sprint-6f1-metadata.md).
-Accepted 6F.2 LOG-004 uses opt-in `0.12.0`; 6G governance is authorized and in progress.
+Accepted 6F.2 LOG-004 uses opt-in `0.12.0`; accepted 6G GOV-001 uses opt-in `0.13.0`.
 
 ## IAM controls
 
@@ -213,7 +213,7 @@ snapshot. S3-002 is available in opt-in catalog `0.9.0`; LOG-004 is accepted in 
 
 | Control | AWS APIs and read permissions | Scope | Normalized evidence and relationships | Missing-evidence behavior | Slice / state |
 | --- | --- | --- | --- | --- | --- |
-| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, 5E S3, and 5F CloudTrail tags accepted; 6G opt-in 0.13.0 locally implemented; validation/review pending / `CURRENT` |
+| `GOV-001` | EC2 response tags for instance, volume, VPC, subnet, security group, and Flow Log; S3 `GetBucketTagging`; IAM `ListUserTags`, `ListRoleTags`, `ListPolicyTags`; batched CloudTrail `ListTags`; and matching read permissions | Per resource; only exact profile-governed selectors from the catalog vocabulary | stable resource identity/type; complete case-sensitive tag map; explicit empty tags; `aws:` keys retained but ineligible; usable value is a string containing a non-whitespace character | Failed/partial source or malformed tags -> `INSUFFICIENT_EVIDENCE`; successful empty/no-tag response is complete and can produce missing-tag `FAIL` | 5A instance/volume, 5B VPC/subnet/security-group/Flow Log, 5C IAM, 5E S3, and 5F CloudTrail tags accepted; 6G opt-in 0.13.0 accepted through PR #39 / `CURRENT` |
 
 The initial governed-type vocabulary has one complete factual source per selector:
 
@@ -296,14 +296,14 @@ requires a reviewed schema/version transition and a new profile version.
 | Acceptable Flow Log traffic coverage | `acceptable_vpc_flow_log_traffic_types` | Explicit non-empty tuple constrained to exact `REJECT` and/or `ALL` | `NET-006` |
 | Public EC2 allowlist | `public_ec2_exceptions` | Existing policy field; not a Finding Exception | `EC2-002` |
 | Required tag keys | `required_tags` | Existing | `GOV-001` |
-| Resource types governed by required tags | `governed_resource_types` | Explicit non-empty tuple restricted to the catalog's exact tag-source vocabulary; local 6G implementation pending acceptance | `GOV-001` |
+| Resource types governed by required tags | `governed_resource_types` | Explicit non-empty tuple restricted to the catalog's exact tag-source vocabulary; accepted in 6G | `GOV-001` |
 | Approved public/external S3 exposure | `s3_exposure_approvals` | Approved strict versioned artifact; exact account/Region/ARN/stable bucket identity plus separate public flag and principal tokens | `S3-002`, `LOG-004` |
 | Sensitive-bucket classification | `sensitive_bucket_classifier` | Approved classifier schema `1.0.0`; exact account/Region/ARN/stable bucket identities, restricted name patterns, and exact tag pairs only | `S3-004` |
 | Restricted-data KMS consequence | `restricted_data_requires_kms` | Existing boolean; does not itself classify a bucket | `S3-004` |
 
-Sprint 5 assigned no new severity or NIST mapping. Accepted Sprint 6 controls through 6F have
-separately reviewed severity and versioned mapping metadata; locally implemented governance
-remains under independent review. Those reporting decisions do not change the AWS facts Sprint 5
+Sprint 5 assigned no new severity or NIST mapping. Accepted Sprint 6 controls through 6G have
+separately reviewed severity and versioned mapping metadata, including governance through PR #39.
+Those reporting decisions do not change the AWS facts Sprint 5
 must preserve.
 
 ## Global and Regional execution plan
@@ -453,8 +453,7 @@ prerequisites is now `CURRENT`. That evidence-readiness result did not itself re
 accepted Sprint 6 consumers are identified in the rows above.
 
 Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
-Sprint 6 is `IN PROGRESS`: slices 6A through 6F are accepted. GOV-001 is authorized and in progress;
-6H acceptance and closeout remain unstarted.
+Sprint 6 is `IN PROGRESS`: slices 6A through 6G are accepted; 6H acceptance and closeout are in progress.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 
