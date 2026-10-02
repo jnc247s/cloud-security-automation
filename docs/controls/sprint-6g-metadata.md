@@ -2,7 +2,8 @@
 
 Sprint state belongs to [ROADMAP.md](../../ROADMAP.md). The
 [active plan](../exec-plans/active/sprint-6.md) records the user's 2026-10-01 approval.
-6G is IN PROGRESS; GOV-001 is registered locally but not yet accepted or published.
+6G is IN PROGRESS; GOV-001 is published in
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39), but not yet accepted.
 
 ## Approved policy and claim
 
@@ -107,7 +108,9 @@ documentation corrections. The same reviewer verified all resolved, zero new fin
 post-correction validation passed **410 focused / 2,491 full tests**, including **238 disposable
 PostgreSQL cases**, no skips and 20 existing warnings; all quality/container gates passed.
 See the [post-review gate checkpoint](../exec-plans/active/sprint-6.md#6g-post-review-validation-checkpoint--2026-10-01).
-Final committed-head reviewer approval and publication remain pending. The
-[commit checkpoint](../exec-plans/active/sprint-6.md#6g-commit-checkpoint--2026-10-01) records the
-scoped implementation commit; 6G is not accepted. Earlier initial gate outcomes remain recorded
-in the active plan.
+The same reviewer returned REVIEW_PASS for exact published head
+`b1bf5cbe0868b7914d5f5c6680322a3437341ebe`, zero unresolved findings. The
+[publication checkpoint](../exec-plans/active/sprint-6.md#6g-publication-checkpoint--2026-10-01)
+records the scoped commits and PR. Final publication-document recheck, exact-head CI, conditional
+merge and merged-main CI remain required; 6G is not accepted. Earlier initial gate outcomes remain
+recorded in the active plan.

@@ -3,6 +3,31 @@
 Plan state: 6A through 6F COMPLETE and merged. 6G is authorized and IN PROGRESS;
 6H is authorized but unstarted. Sprint 6 remains IN PROGRESS.
 
+## 6G publication checkpoint — 2026-10-01
+
+The same authorized reviewer returned REVIEW_PASS for exact clean head
+`b1bf5cbe0868b7914d5f5c6680322a3437341ebe`, zero unresolved introduced findings at any severity.
+It includes implementation `c17d9878d1bec4795e8dd697e71ca4e06ff8d4b1` and the two-file documentary
+checkpoint. The reviewer independently passed 274 correction and 77 final-head contract/link
+checks, verified all three findings resolved, and matched the unchanged 27-file tested core
+fingerprint. Fresh 410 focused / 2,491 full / 238 PostgreSQL / no-skip and quality/container gates
+remain applicable; post-documentary 77 contract checks and whitespace passed.
+
+The primary normally pushed the scoped branch and created
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39) against unchanged accepted
+main `3e5963fc57ca95041618dd0e571b1237892baadf`. No force push, unrelated paths or production
+operation. Initial exact-head push CI
+[36947969980](https://github.com/jnc247s/cloud-security-automation/actions/runs/36947969980) and PR
+CI [36947978030](https://github.com/jnc247s/cloud-security-automation/actions/runs/36947978030)
+are running at this checkpoint; no CI success or acceptance is claimed. GitHub reports mergeable,
+non-draft, no outstanding review requests/rejections, no branch protection or rulesets. The primary
+will still enforce all recorded gates manually, without bypass.
+
+These publication-state documentation updates require the same reviewer's exact final-head
+recheck and fresh final-head CI. Conditional merge must match reviewed head and accepted base;
+merged-main CI must pass before advancing. No 6G merge/acceptance yet. 6H and later-sprint work
+remain unstarted, with original checkout and unrelated parent skills preserved.
+
 ## 6G commit checkpoint — 2026-10-01
 
 The sole writer committed exactly 45 scoped files as

@@ -63,7 +63,7 @@ through explicit, versioned catalog/profile selection. The opt-in releases are c
 | `0.10.0` | `S3-004` | Accepted |
 | `0.11.0` | `LOG-002`, `LOG-003` | Accepted through PR #37; merged-main CI passed |
 | `0.12.0` | `LOG-004` | Accepted through PR #38; merged-main CI passed |
-| `0.13.0` | `GOV-001` | Fresh validation passed; final review/publication pending |
+| `0.13.0` | `GOV-001` | Published in PR #39; final CI/acceptance pending |
 
 See the [control catalog](docs/controls/catalog.md) for authoritative meanings, versions, evidence
 contracts, and policy boundaries. Access Analyzer findings remain supplementary facts and do not

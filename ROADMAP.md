@@ -77,11 +77,14 @@ records the exact policies, boundaries and merge conditions. No later-sprint imp
 authorized.
 GOV-001 is locally registered in opt-in `0.13.0`, with closed proof `1.10.0`, exact initial
 Owner/Environment policy across all 11 families, separate NIST subset `.12` and the approved
-additive `governance` category / `20261001_0006` migration. It is not yet accepted or published;
+additive `governance` category / `20261001_0006` migration. It is published in
+[PR #39](https://github.com/jnc247s/cloud-security-automation/pull/39), but not yet accepted.
 After the review corrections, fresh validation passed 410 focused and 2,491 regression tests,
 including 238 disposable PostgreSQL cases, with no skips and all quality/container gates green.
 The same reviewer verified all original findings resolved with zero new findings after 274
-independent checks; final committed-head review and publication remain pending.
+independent checks and returned REVIEW_PASS for exact head
+`b1bf5cbe0868b7914d5f5c6680322a3437341ebe`. Final publication-document recheck and CI/merge gates
+remain pending; merged-main CI must pass before 6H.
 See [6G metadata](docs/controls/sprint-6g-metadata.md). No deployed policy,
 collector, AWS permission or authentication change; 6H and later-sprint work remain unstarted.
 The reviewed LOG-002/003 implementation, tests and approved persistence repair are committed
