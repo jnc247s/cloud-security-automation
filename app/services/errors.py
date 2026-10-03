@@ -5,6 +5,10 @@ class AssessmentProfileConflictError(RuntimeError):
     """Configured policy content conflicts with an existing immutable version."""
 
 
+class TechnicalPostureProvenanceError(RuntimeError):
+    """Retained reporting identities disagree; never omit rows or select newer policy."""
+
+
 class EntityNotFoundError(LookupError):
     """Raised when a caller requests a persisted entity that does not exist."""
 

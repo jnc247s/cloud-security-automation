@@ -75,7 +75,9 @@ production deployment, frontend, Terraform infrastructure, remediation execution
 implemented. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
 6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7
-is NEXT, unstarted. 6H changed no application/security behavior or residual risk. The 5F change adds no AWS write,
+is IN PROGRESS with approved 7A reporting; independent review passed with zero unresolved
+findings, while acceptance and merge remain pending.
+6H changed no application/security behavior or residual risk. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
 
@@ -92,6 +94,17 @@ Protect:
 Security objectives are confidentiality of cloud evidence and credentials, integrity and
 reproducibility of technical assessments, authorized access, append-only auditability, and bounded
 failure behavior.
+
+Approved 7A adds only exact-scan technical-context READ aggregates. Sensitive count/account
+metadata remains behind the real bearer/READ dependency in the same single trust domain (T03/T07).
+Reports omit payloads/configurations/tags and live operational handling; success and report-specific
+409 are no-store. Version/profile checks, exact same-scan snapshot joins and unique mapped-control
+unions address T10/T13 reporting corruption without re-evaluating evidence or weakening persistence.
+Collection gaps, four-state facts and unavailable coverage remain distinct; no score or framework
+PASS is produced. A privileged database operator remains trusted. Tests use controlled test
+JWKS but real production signature/issuer/audience/expiry/role verification, not dependency bypass.
+No new AWS permission, tenant policy, browser/session or production boundary is introduced.
+The 7B client/auth choice must receive its own threat review before implementation.
 
 ## Trust boundaries and assumptions
 

@@ -4,7 +4,10 @@ This register records accepted Sprints 0--6 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
-Sprint 7 is NEXT and unstarted. See [6H acceptance](../controls/sprint-6h-acceptance.md).
+Sprint 7 is IN PROGRESS: approved 7A READ reporting passed independent review with zero
+unresolved findings; acceptance and merge remain pending. 7B browser/auth design remains unapproved. See
+[6H acceptance](../controls/sprint-6h-acceptance.md) and the
+[active Sprint 7 plan](../exec-plans/active/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 ## Data and migration integrity
@@ -300,7 +303,10 @@ Accepted 5F adds matching per-source CloudTrail behavior through a shared bundle
 the accepted direct and pending pre-5F paths. It was merged in pull request 24 at `main` commit
 `29aeea59b9cceff957adac4fba75cb8ca2c4a592`; Sprint 5 is `COMPLETE`, its 5G closure was
 accepted in pull request 25, and the accepted controls through 6E preserve these fail-closed
-source boundaries. CloudTrail controls LOG-002 through LOG-004 remain planned for 6F.
+source boundaries. LOG-002/003 and LOG-004 are accepted through 6F.1 and 6F.2 in opt-in catalogs
+`0.11.0` and `0.12.0`; see [6F.1 metadata](../controls/sprint-6f1-metadata.md) and
+[6F.2 metadata](../controls/sprint-6f2-metadata.md). Their acceptance does not change the
+collector-granularity limitation above.
 
 ### Single-region request model — PLANNED LIMIT
 

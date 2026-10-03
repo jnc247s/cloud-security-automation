@@ -11,11 +11,16 @@ from app.api.errors import (
     assessment_profile_conflict_handler,
     entity_not_found_handler,
     scan_submission_error_handler,
+    technical_posture_provenance_handler,
 )
 from app.api.router import api_router
 from app.config import get_settings
 from app.logging.config import configure_logging
-from app.services.errors import AssessmentProfileConflictError, EntityNotFoundError
+from app.services.errors import (
+    AssessmentProfileConflictError,
+    EntityNotFoundError,
+    TechnicalPostureProvenanceError,
+)
 from app.services.scan_executor import InProcessScanExecutor, ScanExecutor
 from app.services.scan_service import ScanSubmissionError
 
@@ -59,6 +64,9 @@ def create_app(
     )
     application.add_exception_handler(EntityNotFoundError, entity_not_found_handler)
     application.add_exception_handler(ScanSubmissionError, scan_submission_error_handler)
+    application.add_exception_handler(
+        TechnicalPostureProvenanceError, technical_posture_provenance_handler
+    )
     application.include_router(api_router)
     return application
 

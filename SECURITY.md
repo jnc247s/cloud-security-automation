@@ -24,7 +24,9 @@ permission changes. The approved category migration preserves integrity and bloc
 downgrades before DDL. Independent review and merged-main CI passed; see
 [6G metadata](docs/controls/sprint-6g-metadata.md). Accepted 6H verified combined controls,
 historical releases and real authenticated APIs with only AWS offline; no security behavior or
-production operation changed. Sprint 7 is NEXT and unstarted.
+production operation changed. Sprint 7 is IN PROGRESS; approved 7A READ reporting passed
+independent review with zero unresolved findings; acceptance and merge remain pending.
+No 7B browser boundary is added.
 
 ## Authentication
 
@@ -177,6 +179,16 @@ exceptions, audit metadata, database dumps, and backups as sensitive security da
 database and backup access on least privilege. A `READ` principal is trusted to receive normalized
 artifact payloads from source-outcome detail; there is no field-level or account-level policy.
 
+Approved 7A technical-posture aggregates are also sensitive READ data. The exact-scan service
+omits configurations, evidence payloads, tags and mutable finding/exception handling, and never
+calls AWS, evaluates rules, flushes caller objects or commits. Counts cannot substitute current
+versions, multiply assessments through mappings, treat unavailable coverage as zero failures,
+or convert exceptions into PASS. Version/profile/hierarchy conflicts fail closed with a fixed
+sanitized `technical_posture_provenance_conflict` 409. Success and that conflict set no-store;
+this does not make other existing API responses no-store or create tenant/field authorization.
+Existing bearer validation and READ/EXECUTE separation remain the enforcement boundary.
+Browser login, session/token handling and frontend security remain a separate 7B design gate.
+
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine
 logs. A successful or failed authentication decision must not reveal token-validation detail.
@@ -301,7 +313,8 @@ EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM coll
 access-key identifiers only as resource identity and evidence; it never requests or stores secret
 access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
-Sprint 7 is NEXT; no later-sprint implementation or deployment was started.
+Sprint 7A reporting is IN PROGRESS; no 7B or later slice, deployment or production operation
+was started under that approval.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content
