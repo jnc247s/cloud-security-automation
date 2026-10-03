@@ -3,7 +3,11 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-from app.services.errors import AssessmentProfileConflictError, EntityNotFoundError
+from app.services.errors import (
+    AssessmentProfileConflictError,
+    EntityNotFoundError,
+    TechnicalPostureProvenanceError,
+)
 from app.services.scan_service import ScanSubmissionError
 
 
@@ -60,6 +64,23 @@ async def scan_submission_error_handler(
                 "code": "scan_submission_failed",
                 "message": "The scan was recorded but could not be submitted.",
                 "scan_id": str(error.scan_id),
+            }
+        },
+    )
+
+
+async def technical_posture_provenance_handler(
+    _request: Request, _error: TechnicalPostureProvenanceError
+) -> JSONResponse:
+    """Do not expose policy contents, checksums or inconsistent database records."""
+
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        headers={"Cache-Control": "no-store"},
+        content={
+            "detail": {
+                "code": "technical_posture_provenance_conflict",
+                "message": "The retained scan reporting provenance is inconsistent.",
             }
         },
     )

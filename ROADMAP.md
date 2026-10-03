@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-01
+Last verified: 2026-10-02
 Accepted implementation baseline: `main` at `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (PR #40;
 Sprints 0--6 accepted, including whole-sprint 6H acceptance, opt-in `0.13.0`
 and migration `20261001_0006`; merged-main CI passed)
@@ -20,7 +20,7 @@ and migration `20261001_0006`; merged-main CI passed)
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
 | Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
 | Sprint 6 | Production Security Controls | **COMPLETE** |
-| Sprint 7 | Dashboard / NIST Technical Posture | **NEXT** |
+| Sprint 7 | Dashboard / NIST Technical Posture | **IN PROGRESS** |
 | Sprint 8 | Human-Approved Remediation | **PLANNED** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
@@ -244,15 +244,41 @@ initially authorized the prepared 6F.1 bundle only; 6F.1 is now COMPLETE through
 green merged-main CI. 6F.2 is subsequently COMPLETE through PR #38 and green merged-main CI.
 The remaining-Sprint-6 approval covered accepted 6G and 6H acceptance/closeout. Accepted migration
 head is `20261001_0006`; 6H added no migration or application behavior. The completed plan records
-whole-sprint acceptance and the post-merge documentary closure. Later-sprint work is unstarted.
+whole-sprint acceptance and the post-merge documentary closure. Later-sprint work was unstarted
+at that closeout; the subsequent approved 7A start is recorded below.
 
-## Next: Sprint 7 — Dashboard / NIST Technical Posture
+## In progress: Sprint 7 — Dashboard / NIST Technical Posture
 
-Sprint 7 is NEXT, not IN PROGRESS. Its analysis-only preflight, approved execution plan and
-implementation authorization are still required before work begins. Future dashboard consumers
+Sprint 7 is IN PROGRESS, limited initially to the approved 7A reporting foundation. The user
+requested its analysis-only preflight on 2026-10-02.
+The [preflight](docs/sprint-7-preflight.md) is complete and the
+[execution plan](docs/exec-plans/active/sprint-7.md) records 7A approval and later proposed slices.
+Analysis started from
+clean current main `bafa0783d347ef8b6c5e1182d4c2dd86119b412d` (accepted documentary closeout /
+PR #41), whose merged-main CI passed. The user's subsequent "Confirm" approves the proposed
+exact-scan READ reporting contract and authorizes 7A implementation, including counts, explicit
+coverage and historical provenance without a compliance score. The scoped feature branch is
+`codex/sprint-7a-reporting`; the existing preflight documentation is preserved.
+Browser authentication/toolchain approval is a separate gate before 7B UI work.
+The user's smaller goal is limited to 7A and then 7B, with required slice validation and
+acceptance gates. The 7A authorization resolves the earlier implementation-approval blocker;
+7C through 7E and later sprints remain outside the goal. No reviewer agent, commit, push, PR,
+merge or production operation is authorized by this confirmation. Future dashboard consumers
 must use the accepted generic services/API and preserve technical results, immutable evidence,
 finding/exception separation and limited NIST reporting claims. No Sprint 7 implementation or
 new infrastructure was added during Sprint 6 closeout.
+
+7A is locally implemented and validated, not accepted/complete: 182 focused checks and 2,601
+full regression tests passed (277 PostgreSQL cases, no skips, 20 existing warnings), plus Ruff,
+348-file formatting, documentation links, whitespace, Compose, image build and isolated image
+import/OpenAPI smoke checks. Migration remains `20261001_0006`; default catalog/profile and
+accepted assessment/authentication behavior are unchanged. The subsequently authorized single
+read-only reviewer returned REVIEW_PASS with zero unresolved findings after 157 independent
+checks and three additional diagnostics. The latest user "Yes" authorizes recording that
+checkpoint, committing, pushing this branch and opening a 7A PR only; merge is not authorized.
+Acceptance and merge remain pending. Exact results, reviewed snapshot and scope limits are in
+the active plan. 7B still requires UI/toolchain/browser-auth decisions; its implementation and
+all later slices have not started.
 
 ## Pre-Sprint 5 attention
 

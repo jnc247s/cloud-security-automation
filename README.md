@@ -16,9 +16,24 @@ Whole-sprint 6H acceptance merged through
 REVIEW_PASS and 2,533 regression tests (252 PostgreSQL, no skips), plus all quality/container gates.
 [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36954205010)
 passed all 2,533 tests. The completed plan retains original predictions, implemented differences
-and validation history. Sprint 7 is NEXT, not started; no dashboard, remediation or deployment
-implementation was added. [ROADMAP.md](ROADMAP.md) alone owns progress; the
+and validation history. Sprint 7 is IN PROGRESS: approved 7A adds a reviewed feature-branch exact-scan
+READ reporting API, with acceptance and merge still pending. 7B browser UI/auth
+choices are not yet approved; no frontend, remediation or deployment is implemented.
+[ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
+The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
+and validation. Recorded Sprint 6 test totals above are baseline evidence, not 7A acceptance.
+
+The 7A working endpoint is `GET /api/v1/scans/{scan_id}/technical-posture`, protected by the
+existing READ capability. It returns exact historical four-state counts, control/target coverage
+and version-bound mapped NIST context, without payloads, an overall result or a compliance score.
+Running/no-bundle scans have unavailable counts; exceptions do not rewrite technical results.
+See the [API contract](docs/api.md#exact-scan-technical-posture--7a). This is reporting foundation,
+not a browser login/dashboard or an accepted Sprint 7 release.
+Local 7A validation passed 182 focused checks and 2,601 regression tests (277 PostgreSQL,
+no skips), plus quality/container gates. Independent review returned REVIEW_PASS with zero
+unresolved findings after 157 independent checks and three additional diagnostics. The active
+plan records exact results and scoped publication approval; acceptance and merge remain pending.
 
 The current implementation includes:
 
