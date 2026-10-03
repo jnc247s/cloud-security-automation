@@ -3,15 +3,17 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.schemas.scan import ScanCreateRequest, ScanDetail, ScanListResponse
+from app.schemas.technical_posture import TechnicalPosture
 from app.security.authentication import Principal
 from app.security.authorization import Capability, require_capability
 from app.services.scan_executor import ScanExecutor
 from app.services.scan_service import ScanService
+from app.services.technical_posture_service import TechnicalPostureService
 
 router = APIRouter(prefix="/scans", tags=["scans"])
 SessionDependency = Annotated[Session, Depends(get_db)]
@@ -74,3 +76,17 @@ def get_scan(scan_id: UUID, db: SessionDependency, _principal: ReadPrincipal) ->
     """Return one scan's declared scope, verified identity, and result provenance."""
 
     return ScanService(db).get_scan(scan_id)
+
+
+@router.get(
+    "/{scan_id}/technical-posture",
+    response_model=TechnicalPosture,
+    responses={status.HTTP_409_CONFLICT: {"description": "Retained provenance conflict"}},
+)
+def get_technical_posture(
+    scan_id: UUID, db: SessionDependency, _principal: ReadPrincipal, response: Response
+) -> TechnicalPosture:
+    """Read exact-scan technical counts and coverage, never a compliance score."""
+
+    response.headers["Cache-Control"] = "no-store"
+    return TechnicalPostureService(db).get_technical_posture(scan_id)

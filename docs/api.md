@@ -10,6 +10,10 @@ implicitly enable Sprint 6 controls. Accepted controls through `0.13.0` reuse th
 without per-control routes. Future interface changes must update this document and
 tests in the same change.
 
+Approved Sprint 7A adds the reviewed feature-branch READ reporting contract below. It is not yet an
+accepted/released slice: independent review passed, while acceptance and merge remain pending in the
+[active Sprint 7 plan](exec-plans/active/sprint-7.md). Existing interfaces retain their meanings.
+
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
 relationship, finding/exception and framework read APIs on SQLite and PostgreSQL. Only AWS is
@@ -129,6 +133,7 @@ accepted deployment assumption is one trusted security domain.
 | `EXECUTE` | `POST /api/v1/scans` | Persist and submit a single-region scan |
 | `READ` | `GET /api/v1/scans` | List scan lifecycle records |
 | `READ` | `GET /api/v1/scans/{scan_id}` | Read exact scan provenance and scope |
+| `READ` | `GET /api/v1/scans/{scan_id}/technical-posture` | Read exact-scan counts, coverage and mapped technical context (7A working implementation) |
 | `READ` | `GET /api/v1/resources` | List stable AWS resource identities |
 | `READ` | `GET /api/v1/resources/{resource_id}` | Read identity and latest observation |
 | `READ` | `GET /api/v1/resources/{resource_id}/history` | Read immutable observations |
@@ -193,6 +198,80 @@ the latest snapshot's ARN is the current observed value.
 
 Evidence and normalized configurations can contain sensitive infrastructure data. A caller with
 `READ` is trusted to receive it.
+
+## Exact-scan technical posture — 7A
+
+`GET /api/v1/scans/{scan_id}/technical-posture` requires the existing `READ` capability.
+It performs retained-data reads only: no AWS call, evaluation, finding/exception change,
+transaction write or selection of a latest catalog/profile. Successful responses and the
+report-specific provenance-conflict response set `Cache-Control: no-store`. Account identifiers
+and aggregate security facts remain sensitive; no tenant isolation is added.
+
+The report's `schema_version` is `1.0.0` (a reporting schema, not an evaluator/proof version),
+and its `interpretation` is `TECHNICAL_CONTEXT_ONLY`. It contains:
+
+- `scan`: the unchanged exact `ScanDetail`, including lifecycle, collection account,
+  requested/successful scope, checksums, retained scope/outcomes and sanitized failure context;
+- `catalog`: exact persisted `catalog_id`, `catalog_key`, `version` and `content_checksum`;
+- `assessment_profile_version_id` and sorted `enabled_controls`: the scan's exact retained
+  profile, never the deployment's current default;
+- `control_coverage`: registered/enabled/disabled definition counts, plus nullable
+  assessed/unassessed enabled-control counts;
+- `assessment_counts`: four-state unique-assessment counts, or null when unavailable;
+- `targets`: assessed-snapshot groups, or null when unavailable;
+- `controls`: definitions from that exact catalog, with enablement, assessment coverage/counts,
+  exact control/version IDs, definition checksum and existing framework-mapping provenance; and
+- `frameworks`: only exact framework releases mapped by those control definitions, with their
+  retained hierarchy, source/retrieval/checksum metadata and mapped technical-context rows.
+
+`availability` is separate from both scan lifecycle and technical assessment results:
+
+| Availability | Meaning | Assessment counts / targets |
+| --- | --- | --- |
+| `IN_PROGRESS` | The scan is `RUNNING` | null / null |
+| `AVAILABLE` | A terminal scan retains scope, inventory digest and result checksum | Four-state counts / assessed-snapshot groups |
+| `UNAVAILABLE` | A terminal scan lacks retained result-bundle metadata | null / null |
+
+A failure digest alone is not a result bundle. PARTIAL or FAILED scans with retained results
+show those facts alongside collection gaps; an independently valid assessment is not discarded.
+The reused scan-detail failure prose is not the reporting-availability indicator. Never interpret
+null as zero failures or infer complete collection from `AVAILABLE`.
+
+Each counts object has only `pass_count`, `fail_count`, `insufficient_evidence_count` and
+`not_applicable_count`. Headline counts include each retained assessment exactly once, independent
+of mapping fan-out. Control counts and target-assessment counts are different dimensions.
+Control `assessment_coverage` is `ASSESSED`, `UNASSESSED`, `DISABLED` or `UNAVAILABLE`;
+these are reporting labels, not new technical results. `unassessed_count` counts enabled controls
+without retained assessments when a bundle is available. Disabled definitions are not N/A.
+No overall PASS/FAIL, score or compliance percentage is returned.
+
+An empty retained enabled-control set means none enabled, not a safe environment. Accepted
+completed-scope validation still requires at least one enabled control and an explicit assessment
+for every enabled control. The reporting labels do not relax these persistence contracts;
+empty pending-profile coverage remains unavailable rather than a zero-failure terminal summary.
+
+Each target group identifies `target_kind` (`ACCOUNT` or `RESOURCE`), actual resource-owner
+`aws_account_id`, service/resource type, snapshot scope/Region, `assessed_snapshot_count`
+and four-state counts. Global account, regional account-setting and resource groups stay distinct.
+Multiple controls on one snapshot count once in snapshot coverage but once per assessment in
+technical counts. Unassessed collected inventory is not target coverage. Supplemental/home
+Regions and external owners do not imply full Region collection or account authorization.
+
+Each framework has `interpretation=MAPPED_TECHNICAL_SUBSET`. Reference rows retain exact UUID,
+display key, level, title and parent UUID. `mapped_control_version_ids` is the unique union of
+direct and descendant mappings within that exact framework release; parent counts include each
+contributing control's assessments once. A reference's coverage is over its mapped definitions,
+not the whole catalog or CSF Core. Overlapping references/frameworks are not additive global
+totals. Equal display keys in different local subset releases are never merged.
+Unmapped or disabled-only rows have no assessed technical coverage, not a passing NIST outcome.
+Unsupported/manual outcomes remain unassessed by the scanner; no manual-attestation store,
+manual result enum or claim of whole-framework satisfaction is introduced.
+
+The response omits configurations, tags, evidence payloads, assessment reasons and current
+finding/exception handling. Use existing scan-filtered assessment and authorized detail APIs
+for investigation. Exceptions never rewrite these historical technical counts.
+Existing list pagination and filters are unchanged; this is a single-scan aggregate, not a
+cross-account/latest-scan rollup. See [framework interpretation](frameworks/nist-csf-2.0.md).
 
 ## Evidence-graph reads
 
@@ -342,6 +421,7 @@ The API does not currently use one universal error envelope:
 | `403` | Valid principal without capability: `detail.code=insufficient_capability` |
 | `404` | Missing service entity: `detail.code=entity_not_found` with entity and identifier |
 | `409` | Configured assessment-profile version exists with different content: `detail.code=assessment_profile_version_conflict` |
+| `409` | Technical-posture provenance is inconsistent: `detail.code=technical_posture_provenance_conflict`; no partial/safe summary is returned |
 | `422` | FastAPI request/path/query validation response |
 | `503` | Scan executor unavailable/capacity/submission failure, or database readiness failure |
 | `500` | Unexpected domain, catalog, database, or server failure; no stable application envelope is promised |
@@ -355,6 +435,11 @@ A 409 profile-version conflict occurs before a scan is created. Its fixed messag
 operator to increase `ASSESSMENT_PROFILE_VERSION`; it does not expose either checksum, stored
 policy fields, SQL, or internal exception details. Correct the deployment configuration by using
 a new reviewed version for the changed content, then retry the request.
+
+The technical-posture conflict uses the fixed message
+`The retained scan reporting provenance is inconsistent.` It reveals no stored policy,
+checksum comparison, SQL or internal failure detail, and sets `Cache-Control: no-store`.
+Missing scans still use the existing 404 entity error; malformed scan UUIDs use 422.
 
 Failure messages are sanitized; raw AWS responses and stack traces stay server-side. OIDC/JWKS
 lookup or verification failure fails closed as 401.

@@ -172,12 +172,30 @@ local artifact release, not a new official NIST version. See [approved metadata]
 
 - NIST metadata is never an input to a technical rule.
 - One mapped control passing does not make a Subcategory `TECHNICAL_PASS`.
-- A future aggregate can report technical coverage only against an explicit versioned profile and
+- An aggregate can report technical coverage only against an explicit versioned profile and
   must distinguish partial, insufficient, manual, not-assessed, and not-applicable states.
 - Do not publish a generic “NIST compliant percentage.”
 - Organization thresholds such as stale-key days, tags, management CIDRs, and KMS requirements
   belong to assessment profiles, not universal NIST requirements.
 - Framework mapping changes cannot rewrite historical assessment or finding results.
+
+### Approved 7A reporting interpretation — working implementation
+
+The [exact-scan technical-posture API](../api.md#exact-scan-technical-posture--7a) implements
+counts/coverage only. It is independently reviewed code pending acceptance and merge, not a
+framework/mapping artifact update. Exact framework UUID/version/source checksum and reference
+hierarchy remain visible, including each control's retained mapping provenance. A parent row
+unions direct/descendant control-version IDs within the same framework before counting; a
+headline assessment is never multiplied by its mappings. Overlapping reference rows are not
+additive global totals, and equal keys from separate local subset releases never merge.
+
+All rows are `MAPPED_TECHNICAL_SUBSET`, not a result for the entire NIST outcome. Coverage counts
+mapped definitions, enabled/disabled controls and assessed/unassessed enabled controls separately
+from the four technical assessment states. Unavailable bundles have null counts. Unmapped,
+disabled-only and unsupported/manual context cannot become PASS; no manual attestation storage,
+new assessment state, overall framework result or compliance percentage is added. Collection
+gaps remain on the exact scan, and exceptions never alter technical counts. Bundled official
+source metadata, local subset identities and mapping checksums are unchanged.
 
 ## Change protocol
 

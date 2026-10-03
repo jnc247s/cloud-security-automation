@@ -410,7 +410,11 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    assert "| Sprint 7 | Dashboard / NIST Technical Posture | **NEXT** |" in roadmap
+    # The approved 7A start advances Sprint 7 without undoing either accepted closure.
+    assert "| Sprint 7 | Dashboard / NIST Technical Posture | **IN PROGRESS** |" in roadmap
+    sprint7 = _read(ROOT / "docs/exec-plans/active/sprint-7.md")
+    assert "7A APPROVED and IN PROGRESS" in sprint7
+    assert "7B and later slices remain PROPOSED" in sprint7
     assert (ROOT / "docs/exec-plans/completed/sprint-6.md").is_file()
     assert not (ROOT / "docs/exec-plans/active/sprint-6.md").exists()
     assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in roadmap

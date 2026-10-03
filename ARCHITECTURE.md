@@ -3,7 +3,8 @@
 This document describes accepted Sprints 0--6. The accepted implementation baseline is `main`
 commit `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (whole-sprint 6H acceptance in PR #40), after
 the Sprint 5 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and
-documentation, not application behavior; merged-main CI passed. Sprint 7 is NEXT and unstarted.
+documentation, not application behavior; merged-main CI passed. Sprint 7 is IN PROGRESS:
+approved 7A is independently reviewed feature-branch code, not yet accepted or merged.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
@@ -509,13 +510,37 @@ Health and readiness remain unversioned and unauthenticated. The authenticated i
 `/api/v1` and exposes scans, resources/history, assessments/evidence, source outcomes/artifacts,
 resource-relationship observations, findings/occurrences, controls, frameworks/mappings, and
 exceptions. Routes delegate to `ScanService`, `ResourceService`, `AssessmentService`,
-`EvidenceGraphService`, `FindingService`, `ControlService`, `FrameworkService`, and
+`EvidenceGraphService`, `TechnicalPostureService` (7A working implementation),
+`FindingService`, `ControlService`, `FrameworkService`, and
 `ExceptionService`. `AuditService` exists as a service abstraction but has no public route. There
 is no standalone source-contract or source-artifact list route; the source manifest is identified
 on scan detail, and an artifact is returned only with its source-outcome detail.
 
 `docs/api.md` is the authoritative interface document. Future clients must use services/API data,
 not direct database access.
+
+### Approved 7A reporting foundation — working implementation
+
+The additive `GET /api/v1/scans/{scan_id}/technical-posture` READ projection uses one exact
+retained scan/profile/catalog and its exact control/framework versions. Reporting models remain
+separate from assessment enums. Four-state assessment counts, definition enablement/coverage
+and assessed-snapshot owner/service/type/scope/Region groups are separate dimensions.
+Partial/failed retained results remain facts; running or no-bundle scans have null counts,
+not a safe zero-failure summary. Disabled/unassessed context never creates PASS or N/A.
+
+Bulk assessment/target aggregates avoid payload hydration and per-assessment detail reads.
+Mapped references roll up a unique control-version union within each exact framework, never
+merge equal display keys across releases, and never create a NIST outcome result/score.
+The service performs no AWS/evaluator/writer calls, including autoflush of caller-owned pending
+objects. Ten SELECTs cover the tested available mapped-report path independent of target count;
+unavailable reports omit assessment/target queries. No index/schema migration is introduced.
+
+Scope/outcomes and sanitized failures reuse `ScanDetail`; normalized configurations, tags,
+evidence payloads and mutable finding/exception state are excluded. Successful and report-specific
+409 responses are no-store. Auth, defaults, accepted API fields, persistence and transaction
+ownership remain unchanged. No browser client/login/session is implemented by 7A; 7B requires
+separate design approval. See the [API contract](docs/api.md#exact-scan-technical-posture--7a)
+and [active plan](docs/exec-plans/active/sprint-7.md) for validation and acceptance gates.
 
 ## Runtime and deployment
 
