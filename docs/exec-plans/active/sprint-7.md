@@ -8,8 +8,9 @@ CI passed. Subsequent confirmations approve the 7B UI/BFF/session design, Cognit
 controlled local issuer, and implementation. The 2026-10-04 confirmation authorizes one read-only
 independent 7B reviewer. The subsequent "Yes" authorizes scoped commit, push and PR creation;
 merge, live operations and later slices remain unapproved.
-All three initial findings are repaired; final local validation and the same reviewer's technical
-re-review passed. Documentary verification, publication, exact-head/main CI and acceptance remain gates.
+All three initial findings are repaired; final local validation, documentary verification and
+the same reviewer's exact-commit review passed. PR #43 is open; exact-head CI is running.
+Human merge approval, merge and green merged-main CI remain acceptance gates.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -679,3 +680,40 @@ Publish only the 56 scoped files. Parent-checkout untracked skills, ignored brow
 artifacts and the original clean 6E.3 worktree remain excluded and untouched. Verify the exact
 committed inputs and exact-head CI, and record the actual PR without claiming acceptance. Human
 merge approval and green merged-main CI remain required before 7B COMPLETE; the goal is unfinished.
+
+## 7B publication checkpoint — 2026-10-04
+
+The authorized 56-file implementation was committed at
+`ff2088be98928fdf87ca0bc9216c722e71713ec2`, with sole parent
+`bd639f48095ef63e658abd284ce25c927998c0fb`. The same read-only reviewer returned exact-commit
+REVIEW_PASS with zero unresolved findings. Every committed blob matches its frozen reviewed
+working-file hash; no newline normalization was needed despite `core.autocrlf=true`.
+Its 56-file manifest is
+`97DE51C2186E2678E88D541BBAACB63849AB8A2D70B98D59047B01436EE8926B`
+(the all-file format above includes a trailing LF). The 43-file implementation fingerprint
+remains `AEC14F9E3CAF5F72E79B2C2BFAC95A99DF0B658331D38DC32936CBD461F04152`.
+Fresh independent 82 contract/link checks, Ruff, 362-file formatting and committed whitespace
+passed. Prior full/PostgreSQL/browser/container/security validation remains applicable to
+these identical implementation inputs; commit creation did not require rerunning it locally.
+
+The branch was pushed normally, without force, to the verified origin and
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) opened against `main`.
+Readback confirms the exact head above, OPEN state and no auto-merge request. Both exact-head
+Linux/Python 3.12 CI runs are in progress at this checkpoint:
+[push run](https://github.com/jnc247s/cloud-security-automation/actions/runs/37186469092) and
+[PR run](https://github.com/jnc247s/cloud-security-automation/actions/runs/37186471380).
+No CI success or slice acceptance is claimed before those gates finish. This publication
+record is a subsequent prose-only closeout delta requiring fresh documentary checks and the
+same reviewer's verification before its own normal push; prior technical validation is reused
+only while the implementation fingerprint remains unchanged.
+
+The committed worktree was clean and tracking its scoped origin branch. Unrelated parent
+skill files, ignored generated/build/browser/cache files and the original 6E.3 checkout remain
+excluded and untouched. The documentation guidance keeps earlier pre-publication checkpoints
+historical rather than rewriting their predictions or approval limits.
+
+7B/Sprint 7 remain IN PROGRESS and the existing goal unfinished. The user authorized commit,
+push and PR creation only. Do not merge or enable auto-merge without separate human authority;
+require green final-head CI, independent final-input review, required human merge approval
+and green merged-main CI before 7B COMPLETE. Live Cognito/MFA/TLS/production setup remains
+unvalidated; no IdP/secret/IAM/AWS operation or 7C+ implementation occurred.

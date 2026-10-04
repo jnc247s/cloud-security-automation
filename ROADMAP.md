@@ -336,6 +336,17 @@ records verified exact inputs, GitHub identity/current main and preservation bou
 exact-head review/CI, required human merge and merged-main CI remain pending at that checkpoint;
 7B stays IN PROGRESS, and no commit/push/PR or acceptance is claimed yet.
 
+Publication checkpoint on 2026-10-04: the scoped 7B implementation is committed at
+`ff2088be98928fdf87ca0bc9216c722e71713ec2`, pushed to
+`codex/sprint-7b-authenticated-shell`, and open in
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). The same independent
+reviewer returned exact-commit REVIEW_PASS with zero unresolved findings and verified all
+56 committed blobs match the reviewed files. Both exact-head GitHub CI runs are in progress
+at this checkpoint. [Publication detail](docs/exec-plans/active/sprint-7.md#7b-publication-checkpoint--2026-10-04)
+records the unchanged implementation, preservation checks and remaining gates. 7B remains
+IN PROGRESS: merge/auto-merge is not authorized or performed, live Cognito is unvalidated,
+and required human merge approval and green merged-main CI remain outstanding. 7C+ is unstarted.
+
 ## Pre-Sprint 5 attention
 
 These accepted-baseline limitations were discovered during the governance audit. This register
