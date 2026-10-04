@@ -188,7 +188,8 @@ sanitized `technical_posture_provenance_conflict` 409. Success and that conflict
 this does not make other existing API responses no-store or create tenant/field authorization.
 Existing bearer validation and READ/EXECUTE separation remain the enforcement boundary.
 The subsequently approved [7B proposal](docs/sprint-7b-preflight.md) defines the browser boundary;
-its local implementation still needs complete validation, independent review and merge approval.
+local validation and independent review passed. Final-head CI, required human merge approval
+and green merged-main CI remain acceptance gates; no live provider or production setup is validated.
 
 ### Local 7B browser boundary
 

@@ -713,6 +713,11 @@ excluded and untouched. The documentation guidance keeps earlier pre-publication
 historical rather than rewriting their predictions or approval limits.
 The README's current 7B summary is reconciled with the final post-review test totals,
 independent REVIEW_PASS and actual PR; its earlier pre-review/publication wording was stale.
+The known-limitations CI summary likewise describes the published branch while retaining
+the exact-head acceptance gate and supply-chain coverage limits.
+The security owner's current validation summary and the preflight's superseding-authority
+header are reconciled as well; the original analysis, approval limits and security design remain
+unchanged. These documentary corrections do not alter the implementation fingerprint.
 
 7B/Sprint 7 remain IN PROGRESS and the existing goal unfinished. The user authorized commit,
 push and PR creation only. Do not merge or enable auto-merge without separate human authority;

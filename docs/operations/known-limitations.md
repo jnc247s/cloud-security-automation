@@ -373,9 +373,10 @@ Persisted `scanner_version` is package version `0.1.0`; no Git/build identifier 
 different commits with that version. Most backend dependencies use bounded ranges, GitHub Actions use major
 tags, and no backend lockfile/SBOM exists. Local 7B adds exact frontend dependencies and a
 lockfile plus pinned Node/pnpm; it does not make the entire supply chain reproducible. Accepted
-CI proves lint, format, full tests with PostgreSQL 16 and an image build. The uncommitted 7B CI
-adds frontend and real browser gates; no published run is claimed. Neither is comprehensive
-security scanning or supply-chain provenance.
+CI proves lint, format, full tests with PostgreSQL 16 and an image build. The published 7B branch
+adds frontend and real browser gates in [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43);
+green exact-head CI remains required before acceptance. Neither is comprehensive security
+scanning or supply-chain provenance.
 
 ### Equal observation timestamps — LOW
 

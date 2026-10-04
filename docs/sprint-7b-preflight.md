@@ -3,7 +3,10 @@
 Prepared 2026-10-03. The original analysis below is preserved. Subsequent user confirmations
 approve React/TypeScript/Vite, the BFF/session design, 7B implementation, Cognito Essentials
 and a controlled local test issuer. The [active plan](exec-plans/active/sprint-7.md) records
-that superseding authority; review/publication/live operations remain unapproved.
+that superseding authority, including one read-only reviewer and scoped commit/push/PR approval.
+Review passed and [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) is open;
+merge/auto-merge, live operations and later slices remain unapproved. The original analysis and
+its earlier approval/status limits below are historical, not the current 7B status.
 
 Original checkpoint: analysis only; the user approved continuing the existing 7A/7B goal through
 7A documentary closeout and the 7B prerequisites. **No browser architecture or 7B implementation
