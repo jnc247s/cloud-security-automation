@@ -12,6 +12,25 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+### Sprint 7C — 2026-10-04
+
+- Accepted read-only exact-scan investigation through
+  [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45) and
+  [test-only CI repair PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46) at
+  `f10c450478cce3ec962d2f45d249f57147443c32`, with zero unresolved exact-head review findings,
+  both green final-head CI runs, explicit guarded merge approval and green merged-main CI.
+  Acceptance passed 2,728 backend tests (283 PostgreSQL, no skips), 54 frontend units,
+  32 Chromium/Firefox journeys and quality/image gates; 20 repeated expiry journeys also passed.
+- Added on-demand assessment, version/checksum-bound control and historical snapshot/evidence
+  detail, known typed source/relationship navigation and separately labeled current findings/
+  server-reference-time exception eligibility. Missing evidence remains insufficient; exceptions
+  and ACCEPTED_RISK do not rewrite FAIL. Unresolved endpoints and unknown proofs have no inferred links.
+- Added an optional exact-scan resource-history filter using the existing unique index and an
+  explicit typed GET-only BFF allowlist. Preserved generic services, existing schemas and omitted
+  behavior, bearer/READ/session boundaries, dependencies, defaults and migration `20261001_0006`.
+  No live IdP/AWS/production work, NIST hierarchy, mutations, remediation or 7D+ implementation.
+  Sprint 7 remains IN PROGRESS; 7D/7E remain PLANNED.
+
 ### Sprint 7B — 2026-10-04
 
 - Accepted the opt-in authenticated, read-only dashboard shell through

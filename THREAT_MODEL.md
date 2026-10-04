@@ -1,8 +1,8 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--6 and 7A/7B
-Implementation baseline: `main` commit `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (7B merged in PR #43)
-Last reconciled: 2026-10-04; 7A/7B accepted with independent review and green merged-main CI
+Status: living model for accepted Sprints 0--6 and 7A/7B/7C
+Implementation baseline: `main` commit `f10c450478cce3ec962d2f45d249f57147443c32` (7C and test-only CI repair in PR #45/46)
+Last reconciled: 2026-10-04; 7A/7B/7C accepted with independent review and green merged-main CI
 
 ## Scope and security objectives
 
@@ -127,9 +127,9 @@ Final local validation and the same reviewer's follow-up passed with zero unreso
 both final-head CI runs, explicit human merge approval and merged-main CI passed through PR #43.
 7B acceptance does not validate a live provider or production operations.
 
-### 7C investigation extension — implementation, acceptance pending
+### Accepted 7C investigation extension
 
-The local extension preserves T17--T19's bearer, session/context, origin, no-store/CSP and final
+The accepted extension preserves T17--T19's bearer, session/context, origin, no-store/CSP and final
 in-flight checks for an explicit bounded GET allowlist. Client binding checks do not authorize data.
 New correctness threats include substituting latest/first-seen metadata for an assessed snapshot,
 cross-scan/profile/control-version evidence, inferred graph links, invented unresolved endpoints,
@@ -227,7 +227,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners; 5B refines owner-incomplete targets only with exact proof; 5C keeps collection account distinct from IAM policy owner; 5D admits supplemental discovery only with exact same-scan S3 Region proof; 5E requires authoritative bucket location and canonical returned KMS identity; 5F keeps collection account, trail owner, and organization context distinct and resolves S3/KMS edges only from exact same-scan evidence | A privileged database/schema operator remains trusted, and unresolved targets remain unavailable for any future rule that requires a resolved edge |
 | T17 | Browser token/code theft, XSS and evidence caching | High | Accepted 7B: opaque HttpOnly host-only cookies; server-only tokens; scoped CSP/no-store/no-referrer including unexpected 500s; text-only metadata rendering; clean callback redirect and error-path access-log query removal; identity-client debug redaction; no Web Storage/offline cache/third-party assets | Controlled-issuer acceptance only; live setup unvalidated. HttpOnly does not prevent malicious same-origin scripts making reads. Ingress must also omit callback queries; process memory and browser extensions remain trusted |
 | T18 | Login CSRF, code/session substitution and logout bypass | High | Accepted 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Controlled-issuer acceptance only; live setup unvalidated. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
-| T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B: only bounded scan/detail/posture GETs through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
+| T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B/7C: explicit typed bounded scan/report/investigation GET allowlist through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
 
 ## Future-boundary threats
 

@@ -22,12 +22,13 @@ merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pul
 with independent review and green merged-main CI. Its opt-in read-only browser shell uses a
 server-side OIDC session boundary, Cognito Essentials as target and a controlled local issuer
 for tests. No live IdP resources, remediation or production deployment are implemented.
-7C investigation is implemented and merged through PR #45, with acceptance gates still pending.
-Merged-main CI exposed an expiry-test completion race; its scoped repair and fresh gates must
-pass before 7C is accepted. It adds bounded exact-scan
+7C is COMPLETE through [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45) and
+[test-only CI repair PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46),
+with zero unresolved independent-review findings and green exact-head and merged-main CI.
+It adds bounded exact-scan
 assessment/evidence/snapshot inspection, typed source/relationship navigation and separately
 labeled current findings with server-time exception eligibility. NIST hierarchy views remain 7D
-work. See the [7C preflight and implementation note](docs/sprint-7c-preflight.md).
+work; 7D/7E remain PLANNED. See the [7C preflight and acceptance record](docs/sprint-7c-preflight.md).
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
@@ -54,6 +55,13 @@ both final-head CI runs passed. [Merged-main CI](https://github.com/jnc247s/clou
 passed the same 2,676 backend tests, 15 frontend units and 14 browser journeys plus quality/image
 gates at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. This is accepted code, not a production
 deployment. The active plan records exact validation, publication and acceptance checkpoints.
+
+7C acceptance passed 2,728 regression tests (283 PostgreSQL, no skips), 54 frontend units,
+32 Chromium/Firefox journeys and quality/container gates. CI expiry-test ordering/completion races were
+repaired without changing session behavior or weakening assertions; 20 repeated expiry journeys
+also passed. Exact-head review passed for `39e9aef`. [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37237604046)
+passed every gate at `f10c450478cce3ec962d2f45d249f57147443c32`. The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
+records exact Git/validation evidence. Next is 7D preflight, not implementation or production setup.
 
 The current implementation includes:
 
@@ -109,8 +117,8 @@ historical-release recovery and authenticated API validation and documentary clo
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
 recognized roles can read its security data, and query filters are not object- or account-level
-authorization. The opt-in dashboard shell is accepted 7B implementation, not a production deployment.
-The local 7C expansion preserves that opt-in boundary; it does not authorize live operations.
+authorization. The opt-in dashboard shell and investigation views are accepted 7B/7C code,
+not a production deployment. Acceptance does not authorize live operations.
 No production Terraform, governance mutation API, remediation,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
 [known limitations](docs/operations/known-limitations.md) before production use.

@@ -1,11 +1,10 @@
 # Dashboard operation
 
-The opt-in read-only shell is accepted through PR #43 with independent review and green
-merged-main CI; it is not a production deployment or live-provider validation.
-It supports provider login, exact scan selection, historical scope/lifecycle and report
-availability. Assessment/evidence/finding/NIST views, mutations and scan execution are excluded.
-That exclusion describes accepted 7B. The local 7C investigation extension below is pending
-acceptance; NIST hierarchy, mutations and scan execution remain excluded.
+The opt-in shell and investigation are accepted through PR #43 and PR #45/46,
+with independent review and green merged-main CI; neither is a production deployment or
+live-provider validation. They support login, exact scan selection, historical scope/lifecycle,
+report availability and the exact-scan investigation below. NIST hierarchy, mutations and scan
+execution remain excluded.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
@@ -73,8 +72,8 @@ opaque HttpOnly cookies, exact Origin and CSRF checks. Sessions expire at 15 idl
 rejects exhaustion rather than evicting other users and is cleared on process exit/restart.
 Operate one process; shared or durable sessions are deliberately not implemented.
 
-7B forwards scan list/detail/technical-posture GETs; local 7C adds only the explicit investigation
-GETs documented in [the API contract](../api.md#7c-investigation-reads--implementation-acceptance-pending).
+7B forwards scan list/detail/technical-posture GETs; accepted 7C adds only explicit investigation
+GETs documented in [the API contract](../api.md#7c-investigation-reads--accepted).
 All cross the real bearer API and READ dependencies. Each requires `X-Dashboard-Context` matching the public `session_context` returned
 by the authenticated session bootstrap. The value is correlation, not authority; it cannot
 replace the opaque cookie, bearer verification or READ. A stale tab gets 401 before forwarding
@@ -89,7 +88,7 @@ remain visible with explicit coverage limitations. Client guards require exact l
 and all four finite nonnegative integer counts for available reports (including legitimate zero),
 while unavailable counts remain null. No counts or score view is added. Offset pages are not frozen snapshots.
 
-## Exact-scan investigation — 7C implementation, acceptance pending
+## Exact-scan investigation — accepted 7C
 
 Select an explicit retained scan, then open assessment details on demand. The 25-row assessment
 page filters technical state/resource/control UUIDs; source and relationship pages filter their

@@ -1,17 +1,18 @@
 # Current known limitations
 
-This register records accepted Sprints 0--6 and 7A/7B implementation reality, including
+This register records accepted Sprints 0--6 and 7A/7B/7C implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
 Sprint 7 is IN PROGRESS: 7A READ reporting is accepted through PR #42, with zero unresolved
 independent-review findings and green merged-main CI. The opt-in 7B browser/session shell is
-accepted through PR #43 with the same required review and CI gates. See [dashboard operation](dashboard.md),
+accepted through PR #43; 7C is accepted through PR #45/46 with the same review/CI gates.
+See [dashboard operation](dashboard.md),
 [6H acceptance](../controls/sprint-6h-acceptance.md) and the
 [active Sprint 7 plan](../exec-plans/active/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
-The local 7C investigation implementation is pending acceptance. Its bounded lists and display
+Accepted 7C provides read-only exact-scan investigation. Its bounded lists and display
 limits do not bound existing resource-history hydration or unpaginated finding detail payloads.
 Current operational pages can drift; server response time labels exception eligibility at that
 read, not historic/atomic coverage. Unknown proof schemas are raw evidence without inferred links,
@@ -393,8 +394,8 @@ snapshot is shown as latest.
 
 ## Deferred by design
 
-Accepted 7B is only an opt-in authenticated shell, not the full investigation/NIST
-dashboard. Its sessions are process-local and lost on restart; no refresh-token retention,
+Accepted 7B/7C provide an opt-in authenticated shell and exact-scan investigation, not NIST
+hierarchy views or whole-Sprint-7 acceptance. Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
 There is no production Terraform deployment, governance mutation API, remediation,
 distributed worker, multi-account orchestration, or AI runtime. Their absence is roadmap scope,

@@ -15,6 +15,10 @@ independent review and merged-main CI passing. Exact acceptance is recorded in t
 [active Sprint 7 plan](exec-plans/active/sprint-7.md). Existing interfaces retain their meanings.
 Accepted 7B adds the separate opt-in browser interface below through PR #43, with independent
 review, explicit merge approval and green merged-main CI; it does not change `/api/v1`.
+Accepted 7C adds the optional exact-scan resource-history filter and explicit investigation
+BFF GETs through PR #45 and test-only CI repair PR #46, with exact-head independent review and
+green merged-main CI.
+Existing response bodies, omitted-filter behavior, roles and capability checks remain unchanged.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -481,7 +485,7 @@ read if logout/expiry occurs before completion. Unsupported paths/methods are no
 Dashboard cookies never authenticate `/api/v1`. No CORS, roles, capabilities, tenant policy,
 database write, scan execution or account isolation is added.
 
-### 7C investigation reads — implementation, acceptance pending
+### 7C investigation reads — accepted
 
 `GET /api/v1/resources/{resource_id}/history` adds optional `scan_id` UUID. Count and items
 are filtered together; an existing resource without that scan returns an empty page, an unknown

@@ -1,6 +1,6 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B COMPLETE; 7C IN PROGRESS; later slices remain PROPOSED.
+Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; later slices remain PROPOSED.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
@@ -20,6 +20,11 @@ The new request authorizes the gated 7C, 7D and final Sprint 7 workflow, not liv
 The same confirmation approves the proposed 7C additive read contracts and one read-only
 independent reviewer agent per 7C, 7D and final Sprint 7 review. The 7B closeout requires
 exact-input review, final-head CI, guarded merge and merged-main CI before implementation.
+
+Current acceptance: the prerequisite and all 7C implementation gates passed, including PR #45/46,
+exact-head review and green merged-main CI. The [7C acceptance checkpoint](#7c-acceptance-and-documentary-closeout--2026-10-04)
+supersedes pending historical checkpoints below. 7D/7E remain PLANNED; this request stops after
+7C's scoped documentary closeout and does not start their separate preflights or implementation.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -132,7 +137,7 @@ authorized after a specific finding.
 | --- | --- | --- |
 | 7A reporting foundation | COMPLETE | Generic service and additive READ schema/route; exact historical/profile/catalog/mapping joins; partial/missing/disabled coverage, bounded bulk queries, SQLite/PostgreSQL/authenticated HTTP and compatibility tests; local validation and exact-head independent review passed; PR #42 manually merged with green merged-main CI |
 | 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
-| 7C investigation views | IN PROGRESS | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
+| 7C investigation views | COMPLETE | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
 | 7D NIST context views | PLANNED | Exact mapped subset hierarchy and provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests |
 | 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
 
@@ -1216,3 +1221,57 @@ regression or image run is claimed for test-only changes. New exact-head CI must
 The same reviewer's final committed test/documentary review is pending, followed by scoped
 publication, both green final-head CI runs, ordinary exact-head guarded merge and successful main
 CI before acceptance. 7C remains IN PROGRESS; 7D/7E and later-sprint/live operations are unstarted.
+
+## 7C acceptance and documentary closeout — 2026-10-04
+
+The same single reviewer returned exact-commit REVIEW_PASS for
+`39e9aef8cd72235114df501e2a53c525770add48`, sole parent `39af583`, tree
+`9b20e0228b6db3b9ea921ee2a99171adf08b1366`, zero unresolved findings. Exactly five repair/
+documentary inputs changed; all 32 aggregate scoped blobs equal LF-only working bytes, clean tree.
+Repair manifest `43BF8FFB8D02D6F91E391EA7135F9BF3F9CA6BAC8A11F2A323576F60E3604111`;
+aggregate manifest `0F3598F9E90922AF92B2231AED8117BDF31B707C241DBE3021A82772A38932BD`.
+Independent ordering/control-failure probes, type/lint/54 units/83 contracts/whitespace passed.
+The parent published only those reviewed inputs as
+[PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46), without force or scope expansion.
+
+Both final-head runs completed SUCCESS on exact `39e9aef`:
+[push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37236516953) and
+[PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37236519643).
+All 2,728 backend tests including the unchanged 283 PostgreSQL cases passed, no skips,
+54 frontend units and 32 Chromium/Firefox journeys, Ruff/format/type/lint/build and image gates.
+Both prior failed browser gates and their targeted test-only repairs above remain in the record.
+Non-failing Node-action/future-runner notices do not authorize dependency/hardening work.
+
+Fresh pre-merge checks confirmed PR #46 OPEN/not draft/MERGEABLE/CLEAN, no auto-merge, both
+green exact-head runs, unchanged current main `39af583` and clean exact reviewed local inputs.
+Approval 9 and "Complete 7c" supplied scoped publication/ordinary merge authority. The merge used
+`--merge --match-head-commit 39e9aef8cd72235114df501e2a53c525770add48`, no admin/force/auto/branch deletion.
+Readback confirmed PR #46 MERGED at `f10c450478cce3ec962d2f45d249f57147443c32`, with current-main/reviewed-head
+parents and tree equal to `9b20e0228b6db3b9ea921ee2a99171adf08b1366`.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37237604046)
+completed SUCCESS for that exact merge: 2,728 backend tests, including 283 PostgreSQL cases,
+no skips, 54 frontend units, 32 Chromium/Firefox journeys and all quality/image gates.
+PR #45 supplies the reviewed investigation implementation; PR #46 completes its browser-test
+synchronization and validation. No earlier failed main run is claimed as successful acceptance.
+
+7C is COMPLETE. Accepted behavior includes the approved additive read contracts, exact historical
+identity/version/checksum/proof bindings, bounded on-demand lists/text disclosures and separately
+labeled current handling. Generic API/service and bearer/READ/session boundaries, collector/rule
+separation, technical results, schema/migration head, catalogs/profiles/defaults and dependencies
+are unchanged. Real local issuer/BFF/API/disposable PostgreSQL/browser acceptance is not live
+Cognito/MFA/TLS or production validation. Organization-wide READ, unpaginated detail internals,
+offset drift, non-atomic operational reads and display truncation remain documented limitations.
+
+The scoped acceptance closeout updates README/roadmap/plan, architecture/API/security/threat/
+operations/preflight/changelog owners and the strict current-state contract only, from verified
+clean accepted main on a separate feature branch. Original plan predictions/checkpoints remain
+historical. The 21 technical inputs retain fingerprint
+`A51B4471E294A002FD24A8ED9B445CF989EAE094D973407235E613CDB2A31FAD`.
+Accepted full/PostgreSQL/frontend/browser/container validation is reused for unchanged behavior;
+fresh contracts/links/Ruff/format/whitespace, the same reviewer's exact-input review and green
+closeout CI/guarded merge/main CI remain required before publishing the documentary closeout.
+No new independent reviewer, parallel implementation, user-work change or live operation.
+Sprint 7 remains IN PROGRESS; 7D/7E remain PLANNED and separately unpreflighted/unimplemented.
+This "Complete 7c" turn stops after 7C; next is 7D analysis-only preflight, not implementation.
+The larger goal remains unfinished and its previously observed BLOCKED lifecycle was not reset,
+replaced or falsely completed. User-controlled resume remains needed for automatic continuation.
