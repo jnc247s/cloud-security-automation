@@ -40,9 +40,12 @@ passed all 2,601 tests and quality/image gates. [7B preparation](docs/sprint-7b-
 preserves the approved design and its original analysis. See [dashboard operation](docs/operations/dashboard.md)
 for opt-in configuration, token/session handling, Cognito registration requirements and local tests.
 
-Local 7B checks passed: 2,666 regression tests (277 PostgreSQL, no skips), seven frontend units,
-12 Chromium/Firefox journeys and quality/container/runtime gates. Independent review and
-acceptance/publication remain pending; these are local results, not a production deployment.
+Final local 7B checks passed: 205 focused checks, 2,676 regression tests (277 PostgreSQL,
+no skips), 15 frontend units, 14 Chromium/Firefox journeys and quality/container/runtime gates.
+Independent review passed with zero unresolved findings; the scoped branch is published in
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). Exact-head CI, human merge
+approval and green merged-main CI remain acceptance gates. No merge or production deployment
+is claimed. The active plan records exact validation and publication checkpoints.
 
 The current implementation includes:
 

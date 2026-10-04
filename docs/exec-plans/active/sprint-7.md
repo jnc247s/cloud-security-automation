@@ -711,6 +711,8 @@ The committed worktree was clean and tracking its scoped origin branch. Unrelate
 skill files, ignored generated/build/browser/cache files and the original 6E.3 checkout remain
 excluded and untouched. The documentation guidance keeps earlier pre-publication checkpoints
 historical rather than rewriting their predictions or approval limits.
+The README's current 7B summary is reconciled with the final post-review test totals,
+independent REVIEW_PASS and actual PR; its earlier pre-review/publication wording was stale.
 
 7B/Sprint 7 remain IN PROGRESS and the existing goal unfinished. The user authorized commit,
 push and PR creation only. Do not merge or enable auto-merge without separate human authority;
