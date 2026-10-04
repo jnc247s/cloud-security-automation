@@ -127,6 +127,24 @@ Final local validation and the same reviewer's follow-up passed with zero unreso
 both final-head CI runs, explicit human merge approval and merged-main CI passed through PR #43.
 7B acceptance does not validate a live provider or production operations.
 
+### 7C investigation extension — implementation, acceptance pending
+
+The local extension preserves T17--T19's bearer, session/context, origin, no-store/CSP and final
+in-flight checks for an explicit bounded GET allowlist. Client binding checks do not authorize data.
+New correctness threats include substituting latest/first-seen metadata for an assessed snapshot,
+cross-scan/profile/control-version evidence, inferred graph links, invented unresolved endpoints,
+and treating mutable ACCEPTED_RISK or stored ACTIVE as a historical technical result.
+Exact snapshot/assessment/control-definition/checksum and typed artifact/digest/directional endpoint
+binding checks reject mismatches. Text-only bounded disclosures never execute or follow metadata.
+Selection/filter/identity changes clear prior details; abort/generation guards reject late reads.
+
+Operational UTC response-production time is explicit and server-supplied; expiry equality is expired,
+malformed/naive/missing times cannot yield eligibility. This is freshness-labeled current handling,
+not an atomic report or exception state at scan time. No exception scheduler or mutation is added.
+Residual risks remain organization-wide READ access, trusted same-origin scripts/extensions,
+unpaginated resource/finding detail internals, offset-page drift, display truncation, one process
+and unvalidated live IdP/TLS/MFA operations. NIST hierarchy work is not part of 7C.
+
 ## Trust boundaries and assumptions
 
 Approved 6E.1 binds S3-001/003 results to complete discovery, authoritative same-owner bucket-home

@@ -52,13 +52,15 @@ def get_resource(resource_id: UUID, db: SessionDependency) -> ResourceView:
 def get_resource_history(
     resource_id: UUID,
     db: SessionDependency,
+    scan_id: UUID | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> Page[ResourceSnapshotView]:
-    """List immutable observations for one resource, newest first."""
+    """List immutable observations, optionally restricted to one exact scan."""
 
     return ResourceService(db).get_resource_history(
         resource_id,
+        scan_id=scan_id,
         limit=limit,
         offset=offset,
     )

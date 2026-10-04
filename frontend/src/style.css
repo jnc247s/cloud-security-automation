@@ -8,7 +8,7 @@ h2 { font-size: 1.25rem; }
 .eyebrow { margin: 0; color: #465968; font-size: .875rem; }
 .identity { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; overflow-wrap: anywhere; }
 .notice { background: #e9f0f7; border-left: 4px solid #315b80; padding: 12px 16px; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button { cursor: pointer; padding: 8px 14px; background: white; border: 1px solid #315b80; border-radius: 4px; color: #173b5e; }
 button:hover { background: #e9f0f7; }
 button:disabled { cursor: default; opacity: .55; }
@@ -22,6 +22,18 @@ button[aria-pressed="true"] { border-width: 2px; background: #e9f0f7; }
 nav { display: flex; flex-wrap: wrap; gap: 8px; }
 form { display: grid; gap: 10px; margin-top: 24px; }
 input { width: 100%; padding: 8px; border: 1px solid #617786; border-radius: 4px; }
+select { width: 100%; padding: 8px; }
+.metadata-row { display: contents; }
+.investigation { margin-top: 24px; }
+.investigation section { margin-top: 16px; }
+.investigation article { border-top: 1px solid #d4dde5; margin-top: 12px; padding-top: 12px; }
+.investigation button { overflow-wrap: anywhere; max-width: 100%; margin: 4px 0; }
+.table-scroll { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; }
+caption { text-align: left; font-weight: 600; overflow-wrap: anywhere; }
+th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid #d4dde5; overflow-wrap: anywhere; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f4f6f8; padding: 12px; max-height: 32rem; overflow: auto; }
+summary { cursor: pointer; padding: 8px; }
 dl { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(0, 2fr); gap: 8px 18px; }
 dt { font-weight: 600; } dd { margin: 0; overflow-wrap: anywhere; }
 .mono { font-family: ui-monospace, monospace; font-size: .875rem; overflow-wrap: anywhere; }

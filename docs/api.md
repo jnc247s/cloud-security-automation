@@ -163,7 +163,7 @@ boundary only.
 | --- | --- |
 | scans | none |
 | resources | `account_id`, `service`, `resource_type`, `region` |
-| resource history | none beyond `resource_id` in the path |
+| resource history | optional `scan_id` UUID; omitted preserves all-history behavior |
 | relationships | `collection_account_id`, `scan_id`, `relationship_id`, `source_resource_id`, `target_resource_id`, `target_reference_id`, `relationship_type`, `resolution` |
 | source outcomes | `collection_account_id`, `scan_id`, `contract_key`, `collector`, `phase`, `subject_resource_id`, `evidence_kind`, `state` |
 | assessments | `scan_id`, `resource_id`, `control_id`, `result` |
@@ -480,6 +480,43 @@ do not expose provider detail; callback queries are redacted on error paths as w
 read if logout/expiry occurs before completion. Unsupported paths/methods are not a generic proxy.
 Dashboard cookies never authenticate `/api/v1`. No CORS, roles, capabilities, tenant policy,
 database write, scan execution or account isolation is added.
+
+### 7C investigation reads — implementation, acceptance pending
+
+`GET /api/v1/resources/{resource_id}/history` adds optional `scan_id` UUID. Count and items
+are filtered together; an existing resource without that scan returns an empty page, an unknown
+resource still returns 404. Omission preserves existing defaults (50), ordering and schema.
+With the filter there is at most one snapshot from the existing unique scan/resource constraint.
+Clients still verify the expected snapshot UUID; no latest-snapshot fallback is valid.
+
+New explicit BFF GETs below retain the same opaque session, mandatory matching
+`X-Dashboard-Context`, origin checks, bearer/READ enforcement, no-store/security headers and
+final logout/expiry guard. They retain upstream JSON/status, default to limit 25, allow 1..100,
+offset >= 0 and reject unknown/duplicate queries. Detail paths accept no queries.
+
+| Path after /dashboard/api/ | Allowed query parameters beyond limit/offset |
+| --- | --- |
+| assessments | required scan_id; resource_id, control_id, result |
+| assessments/{assessment_id} | none; no pagination |
+| resources/{resource_id} | none; no pagination |
+| resources/{resource_id}/history | required scan_id |
+| controls/{control_id} | none; no pagination |
+| findings | account_id, resource_id, control_id, status, region |
+| findings/{finding_id} | none; no pagination |
+| exceptions | finding_id, resource_id, control_id, status |
+| source-outcomes | required scan_id; collection_account_id, contract_key, collector, phase, subject_resource_id, evidence_kind, state |
+| source-outcomes/{source_outcome_id} | none; no pagination |
+| relationships | required scan_id; collection_account_id, relationship_id, source_resource_id, target_resource_id, target_reference_id, relationship_type, resolution |
+| relationships/{observation_id} | none; no pagination |
+
+UUID/enums are typed; account filters are 12-digit values, name filters 1..128 characters,
+Region 1..64. No generic proxy, writer, exception-detail BFF or browser-selected headers/URL.
+Only successful findings list/detail and exceptions list responses add `X-Dashboard-Read-At`,
+an explicit UTC ISO timestamp captured when producing the response after the final session guard.
+It is metadata, not authority, a transaction timestamp, active-ID computation time or scan-time
+state. Error/nonoperational responses do not carry it; `/api/v1` response bodies/headers are unchanged.
+The UI displays stored status separately from eligibility at this reference and fails unavailable
+for missing/invalid times. Technical four-state results never change with operational handling.
 
 ## Compatibility rule
 

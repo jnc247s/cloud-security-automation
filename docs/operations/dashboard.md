@@ -1,9 +1,11 @@
-# Sprint 7B dashboard operation
+# Dashboard operation
 
 The opt-in read-only shell is accepted through PR #43 with independent review and green
 merged-main CI; it is not a production deployment or live-provider validation.
 It supports provider login, exact scan selection, historical scope/lifecycle and report
 availability. Assessment/evidence/finding/NIST views, mutations and scan execution are excluded.
+That exclusion describes accepted 7B. The local 7C investigation extension below is pending
+acceptance; NIST hierarchy, mutations and scan execution remain excluded.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
@@ -71,8 +73,9 @@ opaque HttpOnly cookies, exact Origin and CSRF checks. Sessions expire at 15 idl
 rejects exhaustion rather than evicting other users and is cleared on process exit/restart.
 Operate one process; shared or durable sessions are deliberately not implemented.
 
-Only scan list/detail/technical-posture GETs are forwarded, through the real bearer API and READ
-dependencies. Each requires `X-Dashboard-Context` matching the public `session_context` returned
+7B forwards scan list/detail/technical-posture GETs; local 7C adds only the explicit investigation
+GETs documented in [the API contract](../api.md#7c-investigation-reads--implementation-acceptance-pending).
+All cross the real bearer API and READ dependencies. Each requires `X-Dashboard-Context` matching the public `session_context` returned
 by the authenticated session bootstrap. The value is correlation, not authority; it cannot
 replace the opaque cookie, bearer verification or READ. A stale tab gets 401 before forwarding
 under another session. Supported Chromium/Firefox use ephemeral same-origin BroadcastChannel
@@ -85,6 +88,32 @@ score. Pending/no-bundle reports have unavailable counts, not zero. Partial/fail
 remain visible with explicit coverage limitations. Client guards require exact lifecycle enums
 and all four finite nonnegative integer counts for available reports (including legitimate zero),
 while unavailable counts remain null. No counts or score view is added. Offset pages are not frozen snapshots.
+
+## Exact-scan investigation — 7C implementation, acceptance pending
+
+Select an explicit retained scan, then open assessment details on demand. The 25-row assessment
+page filters technical state/resource/control UUIDs; source and relationship pages filter their
+states and resource identities. Historical detail shows the exact assessed snapshot, control
+definition/checksum, profile/version IDs, reason, missing evidence and structured evidence.
+Stable owner/identity and first-seen ARN are separately labeled. Never substitute latest config.
+Only known typed proofs link to scan/artifact/digest-bound source facts or directional observations.
+Unknown/legacy proofs remain text; unresolved targets have no fabricated resource/snapshot button.
+Partial facts and unassessed/missing targets do not imply PASS or NOT_APPLICABLE.
+
+Open current findings/exceptions separately. They are retrieved mutable handling, not scan-time
+state. Stored ACTIVE and ACCEPTED_RISK never rewrite FAIL. Eligibility is evaluated at the
+successful BFF response's server UTC `X-Dashboard-Read-At`, never browser wall time; expiry equality
+is expired. Missing/naive/invalid timestamps or reference display eligibility unavailable.
+Refresh retrieves new handling; mixed page/detail reads are not an atomic or perpetual report.
+
+Payload disclosures use text only and explicit bounded display truncation (depth 8, 2,000 nodes,
+100 entries per collection, 4,096 characters per string and 12,000 displayed JSON characters).
+These limits are not network-payload bounds, exports or proof of full evidence review.
+Resource detail still hydrates all snapshot history internally; optional finding occurrence
+detail still returns all occurrences/exceptions without pagination. Both are on-demand, not
+per-row requests or client aggregates. READ still spans one trusted organization.
+Selection/identity/logout/expiry changes clear details and ignore or abort late reads.
+No persistence, credentials, migration, default catalog/profile or production setup changes.
 
 ## Reproducible validation
 
@@ -99,6 +128,11 @@ then runs full regression and container gates and removes only that created data
 It never reuses an operator database. The browser fixture is test-only and excluded from the image.
 Browser traces/videos/screenshots are disabled for automated authenticated journeys to avoid
 retaining credentials/evidence. A separately requested local visual check must use synthetic data.
+For 7C include focused `tests/unit/services/test_investigation_history.py`,
+`tests/api/test_dashboard_investigation_api.py` and `tests/integration/test_investigation_postgres.py`.
+The browser suite covers retained history/proofs/relationships/current exceptions across the
+controlled issuer, bearer API and disposable PostgreSQL, including adverse substitutions,
+stale reads, keyboard/mobile behavior and logout/expiry clearing. AWS is forbidden in the fixture.
 
 Independent review and publication/merge approvals remain mandatory. Controlled-issuer acceptance
 does not prove a live Cognito tenant, MFA enrollment, ingress/TLS or production operational setup.
