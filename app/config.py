@@ -3,7 +3,7 @@
 from functools import cached_property, lru_cache
 from urllib.parse import urlparse
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.assessment.profiles import DEFAULT_PROFILE_VERSION
@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        hide_input_in_errors=True,
     )
 
     app_env: str = "development"
@@ -43,6 +44,12 @@ class Settings(BaseSettings):
     oidc_allow_insecure_http: bool = False
     dev_identity_subject: str = "local-developer"
     dev_identity_roles: str = "ADMIN"
+    dashboard_enabled: bool = False
+    dashboard_origin: str | None = None
+    dashboard_client_id: str | None = None
+    dashboard_client_secret: SecretStr | None = None
+    dashboard_scopes: str = "openid"
+    dashboard_static_dir: str = "frontend/dist"
 
     @cached_property
     def assessment_policy(self):
@@ -207,6 +214,57 @@ class Settings(BaseSettings):
                 "for local development"
             )
             raise ValueError(message)
+
+    @model_validator(mode="after")
+    def validate_dashboard_configuration(self) -> "Settings":
+        """The opt-in browser boundary never falls back to development authentication."""
+        if not self.dashboard_enabled:
+            return self
+        if self.auth_mode != "oidc":
+            raise ValueError("DASHBOARD_ENABLED requires AUTH_MODE=oidc")
+        if not self.dashboard_origin or not self.dashboard_client_id:
+            raise ValueError("Dashboard requires DASHBOARD_ORIGIN and DASHBOARD_CLIENT_ID")
+        if not self.dashboard_client_secret or not self.dashboard_client_secret.get_secret_value():
+            raise ValueError("Dashboard requires a server-side client credential")
+        origin = urlparse(self.dashboard_origin)
+        if (
+            origin.path
+            or origin.params
+            or origin.query
+            or origin.fragment
+            or origin.username
+            or origin.password
+        ):
+            raise ValueError("DASHBOARD_ORIGIN must be an exact origin without a path")
+        self._validate_oidc_url("DASHBOARD_ORIGIN", self.dashboard_origin)
+        # The ID token audience must never be accepted as the API access-token audience.
+        if self.dashboard_client_id == self.oidc_audience:
+            raise ValueError("Dashboard client and API audience must be distinct")
+        assert self.oidc_audience is not None
+        self._validate_oidc_url("OIDC_AUDIENCE resource binding", self.oidc_audience)
+        for value in (
+            self.dashboard_origin,
+            self.oidc_issuer,
+            self.oidc_jwks_url,
+            self.oidc_audience,
+        ):
+            parsed = urlparse(value)
+            if parsed.username or parsed.password or parsed.query or parsed.fragment:
+                raise ValueError("Dashboard identity URLs cannot contain credentials or query data")
+            if parsed.scheme == "http" and self.app_env not in {
+                "dev",
+                "development",
+                "local",
+                "test",
+                "testing",
+            }:
+                raise ValueError(
+                    "Insecure dashboard URLs require an explicit local/test environment"
+                )
+        scopes = self.dashboard_scopes.split()
+        if "openid" not in scopes or "offline_access" in scopes:
+            raise ValueError("Dashboard requires openid and does not retain refresh tokens")
+        return self
 
     @property
     def required_tag_names(self) -> tuple[str, ...]:

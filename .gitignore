@@ -17,6 +17,10 @@ pytest-cache-files-*/
 htmlcov/
 build/
 dist/
+node_modules/
+playwright-report/
+test-results/
+.pnpm-store/
 
 # Virtual environments
 .venv/

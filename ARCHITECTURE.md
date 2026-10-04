@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes accepted Sprints 0--6. The accepted implementation baseline is `main`
-commit `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (whole-sprint 6H acceptance in PR #40), after
-the Sprint 5 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and
-documentation, not application behavior; merged-main CI passed. Sprint 7 is IN PROGRESS:
-approved 7A is independently reviewed feature-branch code, not yet accepted or merged.
+This document describes accepted Sprints 0--6 and Sprint 7A. The accepted implementation baseline
+is `main` commit `bd639f48095ef63e658abd284ce25c927998c0fb` (7A in PR #42), after the Sprint 5
+evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
+not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
+CI passed. Sprint 7 remains IN PROGRESS; approved local 7B client/session work is not yet accepted.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
@@ -510,7 +510,7 @@ Health and readiness remain unversioned and unauthenticated. The authenticated i
 `/api/v1` and exposes scans, resources/history, assessments/evidence, source outcomes/artifacts,
 resource-relationship observations, findings/occurrences, controls, frameworks/mappings, and
 exceptions. Routes delegate to `ScanService`, `ResourceService`, `AssessmentService`,
-`EvidenceGraphService`, `TechnicalPostureService` (7A working implementation),
+`EvidenceGraphService`, `TechnicalPostureService` (accepted 7A),
 `FindingService`, `ControlService`, `FrameworkService`, and
 `ExceptionService`. `AuditService` exists as a service abstraction but has no public route. There
 is no standalone source-contract or source-artifact list route; the source manifest is identified
@@ -519,7 +519,7 @@ on scan detail, and an artifact is returned only with its source-outcome detail.
 `docs/api.md` is the authoritative interface document. Future clients must use services/API data,
 not direct database access.
 
-### Approved 7A reporting foundation — working implementation
+### Accepted 7A reporting foundation
 
 The additive `GET /api/v1/scans/{scan_id}/technical-posture` READ projection uses one exact
 retained scan/profile/catalog and its exact control/framework versions. Reporting models remain
@@ -541,6 +541,33 @@ evidence payloads and mutable finding/exception state are excluded. Successful a
 ownership remain unchanged. No browser client/login/session is implemented by 7A; 7B requires
 separate design approval. See the [API contract](docs/api.md#exact-scan-technical-posture--7a)
 and [active plan](docs/exec-plans/active/sprint-7.md) for validation and acceptance gates.
+The [7B preflight](docs/sprint-7b-preflight.md) preserves the original browser/session proposal,
+subsequently approved for local implementation. The `/api/v1` bearer contract stays unchanged.
+
+### Local 7B browser shell pending acceptance
+
+React/TypeScript/Vite assets are built in a pinned Node/pnpm stage and served by the existing
+non-root FastAPI image, only with explicit `DASHBOARD_ENABLED`. Disabled startup and routes
+remain unchanged. A dedicated `app/dashboard/` boundary performs provider-issued Code/S256-PKCE
+login using Authlib, validates OIDC identity using joserfc/Authlib and reuses the established
+bearer verifier for access-token signature/issuer/audience/expiry/roles. Tokens are not issued here.
+The browser gets an opaque HttpOnly session ID, not provider tokens or a readable signed session.
+
+A bounded thread-safe process-local store retains tokens and correlation state only in memory.
+Every allowed read crosses `/api/v1` with that user's bearer token using an in-process ASGI HTTP
+transport; it never invokes a service or database directly or overrides API dependencies.
+Only scan list/detail/posture GETs are exposed. Dashboard cookies cannot authenticate `/api/v1`.
+Logout/expiry revoke sessions, and late-read guards prevent returning or rendering a prior
+selection/identity. Each browser read must also present the public `session_context` issued by
+session bootstrap as `X-Dashboard-Context`; a shared cookie changing in another tab cannot
+silently change a retained shell's principal. Same-origin BroadcastChannel messages contain
+only this non-authorizing correlation value and invalidation type, never credentials or data.
+They clear/unmount pending UI before logout completes and rebootstrap after a session change;
+the server cookie, real bearer verifier and READ remain authoritative. No new model, migration,
+capability, scan operation or AWS permission.
+Visible scope ends at scan selection, exact historical context and report availability, not
+investigation/NIST hierarchy views. [Operations](docs/operations/dashboard.md) owns configuration;
+security and threat owners document the new boundary and its one-process/IdP limitations.
 
 ## Runtime and deployment
 
@@ -559,7 +586,8 @@ workload-role configuration remain deployment responsibilities.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
-- No frontend, Terraform deployment, remediation, or AI runtime.
+- Only an opt-in 7B shell pending acceptance, not full dashboard investigation/context views.
+- No Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

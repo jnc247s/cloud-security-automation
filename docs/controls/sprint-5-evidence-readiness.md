@@ -5,7 +5,7 @@ reflected. The bounded 5G closure was accepted and merged in pull request 25 at
 `main` commit `ef4543d439ed3a33064c6bcf383db201a94d2881`. Accepted Sprint 6 consumers through
 6G are identified below. LOG-002/003, exact LOG-004 composition and GOV-001 required tags are
 accepted. Whole-sprint 6H acceptance/closeout is complete; Sprint 7 is IN PROGRESS with
-approved local 7A reporting; no collector/control addition is authorized by that slice.
+accepted 7A reporting; no collector/control addition is authorized by that slice.
 
 This matrix connects the immutable meanings in the [control catalog](catalog.md) to the factual
 AWS evidence Sprint 5 must collect. The final token in every `Slice / state` cell uses this closed
@@ -455,7 +455,7 @@ accepted Sprint 6 consumers are identified in the rows above.
 
 Sprint 5 is `COMPLETE`: its foundation, 5A through 5F, and bounded 5G closure are accepted.
 Sprint 6 is `COMPLETE`: slices 6A through 6H are accepted; Sprint 7 is IN PROGRESS with
-approved 7A reporting, independently reviewed with acceptance and merge pending.
+accepted 7A reporting, independently reviewed and merged through PR #42 with green main CI.
 The complete Phase 0 validation and independent-review gates passed. The canonical
 control-contract readiness marker remains:
 

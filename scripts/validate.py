@@ -18,7 +18,7 @@ def run(*args: str, env=None, capture=False, check=True):
     return subprocess.run(args, cwd=ROOT, env=env, check=check, text=True, capture_output=capture)
 
 
-def validate(focused: list[str]) -> None:
+def validate(focused: list[str], *, dashboard: bool = False) -> None:
     """Never reuse DATABASE_URL or TEST_DATABASE_URL for the disposable test database."""
     run("docker", "info", "--format", "{{.ServerVersion}}", capture=True)
     name = f"cloudsec-validation-{uuid4().hex}"
@@ -58,6 +58,7 @@ def validate(focused: list[str]) -> None:
         env["TEST_DATABASE_URL"] = (
             f"postgresql+psycopg://cloudsec_test:{password}@127.0.0.1:{port}/cloudsec_test"
         )
+        env["DASHBOARD_ENABLED"] = "false"
         deadline = monotonic() + 60
         while run(
             "docker",
@@ -79,6 +80,12 @@ def validate(focused: list[str]) -> None:
         if focused:
             print("Running focused acceptance checks", flush=True)
             run(sys.executable, "-m", "pytest", *focused, "-q", env=env)
+        if dashboard:
+            pnpm = "pnpm.cmd" if os.name == "nt" else "pnpm"
+            for gate in ("typecheck", "lint", "test", "build"):
+                run(pnpm, "--dir", "frontend", gate, env=env)
+            browser_env = dict(env, DASHBOARD_BROWSER_TEST="1", PYTHON_EXECUTABLE=sys.executable)
+            run(pnpm, "--dir", "frontend", "test:browser", env=browser_env)
         run(sys.executable, "-m", "ruff", "check", ".")
         run(sys.executable, "-m", "ruff", "format", "--check", ".")
         print("Running complete regression with disposable PostgreSQL", flush=True)
@@ -98,9 +105,12 @@ def validate(focused: list[str]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--focused", nargs="+", default=[], help="Focused pytest paths/node IDs")
+    parser.add_argument(
+        "--dashboard", action="store_true", help="Include real browser/issuer/PostgreSQL acceptance"
+    )
     args = parser.parse_args()
     try:
-        validate(args.focused)
+        validate(args.focused, dashboard=args.dashboard)
     except (subprocess.CalledProcessError, OSError, RuntimeError):
         # Do not dump child environments or database credentials on failure.
         print(

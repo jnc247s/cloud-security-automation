@@ -3,9 +3,9 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-02
-Accepted implementation baseline: `main` at `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (PR #40;
-Sprints 0--6 accepted, including whole-sprint 6H acceptance, opt-in `0.13.0`
+Last verified: 2026-10-04
+Accepted implementation baseline: `main` at `bd639f48095ef63e658abd284ce25c927998c0fb` (PR #42;
+Sprints 0--6 and Sprint 7A accepted, including exact-scan READ reporting, opt-in `0.13.0`
 and migration `20261001_0006`; merged-main CI passed)
 
 ## Current state
@@ -249,7 +249,7 @@ at that closeout; the subsequent approved 7A start is recorded below.
 
 ## In progress: Sprint 7 — Dashboard / NIST Technical Posture
 
-Sprint 7 is IN PROGRESS, limited initially to the approved 7A reporting foundation. The user
+Sprint 7 is IN PROGRESS. The 7A reporting foundation is COMPLETE; 7B is IN PROGRESS. The user
 requested its analysis-only preflight on 2026-10-02.
 The [preflight](docs/sprint-7-preflight.md) is complete and the
 [execution plan](docs/exec-plans/active/sprint-7.md) records 7A approval and later proposed slices.
@@ -268,17 +268,84 @@ must use the accepted generic services/API and preserve technical results, immut
 finding/exception separation and limited NIST reporting claims. No Sprint 7 implementation or
 new infrastructure was added during Sprint 6 closeout.
 
-7A is locally implemented and validated, not accepted/complete: 182 focused checks and 2,601
+7A is COMPLETE: 182 focused checks and 2,601
 full regression tests passed (277 PostgreSQL cases, no skips, 20 existing warnings), plus Ruff,
 348-file formatting, documentation links, whitespace, Compose, image build and isolated image
 import/OpenAPI smoke checks. Migration remains `20261001_0006`; default catalog/profile and
 accepted assessment/authentication behavior are unchanged. The subsequently authorized single
 read-only reviewer returned REVIEW_PASS with zero unresolved findings after 157 independent
-checks and three additional diagnostics. The latest user "Yes" authorizes recording that
-checkpoint, committing, pushing this branch and opening a 7A PR only; merge is not authorized.
-Acceptance and merge remain pending. Exact results, reviewed snapshot and scope limits are in
-the active plan. 7B still requires UI/toolchain/browser-auth decisions; its implementation and
-all later slices have not started.
+checks and three additional diagnostics. The same reviewer verified the documentation delta
+and exact final head `333aefdd9032057ad49701271030e0047ce99601` with zero unresolved findings.
+The user's scoped publication approval produced [PR #42](https://github.com/jnc247s/cloud-security-automation/pull/42);
+the repository owner subsequently merged it manually on 2026-10-03 at
+`bd639f48095ef63e658abd284ce25c927998c0fb`. Both exact-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37161516904)
+passed; main ran all 2,601 tests with 20 existing warnings and no skips, plus quality/image gates.
+No agent merge or auto-merge was performed. The active plan preserves earlier approval limits
+and the superseding acceptance record.
+
+The user subsequently requested a 7B completion goal and confirmed continuing the existing
+7A/7B goal, starting with 7A documentary closeout and the 7B design prerequisites. This authorizes
+local reconciliation and analysis-only [7B preparation](docs/sprint-7b-preflight.md), not a selected
+browser architecture or 7B implementation. 7B still requires UI/toolchain/browser-auth decisions
+and an implementation request. Reviewer agents, publication, merges and production/IdP changes
+for this new work need separate authorization. 7B and all later implementation remain unstarted.
+
+The subsequent user confirmations approve React/TypeScript/Vite, the documented same-origin
+BFF/session design and 7B implementation, with Cognito User Pools Essentials as the target IdP
+and a controlled local issuer for automated tests. This supersedes the preparation-only gate
+above for 7B, not for independent review, publication, merging or live IdP/AWS/production changes.
+Implementation reuses the preserved worktree on `codex/sprint-7b-authenticated-shell`, from
+accepted main `bd639f48095ef63e658abd284ce25c927998c0fb`. Existing documentary work is retained.
+7B is not accepted until its required validation, independent review and merge gates succeed.
+No 7C, 7D, 7E or later-sprint implementation is authorized.
+
+Local 7B implementation and validation are now complete, not accepted: 195 focused checks,
+2,666 regression tests (277 PostgreSQL cases included, no skips), seven frontend units and
+12 Chromium/Firefox journeys passed, plus frontend build/type/lint, Ruff/format, documentation
+links, whitespace, Compose, multi-stage image and isolated disabled/enabled runtime smoke.
+The [implementation checkpoint](docs/exec-plans/active/sprint-7.md#7b-implementation-checkpoint--2026-10-03)
+records exact commands, limits and differences. 7B remains IN PROGRESS; independent review has
+not been authorized or launched, and all changes are uncommitted/unpublished. Production Cognito
+registration is not validated. Required review, publication and merge gates remain outstanding;
+the goal is unfinished and later slices remain unstarted.
+
+On 2026-10-04 the user's "Yes" authorizes one read-only independent reviewer for 7B. The
+earlier unapproved-review checkpoint above remains historical; review is now authorized.
+The initial review returned REVIEW_CHANGES_REQUIRED (two MEDIUM, one LOW); local focused
+repairs address safe malformed-input/error handling, cross-tab session binding/invalidation,
+and exact enum/count validation. Fresh complete validation and the same reviewer's follow-up
+remain required. This does not authorize additional reviewers, commit, push, PR, merge,
+live IdP/AWS/secret or production operations. 7B remains IN PROGRESS and unpublished.
+
+Post-review closeout on 2026-10-04: all three findings are resolved and the same reviewer returned
+REVIEW_PASS with zero unresolved findings. Fresh final validation passed 205 focused checks,
+2,676 regression tests (277 PostgreSQL cases, no skips), 15 frontend units and 14 Chromium/Firefox
+journeys, plus quality/build/Compose/image and isolated disabled/enabled/error-path runtime smoke.
+The [post-review checkpoint](docs/exec-plans/active/sprint-7.md#7b-post-review-validation-and-independent-closeout--2026-10-04)
+records exact commands, independent checks, immutable input fingerprints and limits.
+Final documentary verification and separate commit/push/PR authority, exact-head review/CI,
+required human merge and merged-main CI remain gates. 7B is not COMPLETE; live Cognito and
+production setup are not validated, all changes remain uncommitted/unpublished, and 7C+ is unstarted.
+
+The final documentary review also passed with zero unresolved findings, 82 fresh independent
+contract/link checks and unchanged implementation hashes. The user's subsequent "Yes" authorizes
+a scoped 7B commit, branch push and PR creation, not merge/auto-merge or live/later-sprint work.
+The [publication authorization](docs/exec-plans/active/sprint-7.md#7b-final-documentary-review-and-publication-authorization--2026-10-04)
+records verified exact inputs, GitHub identity/current main and preservation boundaries. Publication,
+exact-head review/CI, required human merge and merged-main CI remain pending at that checkpoint;
+7B stays IN PROGRESS, and no commit/push/PR or acceptance is claimed yet.
+
+Publication checkpoint on 2026-10-04: the scoped 7B implementation is committed at
+`ff2088be98928fdf87ca0bc9216c722e71713ec2`, pushed to
+`codex/sprint-7b-authenticated-shell`, and open in
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). The same independent
+reviewer returned exact-commit REVIEW_PASS with zero unresolved findings and verified all
+56 committed blobs match the reviewed files. Both exact-head GitHub CI runs are in progress
+at this checkpoint. [Publication detail](docs/exec-plans/active/sprint-7.md#7b-publication-checkpoint--2026-10-04)
+records the unchanged implementation, preservation checks and remaining gates. 7B remains
+IN PROGRESS: merge/auto-merge is not authorized or performed, live Cognito is unvalidated,
+and required human merge approval and green merged-main CI remain outstanding. 7C+ is unstarted.
 
 ## Pre-Sprint 5 attention
 

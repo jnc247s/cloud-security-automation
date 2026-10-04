@@ -16,24 +16,36 @@ Whole-sprint 6H acceptance merged through
 REVIEW_PASS and 2,533 regression tests (252 PostgreSQL, no skips), plus all quality/container gates.
 [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/36954205010)
 passed all 2,533 tests. The completed plan retains original predictions, implemented differences
-and validation history. Sprint 7 is IN PROGRESS: approved 7A adds a reviewed feature-branch exact-scan
-READ reporting API, with acceptance and merge still pending. 7B browser UI/auth
-choices are not yet approved; no frontend, remediation or deployment is implemented.
+and validation history. Sprint 7 is IN PROGRESS: 7A exact-scan READ reporting is COMPLETE,
+merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pull/42).
+7B is IN PROGRESS: its approved read-only browser shell uses a server-side OIDC session boundary,
+with Cognito Essentials as target and a controlled local issuer for tests. Acceptance is pending;
+no live IdP resources, remediation or production deployment are implemented.
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
 and validation. Recorded Sprint 6 test totals above are baseline evidence, not 7A acceptance.
 
-The 7A working endpoint is `GET /api/v1/scans/{scan_id}/technical-posture`, protected by the
+The accepted 7A endpoint is `GET /api/v1/scans/{scan_id}/technical-posture`, protected by the
 existing READ capability. It returns exact historical four-state counts, control/target coverage
 and version-bound mapped NIST context, without payloads, an overall result or a compliance score.
 Running/no-bundle scans have unavailable counts; exceptions do not rewrite technical results.
 See the [API contract](docs/api.md#exact-scan-technical-posture--7a). This is reporting foundation,
-not a browser login/dashboard or an accepted Sprint 7 release.
+not a browser login/dashboard or completion of Sprint 7.
 Local 7A validation passed 182 focused checks and 2,601 regression tests (277 PostgreSQL,
 no skips), plus quality/container gates. Independent review returned REVIEW_PASS with zero
 unresolved findings after 157 independent checks and three additional diagnostics. The active
-plan records exact results and scoped publication approval; acceptance and merge remain pending.
+plan records the exact-head review and human merge. [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37161516904)
+passed all 2,601 tests and quality/image gates. [7B preparation](docs/sprint-7b-preflight.md)
+preserves the approved design and its original analysis. See [dashboard operation](docs/operations/dashboard.md)
+for opt-in configuration, token/session handling, Cognito registration requirements and local tests.
+
+Final local 7B checks passed: 205 focused checks, 2,676 regression tests (277 PostgreSQL,
+no skips), 15 frontend units, 14 Chromium/Firefox journeys and quality/container/runtime gates.
+Independent review passed with zero unresolved findings; the scoped branch is published in
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). Exact-head CI, human merge
+approval and green merged-main CI remain acceptance gates. No merge or production deployment
+is claimed. The active plan records exact validation and publication checkpoints.
 
 The current implementation includes:
 
@@ -89,7 +101,8 @@ historical-release recovery and authenticated API validation and documentary clo
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
 recognized roles can read its security data, and query filters are not object- or account-level
-authorization. No production Terraform, dashboard, governance mutation API, remediation,
+authorization. The opt-in dashboard shell is local 7B work pending acceptance, not a production deployment.
+No production Terraform, governance mutation API, remediation,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
 [known limitations](docs/operations/known-limitations.md) before production use.
 

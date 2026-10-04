@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--6 at the
-accepted implementation `main` baseline `19c4cd10d0e22ca526fb9a6e94af967cc8ff0a97` (PR #40;
+This document defines permanent repository security rules for accepted Sprints 0--6 and 7A at the
+accepted implementation `main` baseline `bd639f48095ef63e658abd284ce25c927998c0fb` (PR #42;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -24,9 +24,9 @@ permission changes. The approved category migration preserves integrity and bloc
 downgrades before DDL. Independent review and merged-main CI passed; see
 [6G metadata](docs/controls/sprint-6g-metadata.md). Accepted 6H verified combined controls,
 historical releases and real authenticated APIs with only AWS offline; no security behavior or
-production operation changed. Sprint 7 is IN PROGRESS; approved 7A READ reporting passed
-independent review with zero unresolved findings; acceptance and merge remain pending.
-No 7B browser boundary is added.
+production operation changed. Sprint 7 is IN PROGRESS; 7A READ reporting is accepted and merged,
+with zero unresolved independent-review findings and successful merged-main CI.
+Approved local 7B adds the separate opt-in browser boundary below; acceptance is pending.
 
 ## Authentication
 
@@ -179,7 +179,7 @@ exceptions, audit metadata, database dumps, and backups as sensitive security da
 database and backup access on least privilege. A `READ` principal is trusted to receive normalized
 artifact payloads from source-outcome detail; there is no field-level or account-level policy.
 
-Approved 7A technical-posture aggregates are also sensitive READ data. The exact-scan service
+Accepted 7A technical-posture aggregates are also sensitive READ data. The exact-scan service
 omits configurations, evidence payloads, tags and mutable finding/exception handling, and never
 calls AWS, evaluates rules, flushes caller objects or commits. Counts cannot substitute current
 versions, multiply assessments through mappings, treat unavailable coverage as zero failures,
@@ -187,7 +187,46 @@ or convert exceptions into PASS. Version/profile/hierarchy conflicts fail closed
 sanitized `technical_posture_provenance_conflict` 409. Success and that conflict set no-store;
 this does not make other existing API responses no-store or create tenant/field authorization.
 Existing bearer validation and READ/EXECUTE separation remain the enforcement boundary.
-Browser login, session/token handling and frontend security remain a separate 7B design gate.
+The subsequently approved [7B proposal](docs/sprint-7b-preflight.md) defines the browser boundary;
+local validation and independent review passed. Final-head CI, required human merge approval
+and green merged-main CI remain acceptance gates; no live provider or production setup is validated.
+
+### Local 7B browser boundary
+
+Dashboard enablement requires OIDC, an exact trusted origin, distinct client/API audiences,
+server-only client credential and built assets; it never falls back to development access.
+HTTP is accepted only with the existing explicit insecure flag and a loopback URL in a named
+local/test environment. Production requires HTTPS. Startup errors hide configuration input.
+Cognito login must request API resource binding; configure only recognized application groups,
+never IAM role ARNs, as the roles claim. Provider credentials and live registration remain external.
+
+Provider tokens, nonce and PKCE verifier remain server-side, bounded to 1,000 sessions and
+100 five-minute login transactions. Session IDs are random opaque values; cookies are host-only,
+HttpOnly, Secure under HTTPS and scoped to `/dashboard`. Sessions use SameSite Strict, login
+correlation Lax for the top-level callback. Login/logout need session-bound CSRF and exact Origin;
+callback state is browser-bound and consumed once before exchange, with library nonce verification.
+The session expires after 15 idle minutes, 60 absolute minutes or access-token expiry, whichever
+comes first. Status checks do not extend idle time. No refresh token is retained or renewed.
+
+The adapter revalidates bearer authentication and exposes only three READ operations. The API
+enforces READ again; cookie-only API calls, proxy mutations and arbitrary targets are denied.
+Late reads fail after logout/expiry. The client aborts/ignores superseded reads, clears context on
+sign-out/authentication failure and renders untrusted metadata as text. BFF reads require the
+bootstrapped public session-context header and reject missing/mismatched context before
+forwarding, without revoking a different valid session. Credential-free ephemeral same-origin
+tab notifications clear old identity/data and pending requests on logout or identity replacement;
+they are not an authentication boundary and grant no capability. No browser-storage,
+service-worker, external analytics/font or token-bearing logout URL is used. Dashboard responses
+have no-store, restrictive CSP, no-referrer and frame/resource protections. Callback query data is
+removed from the shared ASGI scope before access logging, including unexpected 500 paths;
+identity HTTP logs omit exchange details. Non-ASCII/incorrect-length state and CSRF values reject
+safely before constant-time comparison. Unexpected dashboard failures return a fixed secured
+500 and remain observable as server-side exceptions, not suppressed success.
+
+Logout ends the local session, not the IdP session or previously issued external tokens. Restart
+ends all sessions. One process only: no replicated store, HA or tenant/account isolation is added.
+HttpOnly does not prevent XSS from issuing same-origin reads; CSP and safe rendering remain needed.
+No live Cognito pool, secret/IAM modification, production deployment or AWS operation is authorized.
 
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine
@@ -313,8 +352,8 @@ EC2/EBS, IAM and S3 evidence without moving policy into collectors. The IAM coll
 access-key identifiers only as resource identity and evidence; it never requests or stores secret
 access-key material. Provider failures and malformed facts remain sanitized. Sprint 5 is
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
-Sprint 7A reporting is IN PROGRESS; no 7B or later slice, deployment or production operation
-was started under that approval.
+Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
+was started by that acceptance or the subsequent analysis-only preparation.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

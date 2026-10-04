@@ -4,8 +4,9 @@ This register records accepted Sprints 0--6 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
-Sprint 7 is IN PROGRESS: approved 7A READ reporting passed independent review with zero
-unresolved findings; acceptance and merge remain pending. 7B browser/auth design remains unapproved. See
+Sprint 7 is IN PROGRESS: 7A READ reporting is accepted through PR #42, with zero unresolved
+independent-review findings and green merged-main CI. Approved local 7B browser/session work
+is not yet accepted. See [dashboard operation](dashboard.md),
 [6H acceptance](../controls/sprint-6h-acceptance.md) and the
 [active Sprint 7 plan](../exec-plans/active/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
@@ -369,9 +370,13 @@ or authorize live AWS mutation.
 ### Build provenance and dependency reproducibility — LOW
 
 Persisted `scanner_version` is package version `0.1.0`; no Git/build identifier distinguishes
-different commits with that version. Dependencies use bounded ranges, GitHub Actions use major
-tags, and no lockfile/SBOM exists. CI currently proves lint, format, full tests with PostgreSQL 16,
-and an image build—not reproducible supply-chain provenance or comprehensive security scanning.
+different commits with that version. Most backend dependencies use bounded ranges, GitHub Actions use major
+tags, and no backend lockfile/SBOM exists. Local 7B adds exact frontend dependencies and a
+lockfile plus pinned Node/pnpm; it does not make the entire supply chain reproducible. Accepted
+CI proves lint, format, full tests with PostgreSQL 16 and an image build. The published 7B branch
+adds frontend and real browser gates in [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43);
+green exact-head CI remains required before acceptance. Neither is comprehensive security
+scanning or supply-chain provenance.
 
 ### Equal observation timestamps — LOW
 
@@ -381,6 +386,9 @@ snapshot is shown as latest.
 
 ## Deferred by design
 
-There is no dashboard, production Terraform deployment, governance mutation API, remediation,
+Local 7B is only an opt-in authenticated shell pending acceptance, not the full investigation/NIST
+dashboard. Its sessions are process-local and lost on restart; no refresh-token retention,
+global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
+There is no production Terraform deployment, governance mutation API, remediation,
 distributed worker, multi-account orchestration, or AI runtime. Their absence is roadmap scope,
 not an incomplete Sprint 4 implementation.

@@ -179,10 +179,10 @@ local artifact release, not a new official NIST version. See [approved metadata]
   belong to assessment profiles, not universal NIST requirements.
 - Framework mapping changes cannot rewrite historical assessment or finding results.
 
-### Approved 7A reporting interpretation — working implementation
+### Accepted 7A reporting interpretation
 
 The [exact-scan technical-posture API](../api.md#exact-scan-technical-posture--7a) implements
-counts/coverage only. It is independently reviewed code pending acceptance and merge, not a
+counts/coverage only. It is independently reviewed and accepted through PR #42, not a
 framework/mapping artifact update. Exact framework UUID/version/source checksum and reference
 hierarchy remain visible, including each control's retained mapping provenance. A parent row
 unions direct/descendant control-version IDs within the same framework before counting; a

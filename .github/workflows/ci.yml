@@ -50,5 +50,30 @@ jobs:
       - name: Run tests
         run: python -m pytest
 
+      - name: Set up dashboard Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.19.0"
+
+      - name: Install pinned dashboard tooling
+        run: |
+          npm install --global pnpm@11.19.0
+          pnpm --dir frontend install --frozen-lockfile
+          pnpm --dir frontend exec playwright install --with-deps chromium firefox
+
+      - name: Validate dashboard client
+        run: |
+          pnpm --dir frontend typecheck
+          pnpm --dir frontend lint
+          pnpm --dir frontend test
+          pnpm --dir frontend build
+
+      - name: Browser acceptance with controlled issuer and disposable PostgreSQL
+        env:
+          DASHBOARD_BROWSER_TEST: "1"
+          PYTHON_EXECUTABLE: python
+          TEST_DATABASE_URL: postgresql+psycopg://cloudsec:ci_test_password@127.0.0.1:5432/cloudsec_test
+        run: pnpm --dir frontend test:browser
+
       - name: Build API container
         run: docker build -t cloud-security-automation:ci .
