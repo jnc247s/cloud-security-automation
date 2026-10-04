@@ -1129,3 +1129,46 @@ only the scoped files, obtain the same reviewer's exact-commit/doc-delta review,
 PR and wait for green final-head CI before guarded ordinary merge and merged-main CI.
 No auto-merge/force push/branch deletion, live operation or 7D/7E implementation is authorized.
 7C remains IN PROGRESS until those gates pass; parent skills and original checkout are preserved.
+
+## 7C publication CI expiry-test repair — 2026-10-04
+
+The same reviewer passed exact commit `6e781acf20325b4a74ace4f5b593d0ad6a13f10e`, sole parent
+`f14d861`, tree `59be59d7c9e184960106974010de8f093aff60cf`, all 31 committed/working blobs equal
+and final manifest `B6A627AC3A5B73080B009CBCF3224D3C61D1E9BC5C574767536F3705C8BD3DA3`.
+Zero unresolved findings; independent final 83 contracts and whitespace passed.
+The parent published [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45)
+under approval 9. Main remained unchanged at `f14d861`; no merge occurred.
+
+[First PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37232207705)
+passed on exact `6e781`: 2,728 backend tests, no skips, 19 existing warnings (502.21s / 0:08:22),
+54 frontend units, 32 Chromium/Firefox journeys (37.6s), Ruff, 367-file formatting, type/lint/build
+and image build. [First push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37232199982)
+passed backend/client gates but failed one Chromium expiry journey, with 31 browser cases passing;
+image build was not run. It is a failed gate, not acceptance, and was not simply retried.
+
+The old shell expiry test forced server expiry after AVAILABLE while the new assessment read
+could still be in flight. That real read returned 401 and correctly unmounted the shell before
+the subsequent Refresh click; Playwright reported a detached button and timed out. Independent
+review confirmed the ordering race and the analogous pending-read risk in investigation expiry.
+Both journeys now settle their initial reads, click while authenticated, expire the real server
+store inside a one-shot refreshed-list interception (asserting 200), then continue the untouched
+browser request. They assert actual browser BFF 401, Sign in, prior sensitive-data removal,
+old-context BFF 401 and cookie-only API 401. No mocked authorization, swallowed click failure,
+retry, sleep, timeout increase, skip or application/session behavior change.
+
+Finalized repair validation passed type/lint, the unchanged 54 frontend units, 83 contracts,
+Ruff/367-file format/whitespace, 20 repeated expiry journeys (five per test per browser, 37.7s)
+and all 32 Chromium/Firefox journeys (42.2s). The real controlled issuer/BFF/bearer API/PostgreSQL
+path remained intact, AWS forbidden, traces/videos/screenshots disabled. Repeated and full runs
+used separate freshly created, owned loopback/tmpfs databases, removed after each run; no user DB.
+An earlier attempt to launch the fixture twice on one already-seeded disposable database failed
+setup with NoResultFound before executing tests. Fresh isolation corrected that diagnostic,
+without altering the non-idempotent test fixture or application. A final readiness assertion
+invalidated an intermediate browser run; the finalized 20/32 runs above were fresh afterward.
+
+Only two browser tests and documentary records changed after `6e781`. The reviewed runtime,
+backend tests, dependencies, migrations and final image are unchanged; their recorded local full
+2,728/283-PostgreSQL/no-skip and image validation remain applicable, not newly repeated claims.
+Fresh exact-head CI must validate every gate again. The same single reviewer must approve the
+new committed test/documentary delta before publication. Guarded merge and successful main CI
+remain required. 7C IN PROGRESS; 7D/7E and later-sprint/live operations remain unstarted.

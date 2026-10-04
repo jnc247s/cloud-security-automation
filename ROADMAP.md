@@ -424,9 +424,14 @@ later-sprint or live production operation is included. See the
 Local 7C implementation and validation now pass: 2,728 regression tests including 283 PostgreSQL
 cases, no skips; 54 frontend units, 32 Chromium/Firefox journeys and quality/container gates.
 The single reviewer found one malformed-type guard issue; it is repaired with adverse tests,
-and the same reviewer's exact-input follow-up remains pending. Publication/exact-head CI/guarded
-merge/main CI are still required. The [local validation checkpoint](docs/exec-plans/active/sprint-7.md#7c-review-repair-and-final-local-validation--2026-10-04)
-records exact commands, limitations and diagnostics; 7C is not yet accepted.
+and the same reviewer passed exact implementation head `6e781` with zero unresolved findings.
+PR #45's first PR CI passed; its push CI exposed an expiry-test ordering race, not an application
+authorization failure. Both expiry journeys now click while authenticated and expire before a
+real refreshed BFF read, retaining explicit 401 and sensitive-data clearing assertions.
+Final local checks passed 20 repeated expiry journeys and all 32 browser journeys on separately
+owned fresh databases. The [CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-publication-ci-expiry-test-repair--2026-10-04)
+records exact evidence and validation reuse. New exact-head review/CI, guarded merge and main CI
+remain required; 7C is IN PROGRESS, not accepted, and 7D/7E remain PLANNED.
 
 ## Pre-Sprint 5 attention
 

@@ -140,6 +140,7 @@ test('mobile keyboard navigation, server-time unavailable and expiry clear sensi
   await page.getByText('Observed tags', { exact: true }).click();
   await expect(page.getByText('historical-old', { exact: false })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.getByText('Version-bound control metadata', { exact: true })).toBeVisible();
   await page.route('**/dashboard/api/exceptions?*', async route => {
     const response = await route.fetch(); const headers = response.headers(); delete headers['x-dashboard-read-at'];
     await route.fulfill({ response, headers });
@@ -148,11 +149,28 @@ test('mobile keyboard navigation, server-time unavailable and expiry clear sensi
   await page.getByRole('button', { name: /ACCEPTED_RISK —/ }).click();
   await expect(page.getByText('Eligibility unavailable', { exact: true })).toBeVisible();
   await expect(page.getByText('ACTIVE', { exact: true })).toBeVisible();
-  await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions');
+  await expect(page.getByRole('button', { name: 'Next page' })).toBeEnabled();
+  const beforeExpiry = await (await context.request.get('/dashboard/session')).json();
+  expect(beforeExpiry.authenticated).toBe(true);
+  // Refresh while authenticated, then expire before forwarding that real operational read.
+  // Pending detail reads may also return 401 and correctly clear the entire investigation.
+  let expired = false;
+  await page.route('**/dashboard/api/findings?*', async route => {
+    expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
+    expired = true;
+    await route.continue();
+  }, { times: 1 });
+  const denied = page.waitForResponse(response => response.request().method() === 'GET'
+    && response.url().includes('/dashboard/api/findings?') && response.status() === 401);
   await page.getByRole('button', { name: 'Refresh current handling' }).click();
+  expect((await denied).status()).toBe(401);
+  expect(expired).toBe(true);
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByText('historical-old', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Historical assessment detail' })).toHaveCount(0);
+  expect((await context.request.get('/dashboard/api/scans',
+    { headers: { 'X-Dashboard-Context': beforeExpiry.session_context } })).status()).toBe(401);
+  expect((await context.request.get('/api/v1/scans')).status()).toBe(401);
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
 });
 

@@ -83,10 +83,28 @@ test('expiry clears context, keyboard controls and mobile layout', async ({ page
   await page.keyboard.press('Enter');
   await expect(page.locator('dd').filter({ hasText: /^AVAILABLE$/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions');
+  await expect(page.getByRole('button', { name: 'Next page' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /Open assessment/ })).toBeVisible();
+  const beforeExpiry = await (await context.request.get('/dashboard/session')).json();
+  expect(beforeExpiry.authenticated).toBe(true);
+  // Dispatch the refresh while authenticated; expire before its real BFF read is forwarded.
+  // A concurrent 401 may correctly unmount the button, so never click after forcing expiry.
+  let expired = false;
+  await page.route('**/dashboard/api/scans?*', async route => {
+    expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
+    expired = true;
+    await route.continue();
+  }, { times: 1 });
+  const denied = page.waitForResponse(response => response.request().method() === 'GET'
+    && response.url().includes('/dashboard/api/') && response.status() === 401);
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  expect((await denied).status()).toBe(401);
+  expect(expired).toBe(true);
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByText('test-network / 1.0.0')).toHaveCount(0);
+  expect((await context.request.get('/dashboard/api/scans',
+    { headers: { 'X-Dashboard-Context': beforeExpiry.session_context } })).status()).toBe(401);
+  expect((await context.request.get('/api/v1/scans')).status()).toBe(401);
 });
 
 test('two tabs clear immediately on logout and cannot read under a replacement identity', async ({ page, context }) => {
