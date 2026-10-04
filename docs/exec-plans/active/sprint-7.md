@@ -1,6 +1,6 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B COMPLETE; later slices remain PROPOSED.
+Plan state: 7A COMPLETE; 7B COMPLETE; 7C IN PROGRESS; later slices remain PROPOSED.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
@@ -60,6 +60,11 @@ The user's subsequent "Yes merge" confirms the requested approval bundle and con
 finish the reviewed 7B documentary prerequisite, implement 7C using its approved additive read
 contracts, then complete 7D and 7E sequentially through all review/publication/merge gates.
 No deliverable is accepted merely because its implementation or merge is authorized.
+The latest observed tracker status is BLOCKED from the preceding approval audit; approval 9
+resolves the permission questions but has not reactivated the tracker. User-controlled resumption
+of that existing goal is needed for automatic continuation, not a replacement goal or renewed
+publication/design approval. The [handoff checkpoint](#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
+records the completed prerequisite and remaining work without marking the objective complete.
 
 On 2026-10-02 the user requested a smaller persistent goal: complete 7A and then 7B only.
 The implementation-approval blocker persisted for three goal turns, then the user's "Confirm"
@@ -127,7 +132,7 @@ authorized after a specific finding.
 | --- | --- | --- |
 | 7A reporting foundation | COMPLETE | Generic service and additive READ schema/route; exact historical/profile/catalog/mapping joins; partial/missing/disabled coverage, bounded bulk queries, SQLite/PostgreSQL/authenticated HTTP and compatibility tests; local validation and exact-head independent review passed; PR #42 manually merged with green merged-main CI |
 | 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
-| 7C investigation views | PLANNED | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
+| 7C investigation views | IN PROGRESS | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
 | 7D NIST context views | PLANNED | Exact mapped subset hierarchy and provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests |
 | 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
 
@@ -933,3 +938,237 @@ This narrow roadmap/plan update records committed rather than uncommitted inputs
 a stale normative uncommitted claim. Exact-commit readback and review of this documentary delta
 remain required before publication. Final-head CI, guarded ordinary merge and merged-main CI
 are still pending at this checkpoint. No 7C/7D/7E code or production operation has occurred.
+
+## 7B documentary closeout merge and 7C preparation — 2026-10-04
+
+The same reviewer returned exact-head REVIEW_PASS with zero divergence or unresolved findings
+for `7e75e96e328ef61de61556fd54d2357d4e3ad54b`, including its two-document status correction.
+All 12 committed blobs matched final manifest
+`31C13F73A9FFD059661CF30258BC050ACD5FC45D8226DC59C10260DDF89DBAB6`.
+The excluded 7C preflight retained its original digest through publication and merge preparation.
+
+[PR #44](https://github.com/jnc247s/cloud-security-automation/pull/44) contained exactly those
+12 files and two reviewed commits. Both exact-head runs passed:
+[push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37223426523) and
+[PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37223429486).
+Fresh inspected PR results: 2,676 backend tests, no skips, 19 existing warnings
+(693.97s / 0:11:33), including the unchanged 277 PostgreSQL cases; 15 frontend units and
+14 Chromium/Firefox journeys (23.2s); type/lint/build, Ruff, 362-file formatting and image build.
+The quality job completed in 14m7s. Existing non-failing Node-action and future runner notices
+do not authorize dependency or hardening changes.
+
+Before merging, the parent rechecked both successful exact-head runs, unchanged main base,
+clean tracked inputs, PR OPEN/MERGEABLE/CLEAN and absent auto-merge. The approved ordinary merge
+used an exact-head guard, no force/admin bypass or branch deletion. Readback confirms MERGED
+at 2026-10-04 18:27:10 UTC, commit `f14d8610eefa9b3e20c11aab50c4b0a4e16ab15c`, parents
+`9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` and reviewed `7e75e96`.
+Tree `3c96d37a0c3ecf54e8490826ca74a0482c875cc1` equals the reviewed head's tree.
+
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37224494667)
+is IN PROGRESS at this checkpoint. The parent prepared `codex/sprint-7c-investigation` from
+verified clean tracked main at `f14d861`, preserving the sole untracked 7C preflight. No code
+is changed while that gate runs. The [7C preflight](../../sprint-7c-preflight.md) now records the
+approved additive contracts and preserves its original analysis. This link is part of the
+new local 7C documentary slice, not the merged 7B-only PR.
+7A/7B remain COMPLETE, Sprint 7 IN PROGRESS, 7C/7D/7E PLANNED; the final review is not performed.
+No live IdP/AWS/IAM/secret/deployment/remediation or later-sprint operation occurred.
+
+## 7B closeout main CI and remaining Sprint 7 handoff — 2026-10-04
+
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37224494667)
+completed SUCCESS for exact merge `f14d8610eefa9b3e20c11aab50c4b0a4e16ab15c`.
+Fresh readback confirms PR #44 MERGED with reviewed head `7e75e96`, and remote main still at
+that exact merge. The earlier verified parent/tree bindings remain unchanged. Linux/Python 3.12
+passed 2,676 backend tests, including the unchanged 277 PostgreSQL cases, no skips and 19
+existing warnings (666.54s / 0:11:06); frontend type/lint/build and 15 units, 14 Chromium/Firefox
+journeys (23.8s), Ruff, 362-file formatting and the API image build passed. The quality job
+completed in 13m43s. Existing non-failing Node-action and future runner annotations remain
+limitations, not permission to upgrade dependencies or start later-sprint hardening.
+
+The reviewed 7B acceptance-record prerequisite is delivered through PR #44, including README
+and its accepted-state owners. All its review, exact-head CI, explicit merge approval, guarded
+ordinary merge and merged-main CI gates passed. This does not implement or accept 7C, 7D or 7E.
+7C has an approved analysis-only preflight and scoped branch at accepted main; 7D and whole-sprint
+7E have only their scope/dependency proposal, not completed separate preflights or implementation/
+review. Next is 7C implementation through the approved sequential gates, then 7D, then 7E.
+
+At handoff, `codex/sprint-7c-investigation` remains at `f14d861`, with empty staging and only
+local uncommitted ROADMAP.md, this plan and the untracked 7C preflight as documentary preparation.
+No 7C application, frontend, API field, schema, dependency, default or configuration change
+occurred. The parent checkout still has only its unrelated untracked `.agents/` work; the original
+6E.3 checkout is clean. Neither was modified or included in a closeout commit.
+Recorded full/frontend/browser/image validation is evidence for the unchanged accepted baseline;
+all required implementation gates must run freshly for subsequent 7C code changes.
+
+The goal tracker still reports BLOCKED after the previous approval audit. The latest user
+confirmation resolves those permission questions but does not change the observed lifecycle.
+The model's goal tools do not expose reactivation, and the objective is not complete; it was not
+reset, replaced or falsely completed. Resume the existing goal through its user-controlled
+lifecycle to enable automatic continuation. No additional scope or publication authority is
+required for the already approved bundle; material new choices still require guidance.
+Sprint 7 remains IN PROGRESS, 7C/7D/7E PLANNED. No new reviewer, live IdP/AWS/IAM/secret/
+deployment/remediation operation, parallel implementation or Sprint 8+ work occurred.
+
+Fresh local handoff checks: `python -m pytest tests/unit/contracts -q -p no:cacheprovider`
+passed 83 checks, no skips (0.25s); Ruff, 363-file format checking and `git diff --check` passed.
+The extra local contract case covers the untracked 7C Markdown file; merged-main CI above
+validates the exact committed PR #44 inputs. No new local full/browser/image rerun is claimed
+for this documentary preparation, and no 7C implementation acceptance is inferred from it.
+
+## 7C implementation start — 2026-10-04
+
+The user's "Complete 7c" requests completion of the approved 7C slice through its validation,
+single read-only independent reviewer, scoped publication and guarded merge/main-CI gates.
+The parent reverified remote main and successful prerequisite CI at exact `f14d861`; the
+prepared feature branch retains all three local documentary inputs. This request authorizes
+task work despite the tracker still reporting BLOCKED; no goal reset or false completion occurs.
+7C is IN PROGRESS, not accepted. 7D/7E remain PLANNED and unstarted in this slice.
+
+Implementation starts with the optional scan_id history predicate and explicit typed dashboard
+GET allowlist, preserving generic services, upstream bodies/statuses, real bearer/READ,
+session/context/final-read guards and server-only credentials. Operational success responses
+add X-Dashboard-Read-At in UTC; it never supplies authentication or scan-time exception history.
+No migration, control, collector, default, live operation or later-sprint behavior is introduced.
+New code invalidates earlier implementation acceptance; run all mandatory gates freshly.
+
+## 7C implementation and browser validation checkpoint — 2026-10-04
+
+Implemented additive optional exact-scan resource history, an explicit typed GET-only BFF
+investigation allowlist and successful operational UTC response-time metadata. The React client
+uses bounded 25-row pages and on-demand exact assessment/snapshot/profile/control-definition/
+checksum/evidence/source/relationship bindings. Current findings and server-time exception
+eligibility remain separately labeled; unknown proofs/unresolved endpoints have no inferred
+navigation. Invalid filters and superseded selections clear prior data. Text disclosures have
+explicit limits and never execute HTML or follow metadata URLs. API/schema/auth/default/catalog/
+profile/control/migration compatibility and detail/pagination limitations are documented.
+
+Fresh validation command:
+`python scripts/validate.py --dashboard --focused tests/unit/services/test_investigation_history.py
+tests/api/test_dashboard_investigation_api.py tests/integration/test_investigation_postgres.py
+tests/api/test_dashboard_api.py tests/unit/security tests/unit/contracts tests/api/test_read_api.py`.
+The harness generated its own disposable loopback PostgreSQL URL, never an operator database.
+207 focused checks passed, no skips (39.18s), including real signed bearer/BFF reads and six new
+PostgreSQL exact-history/READ/index-plan cases. The history read has three SELECTs (identity/count/
+page), and both history count/page plans use existing indexes against representative 512-row data.
+Frontend type/lint/build and 49 units passed; all 32 Chromium/Firefox journeys passed (42.9s),
+with AWS forbidden and real controlled-issuer → BFF → bearer API → retained PostgreSQL reads.
+Ruff passed; the run stopped at one formatting-only assertion wrap before full regression/image.
+The formatter corrected that test; fresh regression/container validation remains pending.
+
+Earlier diagnostics are not acceptance: a comparison initially omitted the BFF's default limit 25
+on its direct-API test input; only the test input was corrected. A synthetic ACCEPTED_RISK fixture
+initially retained resolved_at, correctly rejected by the established database CHECK; the fixture
+now keeps status/time consistent. Browser tests initially failed to open the tags disclosure.
+The shared Firefox cache failed Windows side-by-side activation for mozglue; locked browser
+revisions were downloaded to a separate ignored workspace cache without replacing/deleting the
+shared cache or upgrading dependencies. Firefox launch and every browser journey then passed.
+Windows sandbox private pytest/runner-process restrictions required approved scoped unsandboxed
+validation. No test deletion, skip, weaker assertion, authentication override or production fix.
+Every harness run removed only its own created database; user databases and parent skills remain.
+
+README/API/architecture/security/threat/operations/preflight owners describe local implementation
+with acceptance pending. The React/PostgreSQL skill checks informed stable effect dependencies,
+parallel on-demand reads and measured reuse of the existing index; the browser skills used the
+repository's pinned Playwright fallback because agent-browser was absent. No new schema/index/
+package or external Pages operation. Independent review, commit/publication, guarded merge and
+merged-main CI are still pending. 7C IN PROGRESS; 7D/7E remain PLANNED and unstarted.
+
+## 7C review repair and final local validation — 2026-10-04
+
+The single approved read-only reviewer independently inspected all 31 scoped inputs, matched
+initial manifest `308427D474C639061E2BFBF962BF0AD357AFEBDF16A3E25F0C73DFBEB3D56EA8` and
+passed 201 SQLite/auth/security/documentation checks, no skips (40.07s). It found one MEDIUM
+issue: coercive String(...) runtime guards admitted singleton arrays as enum/proof schema values,
+including source_proof.schema_version ["1.0.0"], which incorrectly enabled typed citation links.
+No other introduced finding was identified. REVIEW_PASS was correctly withheld.
+
+The parent repaired every coercive enum/proof guard to require actual strings and added five
+array/object/null/boolean/number adversarial cases across resource/endpoint/status/source/
+relationship/proof fields. Fresh frontend type/lint/build and all 54 units passed (2.63s).
+All 32 Chromium/Firefox journeys passed again (42.2s) on the rebuilt repaired client through
+a separately owned disposable loopback PostgreSQL instance and the real controlled issuer/BFF/
+bearer API. No test/auth/default/persistence weakening. That database was removed; operator
+databases were untouched.
+
+Fresh remaining acceptance:
+`python scripts/validate.py --focused tests/unit/services/test_investigation_history.py
+tests/api/test_dashboard_investigation_api.py tests/integration/test_investigation_postgres.py
+tests/unit/contracts` passed 134 focused checks, no skips (26.43s), Ruff, 367-file formatting,
+the full 2,728-test regression including 283 PostgreSQL cases, no skips, 19 existing SQLite
+deprecation warnings (592.54s / 0:09:52), whitespace, Compose configuration and image build.
+The backend stayed unchanged during the frontend-only review repair; the final image build
+included that repair. Independent collection confirmed all 283 PostgreSQL cases.
+Dependency consistency passed; locked frontend audit reported no known vulnerabilities;
+migration head remains `20261001_0006`.
+
+The final image runs as app, with manifest
+`sha256:4b85fb07439256c9ca26ed4136333d383e6bbdf61e7cfbf17411485936a2026b`.
+Offline disposable image smoke passed health and disabled-dashboard 404 behavior, then built
+assets/no-store bootstrap and unauthorized 7C reads with explicit test OIDC configuration,
+read-only filesystem, tmpfs and networking disabled. No mounts/ports/live provider or AWS.
+An initial diagnostic assumed every FastAPI route entry exposed .path; actual HTTP probes
+corrected that diagnostic without changing application behavior. Test fixtures/issuer are
+absent from the runtime image; all owned smoke containers were automatically removed.
+
+The same reviewer's repair/exact-input follow-up remains pending, as do scoped commit/publication,
+green exact-head CI, guarded merge and merged-main CI. No acceptance is inferred from local green
+checks alone. 7C remains IN PROGRESS; 7D/7E and later-sprint work were not started.
+
+## 7C independent working-input review — 2026-10-04
+
+The same single authorized read-only reviewer returned REVIEW_PASS for all 31 scoped files,
+exact working manifest `5AC84BDC35CE8292133659BCFBCFFC0D8BDA57C1E5E8383749C02D834E51595C`.
+The MEDIUM malformed-type guard issue is resolved; zero unresolved findings at any severity.
+Independent follow-up passed 36 malformed-input assertions and four valid controls, frontend
+type/lint and all 54 units, 83 documentation/status contracts, whitespace and unchanged migration
+head. The manifest stayed unchanged after its diagnostics. No additional local validation gap.
+
+This narrow documentary checkpoint records that observed review, not a future commit or
+publication result. Under approval 9 and the current "Complete 7c" request, next freeze/commit
+only the scoped files, obtain the same reviewer's exact-commit/doc-delta review, publish a scoped
+PR and wait for green final-head CI before guarded ordinary merge and merged-main CI.
+No auto-merge/force push/branch deletion, live operation or 7D/7E implementation is authorized.
+7C remains IN PROGRESS until those gates pass; parent skills and original checkout are preserved.
+
+## 7C publication CI expiry-test repair — 2026-10-04
+
+The same reviewer passed exact commit `6e781acf20325b4a74ace4f5b593d0ad6a13f10e`, sole parent
+`f14d861`, tree `59be59d7c9e184960106974010de8f093aff60cf`, all 31 committed/working blobs equal
+and final manifest `B6A627AC3A5B73080B009CBCF3224D3C61D1E9BC5C574767536F3705C8BD3DA3`.
+Zero unresolved findings; independent final 83 contracts and whitespace passed.
+The parent published [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45)
+under approval 9. Main remained unchanged at `f14d861`; no merge occurred.
+
+[First PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37232207705)
+passed on exact `6e781`: 2,728 backend tests, no skips, 19 existing warnings (502.21s / 0:08:22),
+54 frontend units, 32 Chromium/Firefox journeys (37.6s), Ruff, 367-file formatting, type/lint/build
+and image build. [First push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37232199982)
+passed backend/client gates but failed one Chromium expiry journey, with 31 browser cases passing;
+image build was not run. It is a failed gate, not acceptance, and was not simply retried.
+
+The old shell expiry test forced server expiry after AVAILABLE while the new assessment read
+could still be in flight. That real read returned 401 and correctly unmounted the shell before
+the subsequent Refresh click; Playwright reported a detached button and timed out. Independent
+review confirmed the ordering race and the analogous pending-read risk in investigation expiry.
+Both journeys now settle their initial reads, click while authenticated, expire the real server
+store inside a one-shot refreshed-list interception (asserting 200), then continue the untouched
+browser request. They assert actual browser BFF 401, Sign in, prior sensitive-data removal,
+old-context BFF 401 and cookie-only API 401. No mocked authorization, swallowed click failure,
+retry, sleep, timeout increase, skip or application/session behavior change.
+
+Finalized repair validation passed type/lint, the unchanged 54 frontend units, 83 contracts,
+Ruff/367-file format/whitespace, 20 repeated expiry journeys (five per test per browser, 37.7s)
+and all 32 Chromium/Firefox journeys (42.2s). The real controlled issuer/BFF/bearer API/PostgreSQL
+path remained intact, AWS forbidden, traces/videos/screenshots disabled. Repeated and full runs
+used separate freshly created, owned loopback/tmpfs databases, removed after each run; no user DB.
+An earlier attempt to launch the fixture twice on one already-seeded disposable database failed
+setup with NoResultFound before executing tests. Fresh isolation corrected that diagnostic,
+without altering the non-idempotent test fixture or application. A final readiness assertion
+invalidated an intermediate browser run; the finalized 20/32 runs above were fresh afterward.
+
+Only two browser tests and documentary records changed after `6e781`. The reviewed runtime,
+backend tests, dependencies, migrations and final image are unchanged; their recorded local full
+2,728/283-PostgreSQL/no-skip and image validation remain applicable, not newly repeated claims.
+Fresh exact-head CI must validate every gate again. The same single reviewer must approve the
+new committed test/documentary delta before publication. Guarded merge and successful main CI
+remain required. 7C IN PROGRESS; 7D/7E and later-sprint/live operations remain unstarted.

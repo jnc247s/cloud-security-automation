@@ -557,7 +557,8 @@ The browser gets an opaque HttpOnly session ID, not provider tokens or a readabl
 A bounded thread-safe process-local store retains tokens and correlation state only in memory.
 Every allowed read crosses `/api/v1` with that user's bearer token using an in-process ASGI HTTP
 transport; it never invokes a service or database directly or overrides API dependencies.
-Only scan list/detail/posture GETs are exposed. Dashboard cookies cannot authenticate `/api/v1`.
+7B exposes scan list/detail/posture GETs. The local 7C extension below adds explicit investigation
+GETs through the same boundary. Dashboard cookies cannot authenticate `/api/v1`.
 Logout/expiry revoke sessions, and late-read guards prevent returning or rendering a prior
 selection/identity. Each browser read must also present the public `session_context` issued by
 session bootstrap as `X-Dashboard-Context`; a shared cookie changing in another tab cannot
@@ -569,6 +570,31 @@ capability, scan operation or AWS permission.
 Visible scope ends at scan selection, exact historical context and report availability, not
 investigation/NIST hierarchy views. [Operations](docs/operations/dashboard.md) owns configuration;
 security and threat owners document the new boundary and its one-process/IdP limitations.
+
+### 7C investigation extension — implementation, acceptance pending
+
+The approved [preflight](docs/sprint-7c-preflight.md) adds typed, bounded assessment, exact resource
+history, control, finding/exception and source-outcome/relationship reads to the existing BFF.
+Every read re-enters the authenticated bearer API; no direct service/DB shortcut or generic proxy.
+The additive optional `scan_id` UUID filter on resource history uses the existing unique
+`(scan_id, resource_id)` index. Omitting it preserves ordering, pagination, schema and errors.
+Migration head remains `20261001_0006`; no model, catalog, profile or dependency changes.
+
+The React client loads 25-row lists and details on demand. It binds historical assessment,
+profile/control versions, definition checksum, evidence and snapshot IDs to the selected scan.
+Stable identity/first-seen ARN never replace that snapshot's observed ARN/configuration.
+Only known typed evidence source proofs produce links; artifact IDs/digests and directional
+relationship endpoints are checked. Unresolved references remain references, not fabricated
+resources. Payloads are text-only bounded disclosures with explicit truncation, not exports
+or a full evidence-review claim. Account/global/external-owner targets retain their own scope.
+
+Current findings/exceptions are a separate mutable view. Successful operational BFF responses
+add `X-Dashboard-Read-At` UTC production-time metadata without changing the upstream JSON/status.
+Eligibility uses explicit-offset timestamps and that server reference, never browser wall time;
+missing/malformed times are unavailable, expiry at the reference is expired. Stored ACTIVE or
+ACCEPTED_RISK does not rewrite historical FAIL. Mixed reads are not a frozen report.
+Selection/identity changes clear details and abort or ignore outstanding responses.
+NIST hierarchy rendering, aggregate scores, writes and later-sprint behavior are not included.
 
 ## Runtime and deployment
 
@@ -587,7 +613,8 @@ workload-role configuration remain deployment responsibilities.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
-- Only an opt-in 7B shell, not full dashboard investigation/context views or production setup.
+- The accepted opt-in 7B shell has a local 7C investigation extension pending acceptance;
+  NIST hierarchy views and production setup are not implemented.
 - No Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

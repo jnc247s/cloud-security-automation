@@ -209,7 +209,8 @@ callback state is browser-bound and consumed once before exchange, with library 
 The session expires after 15 idle minutes, 60 absolute minutes or access-token expiry, whichever
 comes first. Status checks do not extend idle time. No refresh token is retained or renewed.
 
-The adapter revalidates bearer authentication and exposes only three READ operations. The API
+The accepted 7B adapter revalidates bearer authentication for its three READ operations; the local
+7C extension below uses the same boundary. The API
 enforces READ again; cookie-only API calls, proxy mutations and arbitrary targets are denied.
 Late reads fail after logout/expiry. The client aborts/ignores superseded reads, clears context on
 sign-out/authentication failure and renders untrusted metadata as text. BFF reads require the
@@ -228,6 +229,28 @@ Logout ends the local session, not the IdP session or previously issued external
 ends all sessions. One process only: no replicated store, HA or tenant/account isolation is added.
 HttpOnly does not prevent XSS from issuing same-origin reads; CSP and safe rendering remain needed.
 No live Cognito pool, secret/IAM modification, production deployment or AWS operation is authorized.
+
+### 7C investigation safeguards — implementation, acceptance pending
+
+The approved extension exposes an explicit GET-only allowlist, with typed UUID/enums, 1..100
+page limits (default 25), nonnegative offsets, no duplicate/unknown queries and no browser-selected
+upstream URL, method or headers. Assessment/graph lists and BFF resource history require a scan UUID.
+All requests retain origin, opaque session, expected public context, real bearer/READ and final
+logout/expiry checks. Filters and client identity checks are not account/tenant authorization.
+
+Snapshots, evidence, source artifacts and endpoints are sensitive security data. Render text only;
+do not follow metadata URLs or infer links from reason prose/UUID-looking payloads. Exact identity,
+control/version/checksum, profile, scan and typed citation bindings fail closed. Unknown proof
+schemas stay readable as raw evidence without inferred navigation. Browser display truncation
+does not bound upstream detail payloads or certify full evidence review.
+
+`X-Dashboard-Read-At` is UTC response-production metadata on successful operational reads only;
+it grants no authority and is not scan-time state or an atomic mixed-report timestamp.
+Exception eligibility at this reference requires valid explicit-offset creation/expiry/revocation
+times. Stored ACTIVE alone cannot establish eligibility, expiry equality is expired, and missing
+reference/times remain unavailable. No expiry job, exception mutation or technical-result rewrite.
+The client clears sensitive details on selection/identity replacement, errors, expiry and logout;
+late responses cannot repopulate superseded state. No storage, exports, analytics or live operations.
 
 Application logs and HTTP failures must use bounded codes and sanitized messages. Do not include
 raw AWS responses, tokens, stack traces, policy documents, or configuration payloads in routine

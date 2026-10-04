@@ -12,8 +12,9 @@ import os
 import secrets
 import threading
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 from urllib.parse import parse_qs
 from uuid import UUID
 
@@ -61,15 +62,20 @@ from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.persistence import fail_pending_scan
 from app.database.session import engine
 from app.main import create_app
+from app.models.enums import ExceptionStatus, FindingStatus
+from app.models.exception import FindingException
+from app.models.finding import Finding
 from app.schemas.inventory import CollectionStatus
 from app.schemas.scan import ScanCreateRequest
 from app.services.scan_service import ScanService
 from tests.dashboard_fixtures import ControlledIssuer
+from tests.sprint6_fixtures import sprint6_bundle
 from tests.unit.database.factories import scan_bundle
 from tests.unit.services.test_scan_service import RecordingExecutor
 from tests.unit.services.test_technical_posture_service import persist
@@ -89,7 +95,50 @@ with Session(engine) as db:
         ("11111111-1111-1111-1111-111111111111", CollectionStatus.SUCCEEDED),
         ("22222222-2222-2222-2222-222222222222", CollectionStatus.PARTIAL),
     ):
-        persist(db, scan_bundle(scan_id=UUID(identifier), collection_status=status))
+        persist(
+            db,
+            scan_bundle(
+                scan_id=UUID(identifier),
+                collection_status=status,
+                tags={
+                    "observed": "historical-old",
+                    "hostile": "<img src=x onerror=alert(1)>",
+                    "large": "x" * 16000,
+                },
+            ),
+        )
+    persist(
+        db,
+        scan_bundle(
+            scan_id=UUID("33333333-3333-3333-3333-333333333333"),
+            observed_at=datetime(2026, 10, 4, 12, tzinfo=UTC),
+            public_ssh=False,
+            tags={"observed": "newer-pass"},
+        ),
+    )
+    # Real unchanged collectors/rules with offline responses; deterministic test scan IDs only.
+    for identifier, options in (
+        ("44444444-4444-4444-4444-444444444444", {}),
+        ("55555555-5555-5555-5555-555555555555", {"empty_family": "s3_bucket"}),
+    ):
+        with patch("tests.governance_fixtures.uuid4", return_value=UUID(identifier)):
+            persist(db, sprint6_bundle(**options))
+    finding = db.scalars(select(Finding).where(Finding.status == FindingStatus.RESOLVED)).one()
+    finding.status = FindingStatus.ACCEPTED_RISK
+    finding.resolved_at = None
+    now = datetime.now(UTC)
+    db.add(
+        FindingException(
+            finding_id=finding.finding_id,
+            resource_id=finding.resource_id,
+            control_id=finding.control_id,
+            reason="Controlled expired exception; historical FAIL remains FAIL",
+            approved_by="test-approver",
+            status=ExceptionStatus.ACTIVE,
+            created_at=now - timedelta(days=3),
+            expires_at=now - timedelta(days=1),
+        )
+    )
     executor = RecordingExecutor()
     for _ in range(27):
         ScanService(db).start_scan(ScanCreateRequest(), executor, actor_id="test-reader")

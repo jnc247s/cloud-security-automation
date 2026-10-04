@@ -4,7 +4,8 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-04
-Accepted implementation baseline: `main` at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (PR #43;
+Accepted implementation baseline: `main` at `f14d8610eefa9b3e20c11aab50c4b0a4e16ab15c` (PR #44
+documentary closeout of PR #43;
 Sprints 0--6 and Sprint 7A/7B accepted, including exact-scan READ reporting and the opt-in
 authenticated shell, catalog `0.13.0` and migration `20261001_0006`; merged-main CI passed)
 
@@ -393,6 +394,44 @@ The reviewed 12-file 7B acceptance-record delta is committed at `cb4f320` on
 records the working-input REVIEW_PASS, unchanged implementation fingerprint, exclusion of the
 local 7C preflight and remaining exact-commit/publication/CI/merge gates. This documentary
 checkpoint does not claim a new PR, merge or completed future slice.
+
+The 7B documentary closeout subsequently merged through
+[PR #44](https://github.com/jnc247s/cloud-security-automation/pull/44) at `f14d861`, after
+zero-finding exact-head review and both green final-head CI runs. Fresh PR CI passed 2,676
+backend tests (277 PostgreSQL, no skips), 15 frontend units, 14 browser journeys and quality/image
+gates. The [merge/preparation checkpoint](docs/exec-plans/active/sprint-7.md#7b-documentary-closeout-merge-and-7c-preparation--2026-10-04)
+records exact ancestry/tree, approval and
+[running merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37224494667).
+The scoped 7C branch and [approved preflight](docs/sprint-7c-preflight.md) are prepared;
+no 7C application change starts before main CI passes. 7C/7D/7E remain PLANNED.
+
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37224494667)
+subsequently completed SUCCESS for exact `f14d861`: 2,676 backend tests including 277 PostgreSQL
+cases, no skips, 15 frontend units, 14 Chromium/Firefox journeys and quality/image gates passed.
+The 7B documentary prerequisite is delivered; README and its matching accepted-state owners are
+merged. The [continuation checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
+records the exact result, preserved local preparation and goal lifecycle. Next is implementation
+of the approved [7C preflight](docs/sprint-7c-preflight.md), not a claim that 7C is implemented.
+7D and final 7E review still need their separate preflights and delivery; Sprint 7 is IN PROGRESS.
+
+Current 2026-10-04 continuation: the user's "Complete 7c" starts the approved investigation
+slice on `codex/sprint-7c-investigation`, from reverified accepted main `f14d861` and its successful
+CI. 7C is **IN PROGRESS**, not accepted; its implementation, fresh validation, independent review,
+publication and exact-head merge/main-CI gates remain required. 7D/7E remain PLANNED and no
+later-sprint or live production operation is included. See the
+[implementation-start checkpoint](docs/exec-plans/active/sprint-7.md#7c-implementation-start--2026-10-04).
+
+Local 7C implementation and validation now pass: 2,728 regression tests including 283 PostgreSQL
+cases, no skips; 54 frontend units, 32 Chromium/Firefox journeys and quality/container gates.
+The single reviewer found one malformed-type guard issue; it is repaired with adverse tests,
+and the same reviewer passed exact implementation head `6e781` with zero unresolved findings.
+PR #45's first PR CI passed; its push CI exposed an expiry-test ordering race, not an application
+authorization failure. Both expiry journeys now click while authenticated and expire before a
+real refreshed BFF read, retaining explicit 401 and sensitive-data clearing assertions.
+Final local checks passed 20 repeated expiry journeys and all 32 browser journeys on separately
+owned fresh databases. The [CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-publication-ci-expiry-test-repair--2026-10-04)
+records exact evidence and validation reuse. New exact-head review/CI, guarded merge and main CI
+remain required; 7C is IN PROGRESS, not accepted, and 7D/7E remain PLANNED.
 
 ## Pre-Sprint 5 attention
 

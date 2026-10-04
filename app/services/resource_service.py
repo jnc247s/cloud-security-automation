@@ -69,21 +69,24 @@ class ResourceService:
         self,
         resource_id: UUID,
         *,
+        scan_id: UUID | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> Page[ResourceSnapshotView]:
         if self._session.get(Resource, resource_id) is None:
             raise EntityNotFoundError("resource", resource_id)
-        predicate = ResourceSnapshot.resource_id == resource_id
+        predicates = [ResourceSnapshot.resource_id == resource_id]
+        if scan_id is not None:
+            predicates.append(ResourceSnapshot.scan_id == scan_id)
         total = (
             self._session.scalar(
-                select(func.count()).select_from(ResourceSnapshot).where(predicate)
+                select(func.count()).select_from(ResourceSnapshot).where(*predicates)
             )
             or 0
         )
         snapshots = self._session.scalars(
             select(ResourceSnapshot)
-            .where(predicate)
+            .where(*predicates)
             .order_by(ResourceSnapshot.observed_at.desc(), ResourceSnapshot.snapshot_id)
             .limit(limit)
             .offset(offset)

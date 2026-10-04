@@ -417,13 +417,14 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
         line for line in sprint7.splitlines() if line.startswith("Plan state:")
     )
     assert (
-        current_plan_state == "Plan state: 7A COMPLETE; 7B COMPLETE; later slices remain PROPOSED."
+        current_plan_state
+        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C IN PROGRESS; later slices remain PROPOSED."
     )
     assert "| 7A reporting foundation | COMPLETE |" in sprint7
     assert "| 7B authenticated shell | COMPLETE |" in sprint7
+    assert "| 7C investigation views | IN PROGRESS |" in sprint7
     assert "later slices remain PROPOSED" in sprint7
     for slice_name in (
-        "7C investigation views",
         "7D NIST context views",
         "7E acceptance and closeout",
     ):

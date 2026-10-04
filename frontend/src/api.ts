@@ -78,12 +78,15 @@ export class APIError extends Error {
     : 'The request could not be completed. Please retry.'); }
 }
 export async function read<T>(path: string, valid: (v: unknown) => v is T, signal?: AbortSignal, context?: string): Promise<T> {
+  return (await readStamped(path, valid, signal, context)).value;
+}
+export async function readStamped<T>(path: string, valid: (v: unknown) => v is T, signal?: AbortSignal, context?: string): Promise<{ value: T; readAt: string | null }> {
   const response = await fetch(`/dashboard/${path}`, { signal, credentials: 'same-origin', cache: 'no-store',
     headers: context ? { 'X-Dashboard-Context': context } : {} });
   if (!response.ok) throw new APIError(response.status);
   const value: unknown = await response.json();
   if (!valid(value)) throw new Error('The server returned an unsupported response. Nothing has been assumed.');
-  return value;
+  return { value, readAt: response.headers.get('X-Dashboard-Read-At') };
 }
 export async function action(path: 'login' | 'logout', csrf: string): Promise<Response> {
   const response = await fetch(`/dashboard/auth/${path}`, { method: 'POST', credentials: 'same-origin',

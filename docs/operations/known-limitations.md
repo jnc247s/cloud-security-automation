@@ -11,6 +11,13 @@ accepted through PR #43 with the same required review and CI gates. See [dashboa
 [active Sprint 7 plan](../exec-plans/active/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
+The local 7C investigation implementation is pending acceptance. Its bounded lists and display
+limits do not bound existing resource-history hydration or unpaginated finding detail payloads.
+Current operational pages can drift; server response time labels exception eligibility at that
+read, not historic/atomic coverage. Unknown proof schemas are raw evidence without inferred links,
+and unresolved endpoints remain references. Display truncation is not full evidence review.
+NIST hierarchy views, account/tenant isolation and live provider/production validation remain absent.
+
 ## Data and migration integrity
 
 ### Governance category transition — ACCEPTED 6G

@@ -1,5 +1,6 @@
 """Cookies stop here. A narrow READ adapter still crosses the real bearer API boundary."""
 
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
@@ -13,6 +14,7 @@ from starlette.responses import FileResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from app.config import Settings
+from app.dashboard.investigation_routes import install_investigation
 from app.dashboard.oidc import OIDCClient
 from app.dashboard.store import BrowserSession, CapacityError, SessionStore, matches_opaque
 from app.security.authentication import AuthenticationError, get_authentication_backend
@@ -75,7 +77,9 @@ class Dashboard:
             raise HTTPException(401, "Dashboard sign-in required")
         return identifier, session
 
-    async def read(self, request: Request, path: str, params: dict | None = None) -> Response:
+    async def read(
+        self, request: Request, path: str, params: dict | None = None, *, operational: bool = False
+    ) -> Response:
         self.origin(request)
         identifier, session = await self.session(request)
         # The shared cookie may have changed in another tab since this shell bootstrapped.
@@ -99,7 +103,12 @@ class Dashboard:
         if not self.store.get(identifier, touch=False):
             raise HTTPException(401, "Dashboard sign-in required")
         return Response(
-            upstream.content, status_code=upstream.status_code, media_type="application/json"
+            upstream.content,
+            status_code=upstream.status_code,
+            media_type="application/json",
+            headers={"X-Dashboard-Read-At": datetime.now(UTC).isoformat()}
+            if operational and upstream.is_success
+            else None,
         )
 
 
@@ -230,6 +239,8 @@ def install_dashboard(application, settings: Settings) -> None:
         if request.query_params:
             raise HTTPException(422, "Unsupported dashboard parameter")
         return await boundary.read(request, f"/api/v1/scans/{scan_id}/technical-posture")
+
+    install_investigation(router, boundary)
 
     static = Path(settings.dashboard_static_dir).resolve()
     if not (static / "index.html").is_file() or not (static / "assets").is_dir():

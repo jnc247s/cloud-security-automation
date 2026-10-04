@@ -22,6 +22,10 @@ merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pul
 with independent review and green merged-main CI. Its opt-in read-only browser shell uses a
 server-side OIDC session boundary, Cognito Essentials as target and a controlled local issuer
 for tests. No live IdP resources, remediation or production deployment are implemented.
+7C investigation is implemented locally with acceptance gates pending. It adds bounded exact-scan
+assessment/evidence/snapshot inspection, typed source/relationship navigation and separately
+labeled current findings with server-time exception eligibility. NIST hierarchy views remain 7D
+work. See the [7C preflight and implementation note](docs/sprint-7c-preflight.md).
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
@@ -104,6 +108,7 @@ Key operating limits include one API process and one Region per request; cross-a
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
 recognized roles can read its security data, and query filters are not object- or account-level
 authorization. The opt-in dashboard shell is accepted 7B implementation, not a production deployment.
+The local 7C expansion preserves that opt-in boundary; it does not authorize live operations.
 No production Terraform, governance mutation API, remediation,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
 [known limitations](docs/operations/known-limitations.md) before production use.
