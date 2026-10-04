@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B at the
-accepted implementation `main` baseline `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (PR #43;
+This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B/7C at the
+accepted implementation `main` baseline `f10c450478cce3ec962d2f45d249f57147443c32` (PR #45/46;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -27,7 +27,8 @@ historical releases and real authenticated APIs with only AWS offline; no securi
 production operation changed. Sprint 7 is IN PROGRESS; 7A READ reporting is accepted and merged,
 with zero unresolved independent-review findings and successful merged-main CI.
 Accepted 7B adds the separate opt-in browser boundary below; it does not validate live IdP
-or production setup.
+or production setup. Accepted 7C adds read-only exact-scan investigation through the same boundary,
+with independent review and green merged-main CI, not live-provider or production validation.
 
 ## Authentication
 
@@ -209,7 +210,7 @@ callback state is browser-bound and consumed once before exchange, with library 
 The session expires after 15 idle minutes, 60 absolute minutes or access-token expiry, whichever
 comes first. Status checks do not extend idle time. No refresh token is retained or renewed.
 
-The accepted 7B adapter revalidates bearer authentication for its three READ operations; the local
+The accepted 7B adapter revalidates bearer authentication for its three READ operations; the accepted
 7C extension below uses the same boundary. The API
 enforces READ again; cookie-only API calls, proxy mutations and arbitrary targets are denied.
 Late reads fail after logout/expiry. The client aborts/ignores superseded reads, clears context on
@@ -230,7 +231,7 @@ ends all sessions. One process only: no replicated store, HA or tenant/account i
 HttpOnly does not prevent XSS from issuing same-origin reads; CSP and safe rendering remain needed.
 No live Cognito pool, secret/IAM modification, production deployment or AWS operation is authorized.
 
-### 7C investigation safeguards — implementation, acceptance pending
+### Accepted 7C investigation safeguards
 
 The approved extension exposes an explicit GET-only allowlist, with typed UUID/enums, 1..100
 page limits (default 25), nonnegative offsets, no duplicate/unknown queries and no browser-selected
@@ -378,6 +379,8 @@ access-key material. Provider failures and malformed facts remain sanitized. Spr
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
 Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
 was started by that acceptance or the subsequent analysis-only preparation.
+Subsequent approvals and gates accepted 7B/7C; Sprint 7 remains IN PROGRESS, with 7D/7E
+PLANNED and no live IdP/AWS/IAM/secret/deployment/remediation operation authorized by acceptance.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

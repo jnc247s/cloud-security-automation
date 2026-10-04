@@ -1,11 +1,12 @@
 # Architecture
 
-This document describes accepted Sprints 0--6 and Sprint 7A/7B. The accepted implementation baseline
-is `main` commit `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (7B in PR #43), after the Sprint 5
+This document describes accepted Sprints 0--6 and Sprint 7A/7B/7C. The implementation baseline
+is `main` commit `f10c450478cce3ec962d2f45d249f57147443c32` (7C PR #45; test-only CI repair PR #46), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
-Sprint 7 remains IN PROGRESS, and investigation/NIST views and production setup are not implemented.
+7C's exact-scan investigation extension is accepted with green merged-main CI. Sprint 7 remains
+IN PROGRESS; NIST hierarchy views and production setup are not implemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
@@ -557,7 +558,7 @@ The browser gets an opaque HttpOnly session ID, not provider tokens or a readabl
 A bounded thread-safe process-local store retains tokens and correlation state only in memory.
 Every allowed read crosses `/api/v1` with that user's bearer token using an in-process ASGI HTTP
 transport; it never invokes a service or database directly or overrides API dependencies.
-7B exposes scan list/detail/posture GETs. The local 7C extension below adds explicit investigation
+7B exposes scan list/detail/posture GETs. The accepted 7C extension below adds explicit investigation
 GETs through the same boundary. Dashboard cookies cannot authenticate `/api/v1`.
 Logout/expiry revoke sessions, and late-read guards prevent returning or rendering a prior
 selection/identity. Each browser read must also present the public `session_context` issued by
@@ -567,11 +568,11 @@ only this non-authorizing correlation value and invalidation type, never credent
 They clear/unmount pending UI before logout completes and rebootstrap after a session change;
 the server cookie, real bearer verifier and READ remain authoritative. No new model, migration,
 capability, scan operation or AWS permission.
-Visible scope ends at scan selection, exact historical context and report availability, not
+7B's original scope ends at scan selection, exact historical context and report availability, not
 investigation/NIST hierarchy views. [Operations](docs/operations/dashboard.md) owns configuration;
 security and threat owners document the new boundary and its one-process/IdP limitations.
 
-### 7C investigation extension — implementation, acceptance pending
+### Accepted 7C investigation extension
 
 The approved [preflight](docs/sprint-7c-preflight.md) adds typed, bounded assessment, exact resource
 history, control, finding/exception and source-outcome/relationship reads to the existing BFF.
@@ -613,7 +614,7 @@ workload-role configuration remain deployment responsibilities.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
-- The accepted opt-in 7B shell has a local 7C investigation extension pending acceptance;
+- The accepted opt-in 7B/7C shell provides read-only exact-scan investigation;
   NIST hierarchy views and production setup are not implemented.
 - No Terraform deployment, remediation, or AI runtime.
 

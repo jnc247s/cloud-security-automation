@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A/7B preserve Sprint 5/6 closure without completing Sprint 7.
+    # Accepted 7A/7B/7C preserve Sprint 5/6 closure without completing Sprint 7.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/active/sprint-7.md")
     current_plan_state = next(
@@ -418,11 +418,11 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert (
         current_plan_state
-        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C IN PROGRESS; later slices remain PROPOSED."
+        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; later slices remain PROPOSED."
     )
     assert "| 7A reporting foundation | COMPLETE |" in sprint7
     assert "| 7B authenticated shell | COMPLETE |" in sprint7
-    assert "| 7C investigation views | IN PROGRESS |" in sprint7
+    assert "| 7C investigation views | COMPLETE |" in sprint7
     assert "later slices remain PROPOSED" in sprint7
     for slice_name in (
         "7D NIST context views",

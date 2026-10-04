@@ -5,11 +5,12 @@ history filter and server UTC exception-reference-time metadata, 7B closeout pub
 merge and one read-only independent reviewer agent per 7C, 7D and final Sprint 7 review.
 The [active plan](exec-plans/active/sprint-7.md) records the superseding approval and PR #44's
 documentary closeout merge. The original analysis and its then-pending gates below remain
-historical. The subsequent "Complete 7c" request starts approved implementation after prerequisite
-CI; the local 7C extension is now implemented, not accepted. All subsequent slice gates remain.
+historical. The subsequent "Complete 7c" request completed the approved implementation/review/
+publication/merge/main-CI sequence through PR #45/46. 7C is COMPLETE; 7D/7E remain PLANNED and
+separately unpreflighted/unimplemented. All subsequent slice gates remain.
 That prerequisite CI has now passed for exact main `f14d861`; the
 [handoff checkpoint](exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
-records fresh acceptance evidence. The implementation note below supersedes the earlier planned state.
+records prerequisite acceptance. The acceptance note below supersedes earlier planned/pending states.
 
 Prepared: 2026-10-04. Analysis only for the requested sequential remaining-Sprint-7 goal.
 The accepted APIs provide assessment, evidence and operational facts, but two proposed additive
@@ -212,3 +213,19 @@ No schema/dependency/default/control/evaluation/auth policy changes or later-spr
 Resource/finding detail and mutable-page limitations are documented, not silently expanded.
 Fresh full validation, independent review, scoped publication/guarded merge and main CI remain
 pending at this note; initial focused checks and frontend units are not complete acceptance.
+
+## Accepted 7C implementation — 2026-10-04
+
+The approved exact-scan history filter, typed BFF GET allowlist and successful operational UTC
+response metadata are accepted through [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45)
+and [test-only CI repair PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46)
+at `f10c450478cce3ec962d2f45d249f57147443c32`. Exact reviewed head `39e9aef`, both final-head CI runs,
+approval 9's guarded ordinary merge and [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37237604046)
+passed. The single reviewer has zero unresolved findings; malformed-type guards and deterministic
+real-session-expiry tests repaired the identified issues without weakening runtime security.
+Final acceptance passed 2,728 backend tests including 283 PostgreSQL cases, no skips, 54 frontend
+units, 32 Chromium/Firefox journeys and quality/image gates; 20 repeated expiry journeys also passed.
+The [active-plan checkpoint](exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
+records exact evidence, diagnostics and limitations. Original predictions above remain historical.
+No schema, default, dependency, collector/control/evaluation, role or authentication-policy change.
+Next is analysis-only 7D preflight; NIST hierarchy, 7E review and live operations are not delivered here.

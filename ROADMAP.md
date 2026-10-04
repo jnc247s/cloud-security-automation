@@ -4,10 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-04
-Accepted implementation baseline: `main` at `f14d8610eefa9b3e20c11aab50c4b0a4e16ab15c` (PR #44
-documentary closeout of PR #43;
-Sprints 0--6 and Sprint 7A/7B accepted, including exact-scan READ reporting and the opt-in
-authenticated shell, catalog `0.13.0` and migration `20261001_0006`; merged-main CI passed)
+Accepted implementation baseline: `main` at `f10c450478cce3ec962d2f45d249f57147443c32` (PR #45 plus test-only CI repair PR #46;
+Sprints 0--6 and Sprint 7A/7B/7C accepted, including exact-scan READ reporting and opt-in
+authenticated investigation, catalog `0.13.0` and migration `20261001_0006`; merged-main CI passed)
 
 ## Current state
 
@@ -414,14 +413,14 @@ records the exact result, preserved local preparation and goal lifecycle. Next i
 of the approved [7C preflight](docs/sprint-7c-preflight.md), not a claim that 7C is implemented.
 7D and final 7E review still need their separate preflights and delivery; Sprint 7 is IN PROGRESS.
 
-Current 2026-10-04 continuation: the user's "Complete 7c" starts the approved investigation
+At the 2026-10-04 implementation-start checkpoint, the user's "Complete 7c" started investigation
 slice on `codex/sprint-7c-investigation`, from reverified accepted main `f14d861` and its successful
-CI. 7C is **IN PROGRESS**, not accepted; its implementation, fresh validation, independent review,
-publication and exact-head merge/main-CI gates remain required. 7D/7E remain PLANNED and no
+CI. 7C was **IN PROGRESS**, not accepted; implementation, fresh validation, independent review,
+publication and exact-head merge/main-CI gates remained required. 7D/7E remained PLANNED and no
 later-sprint or live production operation is included. See the
 [implementation-start checkpoint](docs/exec-plans/active/sprint-7.md#7c-implementation-start--2026-10-04).
 
-Local 7C implementation and validation now pass: 2,728 regression tests including 283 PostgreSQL
+Local 7C implementation and validation passed: 2,728 regression tests including 283 PostgreSQL
 cases, no skips; 54 frontend units, 32 Chromium/Firefox journeys and quality/container gates.
 The single reviewer found one malformed-type guard issue; it is repaired with adverse tests,
 and the same reviewer passed exact implementation head `6e781` with zero unresolved findings.
@@ -431,7 +430,7 @@ real refreshed BFF read, retaining explicit 401 and sensitive-data clearing asse
 Final local checks passed 20 repeated expiry journeys and all 32 browser journeys on separately
 owned fresh databases. The [CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-publication-ci-expiry-test-repair--2026-10-04)
 records exact evidence and validation reuse. New exact-head review/CI, guarded merge and main CI
-remain required; 7C is IN PROGRESS, not accepted, and 7D/7E remain PLANNED.
+remained required at that repair checkpoint; it did not accept 7C or start 7D/7E.
 
 PR #45 subsequently merged at `39af583186fb2857c9eba9e6d75fe7da0e897cd8` after zero-finding
 exact-head review and both green final-head CI runs. Its main CI failed a browser-test completion
@@ -440,9 +439,24 @@ POST. Runtime correctly cleared data; no authentication repair is indicated. Bot
 now await explicit successful expiry completion and propagate control-call failure. Fresh local
 20 repeated expiry journeys, all 32 browser journeys, 54 units/type/lint and 83 contracts/quality
 passed. See the [main-CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-main-ci-expiry-completion-repair--2026-10-04).
-The new scoped branch preserves the merged code; independent exact-head review, new CI/guarded
-merge and successful main CI remain required. **7C remains IN PROGRESS, not accepted**; acceptance
-updates were prepared only in memory and were not applied. 7D/7E remain PLANNED and unstarted.
+At that main-CI repair checkpoint, independent exact-head review, new CI/guarded merge and main
+CI remained required. 7C was IN PROGRESS, not accepted; acceptance updates stayed in memory.
+That checkpoint did not accept 7C or start 7D/7E.
+
+Superseding acceptance: **7C is COMPLETE** through
+[PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45) and
+[test-only CI repair PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46), reviewed head
+`39e9aef8cd72235114df501e2a53c525770add48`, zero unresolved findings, both green final-head runs,
+explicit approval 9 and ordinary exact-head guarded merge at `f10c450478cce3ec962d2f45d249f57147443c32`.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37237604046)
+passed 2,728 backend tests including 283 PostgreSQL cases, no skips, 54 frontend units,
+32 Chromium/Firefox journeys and all quality/image gates. Exact-scan evidence/snapshot/control/
+source/relationship investigation and separately labeled current handling are accepted; technical
+results, defaults, authentication policy and migration head remain unchanged. The
+[acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
+records validation/review/ancestry and the documentation-only publication workflow.
+Sprint 7 remains IN PROGRESS; **7D/7E remain PLANNED**, separately unpreflighted and unimplemented.
+Next is 7D analysis-only preflight. No later-sprint or live IdP/AWS/production operation occurred.
 
 ## Pre-Sprint 5 attention
 
