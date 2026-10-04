@@ -1,10 +1,11 @@
 # Architecture
 
-This document describes accepted Sprints 0--6 and Sprint 7A. The accepted implementation baseline
-is `main` commit `bd639f48095ef63e658abd284ce25c927998c0fb` (7A in PR #42), after the Sprint 5
+This document describes accepted Sprints 0--6 and Sprint 7A/7B. The accepted implementation baseline
+is `main` commit `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (7B in PR #43), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
-CI passed. Sprint 7 remains IN PROGRESS; approved local 7B client/session work is not yet accepted.
+CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
+Sprint 7 remains IN PROGRESS, and investigation/NIST views and production setup are not implemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
@@ -542,9 +543,9 @@ ownership remain unchanged. No browser client/login/session is implemented by 7A
 separate design approval. See the [API contract](docs/api.md#exact-scan-technical-posture--7a)
 and [active plan](docs/exec-plans/active/sprint-7.md) for validation and acceptance gates.
 The [7B preflight](docs/sprint-7b-preflight.md) preserves the original browser/session proposal,
-subsequently approved for local implementation. The `/api/v1` bearer contract stays unchanged.
+subsequently approved and accepted through PR #43. The `/api/v1` bearer contract stays unchanged.
 
-### Local 7B browser shell pending acceptance
+### Accepted opt-in 7B browser shell
 
 React/TypeScript/Vite assets are built in a pinned Node/pnpm stage and served by the existing
 non-root FastAPI image, only with explicit `DASHBOARD_ENABLED`. Disabled startup and routes
@@ -586,7 +587,7 @@ workload-role configuration remain deployment responsibilities.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
-- Only an opt-in 7B shell pending acceptance, not full dashboard investigation/context views.
+- Only an opt-in 7B shell, not full dashboard investigation/context views or production setup.
 - No Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

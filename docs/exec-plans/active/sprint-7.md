@@ -1,16 +1,25 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B APPROVED and IN PROGRESS; later slices remain PROPOSED.
+Plan state: 7A COMPLETE; 7B COMPLETE; later slices remain PROPOSED.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
 CI passed. Subsequent confirmations approve the 7B UI/BFF/session design, Cognito target and
 controlled local issuer, and implementation. The 2026-10-04 confirmation authorizes one read-only
 independent 7B reviewer. The subsequent "Yes" authorizes scoped commit, push and PR creation;
-merge, live operations and later slices remain unapproved.
+the subsequent confirmation approves PR #43's merge after green final-head CI.
+The latest request supplies the sequential remaining-Sprint-7 goal recorded below;
+live operations and later-sprint work remain unapproved.
 All three initial findings are repaired; final local validation, documentary verification and
-the same reviewer's exact-commit review passed. PR #43 is open; exact-head CI is running.
-Human merge approval, merge and green merged-main CI remain acceptance gates.
+the same reviewer's exact-commit review passed. Both final-head CI runs passed. The subsequent
+"Yes" approved merging PR #43 after those gates; it is merged at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`.
+Merged-main CI passed; 7B is COMPLETE. The separate acceptance-record closeout has scoped
+publication and guarded merge approval through the latest "Yes merge"; its checkpoints below
+record actual commit/publication/merge gates rather than infer completion from permission.
+The new request authorizes the gated 7C, 7D and final Sprint 7 workflow, not live operations.
+The same confirmation approves the proposed 7C additive read contracts and one read-only
+independent reviewer agent per 7C, 7D and final Sprint 7 review. The 7B closeout requires
+exact-input review, final-head CI, guarded merge and merged-main CI before implementation.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -40,6 +49,18 @@ Reuse the existing worktree; preserve unrelated parent skills and the original 6
 
 ## Current goal
 
+On 2026-10-04 the user requested a persistent goal for 7C preflight, implementation, review,
+push and merge, then the same sequence for 7D, followed by whole-Sprint-7 correctness review
+and closeout. The tracker accepted this new goal as ACTIVE. The unpublished 7B acceptance record
+remains a prerequisite; the earlier goal is not declared complete merely to create this one.
+See the [goal-setup checkpoint](#remaining-sprint-7-goal-setup--2026-10-04) for scope and gates.
+The earlier 7A/7B goal history below retains its original restrictions; the latest request
+supersedes its slice boundary only for the newly requested remaining-Sprint-7 workflow.
+The user's subsequent "Yes merge" confirms the requested approval bundle and continuation:
+finish the reviewed 7B documentary prerequisite, implement 7C using its approved additive read
+contracts, then complete 7D and 7E sequentially through all review/publication/merge gates.
+No deliverable is accepted merely because its implementation or merge is authorized.
+
 On 2026-10-02 the user requested a smaller persistent goal: complete 7A and then 7B only.
 The implementation-approval blocker persisted for three goal turns, then the user's "Confirm"
 resolved it for 7A. Implementation resumed on `codex/sprint-7a-reporting`, from the verified main
@@ -54,9 +75,10 @@ The user's subsequent "Yes" continues that existing goal toward 7B, starting wit
 documentary closeout and the analysis-only [7B design proposal](../../sprint-7b-preflight.md).
 No UI/toolchain/authentication choice or 7B coding is authorized by that continuation.
 
-Stop after 7A/7B deliverables and their required slice validation, documentation and acceptance
-gates. Do not begin 7C, 7D, the whole-dashboard 7E slice or later-sprint work under this goal.
-The later slices below remain the proposed full-sprint dependency map, not the current work scope.
+Under that earlier goal, stop after 7A/7B deliverables and their required slice validation,
+documentation and acceptance gates. Do not begin 7C, 7D, the whole-dashboard 7E slice or
+later-sprint work under that earlier goal.
+That historical boundary does not grant authority; the latest request above supplies the new scope.
 
 ## Objective and non-goals
 
@@ -81,13 +103,30 @@ authorized after a specific finding.
 5. APPROVED on 2026-10-04: one read-only independent 7B reviewer; no publication/merge authority.
 6. APPROVED on 2026-10-04: scoped 7B commit, push and PR creation; no merge/auto-merge,
    additional reviewer, live IdP/AWS/secret/production operation or 7C+ authority.
+7. APPROVED on 2026-10-04: merge PR #43 only after green final-head CI and the existing
+   independent review. The merge is complete and merged-main CI passed.
+   This is not authority for another PR/merge, auto-merge, live operations or later slices.
+8. REQUESTED on 2026-10-04: complete 7C, then 7D, then whole-Sprint-7 review and closeout,
+   with preflight before each implementation and review, scoped publication and guarded merge
+   before proceeding. Material unresolved design/policy choices require guidance.
+   The separate 7B acceptance-record publication and use of one read-only independent reviewer
+   agent per 7C, 7D and final Sprint 7 review require explicit confirmation.
+   No parallel implementation, auto-merge, live operation or Sprint 8 work is authorized.
+9. APPROVED on 2026-10-04: the user's "Yes merge" answers the pending bundle question:
+   publish and conditionally merge the reviewed 7B acceptance record; use one read-only
+   independent reviewer agent per 7C, 7D and final Sprint 7 review; add the optional UUID scan_id
+   resource-history filter and server UTC reference-time metadata for exception display.
+   Existing callers without that filter, upstream API bodies/statuses, real bearer/READ
+   enforcement and technical results remain unchanged. This resolves the preceding permission
+   gate, not validation, acceptance or future material design choices.
+   Preserve exact-head review/green CI/guarded ordinary merge/merged-main CI for each slice.
 
 ## Proposed implementation sequence
 
 | Slice | State | Scope and exit gate |
 | --- | --- | --- |
 | 7A reporting foundation | COMPLETE | Generic service and additive READ schema/route; exact historical/profile/catalog/mapping joins; partial/missing/disabled coverage, bounded bulk queries, SQLite/PostgreSQL/authenticated HTTP and compatibility tests; local validation and exact-head independent review passed; PR #42 manually merged with green merged-main CI |
-| 7B authenticated shell | IN PROGRESS | Approved client/auth architecture; same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; frontend security/build/browser tests |
+| 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
 | 7C investigation views | PLANNED | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
 | 7D NIST context views | PLANNED | Exact mapped subset hierarchy and provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests |
 | 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
@@ -724,3 +763,173 @@ push and PR creation only. Do not merge or enable auto-merge without separate hu
 require green final-head CI, independent final-input review, required human merge approval
 and green merged-main CI before 7B COMPLETE. Live Cognito/MFA/TLS/production setup remains
 unvalidated; no IdP/secret/IAM/AWS operation or 7C+ implementation occurred.
+
+## 7B merge authorization and main CI — 2026-10-04
+
+The user's subsequent "Yes" answers the explicit request to merge PR #43 once final-head CI
+is green. Before merging, the parent verified PR #43 OPEN/MERGEABLE/CLEAN against the unchanged
+accepted main base, no auto-merge request, both final-head CI runs COMPLETED/SUCCESS, and all
+56 final working inputs matching the independent-review manifest. The same reviewer returned
+REVIEW_PASS with zero unresolved findings for exact final head
+`f7e842c2c2075b280c3046ee65a3ee5463130d81`. All six final documentary owners were reconciled,
+all 43 implementation inputs were unchanged, and fresh independent 82 contract/link checks,
+Ruff, 362-file formatting and combined whitespace passed. Final manifest SHA-256:
+`2DA7E5E946ED044B3BA7CDB9A61446C980C055AF11C8E8EA93FF0E0786E5C885`.
+
+Both exact-head Linux/Python 3.12 runs passed:
+[push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37187395768) and
+[PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37187398112).
+The inspected PR run passed all 2,676 backend tests, including the 277 PostgreSQL cases,
+with no skips and 19 existing warnings (416.92s / 0:06:56), frontend type/lint/build and
+15 units, 14 Chromium/Firefox journeys (16.1s), Ruff/362-file formatting and the image build.
+These are fresh CI results, distinct from the earlier local acceptance and reviewer checks.
+
+The parent used a normal merge with an exact-head guard, without auto-merge, administrator
+bypass, force-push or branch deletion. Readback confirms PR #43 MERGED at 2026-10-04 08:36:29 UTC,
+merge commit `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. Its parents are the accepted 7A main
+`bd639f48095ef63e658abd284ce25c927998c0fb` and exact reviewed head `f7e842c`; its tree
+`8bde0f05e68c517caa2c4d424dc2c35e8ebb2c0d` equals the reviewed head's tree.
+Fetching main changed only local remote-tracking metadata; no checkout/reset/clean occurred.
+
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37189473834)
+is running at this checkpoint. 7B remains IN PROGRESS until that gate and documentary closeout
+pass; Sprint 7 is not complete. The approval covers PR #43 only, not another PR/merge or
+live Cognito/MFA/TLS/secret/IAM/AWS/production operations. No 7C+ work started. The existing
+7A/7B goal is not falsely completed while acceptance gates remain. Earlier prohibitions and
+running-state checkpoints remain historical; this section records their scoped supersession.
+
+## 7B acceptance and scoped goal boundary — 2026-10-04
+
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37189473834)
+completed SUCCESS for exact merge `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`.
+Fresh Linux/Python 3.12 results: 2,676 backend tests passed, including all 277 PostgreSQL
+integration cases, no skips and 19 existing warnings (654.94s / 0:10:54); frontend type/lint/build,
+15 units and 14 Chromium/Firefox journeys (23.4s) passed, as did Ruff, 362-file formatting and
+the multi-stage image build. The job completed in 13m45s. Its Node-action deprecation and
+future ubuntu-latest migration annotations are non-failing supply-chain/runtime notices,
+not a new permission to upgrade CI dependencies or start hardening work.
+
+All implementation gates now passed: approved scope/design, local targeted/full/PostgreSQL/
+browser/runtime/security validation, independent REVIEW_PASS with zero unresolved findings,
+reviewed exact final head, green final-head CI, explicit user merge approval, verified normal
+merge and green merged-main CI. 7A and 7B are COMPLETE; Sprint 7 remains IN PROGRESS.
+The plan stays active because 7C, 7D and 7E remain PLANNED and unimplemented. Stop at the
+approved 7A/7B boundary; no later-slice authority is inferred from acceptance or the goal.
+
+This local closeout reconciles README, roadmap/plan, accepted architecture/security/threat/API
+and operation/limitation summaries, preflight's superseding header and accepted CHANGELOG history.
+Original predictions, approval restrictions and pending-gate checkpoints remain historical.
+The existing documentation-state test now checks the first normative Plan state line for
+accepted 7A/7B and retains the Sprint 7 IN PROGRESS / 7C--7E PLANNED guards. This is a stronger
+current-state assertion, not a skip or weakened acceptance check.
+
+No runtime, frontend, API field, role, capability, migration, collector, control, framework
+artifact, default, dependency, configuration or deployment behavior changes. The 42 unchanged
+non-Markdown source/test/build/configuration inputs (excluding that documentation-state test)
+retain fingerprint `2EC02873F4657B6E5F2D9B678073F08A56E039B1551C9D56AB3EBA3A72867840`
+(sorted path/TAB/uppercase SHA-256, UTF-8 LF-delimited without a trailing LF).
+The former 43-file fingerprint is historical; it is not asserted for the changed test guard.
+Accepted full/browser/image validation applies to the unchanged application; fresh documentary
+checks and the same reviewer's closeout verification remain required for this local delta.
+
+At this writing, the acceptance record and matching test guard are uncommitted and unpublished
+in the preserved worktree. The user approved merging PR #43 only. A separate question asks
+whether to publish and conditionally merge this bounded acceptance-closeout PR; no answer
+or additional PR/merge authority is assumed. The implementation portion of the 7A/7B goal
+is delivered; final closeout/publication remains outstanding, so the goal is not falsely completed.
+Parent skills and the original 6E.3 checkout remain untouched. Live Cognito/MFA/TLS, production
+setup, shared sessions, tenant isolation and global IdP logout remain unvalidated or excluded.
+
+Fresh local closeout verification: `python -m pytest tests/unit/contracts -q -p no:cacheprovider`
+passed all 82 checks, no skips (0.28s); `python -m ruff check .`,
+`python -m ruff format --check .` (362 files) and `git diff --check` passed. The changed test
+only strengthens the documentation-state assertion and is fully exercised by those checks.
+The 42-file fingerprint above is rechecked before independent review; all application/frontend/
+dependency/build/configuration inputs remain unchanged. No local full/browser/container rerun
+is claimed for this documentary delta; the passing exact merged-main implementation validation
+above is reused. Same-reviewer documentary verification and separate closeout publication
+authority remain pending at this local checkpoint.
+
+## Remaining Sprint 7 goal setup — 2026-10-04
+
+The user's new request sets the sequence: 7C investigation preflight -> implementation ->
+independent review -> scoped push/PR/merge; then 7D version-bound NIST context through the same
+gates; then 7E whole-Sprint-7 correctness, security, compatibility and acceptance review and
+closeout. The tracker returned an ACTIVE goal without a requested token budget. Creation is
+not evidence of delivered work or completion of the earlier unpublished 7B acceptance record.
+7A/7B remain COMPLETE, Sprint 7 remains IN PROGRESS, and 7C/7D/7E remain PLANNED.
+
+Before starting implementation, publish the reviewed 7B acceptance record only after its
+separate approval, then establish a scoped branch from verified clean, current main without
+discarding any preserved work. Inspect accepted contracts, callers, tests and security/history
+risks during each preflight; resolve material new design or policy choices before coding.
+Preserve read-only investigation, distinct assessment/finding/exception semantics, exact-scan
+evidence and version-bound reporting-only NIST mappings. Do not add a compliance score.
+
+Each implementation requires targeted tests, Ruff/formatting, full regression, applicable
+disposable PostgreSQL, frontend/browser/security and Compose/image validation, documentation
+and independent review with all findings resolved. Reuse recorded validation only when inputs
+and governance permit it. Publish scoped reviewed inputs; merge only the exact reviewed head
+after green final-head CI, without force/admin bypass or auto-merge. Verify merged-main CI
+before advancing. The final acceptance review covers the whole Sprint 7 flow and accepted
+baselines; reconcile README and all authoritative owners, and archive the plan only after
+the required closeout gates succeed.
+
+One read-only independent reviewer agent for each new review and publication of the pending
+7B closeout are awaiting explicit confirmation. No new reviewer, 7C/7D implementation,
+publication or merge occurred during goal setup. These two owner-file updates are a new
+documentary delta, not part of the previously frozen 7B closeout review inputs.
+Preserve parent skill files and the original 6E.3 checkout. Stop for conflicting sources,
+missing authority or material choices requiring guidance. No live IdP/AWS/IAM/secret change,
+production deployment/mutation, remediation, parallel implementation or later-sprint work.
+
+## 7B closeout publication approval and remaining scope — 2026-10-04
+
+The user's "Yes merge" confirms the preceding approval bundle. Scoped 7B acceptance-record
+commit/push/PR and conditional merge are authorized, together with one read-only independent
+reviewer agent for each of 7C, 7D and final Sprint 7 review. The two prepared 7C additions are
+approved: optional exact-scan history filtering and a server UTC reference time for operational
+exception display. No new policy, migration, credential, live IdP/AWS/IAM/secret/deployment,
+remediation or later-sprint operation is approved.
+
+Readback confirms PR #43 is already MERGED at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`
+and its merged-main CI is COMPLETED/SUCCESS. A fresh fetch finds main unchanged; the current
+implementation HEAD `f7e842c2c2075b280c3046ee65a3ee5463130d81` has the identical accepted tree.
+No open PR exists at this checkpoint. Publication is not repeated for the already merged code.
+
+The pending closeout is the preserved 12-file documentation/current-state-guard delta, with
+new goal/approval metadata in roadmap/plan. The separate local 7C analysis file must stay out
+of a 7B-only commit; it will be retained for the subsequent scoped 7C branch. The existing 7B
+reviewer must verify the final closeout inputs, then the parent can publish only those reviewed
+inputs, wait for green exact-head CI and merge normally with an exact-head guard. Verify main CI
+before starting implementation from a clean, current accepted baseline.
+
+Status remains 7A/7B COMPLETE, Sprint 7 IN PROGRESS, 7C/7D/7E PLANNED. 7C has a local
+analysis-only preflight, not implementation. 7D and whole-Sprint-7 acceptance have only the
+existing full-sprint dependency/scope proposal; their separate preflights and implementation/
+review are not completed. The latest approval permits work through the requested sequence,
+not a claim that those deliverables already exist. All historical restrictions/checkpoints
+remain intact with their explicit scoped supersession here.
+
+## 7B closeout committed inputs — 2026-10-04
+
+The scoped closeout is committed at `cb4f320442cd43c8bdc6d04dfb4fe90d2569a4cd` on
+`codex/sprint-7b-acceptance-closeout`, with sole parent accepted main
+`9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. Exactly the 12 reviewed documentation/status-guard
+files are included. The only untracked task input is the separate 7C preflight; its unchanged
+SHA-256 is `C6E934C5AF3DB947C436F081CEF09FB1035414F16B2C0CAA0D90EAFD3348E318`.
+Parent skills and the original 6E.3 checkout remain untouched.
+
+The same reviewer returned independent REVIEW_PASS with zero unresolved findings for those
+working inputs, manifest `A5C8839B0C65DACE1EC3625193B5B3EB3D4D0A48E45784B12DA9DE3A7AB1D8AB`
+(sorted paths, TAB/uppercase file SHA-256, UTF-8 LF, trailing LF). Independent 83 contracts,
+seven adverse status mutations, 138 scoped tracked links, Ruff, formatting and whitespace passed;
+the extra local contract case belongs to the excluded 7C Markdown file. The 42 unchanged
+implementation inputs retain fingerprint `2EC02873F4657B6E5F2D9B678073F08A56E039B1551C9D56AB3EBA3A72867840`.
+Recorded accepted-main full/PostgreSQL/frontend/browser/image validation is reused for unchanged
+application behavior; no new full-suite run is claimed here.
+
+This narrow roadmap/plan update records committed rather than uncommitted inputs and removes
+a stale normative uncommitted claim. Exact-commit readback and review of this documentary delta
+remain required before publication. Final-head CI, guarded ordinary merge and merged-main CI
+are still pending at this checkpoint. No 7C/7D/7E code or production operation has occurred.

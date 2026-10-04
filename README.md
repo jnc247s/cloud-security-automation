@@ -18,9 +18,10 @@ REVIEW_PASS and 2,533 regression tests (252 PostgreSQL, no skips), plus all qual
 passed all 2,533 tests. The completed plan retains original predictions, implemented differences
 and validation history. Sprint 7 is IN PROGRESS: 7A exact-scan READ reporting is COMPLETE,
 merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pull/42).
-7B is IN PROGRESS: its approved read-only browser shell uses a server-side OIDC session boundary,
-with Cognito Essentials as target and a controlled local issuer for tests. Acceptance is pending;
-no live IdP resources, remediation or production deployment are implemented.
+7B is COMPLETE through [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43),
+with independent review and green merged-main CI. Its opt-in read-only browser shell uses a
+server-side OIDC session boundary, Cognito Essentials as target and a controlled local issuer
+for tests. No live IdP resources, remediation or production deployment are implemented.
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
@@ -42,10 +43,11 @@ for opt-in configuration, token/session handling, Cognito registration requireme
 
 Final local 7B checks passed: 205 focused checks, 2,676 regression tests (277 PostgreSQL,
 no skips), 15 frontend units, 14 Chromium/Firefox journeys and quality/container/runtime gates.
-Independent review passed with zero unresolved findings; the scoped branch is published in
-[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). Exact-head CI, human merge
-approval and green merged-main CI remain acceptance gates. No merge or production deployment
-is claimed. The active plan records exact validation and publication checkpoints.
+Independent review passed with zero unresolved findings; explicit human merge approval and
+both final-head CI runs passed. [Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37189473834)
+passed the same 2,676 backend tests, 15 frontend units and 14 browser journeys plus quality/image
+gates at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. This is accepted code, not a production
+deployment. The active plan records exact validation, publication and acceptance checkpoints.
 
 The current implementation includes:
 
@@ -101,7 +103,7 @@ historical-release recovery and authenticated API validation and documentary clo
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
 recognized roles can read its security data, and query filters are not object- or account-level
-authorization. The opt-in dashboard shell is local 7B work pending acceptance, not a production deployment.
+authorization. The opt-in dashboard shell is accepted 7B implementation, not a production deployment.
 No production Terraform, governance mutation API, remediation,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
 [known limitations](docs/operations/known-limitations.md) before production use.

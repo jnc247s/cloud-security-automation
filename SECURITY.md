@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--6 and 7A at the
-accepted implementation `main` baseline `bd639f48095ef63e658abd284ce25c927998c0fb` (PR #42;
+This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B at the
+accepted implementation `main` baseline `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (PR #43;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -26,7 +26,8 @@ downgrades before DDL. Independent review and merged-main CI passed; see
 historical releases and real authenticated APIs with only AWS offline; no security behavior or
 production operation changed. Sprint 7 is IN PROGRESS; 7A READ reporting is accepted and merged,
 with zero unresolved independent-review findings and successful merged-main CI.
-Approved local 7B adds the separate opt-in browser boundary below; acceptance is pending.
+Accepted 7B adds the separate opt-in browser boundary below; it does not validate live IdP
+or production setup.
 
 ## Authentication
 
@@ -188,10 +189,10 @@ sanitized `technical_posture_provenance_conflict` 409. Success and that conflict
 this does not make other existing API responses no-store or create tenant/field authorization.
 Existing bearer validation and READ/EXECUTE separation remain the enforcement boundary.
 The subsequently approved [7B proposal](docs/sprint-7b-preflight.md) defines the browser boundary;
-local validation and independent review passed. Final-head CI, required human merge approval
-and green merged-main CI remain acceptance gates; no live provider or production setup is validated.
+local validation, independent review, final-head CI, explicit human merge approval and merged-main
+CI passed through PR #43. No live provider or production setup is validated.
 
-### Local 7B browser boundary
+### Accepted opt-in 7B browser boundary
 
 Dashboard enablement requires OIDC, an exact trusted origin, distinct client/API audiences,
 server-only client credential and built assets; it never falls back to development access.

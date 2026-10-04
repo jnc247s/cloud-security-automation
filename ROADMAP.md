@@ -4,9 +4,9 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-04
-Accepted implementation baseline: `main` at `bd639f48095ef63e658abd284ce25c927998c0fb` (PR #42;
-Sprints 0--6 and Sprint 7A accepted, including exact-scan READ reporting, opt-in `0.13.0`
-and migration `20261001_0006`; merged-main CI passed)
+Accepted implementation baseline: `main` at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (PR #43;
+Sprints 0--6 and Sprint 7A/7B accepted, including exact-scan READ reporting and the opt-in
+authenticated shell, catalog `0.13.0` and migration `20261001_0006`; merged-main CI passed)
 
 ## Current state
 
@@ -249,7 +249,7 @@ at that closeout; the subsequent approved 7A start is recorded below.
 
 ## In progress: Sprint 7 — Dashboard / NIST Technical Posture
 
-Sprint 7 is IN PROGRESS. The 7A reporting foundation is COMPLETE; 7B is IN PROGRESS. The user
+Sprint 7 is IN PROGRESS. The 7A reporting foundation and 7B authenticated shell are COMPLETE. The user
 requested its analysis-only preflight on 2026-10-02.
 The [preflight](docs/sprint-7-preflight.md) is complete and the
 [execution plan](docs/exec-plans/active/sprint-7.md) records 7A approval and later proposed slices.
@@ -346,6 +346,53 @@ at this checkpoint. [Publication detail](docs/exec-plans/active/sprint-7.md#7b-p
 records the unchanged implementation, preservation checks and remaining gates. 7B remains
 IN PROGRESS: merge/auto-merge is not authorized or performed, live Cognito is unvalidated,
 and required human merge approval and green merged-main CI remain outstanding. 7C+ is unstarted.
+
+The subsequent user confirmation authorizes merging PR #43 after green exact-head CI.
+Both final-head runs passed, the independently reviewed inputs remained unchanged, and
+[PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) merged at
+`9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. The
+[merge checkpoint](docs/exec-plans/active/sprint-7.md#7b-merge-authorization-and-main-ci--2026-10-04)
+records exact review, ancestry and tree identity. Merged-main CI is running; 7B remains
+IN PROGRESS pending acceptance. This approval is for PR #43 only, not other publication/merges,
+live operations or later slices. No 7C+ work started.
+
+7B is COMPLETE: both final-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37189473834)
+passed after the explicit merge approval. Main ran all 2,676 tests, including 277 PostgreSQL
+cases, no skips and 19 existing warnings, plus 15 frontend units, 14 Chromium/Firefox journeys
+and all quality/image gates. The same reviewer's exact-head REVIEW_PASS had zero unresolved
+findings. The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7b-acceptance-and-scoped-goal-boundary--2026-10-04)
+records the exact merge, CI and unchanged behavior. The local closeout updates current owners
+and their documentation-status guard; its separate publication approval is pending. Sprint 7
+remains IN PROGRESS, its plan stays active, and 7C/7D/7E and later implementation remain unstarted.
+Live Cognito/MFA/TLS and production setup are not validated or authorized.
+
+The user's subsequent 2026-10-04 request establishes a new ACTIVE goal: preflight, implement,
+review, publish and merge 7C; repeat for 7D; then review the whole Sprint 7 for correctness
+and complete 7E acceptance/documentary closeout. The
+[goal-setup checkpoint](docs/exec-plans/active/sprint-7.md#remaining-sprint-7-goal-setup--2026-10-04)
+records sequential exact-head review/CI/merge and merged-main CI gates, preserved 7B closeout
+work, and stop conditions for material choices or missing authority. The separate pending 7B
+closeout publication and one read-only reviewer agent per new review await explicit confirmation.
+Goal creation does not complete the prior closeout or advance slice status: Sprint 7 remains
+IN PROGRESS, 7C/7D/7E remain PLANNED, and no new implementation, reviewer or publication started.
+No live IdP/AWS/IAM/secret/production operation, parallel implementation or Sprint 8 is authorized.
+
+The subsequent "Yes merge" confirms the pending bundle: publish and conditionally merge the
+reviewed 7B documentary closeout, one read-only reviewer agent per 7C/7D/final Sprint 7 review,
+and the proposed exact-scan history filter/server UTC exception-reference-time metadata.
+The [approval checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-publication-approval-and-remaining-scope--2026-10-04)
+records fresh GitHub/main verification and exact-input review/CI/merge gates. The 7B closeout
+is still local at this checkpoint. 7C has an analysis-only preflight, not code; 7D and 7E
+have only the full-sprint scope/dependency proposal and remain unpreflighted separately.
+No slice status advances through permission alone. Live operations and later sprints remain excluded.
+
+The reviewed 12-file 7B acceptance-record delta is committed at `cb4f320` on
+`codex/sprint-7b-acceptance-closeout` from verified accepted main. The
+[committed-input checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-committed-inputs--2026-10-04)
+records the working-input REVIEW_PASS, unchanged implementation fingerprint, exclusion of the
+local 7C preflight and remaining exact-commit/publication/CI/merge gates. This documentary
+checkpoint does not claim a new PR, merge or completed future slice.
 
 ## Pre-Sprint 5 attention
 
