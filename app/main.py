@@ -50,6 +50,8 @@ def create_app(
                     LOGGER.info("Resubmitted %d pending scans.", resumed)
             yield
         finally:
+            if settings.dashboard_enabled:
+                application.state.dashboard.store.clear()
             executor.shutdown(wait=True)
 
     application = FastAPI(
@@ -68,6 +70,14 @@ def create_app(
         TechnicalPostureProvenanceError, technical_posture_provenance_handler
     )
     application.include_router(api_router)
+    if settings.dashboard_enabled:
+        from app.dashboard.logging import protect_identity_logs
+        from app.dashboard.middleware import DashboardSecurityMiddleware
+        from app.dashboard.routes import install_dashboard
+
+        protect_identity_logs()
+        install_dashboard(application, settings)
+        application.add_middleware(DashboardSecurityMiddleware)
     return application
 
 

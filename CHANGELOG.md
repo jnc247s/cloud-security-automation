@@ -12,6 +12,20 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+### Sprint 7A — 2026-10-03
+
+- Accepted exact-scan READ technical-posture reporting through
+  [PR #42](https://github.com/jnc247s/cloud-security-automation/pull/42), manually merged at
+  `bd639f48095ef63e658abd284ce25c927998c0fb`. Exact-head review passed with zero unresolved
+  findings; both branch/PR CI and merged-main CI passed all 2,601 tests, including 277 PostgreSQL
+  cases, with no skips and all quality/image gates.
+- Added four-state unique assessment counts, explicit control/target coverage, retained
+  profile/catalog/control/framework provenance and deduplicated mapped technical context.
+  Reports do not evaluate rules, call AWS, write transactions, expose evidence payloads, rewrite
+  results through exceptions or claim compliance. Existing APIs, defaults, migrations and
+  bearer/capability authorization remain unchanged. This is reporting foundation, not a browser
+  client or completion of Sprint 7.
+
 ### Sprint 6 — 2026-10-01
 
 - Accepted the versioned assessment foundation and opt-in IAM, EC2, network, and S3 controls

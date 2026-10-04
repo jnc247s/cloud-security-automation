@@ -10,8 +10,8 @@ implicitly enable Sprint 6 controls. Accepted controls through `0.13.0` reuse th
 without per-control routes. Future interface changes must update this document and
 tests in the same change.
 
-Approved Sprint 7A adds the reviewed feature-branch READ reporting contract below. It is not yet an
-accepted/released slice: independent review passed, while acceptance and merge remain pending in the
+Accepted Sprint 7A adds the READ reporting contract below, merged through PR #42 with
+independent review and merged-main CI passing. Exact acceptance is recorded in the
 [active Sprint 7 plan](exec-plans/active/sprint-7.md). Existing interfaces retain their meanings.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
@@ -133,7 +133,7 @@ accepted deployment assumption is one trusted security domain.
 | `EXECUTE` | `POST /api/v1/scans` | Persist and submit a single-region scan |
 | `READ` | `GET /api/v1/scans` | List scan lifecycle records |
 | `READ` | `GET /api/v1/scans/{scan_id}` | Read exact scan provenance and scope |
-| `READ` | `GET /api/v1/scans/{scan_id}/technical-posture` | Read exact-scan counts, coverage and mapped technical context (7A working implementation) |
+| `READ` | `GET /api/v1/scans/{scan_id}/technical-posture` | Read exact-scan counts, coverage and mapped technical context (accepted 7A) |
 | `READ` | `GET /api/v1/resources` | List stable AWS resource identities |
 | `READ` | `GET /api/v1/resources/{resource_id}` | Read identity and latest observation |
 | `READ` | `GET /api/v1/resources/{resource_id}/history` | Read immutable observations |
@@ -449,6 +449,35 @@ lookup or verification failure fails closed as 401.
 `GET /health` reports process liveness without database or AWS calls. `GET /ready` executes a
 database `SELECT 1` and returns 503 when connectivity fails. Readiness does not verify Alembic
 revision, executor capacity, OIDC/JWKS availability, AWS credentials, or collector health.
+
+## Opt-in 7B browser interface — local, pending acceptance
+
+This separate same-origin interface is excluded from OpenAPI and disabled by default. It does
+not change `/api/v1`, health, readiness or their accepted schemas. See
+[dashboard operations](operations/dashboard.md) for the trusted configuration and session policy.
+
+| Method/path | Contract |
+| --- | --- |
+| GET /dashboard/ and /dashboard/assets/* | Built static shell/assets, never credentials or embedded evidence |
+| GET /dashboard/session | authenticated=false plus login CSRF token, or true plus subject/recognized roles/session deadlines/CSRF/public session_context; never provider tokens |
+| POST /dashboard/auth/login | Exact Origin and browser-bound X-CSRF-Token required; returns trusted authorization URL with state/challenge, not verifier/token |
+| GET /dashboard/auth/callback | One-time browser-bound code/state exchange; fixed 303 /dashboard/ or /dashboard/?login=failed; no arbitrary redirect |
+| POST /dashboard/auth/logout | Exact Origin and session CSRF required; destroys server session and clears cookies, 204; not global IdP logout |
+| GET /dashboard/api/scans | Opaque session plus matching X-Dashboard-Context and real bearer/READ; limit 1..100, offset >= 0; only these parameters, no duplicates |
+| GET /dashboard/api/scans/{scan_id} | Same session/context/READ checks; valid UUID, no query parameters; unchanged exact-scan detail projection |
+| GET /dashboard/api/scans/{scan_id}/technical-posture | Same session/context/READ checks; valid UUID, no query parameters; unchanged 7A report/schema/error semantics |
+
+`session_context` is a random public correlation identifier, not a bearer or CSRF credential.
+It must match the current cookie's server session on all three BFF reads; absent/malformed/stale
+values return 401 before forwarding and do not revoke the current valid session. This additive
+7B-only interface is unaccepted; `/api/v1` headers, fields and authorization are unchanged.
+
+All dashboard responses, including unexpected 500s, carry no-store and scoped browser security headers. Authentication is
+401; rejected origin/CSRF is 403; capacity or unavailable login is sanitized 503. Callback errors
+do not expose provider detail; callback queries are redacted on error paths as well. The READ adapter retains upstream status and JSON; it rejects a
+read if logout/expiry occurs before completion. Unsupported paths/methods are not a generic proxy.
+Dashboard cookies never authenticate `/api/v1`. No CORS, roles, capabilities, tenant policy,
+database write, scan execution or account isolation is added.
 
 ## Compatibility rule
 
