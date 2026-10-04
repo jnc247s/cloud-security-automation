@@ -89,17 +89,22 @@ test('expiry clears context, keyboard controls and mobile layout', async ({ page
   expect(beforeExpiry.authenticated).toBe(true);
   // Dispatch the refresh while authenticated; expire before its real BFF read is forwarded.
   // A concurrent 401 may correctly unmount the button, so never click after forcing expiry.
-  let expired = false;
+  let completeExpiry!: () => void;
+  let failExpiry!: (error: unknown) => void;
+  const expiryCompleted = new Promise<void>((resolve, reject) => { completeExpiry = resolve; failExpiry = reject; });
   await page.route('**/dashboard/api/scans?*', async route => {
-    expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
-    expired = true;
+    try {
+      expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
+      completeExpiry();
+    } catch (error) { failExpiry(error); throw error; }
     await route.continue();
   }, { times: 1 });
   const denied = page.waitForResponse(response => response.request().method() === 'GET'
     && response.url().includes('/dashboard/api/') && response.status() === 401);
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  // Parallel reads may detect server expiry before the expiry POST response reaches this client.
+  await expiryCompleted;
   expect((await denied).status()).toBe(401);
-  expect(expired).toBe(true);
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByText('test-network / 1.0.0')).toHaveCount(0);
   expect((await context.request.get('/dashboard/api/scans',

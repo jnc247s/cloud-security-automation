@@ -433,6 +433,17 @@ owned fresh databases. The [CI repair checkpoint](docs/exec-plans/active/sprint-
 records exact evidence and validation reuse. New exact-head review/CI, guarded merge and main CI
 remain required; 7C is IN PROGRESS, not accepted, and 7D/7E remain PLANNED.
 
+PR #45 subsequently merged at `39af583186fb2857c9eba9e6d75fe7da0e897cd8` after zero-finding
+exact-head review and both green final-head CI runs. Its main CI failed a browser-test completion
+assertion: a real parallel BFF 401 arrived before the test observed completion of the real expiry
+POST. Runtime correctly cleared data; no authentication repair is indicated. Both test journeys
+now await explicit successful expiry completion and propagate control-call failure. Fresh local
+20 repeated expiry journeys, all 32 browser journeys, 54 units/type/lint and 83 contracts/quality
+passed. See the [main-CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-main-ci-expiry-completion-repair--2026-10-04).
+The new scoped branch preserves the merged code; independent exact-head review, new CI/guarded
+merge and successful main CI remain required. **7C remains IN PROGRESS, not accepted**; acceptance
+updates were prepared only in memory and were not applied. 7D/7E remain PLANNED and unstarted.
+
 ## Pre-Sprint 5 attention
 
 These accepted-baseline limitations were discovered during the governance audit. This register

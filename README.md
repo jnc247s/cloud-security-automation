@@ -22,7 +22,9 @@ merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pul
 with independent review and green merged-main CI. Its opt-in read-only browser shell uses a
 server-side OIDC session boundary, Cognito Essentials as target and a controlled local issuer
 for tests. No live IdP resources, remediation or production deployment are implemented.
-7C investigation is implemented locally with acceptance gates pending. It adds bounded exact-scan
+7C investigation is implemented and merged through PR #45, with acceptance gates still pending.
+Merged-main CI exposed an expiry-test completion race; its scoped repair and fresh gates must
+pass before 7C is accepted. It adds bounded exact-scan
 assessment/evidence/snapshot inspection, typed source/relationship navigation and separately
 labeled current findings with server-time exception eligibility. NIST hierarchy views remain 7D
 work. See the [7C preflight and implementation note](docs/sprint-7c-preflight.md).

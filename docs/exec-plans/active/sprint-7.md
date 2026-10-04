@@ -1172,3 +1172,47 @@ backend tests, dependencies, migrations and final image are unchanged; their rec
 Fresh exact-head CI must validate every gate again. The same single reviewer must approve the
 new committed test/documentary delta before publication. Guarded merge and successful main CI
 remain required. 7C IN PROGRESS; 7D/7E and later-sprint/live operations remain unstarted.
+
+## 7C main CI expiry-completion repair — 2026-10-04
+
+The same single reviewer returned exact-head REVIEW_PASS for `644432736ef84b0f88f12aaf7ff3f14eb293d446`,
+zero unresolved findings, final 32-file manifest
+`3628AA67FC75FC01414D782F815D30F8804CA297E0837EE7E5E4D3836CD0FADA`. Independent type/lint,
+83 contracts and whitespace passed; all committed blobs equaled LF-only reviewed inputs.
+Both final-head runs passed: [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37234043239)
+and [PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37234046136).
+Fresh PR results: 2,728 backend tests, no skips, 19 existing warnings (612.24s / 0:10:12),
+54 frontend units, 32 Chromium/Firefox journeys (45.0s), Ruff/367-file format/type/lint/build/image.
+The parent checked OPEN/not draft/MERGEABLE/CLEAN/no auto-merge, both successful exact-head runs,
+unchanged main `f14d861` and clean reviewed local inputs before the approved ordinary exact-head
+guarded merge. No admin/force/auto/branch deletion. PR #45 merged at 2026-10-04 21:12:40 UTC,
+commit `39af583186fb2857c9eba9e6d75fe7da0e897cd8`, parents `f14d861` and reviewed `6444327`,
+tree `6eb34acbf6cef4f3ae0336c41218db7c9cf4976c` equal to the reviewed tree.
+
+[Main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37235162974) failed
+at that exact merge after passing backend/quality/frontend gates. It passed 31 browser cases
+but failed the Firefox shell expiry assertion expired == true (40.0s); image was not built.
+This failed acceptance gate was not rerun away, and no 7C COMPLETE/accepted documentary update
+was applied. The prepared acceptance patch remained in memory only. No merge history was rewritten.
+
+Independent source inspection and an async-order diagnostic confirmed the new test race:
+the fixture clears its real store synchronously before its HTTP200 reaches Playwright. A parallel
+refreshed BFF read can therefore return 401 before the route handler sets its completion boolean.
+Runtime correctly unmounts sensitive data. Both test journeys now await a completion promise
+resolved only after the real expiry POST200 assertion; control-call failures reject that promise
+and rethrow. The already-armed actual browser401 and all Sign in/data removal/old-context BFF401/
+cookie-only API401 assertions remain intact. No runtime, fixture, auth-policy, sleep, timeout,
+retry, skip, dependency or migration change. This is synchronization, not relaxed assertions.
+
+The parent created `codex/sprint-7c-expiry-ci-repair` from verified clean current main `39af583`,
+preserving both earlier scoped branches and all unrelated user work. Final local type/lint and
+54 units passed (2.61s); 83 contracts/Ruff/367-file format/whitespace passed. Fresh 20 repeated
+expiry journeys (five per test per engine, 37.5s) and all 32 browser journeys (42.2s) passed on
+separate fresh owned loopback/tmpfs PostgreSQL databases through real controlled OIDC/BFF/bearer
+API; AWS forbidden, no traces/videos/screenshots, only those created databases removed.
+The unchanged backend/full/PostgreSQL/image validation remains applicable; no new local full
+regression or image run is claimed for test-only changes. New exact-head CI must rerun all gates.
+
+The same reviewer's final committed test/documentary review is pending, followed by scoped
+publication, both green final-head CI runs, ordinary exact-head guarded merge and successful main
+CI before acceptance. 7C remains IN PROGRESS; 7D/7E and later-sprint/live operations are unstarted.
