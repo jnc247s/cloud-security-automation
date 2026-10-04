@@ -154,17 +154,21 @@ test('mobile keyboard navigation, server-time unavailable and expiry clear sensi
   expect(beforeExpiry.authenticated).toBe(true);
   // Refresh while authenticated, then expire before forwarding that real operational read.
   // Pending detail reads may also return 401 and correctly clear the entire investigation.
-  let expired = false;
+  let completeExpiry!: () => void;
+  let failExpiry!: (error: unknown) => void;
+  const expiryCompleted = new Promise<void>((resolve, reject) => { completeExpiry = resolve; failExpiry = reject; });
   await page.route('**/dashboard/api/findings?*', async route => {
-    expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
-    expired = true;
+    try {
+      expect((await context.request.post('http://127.0.0.1:9012/expire-dashboard-sessions')).status()).toBe(200);
+      completeExpiry();
+    } catch (error) { failExpiry(error); throw error; }
     await route.continue();
   }, { times: 1 });
   const denied = page.waitForResponse(response => response.request().method() === 'GET'
     && response.url().includes('/dashboard/api/findings?') && response.status() === 401);
   await page.getByRole('button', { name: 'Refresh current handling' }).click();
+  await expiryCompleted;
   expect((await denied).status()).toBe(401);
-  expect(expired).toBe(true);
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByText('historical-old', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Historical assessment detail' })).toHaveCount(0);
