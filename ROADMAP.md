@@ -387,6 +387,13 @@ is still local at this checkpoint. 7C has an analysis-only preflight, not code; 
 have only the full-sprint scope/dependency proposal and remain unpreflighted separately.
 No slice status advances through permission alone. Live operations and later sprints remain excluded.
 
+The reviewed 12-file 7B acceptance-record delta is committed at `cb4f320` on
+`codex/sprint-7b-acceptance-closeout` from verified accepted main. The
+[committed-input checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-committed-inputs--2026-10-04)
+records the working-input REVIEW_PASS, unchanged implementation fingerprint, exclusion of the
+local 7C preflight and remaining exact-commit/publication/CI/merge gates. This documentary
+checkpoint does not claim a new PR, merge or completed future slice.
+
 ## Pre-Sprint 5 attention
 
 These accepted-baseline limitations were discovered during the governance audit. This register

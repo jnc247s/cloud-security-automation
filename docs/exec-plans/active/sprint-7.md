@@ -13,12 +13,13 @@ live operations and later-sprint work remain unapproved.
 All three initial findings are repaired; final local validation, documentary verification and
 the same reviewer's exact-commit review passed. Both final-head CI runs passed. The subsequent
 "Yes" approved merging PR #43 after those gates; it is merged at `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`.
-Merged-main CI passed; 7B is COMPLETE. The local acceptance-record closeout is uncommitted
-and unpublished; the latest "Yes merge" approves its scoped publication and guarded merge.
+Merged-main CI passed; 7B is COMPLETE. The separate acceptance-record closeout has scoped
+publication and guarded merge approval through the latest "Yes merge"; its checkpoints below
+record actual commit/publication/merge gates rather than infer completion from permission.
 The new request authorizes the gated 7C, 7D and final Sprint 7 workflow, not live operations.
 The same confirmation approves the proposed 7C additive read contracts and one read-only
-independent reviewer agent per 7C, 7D and final Sprint 7 review. The 7B closeout must still
-pass exact-input review, final-head CI, guarded merge and merged-main CI before implementation.
+independent reviewer agent per 7C, 7D and final Sprint 7 review. The 7B closeout requires
+exact-input review, final-head CI, guarded merge and merged-main CI before implementation.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -909,3 +910,26 @@ existing full-sprint dependency/scope proposal; their separate preflights and im
 review are not completed. The latest approval permits work through the requested sequence,
 not a claim that those deliverables already exist. All historical restrictions/checkpoints
 remain intact with their explicit scoped supersession here.
+
+## 7B closeout committed inputs — 2026-10-04
+
+The scoped closeout is committed at `cb4f320442cd43c8bdc6d04dfb4fe90d2569a4cd` on
+`codex/sprint-7b-acceptance-closeout`, with sole parent accepted main
+`9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. Exactly the 12 reviewed documentation/status-guard
+files are included. The only untracked task input is the separate 7C preflight; its unchanged
+SHA-256 is `C6E934C5AF3DB947C436F081CEF09FB1035414F16B2C0CAA0D90EAFD3348E318`.
+Parent skills and the original 6E.3 checkout remain untouched.
+
+The same reviewer returned independent REVIEW_PASS with zero unresolved findings for those
+working inputs, manifest `A5C8839B0C65DACE1EC3625193B5B3EB3D4D0A48E45784B12DA9DE3A7AB1D8AB`
+(sorted paths, TAB/uppercase file SHA-256, UTF-8 LF, trailing LF). Independent 83 contracts,
+seven adverse status mutations, 138 scoped tracked links, Ruff, formatting and whitespace passed;
+the extra local contract case belongs to the excluded 7C Markdown file. The 42 unchanged
+implementation inputs retain fingerprint `2EC02873F4657B6E5F2D9B678073F08A56E039B1551C9D56AB3EBA3A72867840`.
+Recorded accepted-main full/PostgreSQL/frontend/browser/image validation is reused for unchanged
+application behavior; no new full-suite run is claimed here.
+
+This narrow roadmap/plan update records committed rather than uncommitted inputs and removes
+a stale normative uncommitted claim. Exact-commit readback and review of this documentary delta
+remain required before publication. Final-head CI, guarded ordinary merge and merged-main CI
+are still pending at this checkpoint. No 7C/7D/7E code or production operation has occurred.
