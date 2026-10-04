@@ -12,6 +12,22 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+### Sprint 7B — 2026-10-04
+
+- Accepted the opt-in authenticated, read-only dashboard shell through
+  [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) at
+  `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`, after explicit user merge approval,
+  exact-head independent REVIEW_PASS with zero unresolved findings, both final-head CI runs
+  and green merged-main CI. Main passed all 2,676 tests (277 PostgreSQL, no skips,
+  19 existing warnings), 15 frontend units, 14 Chromium/Firefox journeys and quality/image gates.
+- Added exact historical scan selection, retained scope/lifecycle and report availability,
+  with same-origin server-side OIDC tokens, opaque HttpOnly sessions, CSRF/Origin protection,
+  expiry/logout and expected-session/cross-tab invalidation. All reads use the real bearer/READ API.
+- Preserved existing API schemas, roles/capabilities, catalogs/profiles/framework artifacts,
+  persistence and migration head `20261001_0006`; dashboard enablement remains explicit and
+  disabled by default. No live Cognito/MFA/TLS/production validation, investigation/NIST views,
+  remediation or 7C+ implementation is included. Sprint 7 itself remains IN PROGRESS.
+
 ### Sprint 7A — 2026-10-03
 
 - Accepted exact-scan READ technical-posture reporting through

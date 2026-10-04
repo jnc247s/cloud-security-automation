@@ -1,6 +1,7 @@
 # Sprint 7B dashboard operation
 
-The opt-in read-only shell is approved local implementation, not yet accepted or deployed.
+The opt-in read-only shell is accepted through PR #43 with independent review and green
+merged-main CI; it is not a production deployment or live-provider validation.
 It supports provider login, exact scan selection, historical scope/lifecycle and report
 availability. Assessment/evidence/finding/NIST views, mutations and scan execution are excluded.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)

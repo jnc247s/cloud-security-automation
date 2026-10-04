@@ -13,6 +13,8 @@ tests in the same change.
 Accepted Sprint 7A adds the READ reporting contract below, merged through PR #42 with
 independent review and merged-main CI passing. Exact acceptance is recorded in the
 [active Sprint 7 plan](exec-plans/active/sprint-7.md). Existing interfaces retain their meanings.
+Accepted 7B adds the separate opt-in browser interface below through PR #43, with independent
+review, explicit merge approval and green merged-main CI; it does not change `/api/v1`.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -450,7 +452,7 @@ lookup or verification failure fails closed as 401.
 database `SELECT 1` and returns 503 when connectivity fails. Readiness does not verify Alembic
 revision, executor capacity, OIDC/JWKS availability, AWS credentials, or collector health.
 
-## Opt-in 7B browser interface — local, pending acceptance
+## Opt-in 7B browser interface — accepted
 
 This separate same-origin interface is excluded from OpenAPI and disabled by default. It does
 not change `/api/v1`, health, readiness or their accepted schemas. See
@@ -470,7 +472,7 @@ not change `/api/v1`, health, readiness or their accepted schemas. See
 `session_context` is a random public correlation identifier, not a bearer or CSRF credential.
 It must match the current cookie's server session on all three BFF reads; absent/malformed/stale
 values return 401 before forwarding and do not revoke the current valid session. This additive
-7B-only interface is unaccepted; `/api/v1` headers, fields and authorization are unchanged.
+7B-only interface is accepted through PR #43; `/api/v1` headers, fields and authorization are unchanged.
 
 All dashboard responses, including unexpected 500s, carry no-store and scoped browser security headers. Authentication is
 401; rejected origin/CSRF is 403; capacity or unavailable login is sanitized 503. Callback errors

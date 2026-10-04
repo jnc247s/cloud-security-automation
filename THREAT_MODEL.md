@@ -1,8 +1,8 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--6 and 7A
-Implementation baseline: `main` commit `bd639f48095ef63e658abd284ce25c927998c0fb` (7A merged in PR #42)
-Last reconciled: 2026-10-04; 7A accepted; local 7B repairs validated/reviewed, acceptance pending
+Status: living model for accepted Sprints 0--6 and 7A/7B
+Implementation baseline: `main` commit `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187` (7B merged in PR #43)
+Last reconciled: 2026-10-04; 7A/7B accepted with independent review and green merged-main CI
 
 ## Scope and security objectives
 
@@ -72,8 +72,8 @@ executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fa
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
 production deployment, Terraform infrastructure, remediation execution, or AI agent is
-implemented. The authorized opt-in 7B frontend/session boundary below is local work, not yet
-accepted. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
+implemented. The opt-in 7B frontend/session boundary below is accepted code, not a production
+deployment or live-provider validation. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
 6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7
 is IN PROGRESS with accepted 7A reporting; independent review passed with zero unresolved
@@ -106,9 +106,9 @@ PASS is produced. A privileged database operator remains trusted. Tests use cont
 JWKS but real production signature/issuer/audience/expiry/role verification, not dependency bypass.
 No new AWS permission, tenant policy, browser/session or production boundary is introduced.
 The [7B preflight](docs/sprint-7b-preflight.md) preserves the original analysis and subsequent
-explicit design/implementation approval. Its new boundary still requires independent review.
+explicit design/implementation approval. Its boundary passed the required independent review.
 
-Authorized local 7B adds a same-origin, read-only browser shell and FastAPI BFF. Tokens remain
+Accepted 7B adds a same-origin, read-only browser shell and FastAPI BFF. Tokens remain
 server-side; the existing bearer/READ API is re-entered with the user's verified access token.
 Client-supplied roles, a dashboard cookie at `/api/v1`, arbitrary forwarding and mutation are
 not authentication/authorization mechanisms. Cognito Essentials is the intended provider;
@@ -124,7 +124,8 @@ require a public expected-session context before READ forwarding, and clear pend
 credential-free ephemeral same-origin tab notifications. Context alone never authenticates a
 request; scripts/extensions and the common READ trust domain remain existing residual risks.
 Final local validation and the same reviewer's follow-up passed with zero unresolved findings;
-documentary/publication/CI/merge gates remain, not acceptance or live-provider validation.
+both final-head CI runs, explicit human merge approval and merged-main CI passed through PR #43.
+7B acceptance does not validate a live provider or production operations.
 
 ## Trust boundaries and assumptions
 
@@ -206,9 +207,9 @@ and runtime workload identity are supplied by the deployment environment.
 | T14 | Dependency, image, or CI compromise | High | Minimal dependencies, bounded backend ranges, exact frontend versions/lockfile, pinned Node/pnpm, least-privilege CI, tests/PostgreSQL/image build | No backend lockfile/SBOM or comprehensive security scans; action/base-image tags remain mutable. Review every dependency, action and base-image update |
 | T15 | Database exposure or destructive migration | Critical | Loopback local port, migrations, PostgreSQL constraints, no automatic schema creation | Production network/backup/credential controls are external; never mutate production without explicit approval |
 | T16 | Fabricated, misdirected, or overwritten graph evidence | High | Deterministic graph IDs; strict endpoint direction/scope/Region; exact scan/account/time binding; one outcome and an exact artifact reference per declared source; `PRESENT`-outcome relationship provenance; same-scan snapshot foreign keys; append-only guards; closed exceptional-owner admission; 5A never invents referenced owners; 5B refines owner-incomplete targets only with exact proof; 5C keeps collection account distinct from IAM policy owner; 5D admits supplemental discovery only with exact same-scan S3 Region proof; 5E requires authoritative bucket location and canonical returned KMS identity; 5F keeps collection account, trail owner, and organization context distinct and resolves S3/KMS edges only from exact same-scan evidence | A privileged database/schema operator remains trusted, and unresolved targets remain unavailable for any future rule that requires a resolved edge |
-| T17 | Browser token/code theft, XSS and evidence caching | High | Local 7B: opaque HttpOnly host-only cookies; server-only tokens; scoped CSP/no-store/no-referrer including unexpected 500s; text-only metadata rendering; clean callback redirect and error-path access-log query removal; identity-client debug redaction; no Web Storage/offline cache/third-party assets | Locally reviewed, acceptance pending. HttpOnly does not prevent malicious same-origin scripts making reads. Ingress must also omit callback queries; process memory and browser extensions remain trusted |
-| T18 | Login CSRF, code/session substitution and logout bypass | High | Local 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Locally reviewed, acceptance pending. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
-| T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Local 7B: only bounded scan/detail/posture GETs through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Locally reviewed, acceptance pending. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
+| T17 | Browser token/code theft, XSS and evidence caching | High | Accepted 7B: opaque HttpOnly host-only cookies; server-only tokens; scoped CSP/no-store/no-referrer including unexpected 500s; text-only metadata rendering; clean callback redirect and error-path access-log query removal; identity-client debug redaction; no Web Storage/offline cache/third-party assets | Controlled-issuer acceptance only; live setup unvalidated. HttpOnly does not prevent malicious same-origin scripts making reads. Ingress must also omit callback queries; process memory and browser extensions remain trusted |
+| T18 | Login CSRF, code/session substitution and logout bypass | High | Accepted 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Controlled-issuer acceptance only; live setup unvalidated. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
+| T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B: only bounded scan/detail/posture GETs through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
 
 ## Future-boundary threats
 
