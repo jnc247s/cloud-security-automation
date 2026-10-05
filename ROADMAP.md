@@ -8,6 +8,8 @@ Accepted implementation baseline: `main` at `8f58b2716a726fcefc5d89567b0dff882f7
 Sprints 0--6 and Sprint 7A/7B/7C/7D accepted, including exact-scan READ reporting, opt-in
 authenticated investigation and retained NIST technical context; catalog `0.13.0` and migration
 `20261001_0006` are unchanged; merged-main CI passed)
+Accepted documentary checkpoint: `main` at
+`9927b768f8d3cbc1ffa958c50262eef18271da13` (7D closeout PR #49; green merged-main CI).
 
 ## Current state
 
@@ -504,6 +506,86 @@ The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7d-acceptance-and
 records exact parent/tree bindings, validation reuse and the separate documentary publication gates.
 Sprint 7 remains IN PROGRESS, its plan remains active, and 7E remains PLANNED with separate
 preflight unstarted. No later-sprint work or live IdP/AWS/IAM/secret/production operation.
+
+### 7E preflight — 2026-10-04
+
+Fresh readback confirms 7D documentary closeout
+[PR #49](https://github.com/jnc247s/cloud-security-automation/pull/49) MERGED at
+`9927b768f8d3cbc1ffa958c50262eef18271da13`, with reviewed head `47bf712`,
+successful exact-head CI and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37251193595).
+The implementation baseline remains accepted 7D/`8f58b2`; the documentary merge retains
+the reviewed tree. The user's "Do 7e preflight" requests analysis only.
+
+The [7E preflight](docs/sprint-7e-preflight.md) is prepared on scoped local branch
+`codex/sprint-7e-preflight` from that clean main. It proposes acceptance-only combined
+browser/API/database journeys, accessibility and cross-panel session safety checks, retained
+query/operation/request budgets, then whole-Sprint-7 review and gated documentary closeout.
+No new interface, dependency, schema, policy or blocking design choice is presently identified.
+Fresh existing reporting/history/signed-auth/security/contract diagnostics passed 226 checks;
+accepted main's full validation is baseline evidence, not acceptance of a future 7E delta.
+Historical predictions remain intact. **7E remains PLANNED**, Sprint 7 IN PROGRESS, its plan active.
+No implementation, reviewer launch, commit/push/PR/merge, live operation or later-sprint work.
+Next is a separate 7E implementation request; the blocked broader goal is not reset or replaced.
+
+### 7E implementation start — 2026-10-04
+
+The user's "Implement 7e" approves the prepared acceptance-only slice.
+7A--7D remain COMPLETE, **7E is IN PROGRESS**, and Sprint 7 remains IN PROGRESS.
+Work starts on `codex/sprint-7e-acceptance`, base `9927b768f8d3cbc1ffa958c50262eef18271da13`,
+preserving the six local preflight documents. Combined browser/API/database acceptance,
+accessibility, session safety, deterministic budgets and whole-sprint review are in scope.
+No product behavior, policy, dependency, migration or live operation is planned.
+Approval 9's one final reviewer and sequential exact-head/CI/guarded merge/main-CI gates
+remain required; implementation permission is not acceptance. Sprint 8 was not started.
+
+### 7E local validation — 2026-10-04
+
+The acceptance-only implementation passed 267 focused checks, 2,741 backend tests including
+287 PostgreSQL cases, no skips, 19 existing SQLite migration warnings, 130 frontend units and
+74 Chromium/Firefox journeys. Type/lint/build, Ruff/format, documentation links, whitespace,
+Compose and image gates passed. The [7E evidence matrix](docs/sprint-7e-acceptance.md) records
+the corrected test assumptions, one transient existing Firefox load-event timeout, ten unchanged
+repetitions and the successful complete rerun, synthetic visual coverage and explicit limitations.
+No runtime, API, schema, dependency, catalog/profile or mapping change was needed.
+Whole-Sprint-7 independent review and exact-head publication/CI/guarded merge/main-CI gates
+remain pending; **7E and Sprint 7 remain IN PROGRESS**. No Sprint 8 or live operation.
+
+### 7E initial review/publication and test repair — 2026-10-04
+
+Whole-Sprint-7 independent REVIEW_PASS with zero unresolved findings bound initial head `31336a0`
+and tree `24bca246`; independent 267 focused/35 PostgreSQL/130 frontend checks passed.
+[PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50) is open, not merged.
+Both first exact-head CI runs failed at 73/74 browser journeys in Firefox navigation-event
+setup, before security assertions. All eight setup callers are being repaired to synchronize on
+navigation commit plus real rendered UI, with every data/security assertion retained and no retry,
+skip, timeout, runtime or dependency change. Fresh validation and same-reviewer exact-head/CI/
+guarded merge/main-CI gates remain required; **7E and Sprint 7 remain IN PROGRESS**.
+
+### 7E superseding Firefox harness diagnosis — 2026-10-04
+
+The previous navigation-wait repair was not accepted: DOMContentLoaded passed 39/40 repetitions,
+and commit plus rendered UI passed 38/40. All eight experimental caller changes were reverted.
+The exact pinned Playwright 1.63 / Firefox build 1543 symptoms match its confirmed upstream COOP
+same-process channel collision. Only the Firefox test launcher now restores normal desktop site
+isolation (`fission.webContentIsolationStrategy=1`); application headers, dependencies, original
+navigation/data/security assertions, timeout and zero retries remain unchanged.
+All 40 repeated original multi-tab/login journeys passed (both engines, five repetitions).
+Fresh full validation and same-reviewer exact-new-head/publication/CI/guarded merge/main-CI gates
+remain required. [Evidence and diagnostic limits](docs/sprint-7e-acceptance.md) record the bounded
+harness repair; **7E and Sprint 7 remain IN PROGRESS**. No extra reviewer or Sprint 8 work.
+
+### 7E repaired-input validation — 2026-10-04
+
+Fresh full harness validation passed after the bounded Firefox launcher repair: 267 focused
+checks (113.77s), 2,741 backend tests (287 PostgreSQL, no skips, 19 existing warnings; 602.95s),
+130 frontend units, all 74 Chromium/Firefox journeys, type/lint/build, Ruff/374-file formatting,
+documentation links, whitespace, Compose and image build. Fresh offline image inspection passed.
+Same-reviewer preliminary repair review found no unresolved findings and independently passed
+type/lint, 88 contracts and whitespace; the original acceptance core is unchanged.
+The [evidence matrix](docs/sprint-7e-acceptance.md) records exact results and technical fingerprints.
+Final exact-head review, both new-head CI runs, guarded merge/main-CI and documentary closeout
+remain required. **7E and Sprint 7 remain IN PROGRESS**; no live operation or Sprint 8 work.
 
 ## Pre-Sprint 5 attention
 

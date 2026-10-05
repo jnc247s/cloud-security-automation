@@ -336,7 +336,7 @@ through the accepted shell boundary. Counts are historical technical facts, neve
 mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Local validation,
 exact-head independent review, both final-head CI runs, guarded merge and merged-main CI passed;
 see the [acceptance record](docs/sprint-7d-preflight.md). Live-provider/production validation
-and whole-Sprint-7 acceptance remain separate and unstarted.
+and whole-Sprint-7 acceptance remain separate; approved 7E acceptance is in progress, not accepted.
 
 ## Database and migration safety
 
@@ -400,8 +400,8 @@ access-key material. Provider failures and malformed facts remain sanitized. Spr
 Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
 was started by that acceptance or the subsequent analysis-only preparation.
 Subsequent approvals and gates accepted 7B/7C/7D; Sprint 7 remains IN PROGRESS, with 7E
-PLANNED. No live IdP/AWS/IAM/secret/deployment/remediation operation is
-authorized by acceptance or 7D implementation.
+IN PROGRESS as a test/documentation-only acceptance slice. No live IdP/AWS/IAM/secret/deployment/
+remediation operation is authorized by acceptance or 7D implementation.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

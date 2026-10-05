@@ -8,8 +8,9 @@ documentary closeout merge. The original analysis and its then-pending gates bel
 historical. The subsequent "Complete 7c" request completed the approved implementation/review/
 publication/merge/main-CI sequence through PR #45/46. 7C is COMPLETE. The subsequent
 [7D preflight and acceptance](sprint-7d-preflight.md) records completion of the approved
-client-only slice through PR #48 and green merged-main CI. 7D is COMPLETE; 7E remains PLANNED and still
-needs its separate preflight. The historical analysis body below is unchanged.
+client-only slice through PR #48 and green merged-main CI. 7D is COMPLETE.
+The [7E preflight](sprint-7e-preflight.md) is prepared; the subsequent implementation request starts
+7E IN PROGRESS, with whole-sprint acceptance pending. The historical analysis body below is unchanged.
 That prerequisite CI has now passed for exact main `f14d861`; the
 [handoff checkpoint](exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
 records prerequisite acceptance. The acceptance note below supersedes earlier planned/pending states.

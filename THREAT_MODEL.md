@@ -4,6 +4,10 @@ Status: living model for accepted Sprints 0--6 and 7A/7B/7C/7D
 Implementation baseline: `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48)
 Last reconciled: 2026-10-04; 7A/7B/7C/7D accepted with independent review and green merged-main CI
 
+7E is IN PROGRESS as a combined test/documentation acceptance slice; it changes no runtime or
+security boundary. Whole-Sprint-7 independent review and final acceptance gates remain pending.
+See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
+
 ## Scope and security objectives
 
 Accepted 6G addresses case-folded tag matches, blank values treated as usable, malformed/unavailable
@@ -162,7 +166,8 @@ server route, query, AWS call, credential or mutation is introduced. Existing or
 READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
 limitations remain. Local validation, exact-head independent review with zero unresolved findings,
 both final-head CI runs, guarded merge and merged-main CI passed for 7D. Whole-Sprint-7
-acceptance and live-provider/production validation remain separate and unstarted.
+acceptance is now IN PROGRESS through the approved 7E tests and final review; live-provider/
+production validation remains separate and unstarted.
 
 ## Trust boundaries and assumptions
 

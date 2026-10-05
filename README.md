@@ -34,7 +34,20 @@ review passed with zero unresolved findings; both exact-head CI runs and
 [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248734936)
 passed 2,731 backend tests (283 PostgreSQL, no skips), 130 frontend units, 54 Chromium/Firefox
 journeys and quality/container gates. This is accepted code, not production deployment.
-7E remains PLANNED. See the [7C preflight and acceptance record](docs/sprint-7c-preflight.md).
+7D's documentary closeout is merged through
+[PR #49](https://github.com/jnc247s/cloud-security-automation/pull/49), with green
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37251193595).
+7E is IN PROGRESS following approval of its [preflight](docs/sprint-7e-preflight.md).
+It scopes combined acceptance, accessibility/security/scaling evidence, whole-sprint review
+and gated closeout. Local acceptance passed 267 focused checks, 2,741 backend tests
+(287 PostgreSQL, no skips), 130 frontend units, 74 Chromium/Firefox journeys and quality/container
+gates. Final exact-head review and publication/CI/merge acceptance remain pending.
+Initial whole-sprint review passed, but both first PR/push CI runs caught a Firefox navigation
+setup wait. Restoring normal Firefox site isolation in the pinned test browser passed all 40
+repeated multi-tab journeys with original navigation assertions. The repaired full validation
+passed the same 2,741/287 backend/PostgreSQL, 130 unit and 74 browser gates. Final exact-head
+review/CI and merge gates remain required; no application behavior, security assertion, dependency,
+retry or test timeout is changed. See the [acceptance evidence](docs/sprint-7e-acceptance.md).
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority
@@ -71,8 +84,9 @@ records exact Git/validation evidence. The [7D preflight and acceptance record](
 preserves the approved client-only scope and implementation differences. 7D is COMPLETE at
 `8f58b2716a726fcefc5d89567b0dff882f7502ea`; exact mapped releases and coverage remain separate
 from technical results. The [7D acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
-records review, validation and merge evidence. Sprint 7 remains IN PROGRESS; 7E needs its
-separate preflight and whole-sprint acceptance. Production setup is unimplemented.
+records review, validation and merge evidence. Sprint 7 remains IN PROGRESS; 7E preflight is
+prepared and implementation has started; whole-sprint acceptance remains pending.
+Production setup is unimplemented.
 
 The current implementation includes:
 
