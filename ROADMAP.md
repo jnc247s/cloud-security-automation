@@ -611,7 +611,7 @@ preserving historical predictions and unchanged technical/security behavior. Its
 exact-head review, separate publication, both final-head CI runs, guarded merge and green main CI
 remain required at preparation; no future documentary gate is claimed passed.
 Fresh local closing verification passed 88 contract/link checks (0.31s, no skips/warnings), Ruff,
-374-file formatting, whitespace and unchanged migration head. All 37 inbound links were updated;
+374-file formatting, whitespace and unchanged migration head. All 38 inbound link lines were updated;
 the five technical-file fingerprints remain exact, so accepted full technical evidence is reused.
 Only the strict normative completion/path assertions change; final-head CI reruns full suites.
 Sprint 8 is **NEXT**, not started; a separate analysis-only preflight and implementation approval

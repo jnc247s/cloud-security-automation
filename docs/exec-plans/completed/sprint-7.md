@@ -1733,7 +1733,7 @@ separate publication, both new-head CI runs, guarded ordinary merge and green me
 Those documentary publication gates are pending at this preparation, not claimed successful.
 Fresh local documentary checks passed: `python -m pytest tests/unit/contracts -q -p no:cacheprovider`
 returned 88 passes (0.31s), no skips/warnings; Ruff, 374-file formatting, whitespace and unchanged
-`20261001_0006 (head)` passed. All 37 inbound link lines were reconciled; the archived file exists
+`20261001_0006 (head)` passed. All 38 inbound link lines were reconciled; the archived file exists
 and its active path is absent. The five technical Git-filtered fingerprints match accepted 7E.
 The full/PostgreSQL/frontend/browser/container results and exact accepted-main CI above remain
 applicable because no technical implementation or test-core input changes; the strengthened
