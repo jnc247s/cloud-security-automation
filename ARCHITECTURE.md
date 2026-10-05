@@ -616,7 +616,8 @@ replacement resets release/disclosure state through the existing abort/generatio
 Metadata is escaped text with bounded display truncation, never navigated. Source digests are
 provenance, not client-side verification of absent source bytes. No NIST outcome result, full-Core
 coverage claim, manual attestation, percentage or exception-based assessment rewrite is added.
-See [7D preflight](docs/sprint-7d-preflight.md); validation and acceptance gates are pending.
+See [7D preflight](docs/sprint-7d-preflight.md); local validation has passed. Final exact-input
+review and GitHub CI/merge/main-CI gates remain required before acceptance.
 
 ## Runtime and deployment
 

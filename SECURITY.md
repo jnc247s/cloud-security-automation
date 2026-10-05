@@ -333,7 +333,8 @@ Text is truncated explicitly (2,048 characters per value, 512 per summary, 256 p
 UUIDs/checksums/counts are not truncated. This does not bound upstream JSON or prove full review.
 Selection/refresh/session replacement resets context; logout/expiry/cross-tab changes clear it
 through the accepted shell boundary. Counts are historical technical facts, never NIST results;
-mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Validation/review are pending.
+mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Local validation has passed;
+final exact-input review and GitHub CI/merge/main-CI acceptance gates remain required.
 
 ## Database and migration safety
 

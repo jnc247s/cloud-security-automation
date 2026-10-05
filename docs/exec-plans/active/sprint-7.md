@@ -1393,3 +1393,13 @@ are uncommitted at this checkpoint. Exact-input/commit review, scoped push/PR, b
 guarded ordinary merge and successful merged-main CI remain required under approval 9.
 7D stays IN PROGRESS, Sprint 7 IN PROGRESS, 7E PLANNED. No 7E preflight or later implementation,
 live operation, auto/admin/force merge, branch deletion or goal reset/completion.
+
+The same reviewer's exact-commit verification of `5bb085084e3d909b33ae24a94222ddedfa621db5`
+confirmed its parent/tree, clean 25-file scope, unchanged 12-file technical fingerprint and raw
+committed-byte equality. Fresh 86 contracts (0.26s), Ruff/369-file format/whitespace and migration
+head passed. One LOW current-state documentation finding remained: the threat model still called
+completed local validation pending. That sentence and related architecture/security wording are
+reconciled to passed local validation with required final exact-input/GitHub acceptance gates.
+This documentary-only correction does not invalidate implementation or full/PG/browser/image
+validation. Final exact-head follow-up remains required; 7D is IN PROGRESS and no publication
+or merge has occurred at this correction checkpoint.

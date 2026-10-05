@@ -160,7 +160,8 @@ or whole-CSF claims. Text-only bounded disclosures prevent metadata execution/na
 digests are retained provenance, not browser certification of unseen source bytes. No new
 server route, query, AWS call, credential or mutation is introduced. Existing organization-wide
 READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
-limitations remain. Local implementation validation and independent acceptance are pending.
+limitations remain. Local implementation validation has passed; final exact-input review and
+GitHub CI/merge/main-CI acceptance remain required before 7D is accepted.
 
 ## Trust boundaries and assumptions
 
