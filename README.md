@@ -41,7 +41,13 @@ journeys and quality/container gates. This is accepted code, not production depl
 It scopes combined acceptance, accessibility/security/scaling evidence, whole-sprint review
 and gated closeout. Local acceptance passed 267 focused checks, 2,741 backend tests
 (287 PostgreSQL, no skips), 130 frontend units, 74 Chromium/Firefox journeys and quality/container
-gates. Whole-sprint independent review and publication/CI/merge acceptance remain pending.
+gates. Final exact-head review and publication/CI/merge acceptance remain pending.
+Initial whole-sprint review passed, but both first PR/push CI runs caught a Firefox navigation
+setup wait. Restoring normal Firefox site isolation in the pinned test browser passed all 40
+repeated multi-tab journeys with original navigation assertions. The repaired full validation
+passed the same 2,741/287 backend/PostgreSQL, 130 unit and 74 browser gates. Final exact-head
+review/CI and merge gates remain required; no application behavior, security assertion, dependency,
+retry or test timeout is changed. See the [acceptance evidence](docs/sprint-7e-acceptance.md).
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [active Sprint 7 plan](docs/exec-plans/active/sprint-7.md) records current scoped authority

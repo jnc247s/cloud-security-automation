@@ -1592,3 +1592,89 @@ Approval 9 requires exact-head/tree review, both green final-head CI runs, guard
 and green merged-main CI before acceptance. 7E/Sprint 7 remain IN PROGRESS; no archive/completion,
 live IdP/AWS/IAM/secret/deployment/remediation operation, parallel implementation or Sprint 8 work.
 Parent untracked skill files, original 6E.3 checkout and older branches remain preserved/excluded.
+
+## 7E publication and browser-navigation repair — 2026-10-04
+
+The single authorized reviewer returned whole-Sprint-7 exact-head REVIEW_PASS with zero unresolved
+findings for `31336a0be9010c918c7d91da52acfc2c75dc215f`, tree
+`24bca246425b58e696bab5af725d8b671a10c2f0`, parent `9927b7`. Independent validation passed 267
+focused signed-HTTP/service/security/contracts (58.74s), 35 PostgreSQL whole-story/scaling/history
+checks on a fresh owned disposable database (61.25s), 130 frontend units/type/lint, quality and
+migration-head checks. Full/browser/image/visual results were inspected, not independently rerun
+in full. Git-filtered technical-core blob manifest SHA256 was
+`A27970801EC0178254BD8F5D80BE84B0EBDE7E1C12CFFE466397907E30D5E2F8`.
+
+Scoped branch publication and [PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50)
+followed approvals 9/11. Both initial exact-head runs failed in browser setup at 73/74:
+[PR CI 37259930464](https://github.com/jnc247s/cloud-security-automation/actions/runs/37259930464)
+timed out in the new combined Firefox sibling tab's `page.goto`, waiting for `load`;
+[push CI 37259927575](https://github.com/jnc247s/cloud-security-automation/actions/runs/37259927575)
+timed out in the accepted shell's initial Firefox login `page.goto`, also waiting for `load`.
+Backend/frontend gates passed, but no browser/image/overall success or merge is claimed.
+
+The same navigation-event setup issue first seen locally therefore required a bounded test-only
+repair, not retries or an application redesign. Audited all eight dashboard `goto` callers in
+the four suites. A DOMContentLoaded-only attempt for sibling tabs passed 39/40 repetitions but
+still missed an event despite a rendered authenticated dashboard; that intermediate delta is
+unaccepted. Current setup waits for navigation commit, then explicitly requires actual rendered
+sign-in/authenticated identity/selected report readiness. Every existing logout, cross-tab,
+replacement-context 401, expiry, evidence and count assertion remains; timeout/retries remain
+30 seconds/zero. No API, runtime, auth, dependency, browser-cache or policy change.
+
+Fresh targeted repetitions, full both-browser/regression/container gates and the same reviewer's
+exact-new-head follow-up precede new-head publication/CI. The initial verdict applies only to
+`31336a0`, not these changed inputs. 7E/Sprint 7 remain IN PROGRESS; PR #50 stays unmerged.
+No archive, production operation, extra reviewer or Sprint 8 work.
+
+## 7E superseding Firefox harness diagnosis — 2026-10-04
+
+The navigation-wait experiments above were not accepted: DOMContentLoaded passed 39/40, and
+commit plus rendered UI passed 38/40, with correct rendered identity/views despite timeouts.
+All eight caller edits were reverted; the original four-file acceptance core and all existing
+browser test assertions are unchanged from `31336a0`.
+
+The pinned Playwright 1.63 / Firefox build 1543 symptoms match the confirmed
+[upstream COOP same-process channel collision](https://github.com/microsoft/playwright/issues/42731).
+No local protocol trace is claimed. A bounded test-launch repair restores Firefox's normal
+desktop site-isolation strategy (`fission.webContentIsolationStrategy=1`) instead of Playwright's
+override of zero. Chromium, application headers including COOP, authentication, dependencies,
+navigation and security assertions, timeout and zero retries remain unchanged. The upstream
+[regression-test PR](https://github.com/microsoft/playwright/pull/42788) is not the browser fix;
+no dependency upgrade is introduced.
+
+Four original multi-tab/login journeys in both engines, repeated five times each, passed
+**40/40 (1.3m)** with frontend type/lint/build gates. Only the owned fresh disposable PostgreSQL
+container was removed. Fresh complete harness validation, same-reviewer exact-new-head review,
+both green new-head CI runs, guarded ordinary merge and green merged-main CI still precede
+acceptance. The prior verdict binds only `31336a0`, not the changed launcher/documentation.
+7E/Sprint 7 remain IN PROGRESS; PR #50 stays unmerged. No archive, live operation or Sprint 8 work.
+
+## 7E repaired-input full validation — 2026-10-04
+
+The complete fresh `scripts.validate.validate(focused, dashboard=True)` harness passed after the
+Firefox launcher repair, using the same ten focused paths recorded above and only a newly owned
+disposable PostgreSQL container. Results: **267 focused (113.77s)**; frontend type/lint/build,
+**130 units (2.81s)** and **74 Chromium/Firefox journeys (1.7m)**; Ruff/374-file formatting;
+**2,741 backend passes (602.95s / 10:02)** including **287 PostgreSQL**, no skips, 19 existing
+SQLite migration warnings; documentation links, whitespace, Compose and image build. Separate
+collect-only confirmed 287 integration cases. Only the created database was removed.
+Fresh network-disabled image inspection confirmed non-root runtime, built assets and absent
+Node/tests/issuer. Prior unchanged-runtime offline lifespan/health/auth smoke and synthetic visual
+evidence remain applicable; this is not a live-provider/production/formal-accessibility validation.
+
+The four original multi-tab/login stories were also run with
+`pnpm --dir frontend test:browser --grep="two-tab|two tabs|across tabs" --repeat-each=5`
+under the isolated fixture settings: 40/40 across both engines (1.3m), no retries/skips.
+Same-reviewer preliminary repair review found zero unresolved findings; independent type/lint,
+88 contract/documentation checks (0.28s, no skips/warnings) and whitespace passed without starting
+a competing fixture. Four-core Git-filtered manifest remains
+`A27970801EC0178254BD8F5D80BE84B0EBDE7E1C12CFFE466397907E30D5E2F8`; the five technical paths
+including `frontend/playwright.config.ts` have path/TAB/Git-blob-OID UTF-8/LF manifest SHA256
+`64CD2612DE7194D0FC34B746DBCC7C604D652E3DCB9FC17C2DD066765FF1DC6A`.
+
+Only six files differ from `31336a0`: Firefox launch configuration and five documentation owners.
+No application/API/schema/auth/dependency/default/catalog/mapping/migration change; existing
+browser assertions and navigation setup are restored. The complete feature delta from `9927b7`
+has eighteen scoped files. Final freeze/commit, same-reviewer exact-head follow-up, ordinary push
+and both new-head CI runs still precede guarded ordinary merge and green merged-main CI.
+7E/Sprint 7 remain IN PROGRESS; PR #50 is unmerged. No extra reviewer, live operation or Sprint 8.

@@ -551,6 +551,42 @@ No runtime, API, schema, dependency, catalog/profile or mapping change was neede
 Whole-Sprint-7 independent review and exact-head publication/CI/guarded merge/main-CI gates
 remain pending; **7E and Sprint 7 remain IN PROGRESS**. No Sprint 8 or live operation.
 
+### 7E initial review/publication and test repair — 2026-10-04
+
+Whole-Sprint-7 independent REVIEW_PASS with zero unresolved findings bound initial head `31336a0`
+and tree `24bca246`; independent 267 focused/35 PostgreSQL/130 frontend checks passed.
+[PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50) is open, not merged.
+Both first exact-head CI runs failed at 73/74 browser journeys in Firefox navigation-event
+setup, before security assertions. All eight setup callers are being repaired to synchronize on
+navigation commit plus real rendered UI, with every data/security assertion retained and no retry,
+skip, timeout, runtime or dependency change. Fresh validation and same-reviewer exact-head/CI/
+guarded merge/main-CI gates remain required; **7E and Sprint 7 remain IN PROGRESS**.
+
+### 7E superseding Firefox harness diagnosis — 2026-10-04
+
+The previous navigation-wait repair was not accepted: DOMContentLoaded passed 39/40 repetitions,
+and commit plus rendered UI passed 38/40. All eight experimental caller changes were reverted.
+The exact pinned Playwright 1.63 / Firefox build 1543 symptoms match its confirmed upstream COOP
+same-process channel collision. Only the Firefox test launcher now restores normal desktop site
+isolation (`fission.webContentIsolationStrategy=1`); application headers, dependencies, original
+navigation/data/security assertions, timeout and zero retries remain unchanged.
+All 40 repeated original multi-tab/login journeys passed (both engines, five repetitions).
+Fresh full validation and same-reviewer exact-new-head/publication/CI/guarded merge/main-CI gates
+remain required. [Evidence and diagnostic limits](docs/sprint-7e-acceptance.md) record the bounded
+harness repair; **7E and Sprint 7 remain IN PROGRESS**. No extra reviewer or Sprint 8 work.
+
+### 7E repaired-input validation — 2026-10-04
+
+Fresh full harness validation passed after the bounded Firefox launcher repair: 267 focused
+checks (113.77s), 2,741 backend tests (287 PostgreSQL, no skips, 19 existing warnings; 602.95s),
+130 frontend units, all 74 Chromium/Firefox journeys, type/lint/build, Ruff/374-file formatting,
+documentation links, whitespace, Compose and image build. Fresh offline image inspection passed.
+Same-reviewer preliminary repair review found no unresolved findings and independently passed
+type/lint, 88 contracts and whitespace; the original acceptance core is unchanged.
+The [evidence matrix](docs/sprint-7e-acceptance.md) records exact results and technical fingerprints.
+Final exact-head review, both new-head CI runs, guarded merge/main-CI and documentary closeout
+remain required. **7E and Sprint 7 remain IN PROGRESS**; no live operation or Sprint 8 work.
+
 ## Pre-Sprint 5 attention
 
 These accepted-baseline limitations were discovered during the governance audit. This register

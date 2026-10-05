@@ -2,7 +2,8 @@
 
 Status: IN PROGRESS, not accepted. The user approved the
 [7E preflight](sprint-7e-preflight.md) on 2026-10-04.
-This slice adds tests and acceptance documentation only; no runtime, API/BFF, policy,
+This slice adds tests, browser-harness configuration and acceptance documentation only; no application
+runtime, API/BFF, policy,
 dependency, catalog, mapping or migration change is planned.
 [ROADMAP.md](../ROADMAP.md) owns progress and the
 [active plan](exec-plans/active/sprint-7.md) records review/publication/merge gates.
@@ -74,9 +75,51 @@ A Windows captured-output/background-browser pipe stalled the diagnostic wrapper
 CLI checks completed, then the exact owned browser, fixture processes and database were closed.
 This recovery is not claimed as a successful wrapper run or a production accessibility audit.
 
-The single authorized whole-Sprint-7 independent review, exact-head publication/CI and guarded
-merge/main-CI gates remain pending. Exact final results and commit/tree/CI bindings will be
-recorded before acceptance.
+The single authorized whole-Sprint-7 reviewer returned REVIEW_PASS with zero unresolved findings
+for initial head `31336a0`/tree `24bca246`. Independent checks passed 267 focused backend,
+35 PostgreSQL and 130 frontend units/type/lint plus quality/migration gates. Complete full/browser/
+image/visual results were inspected, not independently repeated in full.
+[PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50) published that exact head.
+Both first exact-head CI runs subsequently failed at 73/74 browser journeys, before security
+assertions: PR CI's new sibling-tab navigation and push CI's existing shell login waited past the
+Firefox load event. No merge occurred. These failures invalidate browser acceptance of that head.
+
+Navigation-wait experiments failed: DOMContentLoaded passed only 39/40 repetitions and commit
+plus rendered UI only 38/40. Neither was accepted; every experiment was reverted, leaving the
+original navigation and security assertions unchanged. The symptoms match the confirmed
+[upstream Playwright 1.63 / Firefox build 1543 channel collision](https://github.com/microsoft/playwright/issues/42731)
+when a COOP response replaces a browsing context in the same process. That protocol collision
+was not instrumented locally; the diagnosis is supported by repeated rendered-view timeouts,
+the exact pinned versions and the upstream report.
+
+The bounded repair in [Playwright configuration](../frontend/playwright.config.ts) restores
+Firefox's normal desktop site-isolation strategy (`fission.webContentIsolationStrategy=1`) in
+the test launcher, instead of Playwright's override of zero. Chromium, dependencies, application
+headers (including COOP), authentication, all assertions, thirty-second timeout and zero retries
+are unchanged. Four original multi-tab/login journeys in both engines repeated five times each
+passed **40/40 (1.3m)**. Fresh full validation, the same reviewer's exact-new-head follow-up and
+both green new-head CI runs are required before merge. No final acceptance is inferred from the
+initial review or the repetition alone.
+
+### Repaired-input full validation
+
+The fresh complete harness after the launcher repair passed **267 focused checks (113.77s)**,
+frontend typecheck/lint/build and **130 units (2.81s)**, all **74 Chromium/Firefox journeys (1.7m)**,
+Ruff/374-file formatting, and **2,741 backend tests (602.95s)** including **287 PostgreSQL** cases,
+with no skips and 19 existing SQLite migration warnings. Documentation links, whitespace,
+Compose configuration and image build passed. Only the harness-owned disposable database was
+removed. Fresh network-disabled image inspection confirmed non-root runtime, built assets and
+no Node/tests/controlled issuer. Unchanged offline lifespan/health/auth smoke and synthetic visual
+evidence above remain applicable; no new live-provider, production or formal accessibility claim.
+
+The same reviewer preliminarily verified the bounded repair, unchanged original assertions and
+accurate failure/diagnosis limits. Independent typecheck/lint, 88 contracts (0.28s; no skips/warnings)
+and whitespace passed without starting a competing fixture. The original four-file Git-filtered
+core manifest remains `A27970801EC0178254BD8F5D80BE84B0EBDE7E1C12CFFE466397907E30D5E2F8`.
+Including the launcher as a fifth technical file gives path/TAB/Git-blob-OID UTF-8/LF manifest
+SHA256 `64CD2612DE7194D0FC34B746DBCC7C604D652E3DCB9FC17C2DD066765FF1DC6A`.
+Final exact-commit review, both green new-head CI runs, guarded merge and green merged-main CI
+remain required. 7E and Sprint 7 are still IN PROGRESS; PR #50 is not yet accepted or merged.
 
 ## Limits and safety
 

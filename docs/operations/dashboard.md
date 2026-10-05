@@ -140,6 +140,12 @@ No score, export, storage, telemetry, backend/schema/dependency/default or produ
 Node 24.19.0 and pnpm 11.19.0 are pinned; frontend dependencies use exact versions and a lockfile.
 Run typecheck, lint, test and build scripts in frontend. Install the pinned Playwright browsers
 with `pnpm --dir frontend exec playwright install chromium firefox`.
+The pinned Playwright 1.63 / Firefox build 1543 test launcher restores normal desktop site
+isolation with `fission.webContentIsolationStrategy=1`. This avoids the upstream
+[COOP same-process channel collision](https://github.com/microsoft/playwright/issues/42731)
+without disabling application security headers, changing dependencies, weakening navigation or
+security assertions, adding retries or increasing timeouts. It changes test launch configuration,
+not application runtime policy. Chromium configuration is unchanged.
 Then run `python scripts/validate.py --dashboard --focused tests/api/test_dashboard_api.py
 tests/unit/security tests/unit/test_config.py tests/api/test_technical_posture_api.py tests/unit/contracts`
 as one command. The harness creates its own disposable PostgreSQL container on loopback, supplies
