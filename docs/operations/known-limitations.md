@@ -17,7 +17,7 @@ limits do not bound existing resource-history hydration or unpaginated finding d
 Current operational pages can drift; server response time labels exception eligibility at that
 read, not historic/atomic coverage. Unknown proof schemas are raw evidence without inferred links,
 and unresolved endpoints remain references. Display truncation is not full evidence review.
-7D NIST hierarchy is implemented locally with acceptance pending; it reports only exact retained
+Accepted 7D NIST hierarchy reports only exact retained
 mapped technical context, not the full CSF Core or a compliance result. Display validation does
 not certify unseen source bytes or bound upstream report size. Account/tenant isolation and
 live provider/production validation remain absent.
@@ -397,8 +397,8 @@ snapshot is shown as latest.
 
 ## Deferred by design
 
-Accepted 7B/7C provide an opt-in authenticated shell and exact-scan investigation. Client-only
-7D NIST context is implemented locally with acceptance pending; whole-Sprint-7 acceptance remains
+Accepted 7B/7C/7D provide an opt-in authenticated shell, exact-scan investigation and retained
+NIST mapped-subset context; whole-Sprint-7 acceptance remains
 separate. Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
 There is no production Terraform deployment, governance mutation API, remediation,

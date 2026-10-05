@@ -1,22 +1,23 @@
 # Sprint 7D NIST context preflight
 
 Prepared: 2026-10-04 as analysis only, following the user's "Do 7d preflight" request.
-Superseding authority: the subsequent "Implement 7d" approves this prepared slice; 7D is now
-IN PROGRESS. Approval 9's single reviewer and guarded publication/merge sequence remains in force.
+Superseding acceptance: the subsequent "Implement 7d" approved this prepared slice; 7D is now
+COMPLETE through PR #48 with green merged-main CI. Approval 9's single reviewer and guarded
+publication/merge sequence was followed; the acceptance record below supersedes pending checkpoints.
 7E remains PLANNED and unstarted. The original analysis findings and checkpoint below are retained.
 The accepted exact-scan report already supplies the hierarchy, counts and provenance needed
 for a client-only NIST context view. No new API, schema, query, mapping, dependency or policy
-decision is currently necessary. Implementation is underway; acceptance gates remain pending.
+decision was necessary. The client-only implementation and all required 7D acceptance gates passed.
 
 [ROADMAP.md](../ROADMAP.md) owns progress. The [active plan](exec-plans/active/sprint-7.md)
 preserves the prior sequential workflow approval. The original preflight stopped before
 implementation, reviewer launch, commit, publication or merge. Its PLANNED checkpoint below
-is historical; the superseding implementation request makes 7D IN PROGRESS, with acceptance
-still pending. 7A--7C remain COMPLETE, Sprint 7 IN PROGRESS and 7E PLANNED.
+is historical; the superseding implementation/acceptance records make 7D COMPLETE.
+7A--7D are COMPLETE, Sprint 7 IN PROGRESS and 7E PLANNED.
 
-## Verified baseline
+## Verified preflight baseline
 
-Current remote main is `2a4af99fef656afe0772580dc7e8576b9f813737`, the accepted
+At preflight, remote main was `2a4af99fef656afe0772580dc7e8576b9f813737`, the accepted
 [7C documentary closeout PR #47](https://github.com/jnc247s/cloud-security-automation/pull/47).
 Its [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37240425614)
 is COMPLETED/SUCCESS. Recorded baseline results are 2,728 backend tests including 283 PostgreSQL
@@ -26,7 +27,7 @@ The accepted implementation remains PR #45/46 at `f10c450`; no technical behavio
 PR #47. Defaults remain catalog `0.2.1`, profile `default/1.0.0`, latest opt-in `0.13.0`
 and migration `20261001_0006`.
 
-The existing clean worktree is reused on local `codex/sprint-7d-preflight`, created from that
+The existing clean worktree was reused on local `codex/sprint-7d-preflight`, created from that
 verified main. The older parent skill branch and its untracked `.agents/` files, original 6E.3
 checkout and all 7C branches are preserved. No reset, clean, replacement or publication.
 
@@ -221,3 +222,20 @@ whitespace/Compose/image gates passed. The disposable database was removed. Init
 two stale current-state documentation statements are reconciled; final frozen-input review and
 GitHub CI/merge/main-CI acceptance remain pending. See the
 [local acceptance checkpoint](exec-plans/active/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04).
+
+## Superseding 7D acceptance — 2026-10-04
+
+7D is COMPLETE. The same single reviewer returned exact-commit REVIEW_PASS with zero unresolved
+findings for `b92c08a905b8a43f78c90172887e45630d0ff7b6`. Both exact-head CI runs passed;
+[PR #48](https://github.com/jnc247s/cloud-security-automation/pull/48) merged ordinarily at
+`8f58b2716a726fcefc5d89567b0dff882f7502ea`, and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248734936)
+passed 2,731 backend tests (283 PostgreSQL, no skips), 19 existing warnings, 130 frontend units,
+54 Chromium/Firefox journeys and quality/image gates. The merge tree exactly matches the
+reviewed tree; there was no force/admin bypass, auto-merge or branch deletion.
+The [acceptance checkpoint](exec-plans/active/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
+records exact review/publication/merge bindings and the documentation-only publication gates.
+The original preflight predictions and intermediate pending checkpoints above remain historical.
+Sprint 7 stays IN PROGRESS; 7E's separate preflight and whole-sprint review are unstarted.
+No backend/API/auth/schema/mapping/default/dependency or migration change, live provider/cloud/
+production operation, later-sprint implementation or unfinished-goal reset/completion.

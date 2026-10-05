@@ -145,7 +145,7 @@ Residual risks remain organization-wide READ access, trusted same-origin scripts
 unpaginated resource/finding detail internals, offset-page drift, display truncation, one process
 and unvalidated live IdP/TLS/MFA operations. NIST hierarchy work is not part of 7C.
 
-### 7D display integrity — acceptance pending
+### 7D display integrity — accepted
 
 New client display risks are cross-release UUID/key substitution, orphan/cyclic hierarchy,
 mapping fan-out inflating parent/headline counts, malformed scalar/coercive IDs and treating
@@ -160,8 +160,9 @@ or whole-CSF claims. Text-only bounded disclosures prevent metadata execution/na
 digests are retained provenance, not browser certification of unseen source bytes. No new
 server route, query, AWS call, credential or mutation is introduced. Existing organization-wide
 READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
-limitations remain. Local implementation validation has passed; final exact-input review and
-GitHub CI/merge/main-CI acceptance remain required before 7D is accepted.
+limitations remain. Local validation, exact-head independent review with zero unresolved findings,
+both final-head CI runs, guarded merge and merged-main CI passed for 7D. Whole-Sprint-7
+acceptance and live-provider/production validation remain separate and unstarted.
 
 ## Trust boundaries and assumptions
 

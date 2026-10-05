@@ -4,7 +4,8 @@ The opt-in shell and investigation are accepted through PR #43 and PR #45/46,
 with independent review and green merged-main CI; neither is a production deployment or
 live-provider validation. They support login, exact scan selection, historical scope/lifecycle,
 report availability and the exact-scan investigation below. Client-only 7D NIST hierarchy/counts
-are implemented locally with acceptance pending. Mutations and scan execution remain excluded.
+are accepted through PR #48 with exact-head independent review and green merged-main CI.
+Whole-Sprint-7 acceptance is separate; mutations and scan execution remain excluded.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
@@ -87,7 +88,7 @@ score. Pending/no-bundle reports have unavailable counts, not zero. Partial/fail
 remain visible with explicit coverage limitations. Client guards require exact lifecycle enums
 and all four finite nonnegative integer counts for available reports (including legitimate zero),
 while unavailable counts remain null. The accepted 7B/7C shell did not add a counts/score view;
-the local 7D extension below adds technical counts, never a score. Offset pages are not frozen snapshots.
+the accepted 7D extension below adds technical counts, never a score. Offset pages are not frozen snapshots.
 
 ## Exact-scan investigation — accepted 7C
 
@@ -115,7 +116,7 @@ per-row requests or client aggregates. READ still spans one trusted organization
 Selection/identity/logout/expiry changes clear details and ignore or abort late reads.
 No persistence, credentials, migration, default catalog/profile or production setup changes.
 
-## NIST technical context — 7D acceptance pending
+## NIST technical context — accepted 7D
 
 Open an exact retained scan, then explicitly select a mapped framework release by key/version
 and UUID. Expand native Function/Category/Subcategory disclosures and contributing controls

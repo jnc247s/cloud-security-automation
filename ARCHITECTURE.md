@@ -1,12 +1,12 @@
 # Architecture
 
-This document describes accepted Sprints 0--6 and Sprint 7A/7B/7C. The implementation baseline
-is `main` commit `f10c450478cce3ec962d2f45d249f57147443c32` (7C PR #45; test-only CI repair PR #46), after the Sprint 5
+This document describes accepted Sprints 0--6 and Sprint 7A/7B/7C/7D. The implementation baseline
+is `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
 7C's exact-scan investigation extension is accepted with green merged-main CI. Sprint 7 remains
-IN PROGRESS; client-only 7D NIST hierarchy implementation is underway and not yet accepted.
+IN PROGRESS; client-only 7D NIST hierarchy is accepted with green merged-main CI. 7E is unstarted.
 Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
@@ -598,7 +598,7 @@ ACCEPTED_RISK does not rewrite historical FAIL. Mixed reads are not a frozen rep
 Selection/identity changes clear details and abort or ignore outstanding responses.
 NIST hierarchy rendering, aggregate scores, writes and later-sprint behavior are not included.
 
-### 7D NIST context implementation — acceptance pending
+### 7D NIST context — accepted
 
 The approved client-only extension consumes the same selected-scan posture response already
 fetched by ScanShell. It adds no API/BFF allowlist entry, backend query, model, migration,
@@ -616,8 +616,8 @@ replacement resets release/disclosure state through the existing abort/generatio
 Metadata is escaped text with bounded display truncation, never navigated. Source digests are
 provenance, not client-side verification of absent source bytes. No NIST outcome result, full-Core
 coverage claim, manual attestation, percentage or exception-based assessment rewrite is added.
-See [7D preflight](docs/sprint-7d-preflight.md); local validation has passed. Final exact-input
-review and GitHub CI/merge/main-CI gates remain required before acceptance.
+See [7D preflight and acceptance](docs/sprint-7d-preflight.md). Local validation, exact-head
+independent review, both final-head CI runs, guarded ordinary merge and merged-main CI passed.
 
 ## Runtime and deployment
 
@@ -636,8 +636,8 @@ workload-role configuration remain deployment responsibilities.
 - Stable `Resource.arn` is first-seen data; each snapshot carries the actually observed ARN.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
-- The accepted opt-in 7B/7C shell provides read-only exact-scan investigation;
-  client-only 7D NIST context is implemented locally but acceptance is pending. Production setup
+- The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
+  NIST mapped-subset context. Whole-Sprint-7 acceptance is separate and unstarted. Production setup
   remains unimplemented.
 - No Terraform deployment, remediation, or AI runtime.
 

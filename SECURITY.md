@@ -318,7 +318,7 @@ Audit events are append-only evidence, not a general log sink. Record the verifi
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
 issuer/role/capability attribution is a known gap tracked in `ROADMAP.md`.
 
-### 7D NIST display safeguards — acceptance pending
+### 7D NIST display safeguards — accepted
 
 The client-only view adds no credential, permission, route, database or policy boundary. Existing
 session/context/origin/bearer READ and final expiry checks remain authoritative. Nested display
@@ -333,8 +333,10 @@ Text is truncated explicitly (2,048 characters per value, 512 per summary, 256 p
 UUIDs/checksums/counts are not truncated. This does not bound upstream JSON or prove full review.
 Selection/refresh/session replacement resets context; logout/expiry/cross-tab changes clear it
 through the accepted shell boundary. Counts are historical technical facts, never NIST results;
-mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Local validation has passed;
-final exact-input review and GitHub CI/merge/main-CI acceptance gates remain required.
+mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Local validation,
+exact-head independent review, both final-head CI runs, guarded merge and merged-main CI passed;
+see the [acceptance record](docs/sprint-7d-preflight.md). Live-provider/production validation
+and whole-Sprint-7 acceptance remain separate and unstarted.
 
 ## Database and migration safety
 
@@ -397,8 +399,8 @@ access-key material. Provider failures and malformed facts remain sanitized. Spr
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
 Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
 was started by that acceptance or the subsequent analysis-only preparation.
-Subsequent approvals and gates accepted 7B/7C; Sprint 7 remains IN PROGRESS, with 7D
-IN PROGRESS and 7E PLANNED. No live IdP/AWS/IAM/secret/deployment/remediation operation is
+Subsequent approvals and gates accepted 7B/7C/7D; Sprint 7 remains IN PROGRESS, with 7E
+PLANNED. No live IdP/AWS/IAM/secret/deployment/remediation operation is
 authorized by acceptance or 7D implementation.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
