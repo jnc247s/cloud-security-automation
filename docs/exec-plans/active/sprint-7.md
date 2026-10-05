@@ -1438,14 +1438,19 @@ completed SUCCESS for that exact merge: 2,731 backend tests including 283 Postgr
 no skips, 19 existing SQLite migration warnings, 130 frontend units, 54 Chromium/Firefox
 journeys and quality/image gates. The prior local 192 focused checks and full 2,731/283/130/54
 validation remain applicable because the acceptance closeout changes only Markdown and the
-normative slice-status guard, not any implementation, browser fixture or test behavior.
+normative slice-status guard, not any implementation, browser fixture or technical/security test
+behavior.
 The guard is updated atomically to accepted 7A--7D, Sprint 7 IN PROGRESS and 7E PLANNED.
 Fresh closeout `python -m pytest tests/unit/contracts -q` passed all 86 checks (0.27s), including
 documentation links and the normative status guard; Ruff, 369-file formatting and whitespace
 passed. A sandbox cache-write warning cleared on the permitted local-process rerun without
 disabling tests or changing assertions. Same-reviewer exact-commit verification and separate
 closeout publication/CI/guarded merge/main-CI remain required for this documentary delta.
-That publication is not claimed complete at this checkpoint.
+That publication is not claimed complete at this checkpoint. The same reviewer's closeout check
+found one LOW owner-consistency issue: security/threat headers still named the accepted 7C
+baseline. Both current headers now name accepted 7D/`8f58b2`; historical sections remain intact.
+The unchanged-test statement explicitly means technical/security behavior, not the intentionally
+updated normative status assertion. Final exact-commit follow-up remains required.
 
 7D is COMPLETE. Current owners and README record accepted implementation, exact technical-only
 semantics, test evidence and unchanged known limitations; historical predictions/checkpoints

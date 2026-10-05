@@ -1,8 +1,8 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--6 and 7A/7B/7C
-Implementation baseline: `main` commit `f10c450478cce3ec962d2f45d249f57147443c32` (7C and test-only CI repair in PR #45/46)
-Last reconciled: 2026-10-04; 7A/7B/7C accepted with independent review and green merged-main CI
+Status: living model for accepted Sprints 0--6 and 7A/7B/7C/7D
+Implementation baseline: `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48)
+Last reconciled: 2026-10-04; 7A/7B/7C/7D accepted with independent review and green merged-main CI
 
 ## Scope and security objectives
 

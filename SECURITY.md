@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B/7C at the
-accepted implementation `main` baseline `f10c450478cce3ec962d2f45d249f57147443c32` (PR #45/46;
+This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B/7C/7D at the
+accepted implementation `main` baseline `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
