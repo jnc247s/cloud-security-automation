@@ -4,9 +4,10 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-04
-Accepted implementation baseline: `main` at `f10c450478cce3ec962d2f45d249f57147443c32` (PR #45 plus test-only CI repair PR #46;
-Sprints 0--6 and Sprint 7A/7B/7C accepted, including exact-scan READ reporting and opt-in
-authenticated investigation, catalog `0.13.0` and migration `20261001_0006`; merged-main CI passed)
+Accepted implementation baseline: `main` at `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48;
+Sprints 0--6 and Sprint 7A/7B/7C/7D accepted, including exact-scan READ reporting, opt-in
+authenticated investigation and retained NIST technical context; catalog `0.13.0` and migration
+`20261001_0006` are unchanged; merged-main CI passed)
 
 ## Current state
 
@@ -486,6 +487,23 @@ gates. Initial independent review has no unresolved findings after documentary r
 final frozen-input review and scoped GitHub CI/merge/main-CI gates remain. The
 [implementation checkpoint](docs/exec-plans/active/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04)
 records exact evidence. 7D is not yet accepted. 7E remains PLANNED; no later-sprint or live operation.
+
+### 7D acceptance and documentary closeout — 2026-10-04
+
+Superseding acceptance: **7D is COMPLETE** through
+[PR #48](https://github.com/jnc247s/cloud-security-automation/pull/48), reviewed exact head
+`b92c08a905b8a43f78c90172887e45630d0ff7b6`, merged at
+`8f58b2716a726fcefc5d89567b0dff882f7502ea`. The single authorized reviewer returned REVIEW_PASS
+with zero unresolved findings. Both final-head CI runs and
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248734936)
+passed all 2,731 backend tests, including 283 PostgreSQL cases, no skips, 19 existing warnings,
+130 frontend units, 54 Chromium/Firefox journeys and quality/image gates. Local focused acceptance
+passed 192 checks. This accepts client-only exact-report hierarchy/count/provenance rendering,
+not a score, whole-CSF outcome, manual attestation, mutation or live deployment.
+The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
+records exact parent/tree bindings, validation reuse and the separate documentary publication gates.
+Sprint 7 remains IN PROGRESS, its plan remains active, and 7E remains PLANNED with separate
+preflight unstarted. No later-sprint work or live IdP/AWS/IAM/secret/production operation.
 
 ## Pre-Sprint 5 attention
 

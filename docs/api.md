@@ -522,7 +522,7 @@ state. Error/nonoperational responses do not carry it; `/api/v1` response bodies
 The UI displays stored status separately from eligibility at this reference and fails unavailable
 for missing/invalid times. Technical four-state results never change with operational handling.
 
-### 7D client-only NIST context — acceptance pending
+### 7D client-only NIST context — accepted
 
 7D reuses the already fetched `GET /dashboard/api/scans/{scan_id}/technical-posture` response.
 There is no new API/BFF endpoint, query parameter, response field, reporting enum, authorization
@@ -530,7 +530,9 @@ or persistence change. Existing schema `1.0.0` and exact scan/profile/catalog/fr
 remain authoritative. A separate browser display guard validates nested hierarchy/count/mapping
 consistency; supported investigation remains independent of NIST display failures. Framework
 selection and expansion issue zero additional requests. No metadata URL is followed and no
-NIST result/score or manual-attestation write is introduced. Acceptance is pending.
+NIST result/score or manual-attestation write is introduced. PR #48 passed local validation,
+exact-head independent review, both final-head CI runs, guarded merge and merged-main CI;
+see the [acceptance record](sprint-7d-preflight.md). Whole-Sprint-7 acceptance remains separate.
 
 ## Compatibility rule
 

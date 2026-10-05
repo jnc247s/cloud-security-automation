@@ -1,6 +1,6 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D IN PROGRESS; 7E PLANNED.
+Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E PLANNED.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
@@ -24,11 +24,12 @@ exact-input review, final-head CI, guarded merge and merged-main CI before imple
 Current acceptance: the prerequisite and all 7C implementation gates passed, including PR #45/46,
 exact-head review and green merged-main CI. The [7C acceptance checkpoint](#7c-acceptance-and-documentary-closeout--2026-10-04)
 supersedes pending historical checkpoints below. The documentary closeout subsequently passed
-all gates through PR #47. The prepared [7D preflight](../../sprint-7d-preflight.md) is now
-approved for implementation by the user's "Implement 7d" request. 7D is IN PROGRESS;
-its validation, independent review and publication/merge gates are not yet passed.
-7E remains PLANNED and its separate preflight is unstarted. Local 7D acceptance now passes;
-the final frozen-input review and GitHub acceptance gates remain pending at the checkpoint below.
+all gates through PR #47. The [7D preflight and acceptance](../../sprint-7d-preflight.md) records
+the approved client-only implementation, full local validation, exact-head independent REVIEW_PASS
+with zero unresolved findings, both successful final-head CI runs, guarded ordinary PR #48 merge
+and green merged-main CI. 7D is COMPLETE. The [7D acceptance checkpoint](#7d-acceptance-and-documentary-closeout--2026-10-04)
+supersedes the historical pending checkpoints. 7E remains PLANNED and its separate preflight
+and whole-Sprint-7 acceptance review are unstarted; Sprint 7 remains IN PROGRESS.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -145,7 +146,7 @@ authorized after a specific finding.
 | 7A reporting foundation | COMPLETE | Generic service and additive READ schema/route; exact historical/profile/catalog/mapping joins; partial/missing/disabled coverage, bounded bulk queries, SQLite/PostgreSQL/authenticated HTTP and compatibility tests; local validation and exact-head independent review passed; PR #42 manually merged with green merged-main CI |
 | 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
 | 7C investigation views | COMPLETE | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
-| 7D NIST context views | IN PROGRESS | [Preflight](../../sprint-7d-preflight.md) approved for client-only exact mapped subset hierarchy/provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests and all acceptance gates required |
+| 7D NIST context views | COMPLETE | Client-only exact mapped-subset hierarchy/provenance, four-state counts and separate coverage; no score or outcome-compliance claim; local validation, exact-head independent review, PR #48 guarded merge and merged-main CI passed |
 | 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
 
 7A precedes 7B; accepted 7A/7B precede 7C and 7D; 7E follows both.
@@ -1403,3 +1404,60 @@ reconciled to passed local validation with required final exact-input/GitHub acc
 This documentary-only correction does not invalidate implementation or full/PG/browser/image
 validation. Final exact-head follow-up remains required; 7D is IN PROGRESS and no publication
 or merge has occurred at this correction checkpoint.
+
+## 7D acceptance and documentary closeout — 2026-10-04
+
+The same single authorized read-only reviewer returned final exact-head REVIEW_PASS with zero
+unresolved findings for `b92c08a905b8a43f78c90172887e45630d0ff7b6`, sole parent
+`5bb085084e3d909b33ae24a94222ddedfa621db5`, tree `01c45c3fd0df2db073ae71776aef542d1504361e`.
+All 25 scoped raw files matched committed blobs; the final path/TAB/SHA256 UTF-8/LF manifest was
+`223F7A659FB73B4A2B7A84B0E1AA58930400EAE5EA876EE03FCE11932613DAD5`.
+The 11-file implementation/test core remained
+`FEC367FB5B98F7CB5F5015E3BA205FF4F6230935E5748FF7C2982B68310F6327`;
+the then-12-file technical fingerprint including the status guard remained
+`4DE1B25C7ABC4C5D9146A5D75B835FC5EB930EEE303BC550F986CA7D53AC4FA0`.
+The one LOW current-state documentary finding is resolved; the reviewer found no technical defect.
+Independent checks included 130 units/type/lint, 167 service/API/BFF/contracts, 86 fresh contracts,
+quality/migration checks and 4,557 rejected malformed scalar probes; valid null counts remained.
+Full/PostgreSQL/browser/image gates were inspected, not separately rerun by the reviewer.
+
+Scoped branch push and [PR #48](https://github.com/jnc247s/cloud-security-automation/pull/48)
+followed approval 9. Both exact-head runs completed SUCCESS:
+[push 37248030086](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248030086)
+and [PR 37248032776](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248032776),
+each bound to reviewed head `b92c08a905b8a43f78c90172887e45630d0ff7b6`.
+Fresh pre-merge checks confirmed clean local HEAD, unchanged main `2a4af99`, PR OPEN/not draft/
+MERGEABLE/CLEAN, no auto-merge and both successful required runs. The approved ordinary merge
+used `--merge --match-head-commit b92c08a905b8a43f78c90172887e45630d0ff7b6`, without admin/force/
+auto-merge or branch deletion. PR #48 merged at **2026-10-05 00:45:17 UTC** (2026-10-04 local),
+commit `8f58b2716a726fcefc5d89567b0dff882f7502ea`, parents `[2a4af99, b92c08a]`.
+Its tree exactly equals the reviewed tree `01c45c3fd0df2db073ae71776aef542d1504361e`.
+
+[Merged-main CI 37248734936](https://github.com/jnc247s/cloud-security-automation/actions/runs/37248734936)
+completed SUCCESS for that exact merge: 2,731 backend tests including 283 PostgreSQL cases,
+no skips, 19 existing SQLite migration warnings, 130 frontend units, 54 Chromium/Firefox
+journeys and quality/image gates. The prior local 192 focused checks and full 2,731/283/130/54
+validation remain applicable because the acceptance closeout changes only Markdown and the
+normative slice-status guard, not any implementation, browser fixture or technical/security test
+behavior.
+The guard is updated atomically to accepted 7A--7D, Sprint 7 IN PROGRESS and 7E PLANNED.
+Fresh closeout `python -m pytest tests/unit/contracts -q` passed all 86 checks (0.27s), including
+documentation links and the normative status guard; Ruff, 369-file formatting and whitespace
+passed. A sandbox cache-write warning cleared on the permitted local-process rerun without
+disabling tests or changing assertions. Same-reviewer exact-commit verification and separate
+closeout publication/CI/guarded merge/main-CI remain required for this documentary delta.
+That publication is not claimed complete at this checkpoint. The same reviewer's closeout check
+found one LOW owner-consistency issue: security/threat headers still named the accepted 7C
+baseline. Both current headers now name accepted 7D/`8f58b2`; historical sections remain intact.
+The unchanged-test statement explicitly means technical/security behavior, not the intentionally
+updated normative status assertion. Final exact-commit follow-up remains required.
+
+7D is COMPLETE. Current owners and README record accepted implementation, exact technical-only
+semantics, test evidence and unchanged known limitations; historical predictions/checkpoints
+are retained. Sprint 7 stays IN PROGRESS with its plan active. 7E is PLANNED and its separate
+preflight/whole-sprint acceptance review is unstarted. Defaults remain catalog `0.2.1`, profile
+`default/1.0.0`, latest opt-in `0.13.0`, migration `20261001_0006`. No backend/API/BFF/auth/schema/
+mapping/dependency/CI/container contract change, live IdP/AWS/IAM/secret/deployment/remediation
+operation, new reviewer, parallel implementation, later-sprint work or unfinished-goal reset/
+replacement/completion. Parent untracked skill files, original 6E.3 checkout and older branches
+remain preserved and excluded. This direct request stops after 7D closeout.

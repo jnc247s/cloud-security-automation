@@ -197,7 +197,7 @@ new assessment state, overall framework result or compliance percentage is added
 gaps remain on the exact scan, and exceptions never alter technical counts. Bundled official
 source metadata, local subset identities and mapping checksums are unchanged.
 
-### 7D browser context — acceptance pending
+### 7D browser context — accepted
 
 The approved client-only view uses the existing exact-scan report, not a new framework catalog
 fetch. Choose one retained mapped release explicitly; equal reference keys in separate releases
@@ -210,7 +210,9 @@ disabled/unmapped/unassessed/empty/manual-unsupported context never becomes PASS
 Current finding/exception handling cannot change historical technical counts. The view is labeled
 TECHNICAL_CONTEXT_ONLY / MAPPED_TECHNICAL_SUBSET, not full CSF Core coverage, an outcome result
 or compliance score. Retained checksums/source/rationale/version/time are text-only provenance;
-no bundled source or mapping bytes are changed. Implementation acceptance gates remain pending.
+no bundled source or mapping bytes are changed. PR #48 passed local validation, exact-head
+independent review, both final-head CI runs, guarded merge and merged-main CI. See the
+[7D acceptance record](../sprint-7d-preflight.md); whole-Sprint-7 acceptance remains separate.
 
 ## Change protocol
 

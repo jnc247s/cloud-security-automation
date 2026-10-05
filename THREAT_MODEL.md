@@ -1,8 +1,8 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--6 and 7A/7B/7C
-Implementation baseline: `main` commit `f10c450478cce3ec962d2f45d249f57147443c32` (7C and test-only CI repair in PR #45/46)
-Last reconciled: 2026-10-04; 7A/7B/7C accepted with independent review and green merged-main CI
+Status: living model for accepted Sprints 0--6 and 7A/7B/7C/7D
+Implementation baseline: `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48)
+Last reconciled: 2026-10-04; 7A/7B/7C/7D accepted with independent review and green merged-main CI
 
 ## Scope and security objectives
 
@@ -145,7 +145,7 @@ Residual risks remain organization-wide READ access, trusted same-origin scripts
 unpaginated resource/finding detail internals, offset-page drift, display truncation, one process
 and unvalidated live IdP/TLS/MFA operations. NIST hierarchy work is not part of 7C.
 
-### 7D display integrity — acceptance pending
+### 7D display integrity — accepted
 
 New client display risks are cross-release UUID/key substitution, orphan/cyclic hierarchy,
 mapping fan-out inflating parent/headline counts, malformed scalar/coercive IDs and treating
@@ -160,8 +160,9 @@ or whole-CSF claims. Text-only bounded disclosures prevent metadata execution/na
 digests are retained provenance, not browser certification of unseen source bytes. No new
 server route, query, AWS call, credential or mutation is introduced. Existing organization-wide
 READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
-limitations remain. Local implementation validation has passed; final exact-input review and
-GitHub CI/merge/main-CI acceptance remain required before 7D is accepted.
+limitations remain. Local validation, exact-head independent review with zero unresolved findings,
+both final-head CI runs, guarded merge and merged-main CI passed for 7D. Whole-Sprint-7
+acceptance and live-provider/production validation remain separate and unstarted.
 
 ## Trust boundaries and assumptions
 

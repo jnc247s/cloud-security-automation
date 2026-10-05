@@ -12,7 +12,7 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
-### Sprint 7D implementation — acceptance pending
+### Sprint 7D — 2026-10-04
 
 - Added a client-only exact-scan NIST mapped-subset view with explicit historical release
   selection, separate four-state counts/control coverage, lazy hierarchy/contributor/mapping
@@ -21,9 +21,12 @@ record the development history. Sprint state itself is authoritative only in
   manual attestation or exception-based result rewrite is introduced.
 - Preserved API/BFF/session/bearer READ contracts, backend queries, mappings, dependencies,
   defaults and migration `20261001_0006`. Added synthetic/real-browser display, lifecycle,
-  security, historical, malformed-response and deterministic scaling coverage. Review and
-  acceptance gates remain pending; this entry does not claim a merged sprint or live operation.
-  Sprint 7/7D remain IN PROGRESS; 7E and later work are not started.
+  security, historical, malformed-response and deterministic scaling coverage. Accepted through
+  [PR #48](https://github.com/jnc247s/cloud-security-automation/pull/48) at
+  `8f58b2716a726fcefc5d89567b0dff882f7502ea`, with exact-head REVIEW_PASS and zero unresolved
+  findings. Both final-head CI runs and merged-main CI passed 2,731 backend tests (283 PostgreSQL,
+  no skips), 130 frontend units, 54 Chromium/Firefox journeys and quality/image gates.
+  7D is COMPLETE; Sprint 7 remains IN PROGRESS. 7E and later work are not started; no live operation.
 
 ### Sprint 7C — 2026-10-04
 
