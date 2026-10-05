@@ -3,9 +3,14 @@
 Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E COMPLETE.
 Sprint 7 is COMPLETE. Accepted implementation: PR #50 at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`.
 Whole-sprint exact-head review, both final-head CI runs, guarded ordinary merge and merged-main CI
-passed. This archived documentary closeout still requires its own exact-head review/publication/
-CI/guarded merge/main-CI gates; no success for those future gates is claimed at preparation.
+passed. The separate documentary closeout also passed exact-head review, both final-head CI runs,
+guarded ordinary merge through PR #51 and final main CI at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. The final documentary acceptance checkpoint below
+supersedes its preparation-time pending gates. No Sprint 8 preflight or implementation began.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
+
+## Earlier slice history
+
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
 CI passed. Subsequent confirmations approve the 7B UI/BFF/session design, Cognito target and
 controlled local issuer, and implementation. The 2026-10-04 confirmation authorizes one read-only
@@ -66,6 +71,10 @@ PR #42 manually; this does not supply agent merge authority for new work.
 Reuse the existing worktree; preserve unrelated parent skills and the original 6E.3 checkout.
 
 ## Goal history
+
+The remaining Sprint 7 goal was completed after PR #51's final main CI and preservation checks.
+The earlier blocked/active checkpoints below are retained as goal history, not outstanding
+acceptance gates.
 
 On 2026-10-04 the user requested a persistent goal for 7C preflight, implementation, review,
 push and merge, then the same sequence for 7D, followed by whole-Sprint-7 correctness review
@@ -1741,3 +1750,69 @@ documentary state/path assertions are freshly tested. Final-head CI will rerun t
 The existing goal is not replaced/resumed or prematurely marked complete. Parent untracked skills,
 the original 6E.3 checkout and older branches remain preserved. Stop at the reviewed closeout;
 no extra agent, live operation, auto/admin merge, force push, branch deletion or Sprint 8 work.
+
+## Final Sprint 7 documentary acceptance — 2026-10-05
+
+The same single final reviewer returned REVIEW_PASS with zero unresolved findings for exact
+documentary head `ba91c77822b783d7649efa19c689193fb0594a29`, parent `1e84d29`, tree
+`d7baf5d9c5bd3ffca9d03cf229517821b9e27910`. One LOW link-count discrepancy was corrected
+to 38 and independently verified resolved; all links were already reconciled.
+Independent 88 contracts (0.27s, no skips/warnings), Ruff/374-file format/whitespace/head checks
+and 287-case integration collection passed. The actual guard baseline passed and 19 adverse
+completion/archive states were rejected in memory without file writes. Direct GitHub metadata
+and logs verified PR #50's exact merge and successful feature/main CI. Full technical evidence
+was inspected/reused, not independently rerun for the documentary-only delta.
+
+Both final exact-head CI runs passed:
+
+- [Push 37267475417](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267475417):
+  2,741 backend passes (754.77s), including 287 PostgreSQL cases, no skips, 19 existing warnings,
+  130 frontend units, 74 Chromium/Firefox journeys (2.1m), type/lint/build, Ruff/374-file format
+  and image build.
+- [PR 37267479049](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267479049):
+  the same 2,741/287/130/74 gates (466.62s backend, 1.5m browser) and quality/image gates passed.
+
+Clean reviewed HEAD/tree, unchanged main `7998e127`, both green exact-head runs and OPEN /
+MERGEABLE / CLEAN state were rechecked before ordinary guarded
+[PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51) merge at
+2026-10-05 05:41:06 UTC using `--merge --match-head-commit ba91c77822b783d7649efa19c689193fb0594a29`.
+Main `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` has parents `[7998e127, ba91c778]`
+and exactly reviewed tree `d7baf5d9c5bd3ffca9d03cf229517821b9e27910`.
+[Final main CI 37268875724](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724)
+succeeded with 2,741 backend passes (494.31s), including 287 PostgreSQL, no skips,
+19 existing warnings; 130 units; 74 browser journeys (1.5m); type/lint/build, Ruff/374-file
+format and image build.
+
+This supersedes pending documentary gates at the preceding preparation checkpoint, without
+rewriting its predictions or failed attempts. The local task worktree was safely fast-forwarded
+to accepted main and was clean; unrelated parent skills, the original 6E.3 checkout and older
+branches remained preserved. The existing remaining Sprint 7 goal was then marked COMPLETE.
+All 7A--7E states and Sprint 7 are COMPLETE, and this plan is archived.
+No application/API/schema/authentication/default/catalog/mapping/migration change was added
+by the documentary closeout. Its five technical-file Git-filtered manifest remains
+`64CD2612DE7194D0FC34B746DBCC7C604D652E3DCB9FC17C2DD066765FF1DC6A`.
+Sprint 8 is NEXT only; no preflight, implementation, live-provider/AWS/IAM/secret/deployment/
+remediation operation, extra reviewer, auto/admin merge, force push or branch deletion began.
+
+## Documentation reconciliation approval — 2026-10-05
+
+After accepted PR #51 and its green final main CI, the user requested that README and all owning
+documentation be current and Sprint 7 be marked complete. The local follow-up reconciles fifteen
+Markdown files: stale current-state headings and prose, actual final PR #51 receipts,
+dashboard/validation guidance and the full accepted migration chain. It preserves original plan
+predictions and failed-run history. Sprint 7 and 7A--7E remain COMPLETE; this is documentation
+maintenance, not a reopened implementation slice or new product/security behavior.
+
+The user's subsequent "Yes" approves the explicitly proposed bundle: reuse the existing single
+read-only final reviewer, then scoped commit/push/PR and ordinary guarded merge after exact-head
+review and green final-head CI. Both push/PR CI and successful exact merged-main CI remain
+publication/acceptance gates. No new reviewer, force/auto/admin merge, branch deletion, live
+IdP/AWS/IAM/secret/production/remediation operation or Sprint 8 work is authorized.
+
+At this approval checkpoint the follow-up is local and uncommitted on
+`codex/sprint-7-documentation-final`, based on accepted main
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. Its review/commit/publication/CI/merge gates
+are not yet claimed passed. Application, tests, dependencies, API/auth/schema/defaults,
+control/framework artifacts and migration head remain unchanged. Relevant prior full technical
+acceptance is reusable; documentation/contract/quality checks and exact-head CI are checked
+for this follow-up. The completed plan stays archived and Sprint 8 stays NEXT only.

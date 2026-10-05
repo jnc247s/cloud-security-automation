@@ -4,13 +4,16 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-05
-Accepted implementation baseline: `main` at `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50;
+Accepted baseline: `main` at `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
 Sprints 0--7 accepted, including exact-scan READ reporting, opt-in authenticated investigation,
 retained NIST technical context and whole-sprint acceptance; catalog `0.13.0` and migration
 `20261001_0006` are unchanged; exact-head review, both final-head CI and merged-main CI passed).
 Prior 7D documentary checkpoint: `main` at
 `9927b768f8d3cbc1ffa958c50262eef18271da13` (PR #49; green merged-main CI).
-The separate Sprint 7 documentary closeout below remains subject to its own publication gates.
+7E implementation was accepted through PR #50 at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`.
+The separate documentary closeout passed exact-head review, both final-head CI runs, guarded
+ordinary merge and [final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
+The completed plan is archived; no active Sprint 7 or Sprint 8 plan exists.
 
 ## Current state
 
@@ -251,7 +254,14 @@ head is `20261001_0006`; 6H added no migration or application behavior. The comp
 whole-sprint acceptance and the post-merge documentary closure. Later-sprint work was unstarted
 at that closeout; the subsequent approved 7A start is recorded below.
 
-## In progress: Sprint 7 — Dashboard / NIST Technical Posture
+## Completed: Sprint 7 — Dashboard / NIST Technical Posture
+
+All slices 7A--7E are COMPLETE, including whole-sprint review and documentary closeout through
+PR #50/#51 with green final merged-main CI. Sprint 8 is NEXT only, not started.
+The dated history below preserves the original preparation, approvals, failures and gates.
+Its superseded IN PROGRESS/PLANNED/pending statements describe those checkpoints, not current status.
+
+### Historical preparation and slice checkpoints
 
 Sprint 7 is IN PROGRESS. The 7A reporting foundation and 7B authenticated shell are COMPLETE. The user
 requested its analysis-only preflight on 2026-10-02.
@@ -617,6 +627,28 @@ Only the strict normative completion/path assertions change; final-head CI rerun
 Sprint 8 is **NEXT**, not started; a separate analysis-only preflight and implementation approval
 are required. No live-provider/AWS/IAM/secret/production/remediation operation or extra agent.
 Parent skill files, the original 6E.3 checkout and older branches remain preserved and excluded.
+
+### Final Sprint 7 documentary acceptance — 2026-10-05
+
+The separate closeout [PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51)
+merged reviewed head `ba91c77822b783d7649efa19c689193fb0594a29` at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`, retaining reviewed tree
+`d7baf5d9c5bd3ffca9d03cf229517821b9e27910` and expected parents `[7998e127, ba91c778]`.
+The same single final reviewer returned REVIEW_PASS with zero unresolved findings after
+verifying the LOW link-count correction, 88 contract/link checks and 19 adverse completion states.
+Both exact-head [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267475417)
+and [PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267479049) passed.
+[Final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724)
+passed 2,741 backend tests (287 PostgreSQL, no skips, 19 existing warnings; 494.31s),
+130 frontend units, all 74 Chromium/Firefox journeys (1.5m), type/lint/build, Ruff,
+374-file formatting and image build.
+
+This supersedes the preparation-time pending documentary gates above. The existing remaining
+Sprint 7 goal was marked COMPLETE only after these gates and preservation checks passed.
+README and owning documents are reconciled; the plan is archived with its original predictions
+and implemented differences intact. All 7A--7E states and Sprint 7 are COMPLETE.
+Sprint 8 remains NEXT, without preflight or implementation. No live provider, AWS, IAM, secret,
+deployment, remediation, branch deletion or extra reviewer was introduced by closeout.
 
 ## Pre-Sprint 5 attention
 

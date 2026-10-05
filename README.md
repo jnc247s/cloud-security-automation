@@ -2,14 +2,17 @@
 
 A Python service that collects read-only AWS configuration, evaluates deterministic technical
 security controls, preserves evidence and assessment history in PostgreSQL, and exposes an
-authenticated FastAPI interface.
+authenticated FastAPI interface and an opt-in read-only investigation dashboard.
 
 The project performs **NIST CSF 2.0-aligned AWS technical security assessments**. It does not
 provide certification or claim organization-wide NIST compliance.
 
 ## Status
 
-Sprints 0 through 6 are complete and merged. Latest opt-in catalog `0.13.0` contains all 25
+Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
+Sprint 8 is NEXT only, not started. The accepted main checkpoint is
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`, after the reviewed Sprint 7 closeout.
+Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
 Whole-sprint 6H acceptance merged through
 [PR #40](https://github.com/jnc247s/cloud-security-automation/pull/40), with exact-head independent
@@ -52,8 +55,13 @@ its own preflight and separate implementation approval.
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [completed Sprint 7 plan](docs/exec-plans/completed/sprint-7.md) records exact scoped authority,
-implementation differences and validation. Its documentary archive closeout has its own review/
-publication/CI gates. Historical test totals describe their respective accepted checkpoints;
+implementation differences and validation. The separate documentary closeout passed exact-head
+independent review, both final-head CI runs and a guarded ordinary merge through
+[PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51).
+[Final merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724)
+passed 2,741 backend tests (287 PostgreSQL, no skips), 130 frontend units, 74 browser journeys
+and quality/image gates. The plan is archived, and all 7A--7E states are COMPLETE.
+Historical test totals describe their respective accepted checkpoints;
 the 7E results above are whole-Sprint-7 acceptance.
 
 The accepted 7A endpoint is `GET /api/v1/scans/{scan_id}/technical-posture`, protected by the
@@ -105,6 +113,9 @@ The current implementation includes:
 - OIDC/JWT authentication, development-auth safeguards, role/capability authorization, and
   versioned APIs for scans, resources/history, assessments, findings, controls, frameworks, and
   exceptions;
+- an opt-in same-origin dashboard with server-side OIDC sessions, exact-scan evidence/history
+  investigation, retained NIST mapped-subset context, and separate current finding/exception
+  handling; browser reads cross the real bearer/READ API and cannot execute scans or mutations;
 - durable HTTP 202 scan creation backed by a bounded, replaceable in-process executor; and
 - generic immutable source-outcome/artifact and relationship history, populated by the accepted
   5A EC2/EBS, 5B network-evidence, 5C IAM, 5D Access Analyzer, 5E S3/KMS, and 5F CloudTrail
@@ -145,7 +156,8 @@ historical-release recovery and authenticated API validation and documentary clo
 Key operating limits include one API process and one Region per request; cross-account assume-role
 and full multi-region orchestration are not implemented. The deployment is one trust domain: all
 recognized roles can read its security data, and query filters are not object- or account-level
-authorization. The opt-in dashboard shell and investigation views are accepted 7B/7C code,
+authorization. The opt-in dashboard shell, investigation and NIST context are accepted
+7B/7C/7D code,
 not a production deployment. Acceptance does not authorize live operations.
 No production Terraform, governance mutation API, remediation,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
@@ -168,7 +180,9 @@ distributed worker, or AI runtime exists yet. AWS resources are never modified. 
 | [docs/controls/catalog.md](docs/controls/catalog.md) | Implemented controls and permanent control-ID meanings |
 | [docs/persistence.md](docs/persistence.md) | Data model, history, transactions, and migrations |
 | [docs/operations/aws-inventory.md](docs/operations/aws-inventory.md) | AWS permissions and inventory operation |
+| [docs/operations/dashboard.md](docs/operations/dashboard.md) | Opt-in dashboard configuration, sessions, investigation, and browser validation |
 | [docs/operations/known-limitations.md](docs/operations/known-limitations.md) | Accepted limitations requiring follow-up |
+| [docs/sprint-7e-acceptance.md](docs/sprint-7e-acceptance.md) | Whole-Sprint-7 acceptance evidence, review/merge receipts, and validation limits |
 
 ## Repository structure
 
@@ -186,6 +200,7 @@ distributed worker, or AI runtime exists yet. AWS resources are never modified. 
 │   ├── assessment/          # Profiles, evidence, control and framework contracts
 │   ├── aws/                 # Lazy sessions, clients, and STS identity
 │   ├── collectors/          # Fact-only AWS collectors
+│   ├── dashboard/           # Opt-in OIDC sessions and explicit read-only BFF
 │   ├── database/            # Validation, transactions, persistence, and governance
 │   ├── logging/             # Central logging configuration
 │   ├── models/              # SQLAlchemy history and lifecycle records
@@ -210,6 +225,7 @@ distributed worker, or AI runtime exists yet. AWS resources are never modified. 
 │   ├── run_inventory.py
 │   └── validate.py
 ├── tests/
+├── frontend/                # Pinned React/TypeScript dashboard and browser acceptance
 ├── terraform/               # Placeholder only; no infrastructure exists
 ├── .github/workflows/ci.yml
 ├── docker-compose.yml
@@ -300,13 +316,27 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/v1/scans/$($scan.scan_id)" -He
 The POST returns HTTP 202 after persisting the scan identity. The account always comes from STS.
 Poll the scan, then query resources, assessments, and findings through the documented API.
 
+## Read-only dashboard
+
+The dashboard is disabled by default. Accepted functionality includes explicit historical scan
+selection, evidence/snapshot/source/relationship investigation, retained NIST technical context,
+and separately labeled current finding/exception handling. It does not provide a compliance
+score, scan execution or remediation.
+
+Follow [dashboard operation](docs/operations/dashboard.md) for pinned frontend tooling,
+asset builds, explicit OIDC/origin/session configuration and controlled local validation.
+Enabling the dashboard does not permit development-bearer fallback or validate a live Cognito
+pool, MFA, ingress/TLS or production deployment. Live registration and production operations
+require separate authorization; do not expose the controlled test issuer publicly.
+
 ## Tests and quality
 
-For the complete local acceptance pipeline with Docker running and development dependencies
-installed, use:
+For the complete backend and dashboard acceptance pipeline, use Docker, development dependencies,
+the pinned Node/pnpm tooling and installed Chromium/Firefox builds described in
+[dashboard validation](docs/operations/dashboard.md#reproducible-validation):
 
 ```powershell
-.\.venv\Scripts\python.exe -m scripts.validate
+.\.venv\Scripts\python.exe -m scripts.validate --dashboard
 ```
 
 Optionally run the 6E.3 checks first with:
@@ -319,7 +349,9 @@ Optionally run the 6E.3 checks first with:
 ```
 
 The runner always performs Ruff, formatting, the full regression (including PostgreSQL and
-Markdown/link contracts), whitespace checks, Compose validation and the image build. It creates
+Markdown/link contracts), whitespace checks, Compose validation and the image build.
+`--dashboard` also runs frontend typecheck/lint/unit/build and real controlled-issuer browser
+acceptance; omitting it runs the backend/container pipeline only. It creates
 its own loopback-only PostgreSQL 16 container with a random password and temporary memory-backed
 storage; it never uses your configured database URL. The test container is removed on success or
 ordinary failure, and failures return a nonzero exit status. Your application/database containers
@@ -364,6 +396,8 @@ requires migration `20260924_0004`.
 The local 6F.1 release also adds `20261001_0005` for unresolved relationship persistence;
 apply current migrations only to an explicitly authorized environment. See
 [persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
+Accepted 6G adds `20261001_0006` for the governance category. This remains the migration head
+after Sprint 7; apply the full reviewed migration chain rather than stopping at an older slice.
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
 `0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains

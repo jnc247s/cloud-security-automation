@@ -1,5 +1,15 @@
 # Persistence and assessment history
 
+Accepted Sprint 7 reads this retained history through generic services and the real bearer/READ
+API. The optional 7C `scan_id` resource-history filter reuses the existing unique index;
+omitting it preserves the accepted contract. The browser never reads PostgreSQL directly.
+7E signed-HTTP and controlled-browser acceptance verifies exact snapshots, profile/catalog/
+control versions, evidence digests, source artifacts and directional relationships on SQLite
+and disposable PostgreSQL, keeping current findings/exceptions separate from historical facts.
+Sprint 7 and its documentary closeout are COMPLETE through PR #50/#51 with green final main CI.
+No Sprint 7 schema or migration change was introduced; head remains `20261001_0006`.
+See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
+
 Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
 constraints and append-only triggers remain. SQLite retains foreign-key enforcement and

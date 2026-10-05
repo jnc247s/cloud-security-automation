@@ -28,6 +28,12 @@ record the development history. Sprint state itself is authoritative only in
   and updated the normative completion/path guard in a separately gated documentary closeout.
   Sprint 7 is COMPLETE; Sprint 8 is NEXT only, not started. Offline/scoped evidence is not live
   Cognito/AWS/MFA/TLS/production validation or formal accessibility certification. No live operation.
+- Accepted the separate documentary closeout through
+  [PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51) at
+  `b90bf08eeb79ba56d5308f19a942c6c10bf41b28`, after zero-unresolved-finding exact-head review,
+  both green final-head CI runs and guarded ordinary merge. Final main CI passed 2,741 backend
+  tests (287 PostgreSQL, no skips), 130 frontend units, 74 browser journeys and quality/image gates.
+  The plan is archived and all 7A--7E states are COMPLETE; Sprint 8 remains NEXT only.
 
 ### Sprint 7D — 2026-10-04
 

@@ -1,7 +1,7 @@
 # Threat model
 
 Status: living model for accepted Sprints 0--7
-Implementation baseline: `main` commit `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50)
+Accepted baseline: `main` commit `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51)
 Last reconciled: 2026-10-05; 7A--7E accepted with independent review and green merged-main CI
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
@@ -83,8 +83,9 @@ implemented. The opt-in 7B frontend/session boundary below is accepted code, not
 deployment or live-provider validation. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
 6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7
-is IN PROGRESS with accepted 7A reporting; independent review passed with zero unresolved
-findings and the human merge and merged-main CI are complete.
+is COMPLETE with accepted 7A--7E reporting, authenticated investigation, NIST context and
+whole-sprint acceptance. Independent review passed with zero unresolved findings; required
+implementation/documentary merges and final merged-main CI are complete.
 6H changed no application/security behavior or residual risk. The 5F change adds no AWS write,
 authentication, authorization, route, migration, or assessment-profile behavior. The bounded 5G
 closure is accepted and merged without changing these boundaries.
@@ -169,7 +170,8 @@ server route, query, AWS call, credential or mutation is introduced. Existing or
 READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
 limitations remain. Local validation, exact-head independent review with zero unresolved findings,
 both final-head CI runs, guarded merge and merged-main CI passed for 7D. Whole-Sprint-7
-acceptance is now IN PROGRESS through the approved 7E tests and final review; live-provider/
+acceptance and documentary closeout are COMPLETE through PR #50/#51 with exact-head review
+and green final main CI; live-provider/
 production validation remains separate and unstarted.
 
 ## Trust boundaries and assumptions
