@@ -12,6 +12,19 @@ record the development history. Sprint state itself is authoritative only in
   architecture, product requirements, API documentation, security policy, threat model,
   execution-plan locations, and an explicit known-limitations register.
 
+### Sprint 7D implementation — acceptance pending
+
+- Added a client-only exact-scan NIST mapped-subset view with explicit historical release
+  selection, separate four-state counts/control coverage, lazy hierarchy/contributor/mapping
+  provenance disclosures, strict graph/identity/count validation and bounded escaped text.
+  Framework selection/expansion adds no network calls. No score, full-Core/compliance outcome,
+  manual attestation or exception-based result rewrite is introduced.
+- Preserved API/BFF/session/bearer READ contracts, backend queries, mappings, dependencies,
+  defaults and migration `20261001_0006`. Added synthetic/real-browser display, lifecycle,
+  security, historical, malformed-response and deterministic scaling coverage. Review and
+  acceptance gates remain pending; this entry does not claim a merged sprint or live operation.
+  Sprint 7/7D remain IN PROGRESS; 7E and later work are not started.
+
 ### Sprint 7C — 2026-10-04
 
 - Accepted read-only exact-scan investigation through

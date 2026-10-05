@@ -6,7 +6,8 @@ evidence expansion and all Sprint 6 controls. 6H added acceptance tests and docu
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
 7C's exact-scan investigation extension is accepted with green merged-main CI. Sprint 7 remains
-IN PROGRESS; NIST hierarchy views and production setup are not implemented.
+IN PROGRESS; client-only 7D NIST hierarchy implementation is underway and not yet accepted.
+Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
 
@@ -597,6 +598,27 @@ ACCEPTED_RISK does not rewrite historical FAIL. Mixed reads are not a frozen rep
 Selection/identity changes clear details and abort or ignore outstanding responses.
 NIST hierarchy rendering, aggregate scores, writes and later-sprint behavior are not included.
 
+### 7D NIST context implementation — acceptance pending
+
+The approved client-only extension consumes the same selected-scan posture response already
+fetched by ScanShell. It adds no API/BFF allowlist entry, backend query, model, migration,
+dependency, evaluator, mapping or default change. A separate runtime validator composes the
+existing scan/scope guards without making valid investigation depend on supported NIST data.
+It checks canonical UUID identities, retained catalog/profile enablement, safe four-state counts,
+coverage, release-local parent levels, exact mapping provenance and unique direct/descendant
+control-version unions. Unsupported or inconsistent nested context shows a separate error.
+
+Release-local Maps are constructed once per report. Native disclosures mount selected hierarchy
+and mapping detail on demand. Framework selection and expansion issue zero requests; there is
+no latest-release fallback or cross-release reference-key merge. The unique headline is separate
+from overlapping reference coverage, and unavailable counts remain null. Selection/refresh/session
+replacement resets release/disclosure state through the existing abort/generation/unmount path.
+Metadata is escaped text with bounded display truncation, never navigated. Source digests are
+provenance, not client-side verification of absent source bytes. No NIST outcome result, full-Core
+coverage claim, manual attestation, percentage or exception-based assessment rewrite is added.
+See [7D preflight](docs/sprint-7d-preflight.md); local validation has passed. Final exact-input
+review and GitHub CI/merge/main-CI gates remain required before acceptance.
+
 ## Runtime and deployment
 
 Local Compose starts PostgreSQL 16, runs `alembic upgrade head` as a one-shot service, then starts
@@ -615,7 +637,8 @@ workload-role configuration remain deployment responsibilities.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
 - The accepted opt-in 7B/7C shell provides read-only exact-scan investigation;
-  NIST hierarchy views and production setup are not implemented.
+  client-only 7D NIST context is implemented locally but acceptance is pending. Production setup
+  remains unimplemented.
 - No Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

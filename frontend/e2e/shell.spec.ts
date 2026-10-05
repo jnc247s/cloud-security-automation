@@ -24,7 +24,7 @@ for (const role of ['VIEWER', 'ANALYST', 'APPROVER', 'ADMIN']) {
     await openScan(page, id);
     await expect(page.locator('dd').filter({ hasText: /^AVAILABLE$/ })).toBeVisible();
     await expect(page.locator('dd').filter({ hasText: /^COMPLETED$/ })).toBeVisible();
-    await expect(page.getByText('test-network / 1.0.0')).toBeVisible();
+    await expect(page.getByText('Profile', { exact: true }).locator('xpath=following-sibling::dd[1]')).toHaveText('test-network / 1.0.0');
     await page.reload();
     await expect(page.locator('dd').filter({ hasText: /^AVAILABLE$/ })).toBeVisible();
     expect(page.url()).not.toContain('code=');
@@ -124,7 +124,7 @@ test('two tabs clear immediately on logout and cannot read under a replacement i
   await other.goto('/dashboard/');
   await expect(other.getByText('test-reader-A · VIEWER')).toBeVisible();
   // Opening a tab with the same session must not reset the existing selected report.
-  await expect(page.getByText('test-network / 1.0.0')).toBeVisible();
+  await expect(page.getByText('Profile', { exact: true }).locator('xpath=following-sibling::dd[1]')).toHaveText('test-network / 1.0.0');
   let releaseLogout!: () => void;
   const logoutGate = new Promise<void>(resolve => { releaseLogout = resolve; });
   await other.route('**/dashboard/auth/logout', async route => { await logoutGate; await route.continue(); });
@@ -143,7 +143,7 @@ test('two tabs clear immediately on logout and cannot read under a replacement i
     { headers: { 'X-Dashboard-Context': oldSession.session_context } });
   expect(mismatch.status()).toBe(401); expect(await mismatch.json()).not.toHaveProperty('items');
   await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await expect(page.getByText('test-network / 1.0.0')).toBeVisible();
+  await expect(page.getByText('Profile', { exact: true }).locator('xpath=following-sibling::dd[1]')).toHaveText('test-network / 1.0.0');
   await expect(page.getByText('test-reader-B · VIEWER')).toBeVisible();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })))
     .toEqual({ local: 0, session: 0 });

@@ -1,6 +1,6 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; later slices remain PROPOSED.
+Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D IN PROGRESS; 7E PLANNED.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
@@ -23,8 +23,12 @@ exact-input review, final-head CI, guarded merge and merged-main CI before imple
 
 Current acceptance: the prerequisite and all 7C implementation gates passed, including PR #45/46,
 exact-head review and green merged-main CI. The [7C acceptance checkpoint](#7c-acceptance-and-documentary-closeout--2026-10-04)
-supersedes pending historical checkpoints below. 7D/7E remain PLANNED; this request stops after
-7C's scoped documentary closeout and does not start their separate preflights or implementation.
+supersedes pending historical checkpoints below. The documentary closeout subsequently passed
+all gates through PR #47. The prepared [7D preflight](../../sprint-7d-preflight.md) is now
+approved for implementation by the user's "Implement 7d" request. 7D is IN PROGRESS;
+its validation, independent review and publication/merge gates are not yet passed.
+7E remains PLANNED and its separate preflight is unstarted. Local 7D acceptance now passes;
+the final frozen-input review and GitHub acceptance gates remain pending at the checkpoint below.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -130,6 +134,9 @@ authorized after a specific finding.
    enforcement and technical results remain unchanged. This resolves the preceding permission
    gate, not validation, acceptance or future material design choices.
    Preserve exact-head review/green CI/guarded ordinary merge/merged-main CI for each slice.
+10. APPROVED on 2026-10-04: "Implement 7d" authorizes the prepared client-only 7D slice.
+    Approval 9's single read-only reviewer and guarded publication/merge sequence remains
+    applicable. No 7E or later implementation, live-provider or production operation is added.
 
 ## Proposed implementation sequence
 
@@ -138,7 +145,7 @@ authorized after a specific finding.
 | 7A reporting foundation | COMPLETE | Generic service and additive READ schema/route; exact historical/profile/catalog/mapping joins; partial/missing/disabled coverage, bounded bulk queries, SQLite/PostgreSQL/authenticated HTTP and compatibility tests; local validation and exact-head independent review passed; PR #42 manually merged with green merged-main CI |
 | 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
 | 7C investigation views | COMPLETE | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
-| 7D NIST context views | PLANNED | Exact mapped subset hierarchy and provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests |
+| 7D NIST context views | IN PROGRESS | [Preflight](../../sprint-7d-preflight.md) approved for client-only exact mapped subset hierarchy/provenance, four-state counts and unassessed coverage; no score or outcome-compliance claim; historical-version browser tests and all acceptance gates required |
 | 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
 
 7A precedes 7B; accepted 7A/7B precede 7C and 7D; 7E follows both.
@@ -1275,3 +1282,124 @@ Sprint 7 remains IN PROGRESS; 7D/7E remain PLANNED and separately unpreflighted/
 This "Complete 7c" turn stops after 7C; next is 7D analysis-only preflight, not implementation.
 The larger goal remains unfinished and its previously observed BLOCKED lifecycle was not reset,
 replaced or falsely completed. User-controlled resume remains needed for automatic continuation.
+
+## 7C documentary publication and 7D preflight checkpoint
+
+Recorded 2026-10-04 after the user's "Do 7d preflight" request. The prior 7C documentary
+working-input and exact-commit review both returned REVIEW_PASS with zero unresolved findings
+for `cbeeb8599d53709c212dd23fdc9aacd903cbe07e`, sole parent `f10c450`, tree
+`b93ba84fb1323454942954eaf67512fba83ee489`. Exactly the twelve reviewed documentation/status
+files were committed; the twenty-one technical inputs remained unchanged. Fresh independent
+83 contracts, six adverse status mutations, links/anchors, Ruff/format/whitespace passed.
+[PR #47](https://github.com/jnc247s/cloud-security-automation/pull/47) published those inputs;
+[push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37239324954) and
+[PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37239327725)
+completed SUCCESS on that exact head. Fresh OPEN/not-draft/MERGEABLE/CLEAN/no-auto checks,
+unchanged main and clean exact reviewed inputs preceded the approved ordinary exact-head
+guarded merge. No force/admin bypass/auto-merge/branch deletion. PR #47 merged at
+`2a4af99fef656afe0772580dc7e8576b9f813737`, parents `f10c450` and `cbeeb85`, reviewed tree unchanged.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37240425614)
+completed SUCCESS: 2,728 backend tests including unchanged 283 PostgreSQL cases, no skips,
+19 existing warnings (493.80s), 54 frontend units, 32 browser journeys (38.9s), quality/image
+gates. This supersedes the preceding documentary pending-gate checkpoint, not its history.
+
+Readback for this preflight reconfirmed remote main `2a4af99`, PR #47 MERGED and that exact
+main CI SUCCESS. The parent checkout remains on the unrelated skill branch with untracked
+`.agents/`; original 6E.3 and all 7C branches remain preserved. From the clean reused worktree,
+the parent prepared local `codex/sprint-7d-preflight` at accepted main. No reset/clean/replacement.
+
+The [7D preflight](../../sprint-7d-preflight.md) inspects approved semantics, actual API/schema/
+service/BFF contracts, client callers/guards, history/query-plan tests and real browser fixtures.
+It proposes a separate strictly validated NIST context component reusing the already-fetched
+exact report. No new API/BFF/query/schema/index/dependency/control/mapping/policy/default.
+Release-local UUID hierarchy, unique mapped-control unions, nullable coverage, four-state facts,
+provenance and sensitive-data/session boundaries are required; no NIST result/compliance score.
+Current exceptions and historical technical facts remain separate. UI selection/disclosures
+must add no network fan-out. Unsupported nested data fails visibly without replacing history
+or invalidating independently supported 7C investigation. Existing limitations remain.
+
+Fresh existing reporting/API/BFF diagnostics passed 81 tests, no skips (34.76s), using controlled
+OIDC and disposable SQLite. No operator database, AWS or live provider was used. Fresh 84
+documentation/status/link checks passed, no skips (0.27s), plus Ruff, 368-file formatting and
+whitespace on this local five-file preflight delta. Tracked technical inputs are unchanged.
+Accepted main's full/PostgreSQL/frontend/browser/image evidence is
+reused for unchanged implementation; no new run of those suites or independent review is claimed.
+The documentation workflow preserves historical predictions and updates only current preparation
+claims; PostgreSQL guidance supports reusing measured bulk reporting instead of speculative queries.
+
+7A/7B/7C COMPLETE, Sprint 7 IN PROGRESS, 7D/7E PLANNED and unimplemented. 7D preflight is ready
+for a separate implementation request; no new material policy/design choice was identified.
+This turn stops before coding, reviewer launch, commit/push/PR/merge or 7E preflight. Prior
+workflow approval remains recorded, not exercised beyond this request. The unfinished larger
+goal is not reset/replaced/completed. No live IdP/AWS/IAM/secret/deployment/remediation operation.
+
+## 7D implementation and local acceptance — 2026-10-04
+
+The user's "Implement 7d" supersedes the preceding analysis-only stop (approval 10).
+Fresh GitHub readback confirmed main `2a4af99fef656afe0772580dc7e8576b9f813737` and successful
+main run `37240425614`. The reused checkout was moved from `codex/sprint-7d-preflight` to scoped
+`codex/sprint-7d-nist-context` without losing any of the five preflight files; their preserved
+manifest was `2F182FB16CF3B8A08648E2E7C3CCE06E43ED5AD79BA947603FAE382067BBB91D`.
+The parent skill branch/untracked `.agents/` and original 6E.3 checkout remain unchanged.
+
+Implemented only client-side 7D: strict exact-report graph/count/provenance guards and indexed
+release-local hierarchy, explicit retained release selection, separate four-state unique-assessment
+and definition-coverage displays, lazy native hierarchy/contributor/mapping disclosures and
+bounded escaped text. Unsupported NIST fails closed independently of valid investigation.
+Selection/refresh/session replacement resets context through the accepted shell lifecycle;
+framework selection/expansion issues zero requests. No backend/API/BFF allowlist, schema,
+mapping artifact, dependency, default, AWS/auth boundary or migration change. Head remains
+`20261001_0006`. No outcome result, full-Core/compliance score, manual attestation or historical
+assessment rewrite; collection gaps and mutable exception/current-risk separation remain explicit.
+
+Initial browser runs exposed and corrected the new client's enum-value error, then test-only
+locator/hook/navigation plumbing. Serialized levels remain lowercase; two contract tests pin
+backend/frontend literal and count-field agreement. Existing profile-presence assertions now
+target the exact Profile field; all real expiry-completion/401/data-clearing assertions remain.
+The hostile probe now opens the exact mapping UUID rather than its contributor parent. No
+accepted runtime/auth repair, retries, skips, weakened assertion or artificial terminal bundle.
+
+Fresh final validation:
+
+- `python scripts/validate.py --dashboard --focused tests/unit/services/test_technical_posture_service.py
+  tests/api/test_technical_posture_api.py tests/api/test_dashboard_api.py
+  tests/integration/test_technical_posture_postgres.py tests/unit/contracts`: 192 focused checks,
+  no skips, 87.72s; these remain applicable after the final browser-locator/docs-only correction.
+- Final full harness `python scripts/validate.py --dashboard --focused tests/unit/contracts`:
+  86 contracts (0.27s), frontend typecheck/lint/build and 130 unit tests; all 54 Chromium/Firefox
+  journeys (1.1m), including every READ role, retained catalogs 0.2.1/0.3.0/0.13.0, all four states,
+  null/partial/disabled coverage, stale/wrong scans, refresh/back, real expiry/logout/two tabs,
+  keyboard/mobile layout, hostile bounded text and zero expansion requests.
+- Full `python -m pytest`: **2,731 passed**, **283 PostgreSQL**, no skips, 19 existing SQLite
+  migration deprecation warnings, 580.95s (9:40). Includes all retained releases and 128/512-target
+  reporting query-count/plan tests. Ruff check, 369-file formatting, whitespace, Compose config
+  and the pinned frontend/non-root API image build passed. The uniquely owned disposable
+  PostgreSQL container was removed; no user database or live AWS/IdP was used.
+- Post-documentary-repair 86 contracts (0.27s), Ruff, formatting and whitespace passed again.
+
+The single authorized reviewer found no technical defect and requested two current-scope
+documentary reconciliations, now corrected in the 7C preflight and operations owners. Independent
+checks passed 130 frontend units/type/lint, 167 service/API/BFF/contracts and fresh 86 contracts,
+Ruff/format/whitespace; 4,557 malformed scalar probes rejected and valid null reports remained.
+The reviewer did not independently rerun full/PostgreSQL/browser/image gates. Final frozen-input
+verdict is pending; no accepted/merged slice is inferred from permission or the initial review.
+
+The unchanged 11-file implementation/test core fingerprint is
+`FEC367FB5B98F7CB5F5015E3BA205FF4F6230935E5748FF7C2982B68310F6327`.
+Including the strengthened plan-status guard, the 12-file technical fingerprint is
+`4DE1B25C7ABC4C5D9146A5D75B835FC5EB930EEE303BC550F986CA7D53AC4FA0`
+(PowerShell-sorted paths, TAB uppercase SHA256, UTF-8/LF with trailing LF). All 25 scoped inputs
+are uncommitted at this checkpoint. Exact-input/commit review, scoped push/PR, both final-head CI,
+guarded ordinary merge and successful merged-main CI remain required under approval 9.
+7D stays IN PROGRESS, Sprint 7 IN PROGRESS, 7E PLANNED. No 7E preflight or later implementation,
+live operation, auto/admin/force merge, branch deletion or goal reset/completion.
+
+The same reviewer's exact-commit verification of `5bb085084e3d909b33ae24a94222ddedfa621db5`
+confirmed its parent/tree, clean 25-file scope, unchanged 12-file technical fingerprint and raw
+committed-byte equality. Fresh 86 contracts (0.26s), Ruff/369-file format/whitespace and migration
+head passed. One LOW current-state documentation finding remained: the threat model still called
+completed local validation pending. That sentence and related architecture/security wording are
+reconciled to passed local validation with required final exact-input/GitHub acceptance gates.
+This documentary-only correction does not invalidate implementation or full/PG/browser/image
+validation. Final exact-head follow-up remains required; 7D is IN PROGRESS and no publication
+or merge has occurred at this correction checkpoint.

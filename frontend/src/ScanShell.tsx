@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { isDetail, isPage, isPosture, isUUID, read, type Posture, type ScanPage } from './api';
 import { Investigation } from './Investigation';
 import { isScope } from './investigation-api';
+import { NistContext } from './NistContext';
 
 function selection() { return (new URLSearchParams(window.location.search).get('scan') ?? '').toLowerCase(); }
 export function ScanShell({ onError, context }: { onError: (error: Error) => void; context: string }) {
@@ -78,7 +79,7 @@ export function ScanShell({ onError, context }: { onError: (error: Error) => voi
         : !isUUID(selected) ? <p role="alert">A valid scan UUID is required.</p>
         : reportError ? <p role="alert">{reportError}</p>
         : !visible ? <p role="status">Loading selected scan…</p>
-        : <><ScanContext report={visible} />{visible.availability === 'AVAILABLE'
+        : <><ScanContext report={visible} /><NistContext key={`${visible.scan.scan_id}:${context}:${revision}`} report={visible} />{visible.availability === 'AVAILABLE'
           ? isScope(visible) ? <Investigation key={`${visible.scan.scan_id}:${context}`} scope={visible} context={context} onError={onError} />
             : <p role="alert">The investigation context is unsupported. No record has been substituted.</p>
           : <p>Investigation data is unavailable until a retained assessment bundle is available.</p>}</>}
@@ -103,7 +104,7 @@ export function ScanContext({ report }: { report: Posture }) {
     <dt>Started</dt><dd>{scan.started_at}</dd><dt>Completed</dt><dd>{scan.completed_at ?? 'Not complete'}</dd>
     <dt>Report availability</dt><dd>{report.availability}</dd>
   </dl>
-    {report.availability === 'AVAILABLE' ? <p>Retained technical results are available for this exact scan. Investigation is read-only; NIST hierarchy views are not part of 7C.</p>
+    {report.availability === 'AVAILABLE' ? <p>Retained technical results are available for this exact scan. Investigation and mapped NIST context are read-only.</p>
       : report.availability === 'IN_PROGRESS' ? <p>The scan is unfinished. Assessment counts are unavailable, not zero.</p>
       : <p>No retained result bundle is available. This is not a passing assessment.</p>}
     {scan.status === 'PARTIAL' || scan.status === 'FAILED' ? <p className="notice">Collection has gaps or failures. Available retained results do not establish complete coverage.</p> : null}

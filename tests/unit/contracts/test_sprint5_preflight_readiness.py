@@ -418,17 +418,13 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert (
         current_plan_state
-        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; later slices remain PROPOSED."
+        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D IN PROGRESS; 7E PLANNED."
     )
     assert "| 7A reporting foundation | COMPLETE |" in sprint7
     assert "| 7B authenticated shell | COMPLETE |" in sprint7
     assert "| 7C investigation views | COMPLETE |" in sprint7
-    assert "later slices remain PROPOSED" in sprint7
-    for slice_name in (
-        "7D NIST context views",
-        "7E acceptance and closeout",
-    ):
-        assert f"| {slice_name} | PLANNED |" in sprint7
+    assert "| 7D NIST context views | IN PROGRESS |" in sprint7
+    assert "| 7E acceptance and closeout | PLANNED |" in sprint7
     assert (ROOT / "docs/exec-plans/completed/sprint-6.md").is_file()
     assert not (ROOT / "docs/exec-plans/active/sprint-6.md").exists()
     assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in roadmap

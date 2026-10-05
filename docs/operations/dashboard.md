@@ -3,8 +3,8 @@
 The opt-in shell and investigation are accepted through PR #43 and PR #45/46,
 with independent review and green merged-main CI; neither is a production deployment or
 live-provider validation. They support login, exact scan selection, historical scope/lifecycle,
-report availability and the exact-scan investigation below. NIST hierarchy, mutations and scan
-execution remain excluded.
+report availability and the exact-scan investigation below. Client-only 7D NIST hierarchy/counts
+are implemented locally with acceptance pending. Mutations and scan execution remain excluded.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
@@ -86,7 +86,8 @@ implicitly, claims account isolation, infers PASS from missing evidence, or disp
 score. Pending/no-bundle reports have unavailable counts, not zero. Partial/failed retained facts
 remain visible with explicit coverage limitations. Client guards require exact lifecycle enums
 and all four finite nonnegative integer counts for available reports (including legitimate zero),
-while unavailable counts remain null. No counts or score view is added. Offset pages are not frozen snapshots.
+while unavailable counts remain null. The accepted 7B/7C shell did not add a counts/score view;
+the local 7D extension below adds technical counts, never a score. Offset pages are not frozen snapshots.
 
 ## Exact-scan investigation — accepted 7C
 
@@ -113,6 +114,25 @@ detail still returns all occurrences/exceptions without pagination. Both are on-
 per-row requests or client aggregates. READ still spans one trusted organization.
 Selection/identity/logout/expiry changes clear details and ignore or abort late reads.
 No persistence, credentials, migration, default catalog/profile or production setup changes.
+
+## NIST technical context — 7D acceptance pending
+
+Open an exact retained scan, then explicitly select a mapped framework release by key/version
+and UUID. Expand native Function/Category/Subcategory disclosures and contributing controls
+to inspect retained mapping rationale/source/version/verification time/checksum. Selection and
+expansion use the existing report only, without further reads or a latest-version fallback.
+The separate headline counts each historical assessment once. Parent rows union control versions;
+overlapping reference rows and releases are not additive global totals. Catalog/profile coverage
+is separate from mapped-reference coverage, not a count of the full CSF Core.
+
+Unavailable counts remain null; partial/failed retained facts retain collection-gap warnings.
+Disabled/unmapped/unassessed/manual-unsupported context never implies a passing NIST outcome.
+Current findings/exceptions cannot rewrite counts. A nested consistency error clears this view
+without blocking valid investigation. Refresh/scan/session changes reset release/disclosure state.
+Metadata URLs are text, not links; checksums are provenance, not verification of absent bytes.
+Bounded text truncation is explicit: 2,048 characters per value, 512 per disclosure summary and
+256 per release-label prefix; IDs/checksums/counts remain intact. Upstream payload size is unchanged.
+No score, export, storage, telemetry, backend/schema/dependency/default or production setup change.
 
 ## Reproducible validation
 
