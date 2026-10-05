@@ -3,16 +3,17 @@
 Current authority: the user's subsequent "Yes merge" confirms the proposed exact-scan resource
 history filter and server UTC exception-reference-time metadata, 7B closeout publication/guarded
 merge and one read-only independent reviewer agent per 7C, 7D and final Sprint 7 review.
-The [active plan](exec-plans/active/sprint-7.md) records the superseding approval and PR #44's
+The [completed plan](exec-plans/completed/sprint-7.md) records the superseding approval and PR #44's
 documentary closeout merge. The original analysis and its then-pending gates below remain
 historical. The subsequent "Complete 7c" request completed the approved implementation/review/
 publication/merge/main-CI sequence through PR #45/46. 7C is COMPLETE. The subsequent
 [7D preflight and acceptance](sprint-7d-preflight.md) records completion of the approved
 client-only slice through PR #48 and green merged-main CI. 7D is COMPLETE.
-The [7E preflight](sprint-7e-preflight.md) is prepared; the subsequent implementation request starts
-7E IN PROGRESS, with whole-sprint acceptance pending. The historical analysis body below is unchanged.
+The [7E preflight and acceptance](sprint-7e-preflight.md) records subsequent whole-sprint
+acceptance through PR #50 with exact-head review and green main CI. 7A--7E and Sprint 7 are
+COMPLETE; Sprint 8 is NEXT only. The historical analysis body below is unchanged.
 That prerequisite CI has now passed for exact main `f14d861`; the
-[handoff checkpoint](exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
+[handoff checkpoint](exec-plans/completed/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
 records prerequisite acceptance. The acceptance note below supersedes earlier planned/pending states.
 
 Prepared: 2026-10-04. Analysis only for the requested sequential remaining-Sprint-7 goal.
@@ -21,7 +22,7 @@ read contracts need confirmation before implementation: an exact-scan resource-h
 and a server reference time for operational exception display. No 7C application change,
 reviewer launch or publication has occurred.
 
-[ROADMAP.md](../ROADMAP.md) owns progress; the [active plan](exec-plans/active/sprint-7.md)
+[ROADMAP.md](../ROADMAP.md) owns progress; the [completed plan](exec-plans/completed/sprint-7.md)
 records authority. 7A/7B are COMPLETE, Sprint 7 is IN PROGRESS, and 7C/7D/7E remain PLANNED.
 The separate uncommitted 7B acceptance record still awaits publication/merge approval, as does
 one read-only independent reviewer agent for each new slice and final Sprint 7 review.
@@ -228,7 +229,7 @@ passed. The single reviewer has zero unresolved findings; malformed-type guards 
 real-session-expiry tests repaired the identified issues without weakening runtime security.
 Final acceptance passed 2,728 backend tests including 283 PostgreSQL cases, no skips, 54 frontend
 units, 32 Chromium/Firefox journeys and quality/image gates; 20 repeated expiry journeys also passed.
-The [active-plan checkpoint](exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
+The [completed-plan checkpoint](exec-plans/completed/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
 records exact evidence, diagnostics and limitations. Original predictions above remain historical.
 No schema, default, dependency, collector/control/evaluation, role or authentication-policy change.
 Next is analysis-only 7D preflight; NIST hierarchy, 7E review and live operations are not delivered here.

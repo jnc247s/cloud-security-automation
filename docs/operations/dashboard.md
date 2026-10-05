@@ -5,8 +5,10 @@ with independent review and green merged-main CI; neither is a production deploy
 live-provider validation. They support login, exact scan selection, historical scope/lifecycle,
 report availability and the exact-scan investigation below. Client-only 7D NIST hierarchy/counts
 are accepted through PR #48 with exact-head independent review and green merged-main CI.
-Whole-Sprint-7 acceptance is separate; mutations and scan execution remain excluded.
-[ROADMAP.md](../../ROADMAP.md) owns status and the [active plan](../exec-plans/active/sprint-7.md)
+7E whole-Sprint-7 acceptance is COMPLETE through PR #50 with exact-head independent review and
+green main CI; mutations and scan execution remain excluded. Acceptance is offline/scoped,
+not live Cognito/MFA/TLS/production validation or formal accessibility certification.
+[ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
 ## Configuration and startup
@@ -160,11 +162,11 @@ The browser suite covers retained history/proofs/relationships/current exception
 controlled issuer, bearer API and disposable PostgreSQL, including adverse substitutions,
 stale reads, keyboard/mobile behavior and logout/expiry clearing. AWS is forbidden in the fixture.
 
-For approved 7E acceptance, include `tests/api/test_sprint7_acceptance.py` and
+For accepted 7E whole-story coverage, include `tests/api/test_sprint7_acceptance.py` and
 `tests/integration/test_sprint7_acceptance_postgres.py` with the existing reporting/history/
 security/contract targets. The new `frontend/e2e/sprint7.spec.ts` runs in both browser projects.
-See the [7E evidence matrix](../sprint-7e-acceptance.md); whole-sprint review and final gates
-remain pending until their exact results are recorded.
+See the [7E evidence matrix](../sprint-7e-acceptance.md) for exact accepted whole-sprint review,
+local/full/browser/CI/merge gates, preserved failed attempts and explicit validation limits.
 
 Independent review and publication/merge approvals remain mandatory. Controlled-issuer acceptance
 does not prove a live Cognito tenant, MFA enrollment, ingress/TLS or production operational setup.

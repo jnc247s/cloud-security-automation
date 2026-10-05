@@ -1,8 +1,12 @@
 # Sprint 7E acceptance and closeout preflight
 
 Prepared: 2026-10-04, analysis only following "Do 7e preflight".
-Superseding authority: the subsequent "Implement 7e" approves this acceptance-only slice.
-7E is now IN PROGRESS; validation, final review and publication/merge/main-CI gates are pending.
+Superseding acceptance: the subsequent "Implement 7e" approved this acceptance-only slice.
+7E and Sprint 7 are now COMPLETE through PR #50 at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`,
+with whole-sprint exact-head independent REVIEW_PASS, both green final-head CI runs, guarded
+ordinary merge and green merged-main CI. The [matrix](sprint-7e-acceptance.md) records exact
+accepted evidence, the bounded Firefox test-launch repair, failed attempts and explicit limits.
+Sprint 8 is NEXT only; separate preflight and implementation authority are required.
 The original analysis and its then-PLANNED checkpoint below remain historical.
 7A--7D are COMPLETE, Sprint 7 is IN PROGRESS, and 7E remains PLANNED.
 The existing implementation is ready for a bounded acceptance-only slice: combine the accepted
@@ -11,7 +15,7 @@ whole sprint and close its documents after all gates pass. No new product interf
 schema, control, mapping or authentication decision is presently justified.
 
 [ROADMAP.md](../ROADMAP.md) alone owns progress; the
-[active plan](exec-plans/active/sprint-7.md) owns approved detail and the historical sequential
+[completed plan](exec-plans/completed/sprint-7.md) owns approved detail and the historical sequential
 workflow authority. This request stops before implementation, reviewer launch or publication.
 Approval 9's one final read-only reviewer and guarded publication/merge sequence remains recorded,
 but is not exercised by this preflight. The unfinished broader goal is not reset or replaced.
@@ -153,7 +157,7 @@ remains reusable baseline evidence because this preflight changes Markdown only.
 After the Markdown delta, all 87 documentation/contract checks passed in 0.27s.
 Ruff lint/format and whitespace passed; Alembic reports unchanged `20261001_0006 (head)`.
 Full PostgreSQL/browser/container gates were not repeated for this analysis-only delta.
-The [active-plan checkpoint](exec-plans/active/sprint-7.md#7d-documentary-publication-and-7e-preflight--2026-10-04)
+The [completed-plan checkpoint](exec-plans/completed/sprint-7.md#7d-documentary-publication-and-7e-preflight--2026-10-04)
 records exact diagnostic commands and validation reuse.
 No blocking design choice was found in the inspected scope; new findings may still require guidance.
 The preflight is local and uncommitted. No reviewer, commit, push, PR, merge, server launch,

@@ -3,13 +3,14 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-04
-Accepted implementation baseline: `main` at `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48;
-Sprints 0--6 and Sprint 7A/7B/7C/7D accepted, including exact-scan READ reporting, opt-in
-authenticated investigation and retained NIST technical context; catalog `0.13.0` and migration
-`20261001_0006` are unchanged; merged-main CI passed)
-Accepted documentary checkpoint: `main` at
-`9927b768f8d3cbc1ffa958c50262eef18271da13` (7D closeout PR #49; green merged-main CI).
+Last verified: 2026-10-05
+Accepted implementation baseline: `main` at `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50;
+Sprints 0--7 accepted, including exact-scan READ reporting, opt-in authenticated investigation,
+retained NIST technical context and whole-sprint acceptance; catalog `0.13.0` and migration
+`20261001_0006` are unchanged; exact-head review, both final-head CI and merged-main CI passed).
+Prior 7D documentary checkpoint: `main` at
+`9927b768f8d3cbc1ffa958c50262eef18271da13` (PR #49; green merged-main CI).
+The separate Sprint 7 documentary closeout below remains subject to its own publication gates.
 
 ## Current state
 
@@ -23,8 +24,8 @@ Accepted documentary checkpoint: `main` at
 | Sprint 4 | Service Layer / Authentication / Authorization / REST API / Scan Execution | **COMPLETE** |
 | Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
 | Sprint 6 | Production Security Controls | **COMPLETE** |
-| Sprint 7 | Dashboard / NIST Technical Posture | **IN PROGRESS** |
-| Sprint 8 | Human-Approved Remediation | **PLANNED** |
+| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |
+| Sprint 8 | Human-Approved Remediation | **NEXT** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
@@ -255,7 +256,7 @@ at that closeout; the subsequent approved 7A start is recorded below.
 Sprint 7 is IN PROGRESS. The 7A reporting foundation and 7B authenticated shell are COMPLETE. The user
 requested its analysis-only preflight on 2026-10-02.
 The [preflight](docs/sprint-7-preflight.md) is complete and the
-[execution plan](docs/exec-plans/active/sprint-7.md) records 7A approval and later proposed slices.
+[execution plan](docs/exec-plans/completed/sprint-7.md) records 7A approval and later proposed slices.
 Analysis started from
 clean current main `bafa0783d347ef8b6c5e1182d4c2dd86119b412d` (accepted documentary closeout /
 PR #41), whose merged-main CI passed. The user's subsequent "Confirm" approves the proposed
@@ -307,7 +308,7 @@ Local 7B implementation and validation are now complete, not accepted: 195 focus
 2,666 regression tests (277 PostgreSQL cases included, no skips), seven frontend units and
 12 Chromium/Firefox journeys passed, plus frontend build/type/lint, Ruff/format, documentation
 links, whitespace, Compose, multi-stage image and isolated disabled/enabled runtime smoke.
-The [implementation checkpoint](docs/exec-plans/active/sprint-7.md#7b-implementation-checkpoint--2026-10-03)
+The [implementation checkpoint](docs/exec-plans/completed/sprint-7.md#7b-implementation-checkpoint--2026-10-03)
 records exact commands, limits and differences. 7B remains IN PROGRESS; independent review has
 not been authorized or launched, and all changes are uncommitted/unpublished. Production Cognito
 registration is not validated. Required review, publication and merge gates remain outstanding;
@@ -325,7 +326,7 @@ Post-review closeout on 2026-10-04: all three findings are resolved and the same
 REVIEW_PASS with zero unresolved findings. Fresh final validation passed 205 focused checks,
 2,676 regression tests (277 PostgreSQL cases, no skips), 15 frontend units and 14 Chromium/Firefox
 journeys, plus quality/build/Compose/image and isolated disabled/enabled/error-path runtime smoke.
-The [post-review checkpoint](docs/exec-plans/active/sprint-7.md#7b-post-review-validation-and-independent-closeout--2026-10-04)
+The [post-review checkpoint](docs/exec-plans/completed/sprint-7.md#7b-post-review-validation-and-independent-closeout--2026-10-04)
 records exact commands, independent checks, immutable input fingerprints and limits.
 Final documentary verification and separate commit/push/PR authority, exact-head review/CI,
 required human merge and merged-main CI remain gates. 7B is not COMPLETE; live Cognito and
@@ -334,7 +335,7 @@ production setup are not validated, all changes remain uncommitted/unpublished, 
 The final documentary review also passed with zero unresolved findings, 82 fresh independent
 contract/link checks and unchanged implementation hashes. The user's subsequent "Yes" authorizes
 a scoped 7B commit, branch push and PR creation, not merge/auto-merge or live/later-sprint work.
-The [publication authorization](docs/exec-plans/active/sprint-7.md#7b-final-documentary-review-and-publication-authorization--2026-10-04)
+The [publication authorization](docs/exec-plans/completed/sprint-7.md#7b-final-documentary-review-and-publication-authorization--2026-10-04)
 records verified exact inputs, GitHub identity/current main and preservation boundaries. Publication,
 exact-head review/CI, required human merge and merged-main CI remain pending at that checkpoint;
 7B stays IN PROGRESS, and no commit/push/PR or acceptance is claimed yet.
@@ -345,7 +346,7 @@ Publication checkpoint on 2026-10-04: the scoped 7B implementation is committed 
 [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43). The same independent
 reviewer returned exact-commit REVIEW_PASS with zero unresolved findings and verified all
 56 committed blobs match the reviewed files. Both exact-head GitHub CI runs are in progress
-at this checkpoint. [Publication detail](docs/exec-plans/active/sprint-7.md#7b-publication-checkpoint--2026-10-04)
+at this checkpoint. [Publication detail](docs/exec-plans/completed/sprint-7.md#7b-publication-checkpoint--2026-10-04)
 records the unchanged implementation, preservation checks and remaining gates. 7B remains
 IN PROGRESS: merge/auto-merge is not authorized or performed, live Cognito is unvalidated,
 and required human merge approval and green merged-main CI remain outstanding. 7C+ is unstarted.
@@ -354,7 +355,7 @@ The subsequent user confirmation authorizes merging PR #43 after green exact-hea
 Both final-head runs passed, the independently reviewed inputs remained unchanged, and
 [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) merged at
 `9ace4e65f15be678d3f05c4b5ef3a9896d4ea187`. The
-[merge checkpoint](docs/exec-plans/active/sprint-7.md#7b-merge-authorization-and-main-ci--2026-10-04)
+[merge checkpoint](docs/exec-plans/completed/sprint-7.md#7b-merge-authorization-and-main-ci--2026-10-04)
 records exact review, ancestry and tree identity. Merged-main CI is running; 7B remains
 IN PROGRESS pending acceptance. This approval is for PR #43 only, not other publication/merges,
 live operations or later slices. No 7C+ work started.
@@ -364,7 +365,7 @@ live operations or later slices. No 7C+ work started.
 passed after the explicit merge approval. Main ran all 2,676 tests, including 277 PostgreSQL
 cases, no skips and 19 existing warnings, plus 15 frontend units, 14 Chromium/Firefox journeys
 and all quality/image gates. The same reviewer's exact-head REVIEW_PASS had zero unresolved
-findings. The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7b-acceptance-and-scoped-goal-boundary--2026-10-04)
+findings. The [acceptance checkpoint](docs/exec-plans/completed/sprint-7.md#7b-acceptance-and-scoped-goal-boundary--2026-10-04)
 records the exact merge, CI and unchanged behavior. The local closeout updates current owners
 and their documentation-status guard; its separate publication approval is pending. Sprint 7
 remains IN PROGRESS, its plan stays active, and 7C/7D/7E and later implementation remain unstarted.
@@ -373,7 +374,7 @@ Live Cognito/MFA/TLS and production setup are not validated or authorized.
 The user's subsequent 2026-10-04 request establishes a new ACTIVE goal: preflight, implement,
 review, publish and merge 7C; repeat for 7D; then review the whole Sprint 7 for correctness
 and complete 7E acceptance/documentary closeout. The
-[goal-setup checkpoint](docs/exec-plans/active/sprint-7.md#remaining-sprint-7-goal-setup--2026-10-04)
+[goal-setup checkpoint](docs/exec-plans/completed/sprint-7.md#remaining-sprint-7-goal-setup--2026-10-04)
 records sequential exact-head review/CI/merge and merged-main CI gates, preserved 7B closeout
 work, and stop conditions for material choices or missing authority. The separate pending 7B
 closeout publication and one read-only reviewer agent per new review await explicit confirmation.
@@ -384,7 +385,7 @@ No live IdP/AWS/IAM/secret/production operation, parallel implementation or Spri
 The subsequent "Yes merge" confirms the pending bundle: publish and conditionally merge the
 reviewed 7B documentary closeout, one read-only reviewer agent per 7C/7D/final Sprint 7 review,
 and the proposed exact-scan history filter/server UTC exception-reference-time metadata.
-The [approval checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-publication-approval-and-remaining-scope--2026-10-04)
+The [approval checkpoint](docs/exec-plans/completed/sprint-7.md#7b-closeout-publication-approval-and-remaining-scope--2026-10-04)
 records fresh GitHub/main verification and exact-input review/CI/merge gates. The 7B closeout
 is still local at this checkpoint. 7C has an analysis-only preflight, not code; 7D and 7E
 have only the full-sprint scope/dependency proposal and remain unpreflighted separately.
@@ -392,7 +393,7 @@ No slice status advances through permission alone. Live operations and later spr
 
 The reviewed 12-file 7B acceptance-record delta is committed at `cb4f320` on
 `codex/sprint-7b-acceptance-closeout` from verified accepted main. The
-[committed-input checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-committed-inputs--2026-10-04)
+[committed-input checkpoint](docs/exec-plans/completed/sprint-7.md#7b-closeout-committed-inputs--2026-10-04)
 records the working-input REVIEW_PASS, unchanged implementation fingerprint, exclusion of the
 local 7C preflight and remaining exact-commit/publication/CI/merge gates. This documentary
 checkpoint does not claim a new PR, merge or completed future slice.
@@ -401,7 +402,7 @@ The 7B documentary closeout subsequently merged through
 [PR #44](https://github.com/jnc247s/cloud-security-automation/pull/44) at `f14d861`, after
 zero-finding exact-head review and both green final-head CI runs. Fresh PR CI passed 2,676
 backend tests (277 PostgreSQL, no skips), 15 frontend units, 14 browser journeys and quality/image
-gates. The [merge/preparation checkpoint](docs/exec-plans/active/sprint-7.md#7b-documentary-closeout-merge-and-7c-preparation--2026-10-04)
+gates. The [merge/preparation checkpoint](docs/exec-plans/completed/sprint-7.md#7b-documentary-closeout-merge-and-7c-preparation--2026-10-04)
 records exact ancestry/tree, approval and
 [running merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37224494667).
 The scoped 7C branch and [approved preflight](docs/sprint-7c-preflight.md) are prepared;
@@ -411,7 +412,7 @@ no 7C application change starts before main CI passes. 7C/7D/7E remain PLANNED.
 subsequently completed SUCCESS for exact `f14d861`: 2,676 backend tests including 277 PostgreSQL
 cases, no skips, 15 frontend units, 14 Chromium/Firefox journeys and quality/image gates passed.
 The 7B documentary prerequisite is delivered; README and its matching accepted-state owners are
-merged. The [continuation checkpoint](docs/exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
+merged. The [continuation checkpoint](docs/exec-plans/completed/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
 records the exact result, preserved local preparation and goal lifecycle. Next is implementation
 of the approved [7C preflight](docs/sprint-7c-preflight.md), not a claim that 7C is implemented.
 7D and final 7E review still need their separate preflights and delivery; Sprint 7 is IN PROGRESS.
@@ -421,7 +422,7 @@ slice on `codex/sprint-7c-investigation`, from reverified accepted main `f14d861
 CI. 7C was **IN PROGRESS**, not accepted; implementation, fresh validation, independent review,
 publication and exact-head merge/main-CI gates remained required. 7D/7E remained PLANNED and no
 later-sprint or live production operation is included. See the
-[implementation-start checkpoint](docs/exec-plans/active/sprint-7.md#7c-implementation-start--2026-10-04).
+[implementation-start checkpoint](docs/exec-plans/completed/sprint-7.md#7c-implementation-start--2026-10-04).
 
 Local 7C implementation and validation passed: 2,728 regression tests including 283 PostgreSQL
 cases, no skips; 54 frontend units, 32 Chromium/Firefox journeys and quality/container gates.
@@ -431,7 +432,7 @@ PR #45's first PR CI passed; its push CI exposed an expiry-test ordering race, n
 authorization failure. Both expiry journeys now click while authenticated and expire before a
 real refreshed BFF read, retaining explicit 401 and sensitive-data clearing assertions.
 Final local checks passed 20 repeated expiry journeys and all 32 browser journeys on separately
-owned fresh databases. The [CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-publication-ci-expiry-test-repair--2026-10-04)
+owned fresh databases. The [CI repair checkpoint](docs/exec-plans/completed/sprint-7.md#7c-publication-ci-expiry-test-repair--2026-10-04)
 records exact evidence and validation reuse. New exact-head review/CI, guarded merge and main CI
 remained required at that repair checkpoint; it did not accept 7C or start 7D/7E.
 
@@ -441,7 +442,7 @@ assertion: a real parallel BFF 401 arrived before the test observed completion o
 POST. Runtime correctly cleared data; no authentication repair is indicated. Both test journeys
 now await explicit successful expiry completion and propagate control-call failure. Fresh local
 20 repeated expiry journeys, all 32 browser journeys, 54 units/type/lint and 83 contracts/quality
-passed. See the [main-CI repair checkpoint](docs/exec-plans/active/sprint-7.md#7c-main-ci-expiry-completion-repair--2026-10-04).
+passed. See the [main-CI repair checkpoint](docs/exec-plans/completed/sprint-7.md#7c-main-ci-expiry-completion-repair--2026-10-04).
 At that main-CI repair checkpoint, independent exact-head review, new CI/guarded merge and main
 CI remained required. 7C was IN PROGRESS, not accepted; acceptance updates stayed in memory.
 That checkpoint did not accept 7C or start 7D/7E.
@@ -456,7 +457,7 @@ passed 2,728 backend tests including 283 PostgreSQL cases, no skips, 54 frontend
 32 Chromium/Firefox journeys and all quality/image gates. Exact-scan evidence/snapshot/control/
 source/relationship investigation and separately labeled current handling are accepted; technical
 results, defaults, authentication policy and migration head remain unchanged. The
-[acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
+[acceptance checkpoint](docs/exec-plans/completed/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
 records validation/review/ancestry and the documentation-only publication workflow.
 The separate README/acceptance closeout subsequently merged through
 [PR #47](https://github.com/jnc247s/cloud-security-automation/pull/47) at
@@ -487,7 +488,7 @@ Local acceptance now passes 192 focused checks, 2,731 full tests (283 PostgreSQL
 19 existing warnings), 130 frontend units, 54 Chromium/Firefox journeys and quality/container
 gates. Initial independent review has no unresolved findings after documentary reconciliation;
 final frozen-input review and scoped GitHub CI/merge/main-CI gates remain. The
-[implementation checkpoint](docs/exec-plans/active/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04)
+[implementation checkpoint](docs/exec-plans/completed/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04)
 records exact evidence. 7D is not yet accepted. 7E remains PLANNED; no later-sprint or live operation.
 
 ### 7D acceptance and documentary closeout — 2026-10-04
@@ -502,7 +503,7 @@ passed all 2,731 backend tests, including 283 PostgreSQL cases, no skips, 19 exi
 130 frontend units, 54 Chromium/Firefox journeys and quality/image gates. Local focused acceptance
 passed 192 checks. This accepts client-only exact-report hierarchy/count/provenance rendering,
 not a score, whole-CSF outcome, manual attestation, mutation or live deployment.
-The [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
+The [acceptance checkpoint](docs/exec-plans/completed/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
 records exact parent/tree bindings, validation reuse and the separate documentary publication gates.
 Sprint 7 remains IN PROGRESS, its plan remains active, and 7E remains PLANNED with separate
 preflight unstarted. No later-sprint work or live IdP/AWS/IAM/secret/production operation.
@@ -586,6 +587,36 @@ type/lint, 88 contracts and whitespace; the original acceptance core is unchange
 The [evidence matrix](docs/sprint-7e-acceptance.md) records exact results and technical fingerprints.
 Final exact-head review, both new-head CI runs, guarded merge/main-CI and documentary closeout
 remain required. **7E and Sprint 7 remain IN PROGRESS**; no live operation or Sprint 8 work.
+
+### 7E acceptance and Sprint 7 closeout — 2026-10-05
+
+**7A--7E and Sprint 7 are COMPLETE.** Final exact-head independent REVIEW_PASS with zero
+unresolved findings bound `2dd43cca2458507650602fb1324484cdae36dea3` / tree `a782c795`.
+Both [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37263668340) and
+[PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37263670095) passed.
+[PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50) merged under approvals 9/11
+at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`, parents `[9927b7, 2dd43cc]`, with the reviewed tree
+unchanged, using an ordinary exact-head guarded merge without bypass or branch deletion.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37264941156)
+passed all 2,741 backend tests (287 PostgreSQL, no skips, 19 existing warnings), 130 frontend
+units, 74 Chromium/Firefox journeys and quality/image gates. Local 267 focused / 2,741 full /
+287 PostgreSQL / 130 unit / 74 browser acceptance, 40 original multi-tab repetitions, offline
+image and scoped synthetic visual/axe evidence are recorded in the
+[acceptance matrix](docs/sprint-7e-acceptance.md). Failed CI and wait experiments are retained.
+
+The [completed plan](docs/exec-plans/completed/sprint-7.md#7e-acceptance-and-sprint-7-documentary-closeout--2026-10-05)
+records approved implementation differences, exact review/CI/merge evidence and limitations.
+This documentary closeout updates all owners/links and the strict completion/archive guard,
+preserving historical predictions and unchanged technical/security behavior. Its same-reviewer
+exact-head review, separate publication, both final-head CI runs, guarded merge and green main CI
+remain required at preparation; no future documentary gate is claimed passed.
+Fresh local closing verification passed 88 contract/link checks (0.31s, no skips/warnings), Ruff,
+374-file formatting, whitespace and unchanged migration head. All 37 inbound links were updated;
+the five technical-file fingerprints remain exact, so accepted full technical evidence is reused.
+Only the strict normative completion/path assertions change; final-head CI reruns full suites.
+Sprint 8 is **NEXT**, not started; a separate analysis-only preflight and implementation approval
+are required. No live-provider/AWS/IAM/secret/production/remediation operation or extra agent.
+Parent skill files, the original 6E.3 checkout and older branches remain preserved and excluded.
 
 ## Pre-Sprint 5 attention
 

@@ -2,13 +2,15 @@
 
 Prepared 2026-10-03. The original analysis below is preserved. Subsequent user confirmations
 approve React/TypeScript/Vite, the BFF/session design, 7B implementation, Cognito Essentials
-and a controlled local test issuer. The [active plan](exec-plans/active/sprint-7.md) records
+and a controlled local test issuer. The [completed plan](exec-plans/completed/sprint-7.md) records
 that superseding authority, including one read-only reviewer and scoped commit/push/PR approval.
 Review passed and [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43) merged
 under the subsequent user confirmation after green final-head CI. Merged-main CI passed and
-7B is accepted. The active plan records the subsequent scoped closeout and remaining-Sprint-7
+7B is accepted. The completed plan records the subsequent scoped closeout and remaining-Sprint-7
 approval; auto-merge, live operations and later-sprint work remain excluded. The original
 analysis and its earlier approval/status limits below are historical, not the current 7B status.
+7A--7E and Sprint 7 are now COMPLETE through PR #50 with exact-head review and green main CI;
+Sprint 8 is NEXT only and remains unstarted.
 
 Original checkpoint: analysis only; the user approved continuing the existing 7A/7B goal through
 7A documentary closeout and the 7B prerequisites. **No browser architecture or 7B implementation
@@ -16,7 +18,7 @@ is approved yet.** This document recommends a same-origin React/TypeScript clien
 backend-for-frontend (BFF) authentication layer in the existing FastAPI process. It needs explicit
 approval because cookie sessions and server-held provider tokens are a new security boundary.
 
-[ROADMAP.md](../ROADMAP.md) owns status and the [active plan](exec-plans/active/sprint-7.md)
+[ROADMAP.md](../ROADMAP.md) owns status and the [completed plan](exec-plans/completed/sprint-7.md)
 owns approved scope. 7A is accepted through [PR #42](https://github.com/jnc247s/cloud-security-automation/pull/42)
 at main `bd639f48095ef63e658abd284ce25c927998c0fb`; exact-head review and merged-main CI passed.
 7B remains PLANNED. Stop after 7B acceptance; no 7C, 7D, 7E or later-sprint implementation.

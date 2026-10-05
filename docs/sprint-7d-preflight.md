@@ -5,14 +5,15 @@ Superseding acceptance: the subsequent "Implement 7d" approved this prepared sli
 COMPLETE through PR #48 with green merged-main CI. Approval 9's single reviewer and guarded
 publication/merge sequence was followed; the acceptance record below supersedes pending checkpoints.
 The documentary closeout is merged through PR #49 with green main CI at `9927b7`.
-7E's [preflight](sprint-7e-preflight.md) is prepared; the subsequent "Implement 7e" starts
-7E IN PROGRESS, while whole-sprint acceptance remains pending.
+7E's [preflight and acceptance](sprint-7e-preflight.md) records subsequent whole-sprint acceptance
+through PR #50 with exact-head independent review and green main CI. 7A--7E and Sprint 7 are
+COMPLETE; Sprint 8 is NEXT only, not started.
 The original analysis findings and checkpoint below are retained.
 The accepted exact-scan report already supplies the hierarchy, counts and provenance needed
 for a client-only NIST context view. No new API, schema, query, mapping, dependency or policy
 decision was necessary. The client-only implementation and all required 7D acceptance gates passed.
 
-[ROADMAP.md](../ROADMAP.md) owns progress. The [active plan](exec-plans/active/sprint-7.md)
+[ROADMAP.md](../ROADMAP.md) owns progress. The [completed plan](exec-plans/completed/sprint-7.md)
 preserves the prior sequential workflow approval. The original preflight stopped before
 implementation, reviewer launch, commit, publication or merge. Its PLANNED checkpoint below
 is historical; the superseding implementation/acceptance records make 7D COMPLETE.
@@ -224,7 +225,7 @@ tests including 283 PostgreSQL, no skips, 19 existing warnings (580.95s), Ruff/3
 whitespace/Compose/image gates passed. The disposable database was removed. Initial review's
 two stale current-state documentation statements are reconciled; final frozen-input review and
 GitHub CI/merge/main-CI acceptance remain pending. See the
-[local acceptance checkpoint](exec-plans/active/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04).
+[local acceptance checkpoint](exec-plans/completed/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04).
 
 ## Superseding 7D acceptance — 2026-10-04
 
@@ -236,7 +237,7 @@ findings for `b92c08a905b8a43f78c90172887e45630d0ff7b6`. Both exact-head CI runs
 passed 2,731 backend tests (283 PostgreSQL, no skips), 19 existing warnings, 130 frontend units,
 54 Chromium/Firefox journeys and quality/image gates. The merge tree exactly matches the
 reviewed tree; there was no force/admin bypass, auto-merge or branch deletion.
-The [acceptance checkpoint](exec-plans/active/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
+The [acceptance checkpoint](exec-plans/completed/sprint-7.md#7d-acceptance-and-documentary-closeout--2026-10-04)
 records exact review/publication/merge bindings and the documentation-only publication gates.
 The original preflight predictions and intermediate pending checkpoints above remain historical.
 Sprint 7 stays IN PROGRESS; 7E's separate preflight and whole-sprint review are unstarted.

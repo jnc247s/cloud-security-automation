@@ -1,13 +1,15 @@
 # Architecture
 
-This document describes accepted Sprints 0--6 and Sprint 7A/7B/7C/7D. The implementation baseline
-is `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48), after the Sprint 5
+This document describes accepted Sprints 0--7. The implementation baseline
+is `main` commit `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
-7C's exact-scan investigation extension is accepted with green merged-main CI. Sprint 7 remains
-IN PROGRESS; client-only 7D NIST hierarchy is accepted with green merged-main CI.
-The approved 7E acceptance-only slice is IN PROGRESS; it changes no runtime architecture.
+7C's exact-scan investigation and client-only 7D NIST hierarchy are accepted with green main CI.
+7E whole-sprint acceptance is COMPLETE with exact-head independent review and green main CI;
+it changes no application runtime architecture. Its bounded Firefox test-launch configuration
+restores normal site isolation without weakening application headers or assertions.
+The [acceptance matrix](docs/sprint-7e-acceptance.md) records offline evidence and explicit limits.
 Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
@@ -544,7 +546,7 @@ evidence payloads and mutable finding/exception state are excluded. Successful a
 409 responses are no-store. Auth, defaults, accepted API fields, persistence and transaction
 ownership remain unchanged. No browser client/login/session is implemented by 7A; 7B requires
 separate design approval. See the [API contract](docs/api.md#exact-scan-technical-posture--7a)
-and [active plan](docs/exec-plans/active/sprint-7.md) for validation and acceptance gates.
+and [completed plan](docs/exec-plans/completed/sprint-7.md) for validation and acceptance gates.
 The [7B preflight](docs/sprint-7b-preflight.md) preserves the original browser/session proposal,
 subsequently approved and accepted through PR #43. The `/api/v1` bearer contract stays unchanged.
 
@@ -638,8 +640,8 @@ workload-role configuration remain deployment responsibilities.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
-  NIST mapped-subset context. Whole-Sprint-7 acceptance is in progress, not accepted. Production setup
-  remains unimplemented.
+  NIST mapped-subset context. Whole-Sprint-7 acceptance is COMPLETE with scoped offline evidence.
+  Production setup remains unimplemented.
 - No Terraform deployment, remediation, or AI runtime.
 
 Operational detail and required follow-up are recorded in

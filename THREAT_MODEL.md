@@ -1,11 +1,14 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--6 and 7A/7B/7C/7D
-Implementation baseline: `main` commit `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48)
-Last reconciled: 2026-10-04; 7A/7B/7C/7D accepted with independent review and green merged-main CI
+Status: living model for accepted Sprints 0--7
+Implementation baseline: `main` commit `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50)
+Last reconciled: 2026-10-05; 7A--7E accepted with independent review and green merged-main CI
 
-7E is IN PROGRESS as a combined test/documentation acceptance slice; it changes no runtime or
-security boundary. Whole-Sprint-7 independent review and final acceptance gates remain pending.
+7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
+test-launch isolation repair change no application runtime or security boundary. Original
+navigation/security assertions, COOP and other headers, dependencies, timeouts and zero retries
+remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
+and merged-main CI passed. Sprint 8 is NEXT only, not implemented; residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
 ## Scope and security objectives

@@ -1,12 +1,14 @@
 # Sprint 7 dashboard preflight
 
 Prepared: 2026-10-02. Analysis-only checkpoint, requested by the user; Sprint 7 was NEXT.
-The active plan records the subsequent scoped 7A implementation confirmation.
+Superseding acceptance: the completed plan records all scoped 7A--7E approvals and passed gates.
+Sprint 7 is COMPLETE through PR #50 with exact-head review and green main CI. Sprint 8 is NEXT
+only; the original analysis and its then-future decisions below remain historical.
 The accepted API, history and mappings can support a read-only dashboard, but reporting semantics
 and browser authentication need explicit decisions before implementation. The recommended first
 slice is 7A, an exact-scan reporting contract and additive read projection.
 
-[ROADMAP.md](../ROADMAP.md) owns status. The [proposed execution plan](exec-plans/active/sprint-7.md)
+[ROADMAP.md](../ROADMAP.md) owns status. The [proposed execution plan](exec-plans/completed/sprint-7.md)
 records subsequent approvals. This preflight alone does not authorize implementation, reviewer
 agents, publication or merging.
 Sprint 6's unattended authorization ended with that sprint; it does not extend to Sprint 7.

@@ -12,13 +12,16 @@ tests in the same change.
 
 Accepted Sprint 7A adds the READ reporting contract below, merged through PR #42 with
 independent review and merged-main CI passing. Exact acceptance is recorded in the
-[active Sprint 7 plan](exec-plans/active/sprint-7.md). Existing interfaces retain their meanings.
+[completed Sprint 7 plan](exec-plans/completed/sprint-7.md). Existing interfaces retain their meanings.
 Accepted 7B adds the separate opt-in browser interface below through PR #43, with independent
 review, explicit merge approval and green merged-main CI; it does not change `/api/v1`.
 Accepted 7C adds the optional exact-scan resource-history filter and explicit investigation
 BFF GETs through PR #45 and test-only CI repair PR #46, with exact-head independent review and
 green merged-main CI.
 Existing response bodies, omitted-filter behavior, roles and capability checks remain unchanged.
+Accepted 7E whole-Sprint-7 tests verify those unchanged interfaces through PR #50 with exact-head
+independent review and green main CI. No new API schema or production-authentication behavior
+is introduced; the [evidence matrix](sprint-7e-acceptance.md) records offline scope and limits.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
