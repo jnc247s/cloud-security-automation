@@ -212,7 +212,10 @@ TECHNICAL_CONTEXT_ONLY / MAPPED_TECHNICAL_SUBSET, not full CSF Core coverage, an
 or compliance score. Retained checksums/source/rationale/version/time are text-only provenance;
 no bundled source or mapping bytes are changed. PR #48 passed local validation, exact-head
 independent review, both final-head CI runs, guarded merge and merged-main CI. See the
-[7D acceptance record](../sprint-7d-preflight.md); whole-Sprint-7 acceptance remains separate.
+[7D acceptance record](../sprint-7d-preflight.md). Subsequent whole-Sprint-7 acceptance and
+documentary closeout are COMPLETE through PR #50/#51 with exact-head review and green final
+main CI; see the [7E evidence matrix](../sprint-7e-acceptance.md). No framework source,
+mapping bytes or compliance claim changed.
 
 ## Change protocol
 

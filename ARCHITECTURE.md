@@ -1,7 +1,8 @@
 # Architecture
 
 This document describes accepted Sprints 0--7. The implementation baseline
-is `main` commit `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50), after the Sprint 5
+is `main` commit `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
+7E implementation PR #50), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
@@ -10,6 +11,8 @@ CI passed. 7B's opt-in client/session boundary is accepted with green merged-mai
 it changes no application runtime architecture. Its bounded Firefox test-launch configuration
 restores normal site isolation without weakening application headers or assertions.
 The [acceptance matrix](docs/sprint-7e-acceptance.md) records offline evidence and explicit limits.
+The separate documentary closeout also passed exact-head review, both final-head CI runs,
+guarded ordinary merge and final merged-main CI. All 7A--7E states are COMPLETE; Sprint 8 is NEXT.
 Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
@@ -274,6 +277,9 @@ does not call `metadata.create_all()`. Revisions are linear:
 20260903_0001  canonical assessment history
     -> 20260904_0002  pending scan before AWS identity/inventory
     -> 20260915_0003  shared source-outcome and relationship evidence graph
+    -> 20260924_0004  immutable extended policy and execution-contract storage
+    -> 20261001_0005  unresolved regional relationship preservation
+    -> 20261001_0006  additive governance category (current head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -544,8 +550,9 @@ unavailable reports omit assessment/target queries. No index/schema migration is
 Scope/outcomes and sanitized failures reuse `ScanDetail`; normalized configurations, tags,
 evidence payloads and mutable finding/exception state are excluded. Successful and report-specific
 409 responses are no-store. Auth, defaults, accepted API fields, persistence and transaction
-ownership remain unchanged. No browser client/login/session is implemented by 7A; 7B requires
-separate design approval. See the [API contract](docs/api.md#exact-scan-technical-posture--7a)
+ownership remain unchanged. 7A itself introduced no browser client/login/session; the separately
+approved 7B boundary below is accepted through PR #43. See the
+[API contract](docs/api.md#exact-scan-technical-posture--7a)
 and [completed plan](docs/exec-plans/completed/sprint-7.md) for validation and acceptance gates.
 The [7B preflight](docs/sprint-7b-preflight.md) preserves the original browser/session proposal,
 subsequently approved and accepted through PR #43. The `/api/v1` bearer contract stays unchanged.

@@ -9,6 +9,8 @@ independent-review findings and green merged-main CI. The opt-in 7B browser/sess
 accepted through PR #43; 7C is accepted through PR #45/46 and 7D through PR #48 with the same
 review/CI gates. 7E is accepted through PR #50 with exact-head review and green main CI; its
 tests/documentation and Firefox test-launch repair remove none of these application limits.
+The separate documentary closeout passed its review/CI/merge gates through PR #51 at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`; final main CI is green and the plan is archived.
 Its [evidence matrix](../sprint-7e-acceptance.md) records unverified accessibility
 and live-provider/production coverage explicitly.
 See [dashboard operation](dashboard.md),
@@ -363,9 +365,10 @@ mutate production or overwrite a live database from backup.
 
 ### Current HTTP acceptance coverage
 
-The PostgreSQL integration suite contains one authoritative acceptance test that starts with real
-development bearer authentication and authorization, drives `POST /api/v1/scans` through the real
-service and executor boundaries with only AWS replaced by deterministic fakes, and verifies the
+The PostgreSQL integration suite retains the Sprint 0--5F authoritative acceptance test.
+It starts with real development bearer authentication and authorization, drives
+`POST /api/v1/scans` through the real service and executor boundaries with only AWS replaced
+by deterministic fakes, and verifies the
 persisted graph through the public read API. Run it against a dedicated disposable PostgreSQL
 database with:
 
@@ -381,6 +384,13 @@ persistence and public reads while replacing only AWS with deterministic offline
 6E.3 validation passed 1,957 tests including 122 PostgreSQL integration cases, and its merged-main
 CI passed the complete workflow. This does not remove the operational limitations documented here
 or authorize live AWS mutation.
+Subsequent 6H whole-control acceptance extends that original scan/executor regression;
+7E adds signed READ dashboard acceptance. The 7E SQLite/PostgreSQL role stories and both browser
+engines verify exact retained counts/profile/catalog/evidence/source/relationship bindings,
+separate mutable handling, denied mutations/cookie-only API access and cross-panel session
+clearing. Final Sprint 7 main CI passed 2,741 backend tests, including all 287 PostgreSQL cases
+with no skips, 130 frontend units and 74 browser journeys. See the
+[7E evidence matrix](../sprint-7e-acceptance.md) for exact receipts and offline validation limits.
 
 ### Build provenance and dependency reproducibility — LOW
 
@@ -402,8 +412,9 @@ snapshot is shown as latest.
 ## Deferred by design
 
 Accepted 7B/7C/7D provide an opt-in authenticated shell, exact-scan investigation and retained
-NIST mapped-subset context; whole-Sprint-7 acceptance remains
-separate. Sessions are process-local and lost on restart; no refresh-token retention,
+NIST mapped-subset context; 7E whole-Sprint-7 acceptance and documentary closeout are COMPLETE.
+Acceptance does not remove the following deferred capabilities or operational risks.
+Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
 There is no production Terraform deployment, governance mutation API, remediation,
 distributed worker, multi-account orchestration, or AI runtime. Their absence is roadmap scope,

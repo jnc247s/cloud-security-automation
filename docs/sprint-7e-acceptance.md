@@ -3,7 +3,10 @@
 Status: COMPLETE through [PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50),
 with exact-head independent REVIEW_PASS, both green final-head CI runs, guarded ordinary merge
 and green [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37264941156).
-7E and Sprint 7 are accepted; this separate documentary archive closeout retains its own gates.
+7E and Sprint 7 are accepted. The separate documentary closeout passed its own exact-head
+review/CI/guarded merge/main-CI gates through
+[PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51) at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`; the plan is archived and all 7A--7E states are COMPLETE.
 The user approved the
 [7E preflight](sprint-7e-preflight.md) on 2026-10-04.
 This slice adds tests, browser-harness configuration and acceptance documentation only; no application
@@ -50,6 +53,9 @@ Ordinary success paths are real responses; only selected adverse/held-response t
 real fixture responses. There is no mock successful dashboard backend.
 
 ## Validation and review
+
+The checkpoints below preserve the original validation history, including failures and
+then-pending gates. The accepted-gate receipts after this history supersede those earlier states.
 
 The initial focused run passed 266 backend checks, including the four SQLite and four PostgreSQL
 role stories. Initial helper import, ORM linkage, mapping ordering and SQLite timestamp assumptions
@@ -161,3 +167,32 @@ sessions/no global IdP logout, mutable operational reads, offset drift and unpag
 detail hydration remain documented in [known limitations](operations/known-limitations.md).
 No tenant policy, rate limiter, distributed session store, supply-chain upgrade, remediation,
 production operation or Sprint 8 implementation is added.
+
+## Final documentary acceptance
+
+On 2026-10-05, the same single final reviewer returned exact-head REVIEW_PASS with zero
+unresolved findings for `ba91c77822b783d7649efa19c689193fb0594a29`, parent `1e84d29`,
+tree `d7baf5d9c5bd3ffca9d03cf229517821b9e27910`. The LOW link-count discrepancy was
+corrected to 38 and independently verified resolved; no link had been left broken.
+Independent 88 contract/link checks, Ruff/374-file formatting, whitespace and migration-head
+checks passed; 287 integration cases were collected. Nineteen in-memory adverse completion/
+archive states were rejected. Technical full/browser/container results were inspected and reused
+for the documentary delta, not independently repeated in full.
+
+Both exact-head [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267475417)
+and [PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37267479049) passed
+2,741 backend tests (287 PostgreSQL, no skips, 19 existing warnings), 130 frontend units,
+all 74 browser journeys and quality/image gates. Backend times were 754.77s / 466.62s;
+browser times were 2.1m / 1.5m respectively.
+Ordinary guarded PR #51 merge completed at 2026-10-05 05:41:06 UTC, producing
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28` with parents `[7998e127, ba91c778]`
+and exactly the reviewed tree. No admin/auto merge, force push or branch deletion occurred.
+[Final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724)
+passed the same 2,741/287/130/74 gates (494.31s backend, 1.5m browser), Ruff,
+374-file formatting, type/lint/build and image build.
+
+These actual receipts supersede the preparation-time pending documentary gates above.
+All 7A--7E states and Sprint 7 are COMPLETE; the plan is archived with predictions intact.
+The remaining Sprint 7 goal was completed only after final main CI and preservation checks.
+No application, schema, authentication, policy, default, mapping or live-operation change was
+introduced by closeout. Sprint 8 remains NEXT, without preflight or implementation.

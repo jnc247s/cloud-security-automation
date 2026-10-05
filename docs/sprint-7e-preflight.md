@@ -6,6 +6,9 @@ Superseding acceptance: the subsequent "Implement 7e" approved this acceptance-o
 with whole-sprint exact-head independent REVIEW_PASS, both green final-head CI runs, guarded
 ordinary merge and green merged-main CI. The [matrix](sprint-7e-acceptance.md) records exact
 accepted evidence, the bounded Firefox test-launch repair, failed attempts and explicit limits.
+The separate documentary closeout subsequently passed exact-head review, both final-head CI
+runs, guarded ordinary merge through PR #51 and final main CI at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. The plan is archived and all 7A--7E states are COMPLETE.
 Sprint 8 is NEXT only; separate preflight and implementation authority are required.
 The original analysis and its then-PLANNED checkpoint below remain historical.
 7A--7D are COMPLETE, Sprint 7 is IN PROGRESS, and 7E remains PLANNED.

@@ -20,7 +20,7 @@ Sprint progress and delivery sequence belong only in [ROADMAP.md](ROADMAP.md).
   AWS permissions.
 - Risk or control owners review technical results and explicit exceptions without rewriting the
   underlying evidence.
-- Future dashboards, reports, and controlled tool adapters consume the service API rather than
+- Dashboards, reports, and future controlled tool adapters consume the service API rather than
   querying PostgreSQL directly.
 
 ## Core requirements

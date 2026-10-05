@@ -8,6 +8,11 @@ are accepted through PR #48 with exact-head independent review and green merged-
 7E whole-Sprint-7 acceptance is COMPLETE through PR #50 with exact-head independent review and
 green main CI; mutations and scan execution remain excluded. Acceptance is offline/scoped,
 not live Cognito/MFA/TLS/production validation or formal accessibility certification.
+The documentary closeout is accepted through
+[PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51), with exact-head review,
+both green final-head CI runs and green
+[final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
+All 7A--7E states are COMPLETE and the plan is archived; Sprint 8 is NEXT only.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 

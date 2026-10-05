@@ -22,6 +22,9 @@ Existing response bodies, omitted-filter behavior, roles and capability checks r
 Accepted 7E whole-Sprint-7 tests verify those unchanged interfaces through PR #50 with exact-head
 independent review and green main CI. No new API schema or production-authentication behavior
 is introduced; the [evidence matrix](sprint-7e-acceptance.md) records offline scope and limits.
+The separate Sprint 7 documentary closeout is accepted through PR #51 with exact-head review,
+both green final-head CI runs and green final merged-main CI at
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. It changes no interface or capability.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -535,7 +538,9 @@ consistency; supported investigation remains independent of NIST display failure
 selection and expansion issue zero additional requests. No metadata URL is followed and no
 NIST result/score or manual-attestation write is introduced. PR #48 passed local validation,
 exact-head independent review, both final-head CI runs, guarded merge and merged-main CI;
-see the [acceptance record](sprint-7d-preflight.md). Whole-Sprint-7 acceptance remains separate.
+see the [acceptance record](sprint-7d-preflight.md). Subsequent whole-Sprint-7 acceptance and
+documentary closeout passed through PR #50/#51; the [7E matrix](sprint-7e-acceptance.md)
+records the combined signed-API/browser/database evidence and its offline limitations.
 
 ## Compatibility rule
 

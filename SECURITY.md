@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7 at the
-accepted implementation `main` baseline `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50;
+accepted `main` baseline `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -29,6 +29,9 @@ with zero unresolved independent-review findings and successful merged-main CI.
 Accepted 7B adds the separate opt-in browser boundary below; it does not validate live IdP
 or production setup. Accepted 7C adds read-only exact-scan investigation through the same boundary,
 with independent review and green merged-main CI, not live-provider or production validation.
+The subsequent 7D/7E acceptance and PR #51 documentary closeout passed their required
+review/CI/merge gates. All 7A--7E states are COMPLETE; no security boundary or live-operation
+authority is changed by recording final completion.
 
 ## Authentication
 
