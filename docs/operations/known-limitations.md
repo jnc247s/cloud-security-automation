@@ -1,12 +1,15 @@
 # Current known limitations
 
-This register records accepted Sprints 0--6 and 7A/7B/7C implementation reality, including
+This register records accepted Sprints 0--6 and 7A/7B/7C/7D implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
 Sprint 7 is IN PROGRESS: 7A READ reporting is accepted through PR #42, with zero unresolved
 independent-review findings and green merged-main CI. The opt-in 7B browser/session shell is
-accepted through PR #43; 7C is accepted through PR #45/46 with the same review/CI gates.
+accepted through PR #43; 7C is accepted through PR #45/46 and 7D through PR #48 with the same
+review/CI gates. 7E is IN PROGRESS as acceptance tests/documentation only; it removes none of
+these limits. Its [evidence matrix](../sprint-7e-acceptance.md) records unverified accessibility
+and live-provider/production coverage explicitly.
 See [dashboard operation](dashboard.md),
 [6H acceptance](../controls/sprint-6h-acceptance.md) and the
 [active Sprint 7 plan](../exec-plans/active/sprint-7.md).

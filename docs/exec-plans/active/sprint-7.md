@@ -1,6 +1,6 @@
 # Sprint 7 dashboard and technical posture
 
-Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E PLANNED.
+Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E IN PROGRESS.
 Sprint 7 is IN PROGRESS, not complete.
 Prepared: 2026-10-02, after the user's analysis-only preflight request.
 Current 7A gates: local validation, exact-head independent review, human merge and merged-main
@@ -28,8 +28,12 @@ all gates through PR #47. The [7D preflight and acceptance](../../sprint-7d-pref
 the approved client-only implementation, full local validation, exact-head independent REVIEW_PASS
 with zero unresolved findings, both successful final-head CI runs, guarded ordinary PR #48 merge
 and green merged-main CI. 7D is COMPLETE. The [7D acceptance checkpoint](#7d-acceptance-and-documentary-closeout--2026-10-04)
-supersedes the historical pending checkpoints. 7E remains PLANNED and its separate preflight
-and whole-Sprint-7 acceptance review are unstarted; Sprint 7 remains IN PROGRESS.
+supersedes the historical pending checkpoints. Its documentary closeout also passed all gates
+through PR #49 at `9927b768f8d3cbc1ffa958c50262eef18271da13`.
+The [7E preflight](../../sprint-7e-preflight.md) was prepared as analysis only. The subsequent
+"Implement 7e" request authorizes that acceptance slice; 7E is IN PROGRESS, not accepted.
+Validation, whole-Sprint-7 independent review and publication/merge/main-CI gates remain required.
+Sprint 7 remains IN PROGRESS.
 
 The [preflight](../../sprint-7-preflight.md) records inspected interfaces, callers, tests,
 reporting semantics, browser security decisions and scope limits. [ROADMAP.md](../../../ROADMAP.md)
@@ -138,6 +142,10 @@ authorized after a specific finding.
 10. APPROVED on 2026-10-04: "Implement 7d" authorizes the prepared client-only 7D slice.
     Approval 9's single read-only reviewer and guarded publication/merge sequence remains
     applicable. No 7E or later implementation, live-provider or production operation is added.
+11. APPROVED on 2026-10-04: "Implement 7e" authorizes the prepared acceptance-only 7E slice.
+    Approval 9's one final read-only reviewer and sequential scoped publication/guarded ordinary
+    merge/main-CI gates remain applicable. No new product interface, policy, dependency, schema,
+    live operation or Sprint 8 implementation is authorized.
 
 ## Proposed implementation sequence
 
@@ -147,7 +155,7 @@ authorized after a specific finding.
 | 7B authenticated shell | COMPLETE | Same-origin read-only shell, explicit scan selection, login/expiry/logout and lifecycle/error handling; local/security/build/browser validation and exact-head independent review passed; PR #43 merged under explicit approval with green merged-main CI |
 | 7C investigation views | COMPLETE | Assessments, current findings and time-aware exception badges kept distinct; exact scan snapshots/evidence/source/relationship drill-down through accepted APIs; no mutations |
 | 7D NIST context views | COMPLETE | Client-only exact mapped-subset hierarchy/provenance, four-state counts and separate coverage; no score or outcome-compliance claim; local validation, exact-head independent review, PR #48 guarded merge and merged-main CI passed |
-| 7E acceptance and closeout | PLANNED | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
+| 7E acceptance and closeout | IN PROGRESS | Whole browser-to-API-to-database acceptance with AWS offline, accessibility, security, deterministic scaling, regression, independent review, documentation and required merge approval |
 
 7A precedes 7B; accepted 7A/7B precede 7C and 7D; 7E follows both.
 Only after contracts are accepted and explicit user delegation approval may 7C/7D run in parallel.
@@ -1461,3 +1469,126 @@ mapping/dependency/CI/container contract change, live IdP/AWS/IAM/secret/deploym
 operation, new reviewer, parallel implementation, later-sprint work or unfinished-goal reset/
 replacement/completion. Parent untracked skill files, original 6E.3 checkout and older branches
 remain preserved and excluded. This direct request stops after 7D closeout.
+
+## 7D documentary publication and 7E preflight — 2026-10-04
+
+Fresh GitHub/local readback verifies the prior documentary publication:
+[PR #49](https://github.com/jnc247s/cloud-security-automation/pull/49) is MERGED, exact head
+`47bf7125937c78a8339f01d74388571864661100`, main
+`9927b768f8d3cbc1ffa958c50262eef18271da13`. Main's parents are accepted implementation
+`8f58b2716a726fcefc5d89567b0dff882f7502ea` and that reviewed closeout head;
+tree `24f098b08655aaf529038c187080ec421403e21f` is retained. The ordinary merge happened
+2026-10-05 01:22:43 UTC, still October 4 locally.
+Both exact-head [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37250184181)
+and [PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37250187557) succeeded.
+[Merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37251193595)
+succeeded for exact `9927b7`; its logs record 2,731 backend passes/19 existing warnings,
+130 frontend units, 54 Chromium/Firefox journeys and quality/image gates.
+The accepted PostgreSQL count remains 283, with no skips.
+This supersedes the preceding pending documentary-publication checkpoint without rewriting it.
+
+The user's "Do 7e preflight" authorizes analysis only. Clean current main was fetched and
+verified before creating `codex/sprint-7e-preflight` in the existing worktree, base/HEAD
+`9927b768f8d3cbc1ffa958c50262eef18271da13`. Parent untracked skill files, original 6E.3
+checkout and prior 7D branch remain preserved. No unfinished goal was reset/replaced or marked
+complete; recorded sequential authority is not exercised beyond this direct preflight request.
+
+Inspected current authority, API/service/database contracts, BFF signed-auth/session boundary,
+client callers and scope guards, all three existing browser suites, fixture isolation,
+accessibility markup/styles, query/operation-count tests, CI/validation harness and final
+archive/link/status-guard callers. The [7E preflight](../../sprint-7e-preflight.md) proposes
+acceptance-only combined journeys, known-fixture count/provenance oracles, accessibility and
+cross-panel security assertions, deterministic budgets, whole-Sprint-7 independent review
+and gated closeout. No application/dependency/schema/policy change is planned or currently
+justified. Existing slice coverage is retained; baseline limits and protected contracts remain.
+Archive/status/link changes are deferred until actual acceptance, not included in this preflight.
+
+Fresh existing diagnostics:
+
+```text
+python -m pytest tests/unit/contracts tests/unit/services/test_technical_posture_service.py tests/unit/services/test_investigation_history.py tests/api/test_dashboard_api.py tests/api/test_dashboard_investigation_api.py tests/unit/security -q
+```
+
+All 226 passed in 44.66s, no skips/warnings, against disposable in-memory SQLite with an explicit
+test environment and no PostgreSQL URL. Signed OIDC tests use the controlled fixture and
+unchanged real authentication dependencies; no live IdP/AWS was contacted.
+Full main validation is reused only as unchanged baseline evidence; fresh whole-slice gates
+remain required after future implementation. After the six Markdown changes, final
+`python -m pytest tests/unit/contracts -q` passed all 87 checks in 0.27s, including local
+documentation links and the unchanged normative slice guard. `python -m ruff check .`,
+`python -m ruff format --check .` and `git diff --check` passed; `python -m alembic heads`
+reports unchanged `20261001_0006 (head)`. No full PostgreSQL/browser/image run was repeated
+for analysis-only Markdown; accepted exact-main CI remains applicable baseline evidence.
+
+7A--7D COMPLETE, Sprint 7 IN PROGRESS, 7E PLANNED; the normative status guard is unchanged.
+The six Markdown files are local uncommitted preflight/current-state documentation, preserving
+historical predictions. No source/test implementation, reviewer launch, commit, push, PR,
+merge, server launch, production operation or Sprint 8 work. Stop until a separate 7E
+implementation request.
+
+## 7E implementation start — 2026-10-04
+
+The subsequent "Implement 7e" supplies approval 11 for the prepared acceptance-only slice.
+Scoped branch `codex/sprint-7e-acceptance` starts from accepted main `9927b7` and preserves
+all six preflight documents. The roadmap, current plan and normative guard now agree:
+7A--7D COMPLETE, Sprint 7 IN PROGRESS, 7E IN PROGRESS. No plan archival or completion claim.
+
+Added shared whole-dashboard signed-HTTP acceptance on isolated SQLite and disposable PostgreSQL,
+plus a dedicated Chromium/Firefox whole-story, cross-panel session and accessibility suite.
+The [evidence matrix](../../sprint-7e-acceptance.md) records exact fixture truths, retained
+query/request budgets and known limits. Initial helper assumptions about imports, ORM linkage,
+mapping order and SQLite date projections were corrected to accepted interfaces; no runtime
+contract was changed. All four SQLite role cases and frontend typecheck/lint passed.
+Focused PostgreSQL/browser, complete regression, container and one final whole-Sprint-7
+review are still required. Approval 9's scoped publication/guarded ordinary merge/main-CI
+sequence applies only after its gates pass. No new product behavior, schema, default,
+control/mapping, dependency, live operation, new goal or Sprint 8 work.
+
+## 7E local validation and review preparation — 2026-10-04
+
+The acceptance-only delta adds three Python test files, one browser suite and the evidence matrix;
+the normative status guard and current documentation are reconciled without changing runtime,
+API/BFF, schemas, dependencies, defaults, catalogs/profiles, mappings or migration history.
+The original six preflight documents and historical predictions/checkpoints are preserved.
+
+Validation used the existing `scripts.validate.validate(focused, dashboard=True)` harness through
+an ignored local wrapper that supplies explicit test settings and the existing browser cache.
+The focused paths were `tests/api/test_sprint7_acceptance.py`,
+`tests/integration/test_sprint7_acceptance_postgres.py`, `tests/api/test_dashboard_api.py`,
+`tests/api/test_dashboard_investigation_api.py`, `tests/unit/services/test_technical_posture_service.py`,
+`tests/unit/services/test_investigation_history.py`, `tests/integration/test_technical_posture_postgres.py`,
+`tests/integration/test_investigation_postgres.py`, `tests/unit/security` and `tests/unit/contracts`.
+
+- Fresh focused validation: **267 passed** in 114.78s, including four SQLite and four PostgreSQL
+  whole-story role cases. Earlier focused validation passed 266 before the evidence-matrix link
+  contract was added. Initial helper assumptions were corrected to accepted imports, ORM linkage,
+  order-independent complete mapping provenance and SQLite's timestamp projection.
+- Frontend typecheck/lint/build, **130 unit tests** and all **74 Chromium/Firefox journeys** passed
+  (1.7m). All twenty new journeys separately passed (46.2s) after correcting test-only combobox
+  selection and exact accepted 404 wording; replacement-identity reads are held deterministically
+  until old panels clear. No application change or weakened existing assertion.
+- The first full harness stopped at 73/74 journeys when an existing Firefox second tab timed out
+  waiting for its load event despite rendered dashboard content. The unchanged test passed ten
+  consecutive repetitions (39.3s), then the entire fresh harness passed. No added retries/skips,
+  changed timeout or suppressed failure.
+- Full `python -m pytest`: **2,741 passed**, including **287 PostgreSQL**, no skips, 19 existing
+  SQLite migration warnings, 609.82s (10:09). Protected controls/history/auth/service/API contracts,
+  128/512-target report plans, exact-history and deterministic scaling tests remain green.
+- Ruff, 374-file formatting, documentation links, whitespace, Compose configuration and image
+  build passed. Fresh network-disabled image inspection confirmed non-root runtime, built assets
+  and absent Node/tests/controlled issuer. Accepted offline lifespan/health/auth smoke evidence is
+  reused for unchanged runtime behavior, not claimed as a new live-provider smoke. Migration head
+  remains `20261001_0006`; default catalog `0.2.1`, profile `default/1.0.0`, latest opt-in `0.13.0`.
+- Synthetic desktop/mobile real-login/API/PostgreSQL/render/logout inspection found no page/console
+  errors, horizontal overflow or Web Storage. Bundled axe found zero violations/incomplete checks
+  (42 passing combined-context and 46 expanded-investigation checks); screenshots were inspected.
+  A Windows captured-output/background-browser pipe stalled the wrapper; direct native CLI checks
+  completed and only verified owned browser/fixture/database resources were closed. No successful
+  wrapper run, formal WCAG certification or production accessibility validation is inferred.
+
+All seventeen scoped files remain local pending the freeze/commit and the one authorized read-only
+whole-Sprint-7 review from pre-sprint base `bafa0783d347ef8b6c5e1182d4c2dd86119b412d`.
+Approval 9 requires exact-head/tree review, both green final-head CI runs, guarded ordinary merge
+and green merged-main CI before acceptance. 7E/Sprint 7 remain IN PROGRESS; no archive/completion,
+live IdP/AWS/IAM/secret/deployment/remediation operation, parallel implementation or Sprint 8 work.
+Parent untracked skill files, original 6E.3 checkout and older branches remain preserved/excluded.

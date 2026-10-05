@@ -154,5 +154,11 @@ The browser suite covers retained history/proofs/relationships/current exception
 controlled issuer, bearer API and disposable PostgreSQL, including adverse substitutions,
 stale reads, keyboard/mobile behavior and logout/expiry clearing. AWS is forbidden in the fixture.
 
+For approved 7E acceptance, include `tests/api/test_sprint7_acceptance.py` and
+`tests/integration/test_sprint7_acceptance_postgres.py` with the existing reporting/history/
+security/contract targets. The new `frontend/e2e/sprint7.spec.ts` runs in both browser projects.
+See the [7E evidence matrix](../sprint-7e-acceptance.md); whole-sprint review and final gates
+remain pending until their exact results are recorded.
+
 Independent review and publication/merge approvals remain mandatory. Controlled-issuer acceptance
 does not prove a live Cognito tenant, MFA enrollment, ingress/TLS or production operational setup.

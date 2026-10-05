@@ -6,7 +6,8 @@ evidence expansion and all Sprint 6 controls. 6H added acceptance tests and docu
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
 7C's exact-scan investigation extension is accepted with green merged-main CI. Sprint 7 remains
-IN PROGRESS; client-only 7D NIST hierarchy is accepted with green merged-main CI. 7E is unstarted.
+IN PROGRESS; client-only 7D NIST hierarchy is accepted with green merged-main CI.
+The approved 7E acceptance-only slice is IN PROGRESS; it changes no runtime architecture.
 Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
@@ -637,7 +638,7 @@ workload-role configuration remain deployment responsibilities.
 - Evidence-graph reads are filtered list/detail queries, not arbitrary or multi-hop graph
   traversal. The merged 5A through 5F producers emit graph records.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
-  NIST mapped-subset context. Whole-Sprint-7 acceptance is separate and unstarted. Production setup
+  NIST mapped-subset context. Whole-Sprint-7 acceptance is in progress, not accepted. Production setup
   remains unimplemented.
 - No Terraform deployment, remediation, or AI runtime.
 

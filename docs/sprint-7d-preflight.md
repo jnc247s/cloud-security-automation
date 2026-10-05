@@ -4,7 +4,10 @@ Prepared: 2026-10-04 as analysis only, following the user's "Do 7d preflight" re
 Superseding acceptance: the subsequent "Implement 7d" approved this prepared slice; 7D is now
 COMPLETE through PR #48 with green merged-main CI. Approval 9's single reviewer and guarded
 publication/merge sequence was followed; the acceptance record below supersedes pending checkpoints.
-7E remains PLANNED and unstarted. The original analysis findings and checkpoint below are retained.
+The documentary closeout is merged through PR #49 with green main CI at `9927b7`.
+7E's [preflight](sprint-7e-preflight.md) is prepared; the subsequent "Implement 7e" starts
+7E IN PROGRESS, while whole-sprint acceptance remains pending.
+The original analysis findings and checkpoint below are retained.
 The accepted exact-scan report already supplies the hierarchy, counts and provenance needed
 for a client-only NIST context view. No new API, schema, query, mapping, dependency or policy
 decision was necessary. The client-only implementation and all required 7D acceptance gates passed.
