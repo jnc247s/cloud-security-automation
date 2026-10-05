@@ -318,6 +318,23 @@ Audit events are append-only evidence, not a general log sink. Record the verifi
 needed to reconstruct sensitive mutations. The current scan-start event retains only subject;
 issuer/role/capability attribution is a known gap tracked in `ROADMAP.md`.
 
+### 7D NIST display safeguards — acceptance pending
+
+The client-only view adds no credential, permission, route, database or policy boundary. Existing
+session/context/origin/bearer READ and final expiry checks remain authoritative. Nested display
+validation checks canonical UUIDs, release-local parents/mappings, retained enablement and safe
+counts; it does not authorize access or certify unseen checksum bytes. Invalid NIST context
+fails closed separately from valid investigation. Graph construction uses bounded-depth Maps;
+framework selection and disclosures require no extra network requests.
+
+Render all metadata as escaped text, including hostile titles/rationales/source URLs. Never
+navigate sources, execute HTML, persist security data in Web Storage or add telemetry/exports.
+Text is truncated explicitly (2,048 characters per value, 512 per summary, 256 per release label);
+UUIDs/checksums/counts are not truncated. This does not bound upstream JSON or prove full review.
+Selection/refresh/session replacement resets context; logout/expiry/cross-tab changes clear it
+through the accepted shell boundary. Counts are historical technical facts, never NIST results;
+mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Validation/review are pending.
+
 ## Database and migration safety
 
 - Use Alembic for schema changes; never rewrite an accepted migration.
@@ -379,8 +396,9 @@ access-key material. Provider failures and malformed facts remain sanitized. Spr
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
 Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
 was started by that acceptance or the subsequent analysis-only preparation.
-Subsequent approvals and gates accepted 7B/7C; Sprint 7 remains IN PROGRESS, with 7D/7E
-PLANNED and no live IdP/AWS/IAM/secret/deployment/remediation operation authorized by acceptance.
+Subsequent approvals and gates accepted 7B/7C; Sprint 7 remains IN PROGRESS, with 7D
+IN PROGRESS and 7E PLANNED. No live IdP/AWS/IAM/secret/deployment/remediation operation is
+authorized by acceptance or 7D implementation.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

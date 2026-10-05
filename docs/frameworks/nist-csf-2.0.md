@@ -197,6 +197,21 @@ new assessment state, overall framework result or compliance percentage is added
 gaps remain on the exact scan, and exceptions never alter technical counts. Bundled official
 source metadata, local subset identities and mapping checksums are unchanged.
 
+### 7D browser context — acceptance pending
+
+The approved client-only view uses the existing exact-scan report, not a new framework catalog
+fetch. Choose one retained mapped release explicitly; equal reference keys in separate releases
+never merge and no latest release is inferred. Open Function, Category, Subcategory and mapping
+provenance disclosures on demand. Technical headline counts remain unique across mappings;
+reference rows use their unique contributing control-version union and are not additive totals.
+
+Catalog/profile coverage and reference coverage are separate. Null counts remain unavailable;
+disabled/unmapped/unassessed/empty/manual-unsupported context never becomes PASS or N/A.
+Current finding/exception handling cannot change historical technical counts. The view is labeled
+TECHNICAL_CONTEXT_ONLY / MAPPED_TECHNICAL_SUBSET, not full CSF Core coverage, an outcome result
+or compliance score. Retained checksums/source/rationale/version/time are text-only provenance;
+no bundled source or mapping bytes are changed. Implementation acceptance gates remain pending.
+
 ## Change protocol
 
 Never silently refresh this data from upstream or reuse version `2.0` with different reviewed

@@ -145,6 +145,23 @@ Residual risks remain organization-wide READ access, trusted same-origin scripts
 unpaginated resource/finding detail internals, offset-page drift, display truncation, one process
 and unvalidated live IdP/TLS/MFA operations. NIST hierarchy work is not part of 7C.
 
+### 7D display integrity — acceptance pending
+
+New client display risks are cross-release UUID/key substitution, orphan/cyclic hierarchy,
+mapping fan-out inflating parent/headline counts, malformed scalar/coercive IDs and treating
+disabled/unmapped/unavailable rows as passing outcomes. A separate validator checks exact
+release/reference/control-version binding, strict types, safe counts and server-projected unions
+before any hierarchy/count rendering. Invalid NIST data does not substitute previous data or
+disable independently valid investigation. Selection/refresh/session changes reset disclosures;
+the existing authenticated report's abort/generation and logout/expiry guards remain in force.
+
+Explicit exact release selection and non-additive mapped-subset labels prevent implicit latest
+or whole-CSF claims. Text-only bounded disclosures prevent metadata execution/navigation;
+digests are retained provenance, not browser certification of unseen source bytes. No new
+server route, query, AWS call, credential or mutation is introduced. Existing organization-wide
+READ, trusted same-origin scripts/extensions, upstream payload size and live-provider/production
+limitations remain. Local implementation validation and independent acceptance are pending.
+
 ## Trust boundaries and assumptions
 
 Approved 6E.1 binds S3-001/003 results to complete discovery, authoritative same-owner bucket-home

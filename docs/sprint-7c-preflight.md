@@ -6,8 +6,10 @@ merge and one read-only independent reviewer agent per 7C, 7D and final Sprint 7
 The [active plan](exec-plans/active/sprint-7.md) records the superseding approval and PR #44's
 documentary closeout merge. The original analysis and its then-pending gates below remain
 historical. The subsequent "Complete 7c" request completed the approved implementation/review/
-publication/merge/main-CI sequence through PR #45/46. 7C is COMPLETE; 7D/7E remain PLANNED and
-separately unpreflighted/unimplemented. All subsequent slice gates remain.
+publication/merge/main-CI sequence through PR #45/46. 7C is COMPLETE. The subsequent
+[7D preflight](sprint-7d-preflight.md) is now approved by "Implement 7d"; 7D is IN PROGRESS,
+with validation/review/publication/merge gates still required. 7E remains PLANNED and still
+needs its separate preflight. The historical analysis body below is unchanged.
 That prerequisite CI has now passed for exact main `f14d861`; the
 [handoff checkpoint](exec-plans/active/sprint-7.md#7b-closeout-main-ci-and-remaining-sprint-7-handoff--2026-10-04)
 records prerequisite acceptance. The acceptance note below supersedes earlier planned/pending states.

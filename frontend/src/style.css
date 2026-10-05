@@ -25,6 +25,10 @@ input { width: 100%; padding: 8px; border: 1px solid #617786; border-radius: 4px
 select { width: 100%; padding: 8px; }
 .metadata-row { display: contents; }
 .investigation { margin-top: 24px; }
+.nist-context { margin-top: 24px; overflow-wrap: anywhere; }
+.nist-context details { margin: 10px 0; border-left: 2px solid #d4dde5; padding-left: 12px; }
+.nist-context summary { cursor: pointer; padding: 6px; }
+.nist-context article { border-top: 1px solid #d4dde5; margin-top: 12px; }
 .investigation section { margin-top: 16px; }
 .investigation article { border-top: 1px solid #d4dde5; margin-top: 12px; padding-top: 12px; }
 .investigation button { overflow-wrap: anywhere; max-width: 100%; margin: 4px 0; }

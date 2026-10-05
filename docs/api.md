@@ -522,6 +522,16 @@ state. Error/nonoperational responses do not carry it; `/api/v1` response bodies
 The UI displays stored status separately from eligibility at this reference and fails unavailable
 for missing/invalid times. Technical four-state results never change with operational handling.
 
+### 7D client-only NIST context — acceptance pending
+
+7D reuses the already fetched `GET /dashboard/api/scans/{scan_id}/technical-posture` response.
+There is no new API/BFF endpoint, query parameter, response field, reporting enum, authorization
+or persistence change. Existing schema `1.0.0` and exact scan/profile/catalog/framework identities
+remain authoritative. A separate browser display guard validates nested hierarchy/count/mapping
+consistency; supported investigation remains independent of NIST display failures. Framework
+selection and expansion issue zero additional requests. No metadata URL is followed and no
+NIST result/score or manual-attestation write is introduced. Acceptance is pending.
+
 ## Compatibility rule
 
 Before changing a method, path, capability, enum, request field, response field, pagination

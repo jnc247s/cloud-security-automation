@@ -455,8 +455,37 @@ source/relationship investigation and separately labeled current handling are ac
 results, defaults, authentication policy and migration head remain unchanged. The
 [acceptance checkpoint](docs/exec-plans/active/sprint-7.md#7c-acceptance-and-documentary-closeout--2026-10-04)
 records validation/review/ancestry and the documentation-only publication workflow.
-Sprint 7 remains IN PROGRESS; **7D/7E remain PLANNED**, separately unpreflighted and unimplemented.
-Next is 7D analysis-only preflight. No later-sprint or live IdP/AWS/production operation occurred.
+The separate README/acceptance closeout subsequently merged through
+[PR #47](https://github.com/jnc247s/cloud-security-automation/pull/47) at
+`2a4af99fef656afe0772580dc7e8576b9f813737`; its
+[merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37240425614)
+passed the same 2,728 backend/283 PostgreSQL, 54 frontend and 32 browser checks plus quality/image
+gates. This closes that documentary publication gate without changing the accepted implementation.
+
+The user's subsequent "Do 7d preflight" request prepares the local analysis-only
+[7D plan](docs/sprint-7d-preflight.md) from verified clean current main `2a4af99`.
+It proposes client-only rendering of the existing exact-scan mapped-subset report, with strict
+hierarchy/provenance/count binding, explicit coverage and no compliance score. No new backend
+contract, mapping, schema, dependency or policy choice is currently needed. Fresh existing
+reporting/API/BFF diagnostics passed 81 tests, no skips; this is not 7D implementation acceptance.
+Sprint 7 remains IN PROGRESS; **7D/7E remain PLANNED and unimplemented**. 7D preflight is prepared;
+7E still needs its separate preflight. Next is a separate 7D implementation request. No reviewer,
+commit/publication/merge, later-sprint work or live IdP/AWS/production operation occurred here.
+
+### 7D implementation authorization — 2026-10-04
+
+The user's "Implement 7d" supersedes the preceding analysis-only stop. **7D is IN PROGRESS**
+on `codex/sprint-7d-nist-context` from freshly verified accepted main `2a4af99` and successful
+main CI. All five uncommitted preflight documents were preserved when creating that branch.
+The approved client-only hierarchy reuses the existing exact-scan report; no backend contract,
+mapping, schema, dependency, default or authorization change is planned. Approval 9 retains
+one read-only independent 7D reviewer and exact-head CI/guarded merge/main CI requirements.
+Local acceptance now passes 192 focused checks, 2,731 full tests (283 PostgreSQL, no skips,
+19 existing warnings), 130 frontend units, 54 Chromium/Firefox journeys and quality/container
+gates. Initial independent review has no unresolved findings after documentary reconciliation;
+final frozen-input review and scoped GitHub CI/merge/main-CI gates remain. The
+[implementation checkpoint](docs/exec-plans/active/sprint-7.md#7d-implementation-and-local-acceptance--2026-10-04)
+records exact evidence. 7D is not yet accepted. 7E remains PLANNED; no later-sprint or live operation.
 
 ## Pre-Sprint 5 attention
 
