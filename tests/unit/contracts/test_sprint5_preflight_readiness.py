@@ -410,21 +410,24 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A/7B/7C/7D preserve Sprint 5/6 closure without completing Sprint 7.
-    assert "| Sprint 7 | Dashboard / NIST Technical Posture | **IN PROGRESS** |" in roadmap
-    sprint7 = _read(ROOT / "docs/exec-plans/active/sprint-7.md")
+    # Accepted 7A--7E close Sprint 7 without changing Sprint 5/6 or starting Sprint 8.
+    assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
+    assert "| Sprint 8 | Human-Approved Remediation | **NEXT** |" in roadmap
+    sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
+    assert not (ROOT / "docs/exec-plans/active/sprint-7.md").exists()
+    assert not (ROOT / "docs/exec-plans/active/sprint-8.md").exists()
     current_plan_state = next(
         line for line in sprint7.splitlines() if line.startswith("Plan state:")
     )
     assert (
         current_plan_state
-        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E IN PROGRESS."
+        == "Plan state: 7A COMPLETE; 7B COMPLETE; 7C COMPLETE; 7D COMPLETE; 7E COMPLETE."
     )
     assert "| 7A reporting foundation | COMPLETE |" in sprint7
     assert "| 7B authenticated shell | COMPLETE |" in sprint7
     assert "| 7C investigation views | COMPLETE |" in sprint7
     assert "| 7D NIST context views | COMPLETE |" in sprint7
-    assert "| 7E acceptance and closeout | IN PROGRESS |" in sprint7
+    assert "| 7E acceptance and closeout | COMPLETE |" in sprint7
     assert (ROOT / "docs/exec-plans/completed/sprint-6.md").is_file()
     assert not (ROOT / "docs/exec-plans/active/sprint-6.md").exists()
     assert "`ef4543d439ed3a33064c6bcf383db201a94d2881`" in roadmap

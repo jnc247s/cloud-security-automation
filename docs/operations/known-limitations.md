@@ -1,18 +1,19 @@
 # Current known limitations
 
-This register records accepted Sprints 0--6 and 7A/7B/7C/7D implementation reality, including
+This register records accepted Sprints 0--7 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
-Sprint 7 is IN PROGRESS: 7A READ reporting is accepted through PR #42, with zero unresolved
+Sprint 7 is COMPLETE: 7A READ reporting is accepted through PR #42, with zero unresolved
 independent-review findings and green merged-main CI. The opt-in 7B browser/session shell is
 accepted through PR #43; 7C is accepted through PR #45/46 and 7D through PR #48 with the same
-review/CI gates. 7E is IN PROGRESS as acceptance tests/documentation only; it removes none of
-these limits. Its [evidence matrix](../sprint-7e-acceptance.md) records unverified accessibility
+review/CI gates. 7E is accepted through PR #50 with exact-head review and green main CI; its
+tests/documentation and Firefox test-launch repair remove none of these application limits.
+Its [evidence matrix](../sprint-7e-acceptance.md) records unverified accessibility
 and live-provider/production coverage explicitly.
 See [dashboard operation](dashboard.md),
 [6H acceptance](../controls/sprint-6h-acceptance.md) and the
-[active Sprint 7 plan](../exec-plans/active/sprint-7.md).
+[completed Sprint 7 plan](../exec-plans/completed/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
 Accepted 7C provides read-only exact-scan investigation. Its bounded lists and display

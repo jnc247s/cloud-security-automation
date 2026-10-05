@@ -1,7 +1,7 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--6 and 7A/7B/7C/7D at the
-accepted implementation `main` baseline `8f58b2716a726fcefc5d89567b0dff882f7502ea` (7D PR #48;
+This document defines permanent repository security rules for accepted Sprints 0--7 at the
+accepted implementation `main` baseline `7998e12786b817aa6de3abd63b37d22b5c4a99b6` (7E PR #50;
 merged-main CI passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -24,7 +24,7 @@ permission changes. The approved category migration preserves integrity and bloc
 downgrades before DDL. Independent review and merged-main CI passed; see
 [6G metadata](docs/controls/sprint-6g-metadata.md). Accepted 6H verified combined controls,
 historical releases and real authenticated APIs with only AWS offline; no security behavior or
-production operation changed. Sprint 7 is IN PROGRESS; 7A READ reporting is accepted and merged,
+production operation changed. Sprint 7 is COMPLETE; 7A READ reporting is accepted and merged,
 with zero unresolved independent-review findings and successful merged-main CI.
 Accepted 7B adds the separate opt-in browser boundary below; it does not validate live IdP
 or production setup. Accepted 7C adds read-only exact-scan investigation through the same boundary,
@@ -336,7 +336,9 @@ through the accepted shell boundary. Counts are historical technical facts, neve
 mutable findings, ACCEPTED_RISK and exceptions cannot rewrite them. Local validation,
 exact-head independent review, both final-head CI runs, guarded merge and merged-main CI passed;
 see the [acceptance record](docs/sprint-7d-preflight.md). Live-provider/production validation
-and whole-Sprint-7 acceptance remain separate; approved 7E acceptance is in progress, not accepted.
+remains separate. 7E whole-Sprint-7 offline acceptance passed exact-head independent review,
+both final-head CI runs, guarded merge and merged-main CI; see the
+[evidence matrix](docs/sprint-7e-acceptance.md). No application security boundary changed.
 
 ## Database and migration safety
 
@@ -399,9 +401,11 @@ access-key material. Provider failures and malformed facts remain sanitized. Spr
 `COMPLETE`; Sprint 6 is `COMPLETE`, including whole-sprint 6H acceptance and documentary closeout.
 Sprint 7A reporting is COMPLETE; no 7B or later slice, deployment or production operation
 was started by that acceptance or the subsequent analysis-only preparation.
-Subsequent approvals and gates accepted 7B/7C/7D; Sprint 7 remains IN PROGRESS, with 7E
-IN PROGRESS as a test/documentation-only acceptance slice. No live IdP/AWS/IAM/secret/deployment/
-remediation operation is authorized by acceptance or 7D implementation.
+Subsequent approvals and gates accepted 7B/7C/7D and 7E whole-sprint acceptance; Sprint 7 is
+COMPLETE. 7E adds tests/documentation and restores normal Firefox isolation only in the pinned
+test launcher; application headers/authentication, dependencies, timeouts and all assertions are
+unchanged. No live IdP/AWS/IAM/secret/deployment/remediation operation is authorized by acceptance.
+Sprint 8 is NEXT only, with separate preflight/implementation and live-operation approvals required.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content

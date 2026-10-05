@@ -1,12 +1,15 @@
 # Sprint 7E acceptance evidence
 
-Status: IN PROGRESS, not accepted. The user approved the
+Status: COMPLETE through [PR #50](https://github.com/jnc247s/cloud-security-automation/pull/50),
+with exact-head independent REVIEW_PASS, both green final-head CI runs, guarded ordinary merge
+and green [merged-main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37264941156).
+7E and Sprint 7 are accepted; this separate documentary archive closeout retains its own gates.
+The user approved the
 [7E preflight](sprint-7e-preflight.md) on 2026-10-04.
 This slice adds tests, browser-harness configuration and acceptance documentation only; no application
-runtime, API/BFF, policy,
-dependency, catalog, mapping or migration change is planned.
+runtime, API/BFF, policy, dependency, catalog, mapping or migration change was introduced by 7E.
 [ROADMAP.md](../ROADMAP.md) owns progress and the
-[active plan](exec-plans/active/sprint-7.md) records review/publication/merge gates.
+[completed plan](exec-plans/completed/sprint-7.md) records review/publication/merge gates.
 
 ## Whole dashboard story
 
@@ -120,6 +123,28 @@ Including the launcher as a fifth technical file gives path/TAB/Git-blob-OID UTF
 SHA256 `64CD2612DE7194D0FC34B746DBCC7C604D652E3DCB9FC17C2DD066765FF1DC6A`.
 Final exact-commit review, both green new-head CI runs, guarded merge and green merged-main CI
 remain required. 7E and Sprint 7 are still IN PROGRESS; PR #50 is not yet accepted or merged.
+
+## Accepted gates — 2026-10-05
+
+The same reviewer passed exact head `2dd43cca2458507650602fb1324484cdae36dea3`, parent `31336a0`,
+tree `a782c79545720c2501bd88574f047bb22783b4a2`, with zero unresolved findings. Independent final
+88 contract/link checks (0.27s; no skips/warnings), type/lint, Ruff/374-file formatting, whole-sprint
+whitespace and migration-head checks passed. The prior independent 267 focused / 35 PostgreSQL /
+130 frontend checks remain applicable; repaired full/browser/image/visual evidence was inspected,
+not independently repeated in full. The four-core/five-technical manifests above are unchanged.
+
+Both exact-head [push CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37263668340)
+and [PR CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37263670095) succeeded
+with 2,741 backend tests, 130 units, 74 browser journeys and quality/image gates. PR #50 merged
+ordinarily at 2026-10-05 04:46:00 UTC after fresh clean reviewed-head/tree, unchanged-base and
+OPEN/MERGEABLE/CLEAN checks, without admin/auto/force/branch deletion. Merge
+`7998e12786b817aa6de3abd63b37d22b5c4a99b6` has parents `[9927b7, 2dd43cc]` and the exact reviewed
+tree. Merged-main CI succeeded with **2,741 backend (705.50s), 287 PostgreSQL, no skips, 19 existing
+warnings; 130 units; all 74 Chromium/Firefox journeys (2.1m)** and quality/image gates.
+The superseding accepted checkpoint in the completed plan retains exact prior failures and
+implemented differences; they were resolved, not waived. Sprint 8 is NEXT only, not started.
+The archive/owner/link/normative-guard documentary delta is separately reviewed and published
+through its own exact-head CI/guarded merge/main-CI gates; none is claimed passed at preparation.
 
 ## Limits and safety
 
