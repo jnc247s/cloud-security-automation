@@ -164,6 +164,10 @@ then runs full regression and container gates and removes only that created data
 It never reuses an operator database. The browser fixture is test-only and excluded from the image.
 Browser traces/videos/screenshots are disabled for automated authenticated journeys to avoid
 retaining credentials/evidence. A separately requested local visual check must use synthetic data.
+The combined expiry journey logs only sanitized boundary labels, response codes, an authenticated
+boolean and sign-in button counts. It observes a current-refresh 401 and explicit signed-out
+session recovery before checking Sign in; these diagnostics never contain headers, cookies,
+URLs, identities, CSRF tokens or evidence payloads.
 For 7C include focused `tests/unit/services/test_investigation_history.py`,
 `tests/api/test_dashboard_investigation_api.py` and `tests/integration/test_investigation_postgres.py`.
 The browser suite covers retained history/proofs/relationships/current exceptions across the

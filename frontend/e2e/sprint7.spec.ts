@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import { test, expect, type Page, type Locator, type Request } from '@playwright/test';
 import type { NistReport, Counts, NistControl } from '../src/nist-api';
 import type { Assessment, AssessmentDetail, Citation, Relationship } from '../src/investigation-api';
 
@@ -202,6 +202,39 @@ test('real server expiry returns 401 and clears all combined panels, not just re
   await login(page);
   const report = await oldHandling(page);
   await mapping(page, report, report.controls.find(c => c.enabled)!);
+  // Record only boundary outcomes, never cookies, headers, identity or evidence payloads.
+  const events: { event: string; boundary: string; status?: number; authenticated?: boolean }[] = [];
+  const refreshRequests = new Set<Request>();
+  let refreshing = false;
+  function boundary(url: string) {
+    const path = new URL(url).pathname;
+    return path === '/dashboard/session' ? 'session'
+      : path === '/dashboard/api/scans' ? 'history'
+      : path.endsWith('/technical-posture') ? 'report'
+      : path.startsWith('/dashboard/api/') ? 'other-read' : null;
+  }
+  page.on('request', request => {
+    const name = boundary(request.url());
+    if (name) events.push({ event: 'request', boundary: name });
+    if (name && refreshing) refreshRequests.add(request);
+  });
+  page.on('requestfailed', request => {
+    const name = boundary(request.url());
+    if (name) events.push({ event: 'request-failed', boundary: name });
+  });
+  page.on('response', async response => {
+    const name = boundary(response.url());
+    if (!name) return;
+    events.push({ event: 'response', boundary: name, status: response.status() });
+    if (name === 'session') {
+      try {
+        const value: unknown = await response.json();
+        if (typeof value === 'object' && value !== null && 'authenticated' in value
+          && typeof value.authenticated === 'boolean')
+          events.push({ event: 'session-state', boundary: name, authenticated: value.authenticated });
+      } catch { events.push({ event: 'session-body-unavailable', boundary: name }); }
+    }
+  });
   let expired!: () => void; let fail!: (error: unknown) => void;
   const expiry = new Promise<void>((resolve, reject) => { expired = resolve; fail = reject; });
   await page.route('**/dashboard/api/scans?*', async route => {
@@ -211,13 +244,34 @@ test('real server expiry returns 401 and clears all combined panels, not just re
     } catch (error) { fail(error); throw error; }
     await route.continue();
   }, { times: 1 });
-  const denied = page.waitForResponse(r => r.url().includes('/dashboard/api/') && r.status() === 401);
-  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await expiry;
-  expect((await denied).status()).toBe(401);
-  await cleared(page);
-  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
-  await storage(page);
+  // A current sibling read may return 401 first and abort history. Accept either,
+  // but never use a superseded read or cleared report as proof of session recovery.
+  const denied = page.waitForResponse(r => refreshRequests.has(r.request())
+    && r.url().includes('/dashboard/api/') && r.status() === 401);
+  const recovered = page.waitForResponse(r => refreshRequests.has(r.request())
+    && new URL(r.url()).pathname === '/dashboard/session');
+  try {
+    refreshing = true;
+    await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expiry;
+    expect((await denied).status()).toBe(401);
+    await cleared(page);
+    const recovery = await recovered;
+    expect(recovery.status()).toBe(200);
+    expect((await recovery.json()).authenticated).toBe(false);
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+    await storage(page);
+  } finally {
+    let buttons: { signIn: number; signOut: number; retry: number } | 'unavailable' = 'unavailable';
+    try {
+      buttons = {
+        signIn: await page.getByRole('button', { name: 'Sign in', exact: true }).count(),
+        signOut: await page.getByRole('button', { name: 'Sign out', exact: true }).count(),
+        retry: await page.getByRole('button', { name: 'Retry sign-in check', exact: true }).count()
+      };
+    } catch { /* Optional diagnostics must never replace the primary assertion/page error. */ }
+    console.info('Expiry boundary diagnostics:', JSON.stringify({ events: events.slice(-40), buttons }));
+  }
 });
 
 for (const width of [1280, 390]) {

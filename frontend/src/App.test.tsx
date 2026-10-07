@@ -121,3 +121,41 @@ it('announces immediate logout invalidation without secrets and ignores late log
   await act(async () => { rejectLogout(new Error('late logout error')); });
   await waitFor(() => expect(screen.queryByText(/late logout error/)).not.toBeInTheDocument());
 });
+
+it.each(['unauthenticated', 'failed', 'malformed'] as const)(
+  'clears immediately on a current read 401 and waits for %s session recovery', async outcome => {
+    let finishRead!: (value: Response) => void;
+    let finishSession!: (value: Response) => void;
+    let sessionCalls = 0; let listCalls = 0;
+    const fetch = vi.fn((url: string) => {
+      if (url.endsWith('/session')) return sessionCalls++ === 0
+        ? Promise.resolve(json(authenticated()))
+        : new Promise<Response>(resolve => { finishSession = resolve; });
+      return listCalls++ === 0 ? Promise.resolve(empty())
+        : new Promise<Response>(resolve => { finishRead = resolve; });
+    });
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    await screen.findByText('No scans on this page.');
+    fireEvent.click(screen.getByRole('button', { name: /^Refresh$/ }));
+    await act(async () => { finishRead(new Response(null, { status: 401 })); });
+    expect(screen.queryByText('reader-A · VIEWER')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Scan history' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Sign in$/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry sign-in check' })).toBeInTheDocument();
+    expect(sessionCalls).toBe(2);
+    await act(async () => {
+      finishSession(outcome === 'unauthenticated'
+        ? json({ authenticated: false, csrf_token: 'synthetic-login-csrf' })
+        : outcome === 'failed' ? new Response(null, { status: 503 }) : json({ authenticated: false }));
+    });
+    if (outcome === 'unauthenticated') {
+      expect(screen.getByRole('button', { name: /^Sign in$/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Retry sign-in check' })).not.toBeInTheDocument();
+    } else {
+      expect(screen.queryByRole('button', { name: /^Sign in$/ })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Retry sign-in check' })).toBeInTheDocument();
+    }
+    expect(screen.queryByText('reader-A · VIEWER')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Scan history' })).not.toBeInTheDocument();
+  });

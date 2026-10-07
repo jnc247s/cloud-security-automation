@@ -793,6 +793,14 @@ Sprint 8 IN PROGRESS and 8B--8E PLANNED.
 No execution handler, writer credentials, rescan, dashboard mutation, live operation or Sprint 9+
 work is introduced. Existing worktrees/branches and unrelated parent `.agents/` files are preserved.
 
+The first closeout head `1df1aef` is published in PR #54, not merged. PR CI passed, but push
+CI 37698569530 failed one existing Chromium return-to-sign-in assertion (73/74 browser checks).
+The failure is not waived. A bounded test-only synchronization/diagnostic repair observes current
+refresh 401 and explicit signed-out session recovery, preserving all security/data-clearing
+assertions, timeouts and zero retries. Its fresh validation/review/new-head CI/merge/main-CI gates
+remain pending. No application defect is claimed reproduced or fixed; 8B preflight has not begun.
+See the active plan's first-head CI and repair receipt for evidence and limitations.
+
 ## Status vocabulary
 
 - `COMPLETE`: accepted implementation, full regression, required integration/security and

@@ -498,3 +498,91 @@ CLOSED, no new actionable findings. Fresh independent 91 contracts passed in 0.3
 389-file format and diff checks. All 14 inputs stayed unchanged during verification; only the
 architecture qualifier and receipt differ from the preceding input, and the sole test-source
 hash is unchanged. This closes working-input review, not the required exact-commit/delivery gates.
+
+### 8A closeout first-head CI and test-only boundary repair — 2026-10-07
+
+The 14-file closeout commit `1df1aef5ac394ce3217f22c093321a5d9139b39f` received independent
+exact-commit REVIEW_PASS with the original LOW closed and no new actionable findings, then
+was normally published in [PR #54](https://github.com/jnc247s/cloud-security-automation/pull/54).
+The worktree remained clean; branches, worktrees and unrelated parent skill files were preserved.
+
+| First-head CI | Exact outcome |
+| --- | --- |
+| [Push 37698569530](https://github.com/jnc247s/cloud-security-automation/actions/runs/37698569530) | FAILURE: 2,900 backend passed in 1,028.18s; 130 frontend passed; 73 browser passed and one Chromium expiry assertion failed; image build skipped; cleanup passed |
+| [PR 37698577228](https://github.com/jnc247s/cloud-security-automation/actions/runs/37698577228) | SUCCESS: 2,900 backend passed in 988.80s; 130 frontend and all 74 browser checks passed; quality/image/cleanup passed |
+
+Both runs include 352 PostgreSQL cases, no test skips, 19 existing SQLite warnings and zero
+browser retries. The push failure is not waived by the PR success. No merge, CI rerun or 8B
+preflight occurred. An initial local watcher TLS handshake timeout was a monitoring failure,
+not a CI result; read-only metadata and a replacement watcher recovered the actual final outcome.
+
+The failing assertion was the existing combined-panel expiry journey's missing Sign in button
+after a real 401. Refresh itself clears retained panels, and the former waiter accepted any API
+401, including obsolete reads. Neither observation proves completion of session recovery.
+CI retained no screenshot/trace/video or uploaded artifact, so the failed run's bootstrap status
+and final DOM are unavailable. The original failure's precise cause remains unestablished;
+no deterministic application/authentication defect or authorization bypass was reproduced.
+
+The existing reviewer independently confirmed that actual current concurrent/single 401s reach
+Sign in, while an obsolete read is correctly ignored. Root ran two instrumented Chromium expiry
+journeys with unchanged assertions against a uniquely owned loopback/tmpfs database: both passed
+in 12.7s, observing current history 401, session 200 with authenticated=false and Sign in. Only
+that database was removed; no operator database/server or AWS operation was used.
+
+The bounded repair extends this closeout with two frontend test files only. The browser journey
+now correlates 401 to requests initiated by the current refresh, permits a sibling read to trigger
+recovery and abort history, explicitly requires session 200/authenticated=false, and retains
+all panel/storage/Sign in assertions and existing timeouts/zero-retry policy. Sanitized diagnostic
+events contain only boundary labels, response codes, authenticated boolean and sign-in button
+counts, never cookies, headers, URLs, identities or evidence payloads. Three new deterministic
+App cases hold the bootstrap unresolved and verify immediate clearing, then valid signed-out,
+503 and malformed-response behavior. No application, session policy, API, schema, dependency,
+workflow, security header or credential change is justified or made.
+
+The first focused unit run passed eight tests, but typecheck caught four uses of Playwright's
+`exact` option in Testing Library calls. Anchored role-name matches corrected the test API usage
+without weakening assertions. Fresh eight focused tests, typecheck, lint and diff checks passed.
+Complete regression/PostgreSQL/frontend/controlled-browser gates and fresh independent new-head
+review/CI/guarded merge/main CI remain required. The earlier 1df1aef review does not cover this
+repair. This is synchronization/observability improvement, not a proven application fix.
+8A code remains COMPLETE; documentary closeout and Sprint 8 remain IN PROGRESS, 8B--8E PLANNED.
+
+### 8A closeout repair local acceptance and review — 2026-10-07
+
+Fresh local acceptance of the bounded test-only repair passed:
+
+| Gate | Exact outcome |
+| --- | --- |
+| Provided harness `python -m scripts.validate --focused tests/unit/contracts` | 91 focused checks in 0.34s; 2,900 regression tests in 784.10s, including all 352 PostgreSQL cases; no skips; 19 existing SQLite warnings |
+| Backend quality/container gates | Ruff, 389-file format, diff, Compose configuration and image build passed; harness exit 0 and only its owned disposable database removed |
+| Frontend | Typecheck/lint/build passed; all 133 units in seven files passed in 3.44s |
+| Full controlled Chromium project | All 37 journeys passed in 44.5s, no retries; owned issuer/server stopped and only its fresh database removed |
+| Optional diagnostic guard correction | Typecheck/lint/diff and one fresh real expiry journey passed in 11.1s; its separately owned database removed |
+
+The full Chromium expiry journey exercised two current parallel 401s and two session 200/false
+responses before Sign in. This is successful controlled acceptance, not reproduction of the
+original CI failure or proof of a runtime fix. Local Firefox was not rerun or claimed passed;
+fresh complete Linux Chromium/Firefox CI on the new commit remains mandatory.
+
+The independent preliminary repair review returned REVIEW_FAIL with one LOW: optional locator
+counts in the diagnostic finally block could replace the primary assertion/page-crash error.
+A guard catches only these diagnostic counts and emits a fixed unavailable marker, with no raw
+exception; all actual body assertions/errors still propagate. Corrected-input REVIEW_PASS closes
+that LOW with no new findings. Four independent source-based scenarios verify primary errors
+survive both failed/successful counts and successful bodies retain their original result.
+Independent typecheck/lint/diff passed with all five inputs frozen. Prior independent eight-unit,
+91-contract/quality results were carried forward, not falsely claimed rerun.
+
+Only this optional frontend diagnostic block changed after the fresh full harness started;
+the other 15 aggregate inputs, application/backend tests/migrations and primary browser assertions
+were unchanged. The corrected block has separate independent review and targeted real-browser/
+type/lint validation. No test/runtime/security assertion was waived. This receipt is added after
+the completed run; repeat the owner/contract and quality checks before committing it.
+
+The freshly inspected runnable image
+`sha256:076d145bf0074237e471fd9f7cbb652c4ed2fa798ed7f089cf8a5806f4296e86` passed network-disabled
+Python 3.12.15 import/OpenAPI smoke with read-only filesystem, no mounts/credentials, database
+connection or server startup. Local regression used Python 3.14.5, not full image-runtime tests.
+The original three worktrees/branches and unrelated parent `.agents/` remain preserved, and
+migration head stays `20261006_0007`. Exact new-commit review, both new-head CI gates, guarded
+ordinary merge and exact main CI are still outstanding; no 8B preflight or live operation starts.
