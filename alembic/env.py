@@ -29,6 +29,7 @@ _EVIDENCE_GRAPH_REVISION: Final = "20260915_0003"
 _ASSESSMENT_EXECUTION_REVISION: Final = "20260924_0004"
 _UNRESOLVED_REGION_REVISION: Final = "20261001_0005"
 _GOVERNANCE_CATEGORY_REVISION: Final = "20261001_0006"
+_REMEDIATION_AUTHORITY_REVISION: Final = "20261006_0007"
 _RECOVERY_DOCUMENT: Final = "docs/operations/known-limitations.md"
 _UNSAFE_DOWNGRADE_MESSAGE: Final = (
     "Downgrade blocked before revision 20260904_0002: retained scan history contains "
@@ -310,6 +311,50 @@ def _assert_evidence_graph_downgrade_safe(connection: Connection) -> None:
         raise util.CommandError(_UNSAFE_EVIDENCE_GRAPH_DOWNGRADE_MESSAGE)
 
 
+def _downgrades_remediation_authority(current_revisions) -> bool:
+    if not current_revisions:
+        return False
+    try:
+        destination = context.get_revision_argument()
+        return any(
+            revision.revision == _REMEDIATION_AUTHORITY_REVISION
+            for revision in script_directory.iterate_revisions(
+                current_revisions, destination, select_for_downgrade=True
+            )
+        )
+    except (KeyError, RangeNotAncestorError):
+        return False
+
+
+def _assert_remediation_authority_downgrade_safe(connection: Connection) -> None:
+    if connection.dialect.name == "postgresql":
+        connection.execute(
+            text(
+                "LOCK TABLE scans, resources, findings, remediation_proposals, "
+                "remediation_decisions, remediation_requests, audit_events IN ACCESS EXCLUSIVE MODE"
+            )
+        )
+    elif connection.dialect.name == "sqlite":
+        if not connection.connection.driver_connection.in_transaction:
+            connection.execute(text("BEGIN IMMEDIATE"))
+        else:
+            connection.execute(text("UPDATE alembic_version SET version_num = version_num WHERE 0"))
+    if connection.scalar(
+        text(
+            "SELECT EXISTS (SELECT 1 FROM remediation_proposals UNION ALL "
+            "SELECT 1 FROM remediation_decisions UNION ALL SELECT 1 FROM remediation_requests "
+            "UNION ALL SELECT 1 FROM audit_events WHERE event_type IN "
+            "('REMEDIATION_PROPOSED', 'REMEDIATION_APPROVED', 'REMEDIATION_REJECTED', "
+            "'REMEDIATION_REVOKED'))"
+        )
+    ):
+        raise util.CommandError(
+            "Downgrade blocked before revision 20261006_0007: retained remediation authority "
+            "cannot be represented by the older schema. No schema or data changes were applied. "
+            "Keep this revision, verify backups, and follow docs/operations/known-limitations.md."
+        )
+
+
 def run_migrations_offline() -> None:
     """Run migrations without creating a database connection."""
 
@@ -322,6 +367,11 @@ def run_migrations_offline() -> None:
         autogenerate_plugins=AUTOGENERATE_PLUGINS,
     )
     starting_revision = context.get_starting_revision_argument()
+    if _downgrades_remediation_authority(starting_revision):
+        raise util.CommandError(
+            "Offline downgrade blocked before revision 20261006_0007: remediation history "
+            "compatibility requires an online check."
+        )
     if _downgrades_governance_category(starting_revision):
         raise util.CommandError(
             "Offline downgrade blocked before revision 20261001_0006: retained category "
@@ -357,6 +407,8 @@ def run_migrations_online() -> None:
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
+            if _downgrades_remediation_authority(current_heads):
+                _assert_remediation_authority_downgrade_safe(supplied_connection)
             if _downgrades_assessment_execution(current_heads):
                 _assert_assessment_execution_downgrade_safe(supplied_connection)
             if _downgrades_evidence_graph(current_heads):
@@ -384,6 +436,8 @@ def run_migrations_online() -> None:
         )
         with context.begin_transaction():
             current_heads = context.get_context().get_current_heads()
+            if _downgrades_remediation_authority(current_heads):
+                _assert_remediation_authority_downgrade_safe(connection)
             if _downgrades_assessment_execution(current_heads):
                 _assert_assessment_execution_downgrade_safe(connection)
             if _downgrades_evidence_graph(current_heads):

@@ -3,8 +3,8 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-05
-Accepted baseline: `main` at `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
+Last verified: 2026-10-07
+Accepted baseline: `main` at `20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation reconciliation PR #52;
 Sprints 0--7 accepted, including exact-scan READ reporting, opt-in authenticated investigation,
 retained NIST technical context and whole-sprint acceptance; catalog `0.13.0` and migration
 `20261001_0006` are unchanged; exact-head review, both final-head CI and merged-main CI passed).
@@ -13,7 +13,9 @@ Prior 7D documentary checkpoint: `main` at
 7E implementation was accepted through PR #50 at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`.
 The separate documentary closeout passed exact-head review, both final-head CI runs, guarded
 ordinary merge and [final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
-The completed plan is archived; no active Sprint 7 or Sprint 8 plan exists.
+The completed Sprint 7 plan is archived. PR #52's exact merged-main
+[CI 37354537175](https://github.com/jnc247s/cloud-security-automation/actions/runs/37354537175)
+passed. Sprint 8's approved bounded plan is now [active](docs/exec-plans/active/sprint-8.md).
 
 ## Current state
 
@@ -28,7 +30,7 @@ The completed plan is archived; no active Sprint 7 or Sprint 8 plan exists.
 | Sprint 5 | AWS Evidence Expansion | **COMPLETE** |
 | Sprint 6 | Production Security Controls | **COMPLETE** |
 | Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |
-| Sprint 8 | Human-Approved Remediation | **NEXT** |
+| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |
 | Sprint 9 | Hardening / Scanner Validation | **PLANNED** |
 | Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |
 | Optional post-v1 | AI Security Investigation Agent | **DEFERRED** |
@@ -685,6 +687,81 @@ an approved Sprint 5 plan:
 
 See `docs/operations/known-limitations.md` and `THREAT_MODEL.md` for operational and security
 detail.
+
+## Sprint 8 authorization — 2026-10-06
+
+The analysis-only [preflight](docs/sprint-8-preflight.md) inspected the accepted contracts,
+callers, authorization, history, audit, findings, scan execution and tests. The user selected
+EC2-004 only, three distinct verified human principals, strict newer-assessment invalidation,
+a 24-hour proposal lifetime, and approval revocation without proposer withdrawal. After the
+8A plan was presented, the user's `Continue` authorizes bounded local 8A implementation.
+
+**8A is IN PROGRESS**, not accepted. It adds durable proposal/approval persistence and generic
+authenticated APIs only; no AWS execution. 8B--8E remain PLANNED and require their own preflight
+and implementation approval. Reviewer agents, commits, pushes, PRs, merges, live AWS/IAM/secret/
+production operations and later-sprint work remain separately gated. The feature branch is
+`codex/sprint-8a-remediation-foundation`; unrelated parent skill files and all worktrees/branches
+are preserved.
+
+At the 2026-10-06 local validation checkpoint, 8A was ready for independent review, not accepted:
+239 focused and 2,833 full-regression tests passed (318 disposable PostgreSQL cases, no skips),
+with Ruff/format/diff, Compose configuration, image build and network-disabled image import/
+OpenAPI checks green. The [active-plan receipt](docs/exec-plans/active/sprint-8.md#final-local-validation-receipt--2026-10-06)
+retains earlier failed/stopped runs, compatibility-test corrections and limits. No reviewer,
+staging/commit, publication, merge or live operation occurred. Sprint 8 and 8A stay IN PROGRESS;
+8B--8E remain PLANNED.
+
+### 8A independent review and bounded repair — 2026-10-07
+
+The user separately authorized one read-only reviewer. Review of the unchanged 41-file
+uncommitted tree returned REVIEW_FAIL with two MEDIUM findings: finding-status round trips could
+revive stale authority, and service READ calls could discard/flush pending caller changes.
+No CRITICAL or HIGH finding was identified. The reviewer passed 57 SQLite authority/migration
+cases and one signed HTTP case; PostgreSQL/full/container gates were not independently rerun.
+
+The user then authorized only these fixes, regression tests, review-receipt documentation and
+required revalidation. Governance now binds append-only finding event IDs, including equal-time
+events; READ rejects pending changes before SQL and suppresses autoflush without ending a clean
+caller transaction. All 20 defect-focused cases failed before repair; 33 new SQLite regression
+and compatibility cases pass after repair. Expanded PostgreSQL/full/quality/container validation
+is still pending at this checkpoint. The [active-plan receipt](docs/exec-plans/active/sprint-8.md#independent-review-and-approved-repair--2026-10-07)
+records evidence and compatibility implications. **8A and Sprint 8 remain IN PROGRESS**.
+No second reviewer, staging/commit, publication, merge, live operation or 8B+ work is authorized.
+
+### 8A repaired-tree local validation — 2026-10-07
+
+The approved repairs pass 306 expanded focused checks in 187.71s and all 2,900 regression tests
+in 883.18s, including 352 disposable PostgreSQL cases; no skips, 19 existing SQLite adapter
+warnings. Ruff/format/diff, Compose configuration and image build passed. The harness exited 0
+and removed only its owned disposable database. SHA-256 checks confirm the 41-file input remained
+unchanged during validation. An additional in-memory probe confirms proposed and approved
+authority stay stale even when new governance events leave the maximum audit timestamp unchanged.
+Final receipt/documentation checks passed 63 cases, and the refreshed image passed network-disabled
+Python 3.12 corrected-source import and OpenAPI smoke checks; details are in the active plan.
+The repairs are locally validated, **not independently cleared or accepted**. The initial
+REVIEW_FAIL remains the review result; no corrected-tree REVIEW_PASS is claimed. 8A and Sprint 8
+remain IN PROGRESS, 8B--8E PLANNED. A follow-up reviewer and all publication/live gates require
+separate approval; no later sprint was started.
+
+### 8A follow-up review and standing workflow approval — 2026-10-07
+
+The user separately authorized one read-only follow-up on the corrected 41-file uncommitted
+tree. The same reviewer returned REVIEW_PASS: both original MEDIUM findings independently
+closed, no new findings and 156 tests passed in 167.42s, including all 65 current remediation
+PostgreSQL cases, without skips. Original-scenario probes confirmed monotonic invalidation even
+when MAX(timestamp) stays unchanged and preservation of clean/pending caller transaction state.
+The owned disposable review database was removed. SHA-256 comparisons confirm the reviewed
+input remained unchanged. This supersedes the repaired-tree review-pending statements above,
+not the historical REVIEW_FAIL, and is not exact-commit acceptance or sprint completion.
+
+The user then requested completion of Sprint 8 and automatic approval of its routine workflow,
+except architectural/design decisions. Routine implementation within accepted design, tests,
+documentation, independent review and repairs, scoped commits/pushes/PRs and ordinary guarded
+merges are authorized when all required gates pass. No force-push, protection bypass, live AWS,
+IAM/secret change, production operation or Sprint 9+ work is authorized. Later slices still
+require analysis preflight; unresolved architecture/design choices must be presented before
+implementation. The active plan records exact review, application-smoke limitations and scope.
+8A and Sprint 8 remain IN PROGRESS; 8B--8E remain PLANNED until their entry gates pass.
 
 ## Status vocabulary
 

@@ -1,8 +1,9 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--7 at the
-accepted `main` baseline `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
-merged-main CI passed). That baseline includes the versioned assessment
+This document defines permanent repository security rules for accepted Sprints 0--7 and local
+Sprint 8A authority below, pending acceptance. The accepted `main` baseline is
+`20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation reconciliation PR #52;
+merged-main CI 37354537175 passed). That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -92,9 +93,10 @@ intentionally unauthenticated. They must not return secrets or resource evidence
 | `ADMIN` | `READ`, `PROPOSE`, `APPROVE`, `EXECUTE` |
 
 Current query endpoints—including source-outcome/artifact and resource-relationship reads—require
-`READ`; `POST /api/v1/scans` requires `EXECUTE`, which only `ADMIN` currently holds. `PROPOSE` and
-`APPROVE` are reserved for later explicit workflows. Do not collapse the four capabilities into a
-generic administrator permission.
+`READ`; `POST /api/v1/scans` requires `EXECUTE`, which only `ADMIN` currently holds. Local 8A
+`POST /api/v1/remediations` requires `PROPOSE`; its decision and revocation routes require
+`APPROVE`. Roles and scan authorization are unchanged. Do not collapse the four capabilities
+into a generic administrator permission.
 
 The accepted application is a single-trust-domain control plane. A reader can query all persisted
 AWS accounts; there is no tenant/account claim enforcement or row-level isolation. Do not deploy
@@ -408,13 +410,59 @@ Subsequent approvals and gates accepted 7B/7C/7D and 7E whole-sprint acceptance;
 COMPLETE. 7E adds tests/documentation and restores normal Firefox isolation only in the pinned
 test launcher; application headers/authentication, dependencies, timeouts and all assertions are
 unchanged. No live IdP/AWS/IAM/secret/deployment/remediation operation is authorized by acceptance.
-Sprint 8 is NEXT only, with separate preflight/implementation and live-operation approvals required.
+At that historical closeout Sprint 8 was NEXT. Its subsequent bounded local 8A authorization and
+current status are recorded in ROADMAP and the active Sprint 8 plan; live-operation authority
+remains separate and absent.
 
 Assessment profiles are immutable security policy. `ASSESSMENT_PROFILE_VERSION` is explicit,
 operator-controlled provenance: deploy a new numeric `X.Y.Z` value whenever policy content
 changes, and never edit a stored version or rewrite scan references. Pending scans load and verify
 their persisted profile rather than current environment policy, so a restart cannot silently
 change an accepted assessment definition.
+
+## Sprint 8A authority — local, pending acceptance
+
+The approved 8A boundary persists intent and human decisions only. There is no execution handler,
+writer credential setting/acquisition, worker submission, automatic rescan or browser mutation.
+Scanner identities and permissions remain read-only. The only proposal action is EC2-004 EBS
+encryption-by-default false-to-true; callers cannot provide arbitrary AWS parameters, account,
+Region, credentials, desired state or shell commands. Scope is derived from validated history.
+
+Identity separation uses the full verified `(issuer, subject)` pair, not roles or display names.
+APPROVE and REJECT require a different identity from the proposer, with no ADMIN override. Any
+APPROVE principal may revoke an existing approval, including its approver or a proposer who also
+has APPROVE; removal of authority does not require current eligibility. No withdrawal exists.
+The later execution requester must be a third distinct human identity, and the worker must use
+a separate service identity; neither execution path is implemented in 8A. IdP governance must
+restrict human workflow roles to appropriate human accounts and prevent one person controlling
+multiple approver identities. Token verification cannot prove distinct physical people. The fixed
+development principal cannot self-approve; do not weaken authentication to simulate separation.
+
+Creation/approval validates completed explicit FAIL, immutable source/configuration/policy
+bindings, complete default-KMS context, eligible finding disposition and no active unexpired
+exception. A 24-hour expiry, any later/equal target-control assessment and a changed governance
+digest block approval. Stored APPROVED is historical authority, not a live configuration claim
+or execution readiness. Reads derive blocking reasons without rewriting that history. Rejecting
+an undecided proposal or revoking approval remains possible when stale/expired.
+The governance digest includes append-only finding audit-event IDs, not just reversible status
+or a maximum timestamp; a status round trip never renews old authority, even at equal event times.
+READ rejects pending ORM changes before SQL and suppresses autoflush rather than flushing or
+discarding a caller's work. It does not commit/rollback a clean caller-owned transaction.
+
+Every mutation requires a UUID Idempotency-Key, current capability, typed digest/references and a
+bounded nonblank reason. Keys are scoped to identity and operation, not just proposal; replay
+checks normalized request content and current capability before returning original history.
+Short locked transactions atomically append authority, idempotency and audit rows. New audit
+events retain exact issuer, subject, roles and capability in schema `1.0.0` metadata; their
+`actor_id` is SHA-256 of canonical JSON `[issuer, subject]`, avoiding subject truncation. They do
+not store JWTs, session credentials or provider errors. Legacy scan/governance audit attribution
+is unchanged and its gaps remain. Database guards block mutation and basic cross-reference/self-
+decision corruption, not privileged schema changes or every privileged direct INSERT. Restrict
+database writes to trusted services and protect backups/operator access.
+
+See [API](docs/api.md), [operations](docs/operations/remediation.md) and the active plan for exact
+contracts and remaining acceptance gates. Local validation is not live IdP, AWS or production
+validation and grants no operational authorization.
 
 ## Production authorization
 

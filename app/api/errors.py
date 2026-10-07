@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.services.errors import (
     AssessmentProfileConflictError,
     EntityNotFoundError,
+    RemediationError,
     TechnicalPostureProvenanceError,
 )
 from app.services.scan_service import ScanSubmissionError
@@ -83,4 +84,13 @@ async def technical_posture_provenance_handler(
                 "message": "The retained scan reporting provenance is inconsistent.",
             }
         },
+    )
+
+
+async def remediation_error_handler(_request: Request, error: RemediationError) -> JSONResponse:
+    """Expose only fixed controlled errors, never SQL/provider/evidence details."""
+    return JSONResponse(
+        status_code=error.status_code,
+        headers={"Cache-Control": "no-store"},
+        content={"detail": {"code": error.code, "message": str(error)}},
     )

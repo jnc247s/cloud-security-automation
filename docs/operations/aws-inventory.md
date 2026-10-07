@@ -345,8 +345,9 @@ sensitive buckets rather than assuming unencrypted modern buckets are common.
 - EC2/EBS collectors emit evidence only. Separately reviewed `EC2-001` through `EC2-004` consume
   it only when opt-in catalog `0.5.0` or newer is explicitly selected.
 - The 5B network collectors emit evidence only. Separately reviewed `NET-003` through `NET-006`
-  consume it in opt-in catalogs `0.6.0`/`0.7.0` or newer. Network-tag use by `GOV-001` remains
-  unimplemented, and existing `NET-001` and `NET-002` behavior is unchanged.
+  consume it in opt-in catalogs `0.6.0`/`0.7.0` or newer. Accepted `GOV-001` in opt-in catalog
+  `0.13.0` also consumes retained tags for the documented 11 governed families, including VPCs,
+  subnets, security groups and Flow Logs. Existing `NET-001` and `NET-002` behavior is unchanged.
 - The 5D Analyzer facts are supplementary investigation context only. Their
   `references_resource` relationship resolves only to an exact same-scan S3 bucket; unresolved
   targets are retained without fabrication. They do not decide `S3-002`; accepted opt-in 6E.2

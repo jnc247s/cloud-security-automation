@@ -6,6 +6,27 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8A — local implementation, pending acceptance
+
+- Added closed EC2-004 proposal-only action metadata, immutable digest-bound proposals and
+  approval/rejection/revocation, authenticated generic APIs, actor/operation-scoped UUID
+  idempotency and atomic full-identity audit. ADMIN cannot self-decide; approvals revalidate
+  exact history, 24-hour expiry, newer/equal target-control assessments and governance.
+- Added migration `20261006_0007` after unchanged accepted head 0006, append-only authority
+  guards/indexes, preserved audit history and pre-DDL populated-downgrade refusal on both backends.
+  Updated owning API/persistence/architecture/security/threat/operations documents and active plan.
+- Preserved existing API bodies, roles/authentication, scanner read-only permissions, profiles,
+  controls, findings/technical results and dashboard. No AWS execution, writer credentials, worker,
+  rescan, UI mutation or later-sprint work. Review/publication/merge/main-CI gates remain open;
+  this entry does not declare the slice or sprint complete.
+- Applied separately approved repairs for the initial review's two MEDIUM findings: governance
+  binds append-only finding event IDs so status round trips cannot revive authority; list/detail
+  READ rejects pending caller work and suppresses autoflush without ending clean transactions.
+  Added SQLite/PostgreSQL regressions. No schema/API-field changes; pre-repair local proposals
+  require new intent. Repairs pass local revalidation and independently authorized repaired-tree
+  review (156 tests, including 65 PostgreSQL cases; no skips). Exact-commit delivery and
+  publication/acceptance remain pending.
+
 ### Documentation
 
 - Established permanent repository governance, source-of-truth ownership, roadmap transitions,

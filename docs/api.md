@@ -24,7 +24,9 @@ independent review and green main CI. No new API schema or production-authentica
 is introduced; the [evidence matrix](sprint-7e-acceptance.md) records offline scope and limits.
 The separate Sprint 7 documentary closeout is accepted through PR #51 with exact-head review,
 both green final-head CI runs and green final merged-main CI at
-`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. It changes no interface or capability.
+`b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. Subsequent documentation reconciliation PR #52
+is accepted at `20c04665f89ae8c8cf9348603fd54e0e100b6076` with merged-main CI 37354537175;
+it changes no interface or capability. The local Sprint 8A extension below is pending acceptance.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -32,8 +34,9 @@ relationship, finding/exception and framework read APIs on SQLite and PostgreSQL
 offline in these tests; development bearer authentication remains explicit test-only. No API
 shape, capability or production-authentication change was introduced by acceptance/closeout.
 
-The API is read-only apart from creating a scan. It cannot modify AWS resources, finding status,
-exceptions, controls, mappings, or audit history.
+The accepted baseline is read-only apart from creating a scan. Local 8A additionally appends
+remediation proposal/decision authority and paired audit history. It cannot modify AWS resources,
+finding status, exceptions, controls, mappings or existing audit history.
 
 ## Authentication
 
@@ -131,8 +134,8 @@ URLs require HTTPS unless localhost HTTP is explicitly enabled in a non-producti
 
 All current `/api/v1` GET operations require `READ`. `POST /api/v1/scans` requires `EXECUTE`, so only
 `ADMIN` can start a scan in the current mapping. `ANALYST` receives HTTP 403; do not weaken that
-boundary when writing examples or tests. `PROPOSE` and `APPROVE` are reserved for later explicit
-workflows.
+boundary when writing examples or tests. Local 8A uses `PROPOSE` for proposal creation and
+`APPROVE` for decisions and revocation; the role map and scan authorization are unchanged.
 
 Authorization is control-plane-wide. A principal with `READ` can query all accounts persisted in
 this database; tenant/account claims and row-level object authorization are not implemented. The
@@ -162,10 +165,86 @@ accepted deployment assumption is one trusted security domain.
 | `READ` | `GET /api/v1/frameworks` | List immutable framework versions |
 | `READ` | `GET /api/v1/frameworks/{framework_id}` | Read hierarchy and control mappings |
 | `READ` | `GET /api/v1/exceptions` | List explicit operational exceptions |
+| `READ` | `GET /api/v1/remediations` | List stored proposals with derived validity (local 8A) |
+| `READ` | `GET /api/v1/remediations/{proposal_id}` | Read immutable intent and decisions (local 8A) |
+| `PROPOSE` | `POST /api/v1/remediations` | Append a proposal, not execute an action (local 8A) |
+| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/decisions` | Append the unique initial APPROVE or REJECT (local 8A) |
+| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/revocations` | Revoke an existing approval (local 8A) |
 
 There is no exception-detail route, audit route, finding/exception mutation, rescan/retry,
-cancellation, remediation, or arbitrary AWS-call endpoint. `AuditService` is an internal service
-boundary only.
+cancellation, proposal withdrawal, remediation execution or arbitrary AWS-call endpoint.
+`AuditService` is an internal service boundary only. The dashboard BFF allowlist is unchanged and
+does not proxy these new authority routes; dashboard cookies never authenticate `/api/v1`.
+
+## Sprint 8A proposal and decision contract — local, pending acceptance
+
+All three POSTs require a bearer capability and a UUID `Idempotency-Key` header. Keys are scoped
+to the full verified issuer/subject pair and operation (`CREATE`, `DECIDE`, `REVOKE`), across all
+proposals. Reuse with identical normalized input returns the original immutable record with HTTP
+200; first creation returns 201. Reuse with different input, including a different target proposal,
+returns 409. Current capability is checked even on replay; a retry does not renew an expiry or
+approval. Reasons are stripped, nonblank and at most 2,000 characters; unknown body fields fail
+validation rather than becoming AWS parameters.
+
+`POST /remediations` accepts only these body fields:
+
+```json
+{
+  "finding_id": "<finding UUID>",
+  "occurrence_id": "<occurrence UUID belonging to this finding>",
+  "action_id": "aws.ec2.enable-ebs-encryption-by-default",
+  "action_version": "1.0.0",
+  "reason": "Reviewed workload and default-key compatibility."
+}
+```
+
+The server derives account/Region and fixed false-to-true intent; only EC2-004 is supported.
+Creation requires a completed explicit FAIL, false encryption default, validated complete
+encryption/default-KMS sources, an OPEN/ACKNOWLEDGED finding and no active unexpired exception.
+Complete expected absence of a default KMS key is recorded explicitly, not confused with
+unavailable evidence. No control/profile is enabled by creating a proposal.
+
+The response `ProposalView` contains immutable `content`, `proposal_sha256`, historical
+`approval_status`, derived `blocking_reasons`, `validity_checked_at`, and immutable `decisions`.
+Content includes the proposal/finding/resource/control IDs, action/risk, verified proposer,
+reason, server creation and 24-hour expiry, governance digest and exact baseline: occurrence/
+assessment/scan/snapshot IDs, observation/state/inventory digests, profile/catalog/control
+versions/checksums, assessment evidence bindings, source-outcome/artifact/reference/digest
+bindings, default KMS key ID and explicit expected-absence flag. OpenAPI owns the exact fields.
+The digest covers canonical JSON of the whole immutable content, not only the action parameters.
+
+`POST /remediations/{proposal_id}/decisions` accepts `proposal_sha256`, `decision` (exactly
+`APPROVE` or `REJECT`) and `reason`. It returns an immutable `DecisionView` with decision/proposal
+IDs, kind, proposal digest, nullable approval reference, verified actor, reason and server time.
+The actor must differ from the proposer by verified issuer/subject, including ADMIN. APPROVE
+requires current eligibility, exact bindings and unexpired lifetime. Any other assessment for
+the stable target/control at a newer or equal observation time invalidates approval regardless
+of result; a changed finding/exception governance digest also invalidates it. REJECT can close
+an undecided stale/expired proposal. There can be only one initial decision; no reversal or
+reapproval endpoint exists.
+Governance binds append-only finding event IDs, not only current status. Returning to the original
+finding status, including with equal-time events, cannot remove STALE_GOVERNANCE or revive old
+approval. Pre-repair local proposals require new intent under the tightened digest rule.
+
+`POST /remediations/{proposal_id}/revocations` accepts `proposal_sha256`, the exact
+`approval_decision_id` and `reason`. Any APPROVE principal may append one terminal REVOKE of that
+proposal's approval, even when stale/expired; a proposer with APPROVE may remove authority.
+It returns `DecisionView`. References to a different approval/proposal conflict.
+
+`approval_status` is one of `PROPOSED`, `APPROVED`, `REJECTED`, `REVOKED`; it is not a finding,
+technical assessment or execution status. An APPROVED record stays historically APPROVED when
+expired/stale, with blocking reasons `EXPIRED`, `STALE_TARGET`, `STALE_GOVERNANCE`,
+`INELIGIBLE_FINDING`, `ACTIVE_EXCEPTION` or `INVALID_PROVENANCE` as applicable. GETs recompute
+these checks from retained data without writes or AWS calls. Empty blocking reasons are not a
+live-state guarantee or permission to execute. Only a new proposal can bind a refreshed baseline.
+
+Missing/invalid bearer identity is 401, missing capability or self-decision is 403, unknown IDs
+are 404, invalid typed requests/headers are 422, and state/digest/eligibility/idempotency conflicts
+are sanitized 409. Database operational failures during mutations are sanitized 503; unexpected
+read failures retain the ordinary sanitized 500 boundary. New success responses and
+remediation-specific errors use `Cache-Control: no-store`; never cache sensitive proposal data.
+No response carries AWS credentials, JWTs or raw SQL/provider failures. See
+[remediation operations](operations/remediation.md) for identity and remaining workflow limits.
 
 ## Filtering and pagination
 
@@ -181,6 +260,7 @@ boundary only.
 | controls | `category`, `severity`, `resource_type`, `catalog_key` |
 | frameworks | `framework_key`, `version` |
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
+| remediations (local 8A) | `finding_id`, `account_id` (12 digits) |
 
 Accepted 6G adds the public control category `governance`. Existing category values, response
 shapes, capabilities and generic control filtering are unchanged. The category migration and

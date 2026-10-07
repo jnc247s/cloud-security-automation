@@ -91,6 +91,7 @@ class ControlAssessment(Base):
             "assessment_result",
         ),
         Index("ix_control_assessments_snapshot", "resource_snapshot_id"),
+        Index("ix_control_assessments_target_control", "resource_id", "control_id"),
     )
 
     assessment_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)

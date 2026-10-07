@@ -40,6 +40,9 @@ def test_caller_owns_rollback(postgres_engine):
 
 
 def test_writer_is_excluded_before_category_preflight(postgres_engine):
+    # This exercises the frozen 0006 guard, not the newer whole-path authority guard.
+    with postgres_engine.begin() as connection:
+        command.downgrade(migration_config(connection), CURRENT)
     persist_history(postgres_engine)
     inserted, release, attempted = Event(), Event(), Event()
 

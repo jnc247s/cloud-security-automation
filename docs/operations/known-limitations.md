@@ -1,6 +1,6 @@
 # Current known limitations
 
-This register records accepted Sprints 0--7 implementation reality, including
+This register records accepted Sprints 0--7 and pending local Sprint 8A implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
@@ -29,6 +29,39 @@ not certify unseen source bytes or bound upstream report size. Account/tenant is
 live provider/production validation remain absent.
 
 ## Data and migration integrity
+
+### Remediation authority — local 8A, pending acceptance
+
+8A adds proposal/decision/idempotency history, paired audit and bearer APIs, not execution or a
+dashboard workflow. It remains subject to exact-commit review/publication/merge and green exact
+merged-main CI. No write credentials, worker, live AWS checks, recovery attempts, linked rescan or
+automatic finding resolution are implemented. See [remediation operations](remediation.md).
+
+Three distinct verified issuer/subject identities are the approved end-state human separation;
+8A enforces proposer versus initial approver/rejector, including ADMIN. The third execution
+requester path is not present. IdP governance, not subject inequality alone, must prevent one
+physical person controlling all identities. Development's fixed identity cannot self-approve.
+All readers still share one trust domain with access to persisted accounts; filters are not
+tenant/account authorization. No live IdP or production configuration has been validated.
+
+Derived eligibility uses retained evidence and is not live AWS readiness. List/detail revalidates
+bounded pages but does not add a rate limit or fleet-scale performance guarantee. Proposal expiry,
+stale assessments and governance changes do not erase historical approvals. KMS context is required
+for this action's eligibility, not a new EC2-004 technical rule.
+Initial independent review found two MEDIUM governance-history and READ caller-ownership defects.
+The user authorized bounded repairs/revalidation, then one read-only follow-up on the repaired tree.
+Repairs bind append-only finding event IDs and reject pending caller changes before READ;
+pre-repair local proposals require new intent. The unchanged repaired tree received REVIEW_PASS:
+both original findings closed, no new findings and 156 independent tests passed, including 65
+disposable PostgreSQL cases, without skips. Exact-commit acceptance remains gated. The subsequent
+standing workflow approval covers routine delivery, not architectural/design decisions or live
+AWS/production operations; the active plan records the boundaries and preserved failed review.
+
+New authority writes retain full actor context, but legacy scan/governance attribution gaps and
+privileged direct INSERT/schema-operator risks remain. Revision 0007 refuses populated downgrade
+before any DDL across the complete path, even when only a new audit event exists. Operators need
+a verified backup, quiesced writers and separate authorization; do not remove immutable history
+to make rollback possible. Existing accepted migration safeguards remain in force.
 
 ### Governance category transition — ACCEPTED 6G
 
@@ -416,6 +449,7 @@ NIST mapped-subset context; 7E whole-Sprint-7 acceptance and documentary closeou
 Acceptance does not remove the following deferred capabilities or operational risks.
 Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
-There is no production Terraform deployment, governance mutation API, remediation,
-distributed worker, multi-account orchestration, or AI runtime. Their absence is roadmap scope,
+There is no production Terraform deployment, finding/exception mutation API, remediation execution,
+distributed worker, multi-account orchestration, or AI runtime. Local 8A authority is not yet
+accepted and adds no browser mutations. Their absence is roadmap scope,
 not an incomplete Sprint 4 implementation.

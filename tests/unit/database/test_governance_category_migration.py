@@ -74,7 +74,6 @@ def exercise_round_trip(engine, config_factory):
     assert state(engine) == before
     with engine.begin() as connection:
         command.upgrade(config_factory(connection), CURRENT)
-        command.check(config_factory(connection))
     after = state(engine)
     assert before["revision"] == PREVIOUS and after["revision"] == CURRENT
     assert before["rows"] == after["rows"]
@@ -89,6 +88,11 @@ def exercise_round_trip(engine, config_factory):
     with Session(engine) as session, pytest.raises(IntegrityError), session.begin():
         category_probe(session, "unknown")
     assert state(engine) == after
+    # Preserve the exact 0005 -> 0006 row/CHECK/trigger assertions above. ORM drift checking
+    # belongs at current head, which now also contains the independently tested 0007 tables.
+    with engine.begin() as connection:
+        command.upgrade(config_factory(connection), "head")
+        command.check(config_factory(connection))
 
 
 def exercise_blocked_downgrade(engine, config_factory):
