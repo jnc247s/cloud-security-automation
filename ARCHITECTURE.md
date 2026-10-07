@@ -1,8 +1,8 @@
 # Architecture
 
-This document describes accepted Sprints 0--7. The implementation baseline
-is `main` commit `b90bf08eeb79ba56d5308f19a942c6c10bf41b28` (Sprint 7 closeout PR #51;
-7E implementation PR #50), after the Sprint 5
+This document describes accepted Sprints 0--7 and the local, not-yet-accepted Sprint 8A extension
+below. The accepted baseline is `main` commit `20c04665f89ae8c8cf9348603fd54e0e100b6076`
+(documentation reconciliation PR #52; merged-main CI 37354537175), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
@@ -12,7 +12,8 @@ it changes no application runtime architecture. Its bounded Firefox test-launch 
 restores normal site isolation without weakening application headers or assertions.
 The [acceptance matrix](docs/sprint-7e-acceptance.md) records offline evidence and explicit limits.
 The separate documentary closeout also passed exact-head review, both final-head CI runs,
-guarded ordinary merge and final merged-main CI. All 7A--7E states are COMPLETE; Sprint 8 is NEXT.
+guarded ordinary merge and final merged-main CI. All 7A--7E states are COMPLETE. Current Sprint 8
+scope/status is owned by [ROADMAP](ROADMAP.md) and the [active plan](docs/exec-plans/active/sprint-8.md).
 Production setup remains unimplemented.
 All Sprint 6
 controls remain opt-in; the five-control default catalog is unchanged.
@@ -279,7 +280,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20260915_0003  shared source-outcome and relationship evidence graph
     -> 20260924_0004  immutable extended policy and execution-contract storage
     -> 20261001_0005  unresolved regional relationship preservation
-    -> 20261001_0006  additive governance category (current head)
+    -> 20261001_0006  additive governance category (accepted-main head)
+    -> 20261006_0007  append-only remediation authority (local 8A head, pending acceptance)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -513,8 +515,45 @@ ADMIN     -> READ, PROPOSE, APPROVE, EXECUTE
 ```
 
 Current read routes require `READ`; scan creation requires `EXECUTE`, so only `ADMIN` can start a
-scan. No governance or remediation mutation routes exist. Authorization is control-plane-wide,
-not tenant/account-scoped; see `THREAT_MODEL.md`.
+scan. Local 8A proposal creation requires `PROPOSE`; approval/rejection/revocation requires
+`APPROVE`. No finding/exception mutation or remediation execution route exists. Authorization
+remains control-plane-wide, not tenant/account-scoped; see `THREAT_MODEL.md`.
+
+## Sprint 8A remediation authority — local, pending acceptance
+
+The generic bearer API calls `RemediationService`, which reads accepted immutable history and
+appends proposal, decision and idempotency records with paired audit events. It has no AWS,
+credential-provider, scan-executor or dashboard mutation dependency. Proposal-only action metadata
+permits only `aws.ec2.enable-ebs-encryption-by-default` version `1.0.0`, EC2-004, fixed false-to-true.
+It does not change control evaluation, enable a profile, resolve a finding or alter an exception.
+
+Immutable proposal content binds the exact occurrence, assessment, snapshot, policy/catalog/
+control versions and checksums, source proofs, EBS setting and default KMS context. Creation needs
+a completed explicit FAIL and an eligible OPEN/ACKNOWLEDGED finding without an active unexpired
+exception. Approval revalidates those bindings, current governance and the 24-hour lifetime.
+Any other target/control assessment at a later or equal observation time invalidates the proposal,
+regardless of result; omission of that control alone does not invent an assessment or resolve it.
+Approval history and derived stale/expiry reasons are separate, and GETs never update records.
+Governance binds sorted append-only finding audit-event IDs as well as current disposition and
+exception state. Returning to a prior status cannot restore authority, including equal-time
+events. Pre-repair local proposals fail the tightened digest check without rewriting history.
+
+Mutations require an idle session and reject an active caller transaction without ending it.
+READ rejects pending caller inserts/updates/deletes before any query and suppresses autoflush
+throughout traversal; clean caller-owned transactions remain open and usable.
+They lock Resource, then Finding, then proposal on PostgreSQL; SQLite reserves
+the writer. They do not hold a transaction across a network/AWS call or subsequently lock Scan.
+Initial APPROVE/REJECT is unique and requires a different verified issuer/subject pair from the
+proposer, including ADMIN. Any APPROVE principal can append one terminal revocation of an approval;
+there is no withdrawal. Exact authorized retries return the original record, while conflicting
+normalized input under the same identity/operation/key fails without partial writes. Database
+history guards protect the new rows; migration downgrade refuses populated authority history
+before any DDL. See [persistence](docs/persistence.md) for the privilege-boundary limitations.
+
+The third distinct execution requester, isolated worker/write identity, fresh live preconditions,
+crash recovery and exact-policy read-only rescan are later separately approved slices, not 8A
+behavior. Stored approval is not permission for this version to execute anything. See
+[remediation operations](docs/operations/remediation.md).
 
 ## API boundary
 
@@ -649,7 +688,9 @@ workload-role configuration remain deployment responsibilities.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
   NIST mapped-subset context. Whole-Sprint-7 acceptance is COMPLETE with scoped offline evidence.
   Production setup remains unimplemented.
-- No Terraform deployment, remediation, or AI runtime.
+- No Terraform deployment, remediation execution or AI runtime. Local 8A authority records/API
+  passed repaired-tree independent review but remain pending exact-commit delivery and acceptance;
+  no remediation dashboard or worker is added.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

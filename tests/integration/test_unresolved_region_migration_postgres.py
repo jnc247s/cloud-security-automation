@@ -69,7 +69,8 @@ def test_writer_is_serialized_before_downgrade_preflight(postgres_engine):
 
             @event.listens_for(connection, "before_cursor_execute")
             def observe(_connection, _cursor, statement, *_args):
-                if statement.startswith("LOCK TABLE scans, scan_scope_manifests"):
+                # The new 0007 guard is first on the complete downgrade path.
+                if statement.startswith("LOCK TABLE scans, resources, findings, remediation_"):
                     lock_attempted.set()
 
             command.downgrade(migration_config(connection), "20260924_0004")

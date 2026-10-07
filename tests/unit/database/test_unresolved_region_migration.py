@@ -166,7 +166,15 @@ def exercise_failed_transition(engine, config_factory, direction):
             command.downgrade(config_factory(connection), PREVIOUS)
         command.upgrade(config_factory(connection), "head")
         command.check(config_factory(connection))
-    assert state(engine)["rows"] == before["rows"]
+    after_rows = state(engine)["rows"]
+    assert {table: after_rows[table] for table in before["rows"]} == before["rows"]
+    added_tables = set(after_rows) - set(before["rows"])
+    assert added_tables == (
+        {"remediation_proposals", "remediation_decisions", "remediation_requests"}
+        if direction == "upgrade"
+        else set()
+    )
+    assert all(after_rows[table] == [] for table in added_tables)
 
 
 def exercise_constraint(engine):

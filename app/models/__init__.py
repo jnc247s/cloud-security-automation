@@ -19,6 +19,7 @@ from app.models.evidence_graph import (
 from app.models.exception import FindingException
 from app.models.finding import Finding, FindingOccurrence
 from app.models.profile import PersistedAssessmentProfile
+from app.models.remediation import RemediationDecision, RemediationProposal, RemediationRequest
 from app.models.resource import Resource, ResourceSnapshot
 from app.models.scan import Scan, ScanScopeManifest
 
@@ -37,6 +38,9 @@ __all__ = [
     "FrameworkReference",
     "PersistedAssessmentProfile",
     "Resource",
+    "RemediationDecision",
+    "RemediationProposal",
+    "RemediationRequest",
     "ResourceRelationshipObservation",
     "ResourceSnapshot",
     "Scan",

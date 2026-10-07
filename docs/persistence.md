@@ -7,8 +7,10 @@ omitting it preserves the accepted contract. The browser never reads PostgreSQL 
 control versions, evidence digests, source artifacts and directional relationships on SQLite
 and disposable PostgreSQL, keeping current findings/exceptions separate from historical facts.
 Sprint 7 and its documentary closeout are COMPLETE through PR #50/#51 with green final main CI.
-No Sprint 7 schema or migration change was introduced; head remains `20261001_0006`.
+No Sprint 7 schema or migration change was introduced; accepted-main head remains `20261001_0006`.
 See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
+Local Sprint 8A adds `20261006_0007` below, pending exact-commit delivery and acceptance; current
+authorization/status belongs to ROADMAP and the active Sprint 8 plan.
 
 Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
@@ -473,9 +475,68 @@ The migration-installed history guards protect audit rows from ordinary updates 
 Audit metadata, evidence, and normalized configurations can still contain sensitive infrastructure
 or organizational information; protect database access and backups accordingly.
 
+## Sprint 8A remediation authority — local, pending acceptance
+
+Revision `20261006_0007` adds three append-only tables; it does not alter existing assessment,
+snapshot, finding or exception contents:
+
+- `remediation_proposals`: immutable canonical content/digest, proposal/finding/occurrence IDs,
+  derived account, full issuer/subject/roles and creation/expiry. Restrictive foreign keys and
+  insertion validation require the occurrence to belong to the finding/account.
+- `remediation_decisions`: initial APPROVE or REJECT, then at most one REVOKE referencing the
+  same proposal's APPROVE. Partial unique indexes enforce one initial decision and one revocation.
+  Insertion guards require matching proposal digest, valid times/references and a different
+  issuer/subject for initial decisions; approval must precede expiry.
+- `remediation_requests`: full actor identity plus SHA-256 of canonical JSON `[issuer, subject]`,
+  operation, UUID idempotency key, normalized request digest and immutable result references.
+  Unique `(actor_identity_sha256, operation, idempotency_key)` spans target proposals; insertion
+  guards validate operation, actor and result scope. Retrying checks the raw identity as well as
+  its digest and never rewrites this ledger.
+
+JSON uses PostgreSQL JSONB / SQLite JSON. Foreign-key lookup indexes, finding/account chronological
+proposal indexes and `control_assessments(resource_id, control_id)` support scoped reads and strict
+newer/equal-observation staleness checks. No result filter silently excludes non-decisive states.
+The new proposal/decision/ledger tables reject UPDATE/DELETE on both backends and TRUNCATE on
+PostgreSQL. Existing history guards remain unchanged. Four additive AuditEvent types are
+`REMEDIATION_PROPOSED`, `REMEDIATION_APPROVED`, `REMEDIATION_REJECTED`, `REMEDIATION_REVOKED`.
+SQLite expands the audit CHECK using a checked savepoint rebuild, preserving exact audit trigger
+definitions, foreign-key enforcement, row identities and caller transaction ownership.
+
+`RemediationService` requires an idle session for mutations and atomically appends authority,
+paired audit and idempotency result; failures roll back all three. PostgreSQL uses Resource →
+Finding → proposal locks, SQLite reserves the writer before checks, and neither calls AWS while
+holding a transaction. Reads do not append decisions or expire/update proposals. Approval status
+is derived from retained decisions separately from validity reasons, finding lifecycle and
+technical results. New audit metadata retains full verified actor context; its `actor_id` is the
+identity digest rather than a truncated subject. Existing audit attribution is not rewritten.
+An existing explicit, read or flushed-write caller transaction is rejected without committing or
+rolling it back. Internal callers must end any read transaction or use a fresh session before a
+mutation; HTTP requests already use separate scoped sessions. Pending ORM changes are rejected.
+READ also rejects pending inserts/updates/deletes before any query, preserving them without flush,
+refresh, commit or rollback. It suppresses autoflush across the complete traversal, but permits
+clean caller-owned explicit/read/flushed transactions and leaves them open.
+
+Governance checks bind sorted append-only finding event IDs through the existing
+`audit_events(target_type, target_id, timestamp)` index, alongside disposition/exception state.
+No maximum-timestamp shortcut is used: equal-time or reversible status changes cannot renew old
+authority. No schema migration is needed. Pre-repair unaccepted local proposals keep their
+original content/digest but derive STALE_GOVERNANCE; create reviewed new intent instead of
+rewriting immutable rows. Accepted main has no remediation proposal data.
+
+Constraints/guards enforce basic stored integrity, not complete service eligibility or a paired
+audit for every privileged direct INSERT. Database/schema operators remain trusted. Scope writes
+to the service, protect backups and use a separately approved maintenance window for migrations.
+The current Alembic environment preflights the entire downgrade path: any new authority row or
+new audit event blocks crossing 0007 before any DDL (including a downgrade to base). PostgreSQL
+excludes writers with exclusive parent/new-table/audit locks; SQLite reserves the writer. Offline
+downgrade generation across 0007 fails closed. Empty round-trips retain predecessor constraints
+and triggers. Do not delete audit or authority history to make a downgrade pass; use forward
+recovery or an explicitly authorized verified backup restoration.
+
 ## Migrations and startup
 
-The initial canonical revision is `20260903_0001`; the current head is `20260915_0003`. All schema
+The initial canonical revision is `20260903_0001`; the accepted-main head is `20261001_0006` and
+the pending local 8A head is `20261006_0007`. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
 

@@ -77,7 +77,7 @@ from tests.unit.database.factories import (
 
 pytestmark = pytest.mark.integration
 
-_CURRENT_REVISION = "20261001_0006"
+_CURRENT_REVISION = "20261006_0007"
 _PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"
@@ -743,8 +743,9 @@ def test_postgres_evidence_graph_writer_completes_before_downgrade_preflight(
                 _context,
                 _executemany,
             ) -> None:
-                # Head now preflights 0004 before reaching the older evidence-graph guard.
-                if statement.startswith("LOCK TABLE scans, assessment_profiles"):
+                # Head preflights 0007 first; it must still exclude the graph writer before
+                # reaching the unchanged older evidence-graph compatibility decision.
+                if statement.startswith("LOCK TABLE scans, resources, findings, remediation_"):
                     downgrade_lock_attempted.set()
 
             command.downgrade(migration_config(connection), _PENDING_SCAN_REVISION)
