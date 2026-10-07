@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E remain closed; only separately approved local 8A has since started.
+    # Accepted 7A--7E and 8A remain closed; later Sprint 8 slices are still unstarted.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -418,11 +418,19 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     sprint8 = _read(ROOT / "docs/exec-plans/active/sprint-8.md")
     assert (
         "| 8A | Durable proposals, approvals/rejections/revocation and authenticated API | "
-        "IN PROGRESS |" in sprint8
+        "COMPLETE |" in sprint8
     )
+    assert "**8A is COMPLETE**" in roadmap
     assert (
         "| 8B | Isolated single-action worker, fresh preconditions, recovery | PLANNED |" in sprint8
     )
+    assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8
+    assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8
+    assert (
+        "| 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |" in sprint8
+    )
+    assert "| Sprint 9 | Hardening / Scanner Validation | **PLANNED** |" in roadmap
+    assert "| Sprint 10 | AWS Deployment / v1.0 | **PLANNED** |" in roadmap
     assert "local 8A implementation only" in sprint8
     current_plan_state = next(
         line for line in sprint7.splitlines() if line.startswith("Plan state:")

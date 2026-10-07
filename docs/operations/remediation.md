@@ -1,8 +1,8 @@
 # Remediation authority operations
 
-This describes the local Sprint 8A proposal/decision foundation, pending exact-commit delivery and
-acceptance after repaired-tree independent review. It is not a deployment or live-operation
-authorization. ROADMAP and the active
+This describes the accepted Sprint 8A proposal/decision foundation through PR #53, with
+exact-commit independent review and green exact main CI 37693245169. It is not a deployment or
+live-operation authorization. ROADMAP and the active
 [Sprint 8 plan](../exec-plans/active/sprint-8.md) own status and approved scope. See the
 [API contract](../api.md), [persistence](../persistence.md), SECURITY and THREAT_MODEL.
 
@@ -85,9 +85,9 @@ explicit-PASS-only resolution policy. Do not manually change finding results to 
 
 ## Migration, data and acceptance gates
 
-Local migration head is `20261006_0007`; accepted main remains `20261001_0006` until reviewed
-publication/merge. Apply through Alembic only and validate against an explicitly disposable
-TEST_DATABASE_URL. New authority/audit history is sensitive. Restrict DB access and protect
+Accepted repository migration head is `20261006_0007`; no deployed database migration is claimed
+or authorized by code acceptance. Apply through Alembic only and validate against an explicitly
+disposable TEST_DATABASE_URL. New authority/audit history is sensitive. Restrict DB access and protect
 backups; append-only guards do not protect against privileged schema modification/direct INSERTs.
 New audit actor IDs are canonical issuer/subject identity digests; full identity/roles/capability
 are retained in metadata. Legacy audit limitations remain unchanged.
@@ -99,8 +99,9 @@ purge immutable records or disable constraints to force rollback. Prefer reviewe
 or a separately authorized backup restoration.
 
 No deployment, writer-role policy, IAM/secret change or live AWS operation is authorized by code
-implementation or local tests. Exact-commit independent review, accepted publication, required
-merge approval and green exact merged-main CI remain required. The active plan records standing
-approval for routine Sprint 8 workflow; architectural/design decisions and live operations are
+implementation or tests. 8A cleared exact-commit independent review, accepted publication, guarded
+ordinary merge and green exact merged-main CI. Documentary closeout gates remain before 8B
+preflight; later slices need their own required review/delivery/acceptance. The active plan records
+standing approval for routine Sprint 8 workflow; architectural/design decisions and live operations are
 not pre-approved. Execution, rescan, UI and whole-Sprint-8 acceptance remain later bounded slices;
 no later sprint is started here.

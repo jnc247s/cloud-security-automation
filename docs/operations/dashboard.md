@@ -12,7 +12,10 @@ The documentary closeout is accepted through
 [PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51), with exact-head review,
 both green final-head CI runs and green
 [final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
-All 7A--7E states are COMPLETE and the plan is archived; Sprint 8 is NEXT only.
+All 7A--7E states are COMPLETE and the plan is archived. Sprint 8 was NEXT at that closeout;
+it is now IN PROGRESS with accepted 8A bearer proposal/decision APIs through PR #53.
+The dashboard remains READ-only and does not proxy those routes; execution, verification scans
+and browser mutations remain later bounded slices under the active Sprint 8 plan.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 

@@ -6,7 +6,9 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8A — local implementation, pending acceptance
+<a name="sprint-8a--local-implementation-pending-acceptance"></a>
+
+### Sprint 8A — accepted proposal/approval foundation
 
 - Added closed EC2-004 proposal-only action metadata, immutable digest-bound proposals and
   approval/rejection/revocation, authenticated generic APIs, actor/operation-scoped UUID
@@ -17,15 +19,19 @@ record the development history. Sprint state itself is authoritative only in
   Updated owning API/persistence/architecture/security/threat/operations documents and active plan.
 - Preserved existing API bodies, roles/authentication, scanner read-only permissions, profiles,
   controls, findings/technical results and dashboard. No AWS execution, writer credentials, worker,
-  rescan, UI mutation or later-sprint work. Review/publication/merge/main-CI gates remain open;
-  this entry does not declare the slice or sprint complete.
+  rescan, UI mutation or later-sprint work. Accepted through PR #53 at
+  `691d8814c785feafc0d9d3b3b43d7d1af89542a0`
+  with exact-commit REVIEW_PASS, both final-head CI and green exact main CI 37693245169.
+  Sprint 8 remains IN PROGRESS; this entry does not declare the whole sprint complete.
 - Applied separately approved repairs for the initial review's two MEDIUM findings: governance
   binds append-only finding event IDs so status round trips cannot revive authority; list/detail
   READ rejects pending caller work and suppresses autoflush without ending clean transactions.
   Added SQLite/PostgreSQL regressions. No schema/API-field changes; pre-repair local proposals
   require new intent. Repairs pass local revalidation and independently authorized repaired-tree
-  review (156 tests, including 65 PostgreSQL cases; no skips). Exact-commit delivery and
-  publication/acceptance remain pending.
+  review (156 tests, including 65 PostgreSQL cases; no skips). Exact-commit review and accepted
+  delivery subsequently passed. Main CI passed 2,900 backend tests (352 PostgreSQL, no skips),
+  130 frontend units, all 74 Chromium/Firefox checks and the image build. Historical failed
+  receipts remain intact; documentary closeout gates precede 8B preflight.
 
 ### Documentation
 
@@ -47,14 +53,14 @@ record the development history. Sprint state itself is authoritative only in
 - Preserved application/API/auth/schema/dependencies, catalogs/defaults, mappings and migration
   `20261001_0006`. Reconciled README/domain owners, archived the plan with original predictions
   and updated the normative completion/path guard in a separately gated documentary closeout.
-  Sprint 7 is COMPLETE; Sprint 8 is NEXT only, not started. Offline/scoped evidence is not live
+  Sprint 7 is COMPLETE; at that closeout Sprint 8 was NEXT only, not started. Offline/scoped evidence is not live
   Cognito/AWS/MFA/TLS/production validation or formal accessibility certification. No live operation.
 - Accepted the separate documentary closeout through
   [PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51) at
   `b90bf08eeb79ba56d5308f19a942c6c10bf41b28`, after zero-unresolved-finding exact-head review,
   both green final-head CI runs and guarded ordinary merge. Final main CI passed 2,741 backend
   tests (287 PostgreSQL, no skips), 130 frontend units, 74 browser journeys and quality/image gates.
-  The plan is archived and all 7A--7E states are COMPLETE; Sprint 8 remains NEXT only.
+  The plan is archived and all 7A--7E states are COMPLETE; at that checkpoint Sprint 8 remained NEXT only.
 
 ### Sprint 7D — 2026-10-04
 

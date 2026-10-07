@@ -26,7 +26,9 @@ The separate Sprint 7 documentary closeout is accepted through PR #51 with exact
 both green final-head CI runs and green final merged-main CI at
 `b90bf08eeb79ba56d5308f19a942c6c10bf41b28`. Subsequent documentation reconciliation PR #52
 is accepted at `20c04665f89ae8c8cf9348603fd54e0e100b6076` with merged-main CI 37354537175;
-it changes no interface or capability. The local Sprint 8A extension below is pending acceptance.
+it changes no interface or capability. The Sprint 8A proposal/decision extension below is accepted
+through PR #53 at `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with exact-commit independent
+review, both final-head CI and green exact main CI 37693245169. No execution endpoint is added.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -34,7 +36,7 @@ relationship, finding/exception and framework read APIs on SQLite and PostgreSQL
 offline in these tests; development bearer authentication remains explicit test-only. No API
 shape, capability or production-authentication change was introduced by acceptance/closeout.
 
-The accepted baseline is read-only apart from creating a scan. Local 8A additionally appends
+The pre-8A accepted baseline was read-only apart from creating a scan. Accepted 8A appends
 remediation proposal/decision authority and paired audit history. It cannot modify AWS resources,
 finding status, exceptions, controls, mappings or existing audit history.
 
@@ -134,7 +136,7 @@ URLs require HTTPS unless localhost HTTP is explicitly enabled in a non-producti
 
 All current `/api/v1` GET operations require `READ`. `POST /api/v1/scans` requires `EXECUTE`, so only
 `ADMIN` can start a scan in the current mapping. `ANALYST` receives HTTP 403; do not weaken that
-boundary when writing examples or tests. Local 8A uses `PROPOSE` for proposal creation and
+boundary when writing examples or tests. Accepted 8A uses `PROPOSE` for proposal creation and
 `APPROVE` for decisions and revocation; the role map and scan authorization are unchanged.
 
 Authorization is control-plane-wide. A principal with `READ` can query all accounts persisted in
@@ -165,18 +167,20 @@ accepted deployment assumption is one trusted security domain.
 | `READ` | `GET /api/v1/frameworks` | List immutable framework versions |
 | `READ` | `GET /api/v1/frameworks/{framework_id}` | Read hierarchy and control mappings |
 | `READ` | `GET /api/v1/exceptions` | List explicit operational exceptions |
-| `READ` | `GET /api/v1/remediations` | List stored proposals with derived validity (local 8A) |
-| `READ` | `GET /api/v1/remediations/{proposal_id}` | Read immutable intent and decisions (local 8A) |
-| `PROPOSE` | `POST /api/v1/remediations` | Append a proposal, not execute an action (local 8A) |
-| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/decisions` | Append the unique initial APPROVE or REJECT (local 8A) |
-| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/revocations` | Revoke an existing approval (local 8A) |
+| `READ` | `GET /api/v1/remediations` | List stored proposals with derived validity (accepted 8A) |
+| `READ` | `GET /api/v1/remediations/{proposal_id}` | Read immutable intent and decisions (accepted 8A) |
+| `PROPOSE` | `POST /api/v1/remediations` | Append a proposal, not execute an action (accepted 8A) |
+| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/decisions` | Append the unique initial APPROVE or REJECT (accepted 8A) |
+| `APPROVE` | `POST /api/v1/remediations/{proposal_id}/revocations` | Revoke an existing approval (accepted 8A) |
 
 There is no exception-detail route, audit route, finding/exception mutation, rescan/retry,
 cancellation, proposal withdrawal, remediation execution or arbitrary AWS-call endpoint.
 `AuditService` is an internal service boundary only. The dashboard BFF allowlist is unchanged and
 does not proxy these new authority routes; dashboard cookies never authenticate `/api/v1`.
 
-## Sprint 8A proposal and decision contract — local, pending acceptance
+<a name="sprint-8a-proposal-and-decision-contract--local-pending-acceptance"></a>
+
+## Sprint 8A proposal and decision contract — accepted
 
 All three POSTs require a bearer capability and a UUID `Idempotency-Key` header. Keys are scoped
 to the full verified issuer/subject pair and operation (`CREATE`, `DECIDE`, `REVOKE`), across all
@@ -260,7 +264,7 @@ No response carries AWS credentials, JWTs or raw SQL/provider failures. See
 | controls | `category`, `severity`, `resource_type`, `catalog_key` |
 | frameworks | `framework_key`, `version` |
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
-| remediations (local 8A) | `finding_id`, `account_id` (12 digits) |
+| remediations (accepted 8A) | `finding_id`, `account_id` (12 digits) |
 
 Accepted 6G adds the public control category `governance`. Existing category values, response
 shapes, capabilities and generic control filtering are unchanged. The category migration and

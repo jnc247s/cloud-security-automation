@@ -1,6 +1,6 @@
 # Current known limitations
 
-This register records accepted Sprints 0--7 and pending local Sprint 8A implementation reality, including
+This register records accepted Sprints 0--7 and accepted Sprint 8A implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
@@ -30,11 +30,14 @@ live provider/production validation remain absent.
 
 ## Data and migration integrity
 
-### Remediation authority — local 8A, pending acceptance
+<a name="remediation-authority--local-8a-pending-acceptance"></a>
+
+### Remediation authority — accepted 8A
 
 8A adds proposal/decision/idempotency history, paired audit and bearer APIs, not execution or a
-dashboard workflow. It remains subject to exact-commit review/publication/merge and green exact
-merged-main CI. No write credentials, worker, live AWS checks, recovery attempts, linked rescan or
+dashboard workflow. It is accepted through PR #53 with exact-commit REVIEW_PASS, both final-head
+CI and green exact main CI 37693245169. No write credentials, worker, live AWS checks, recovery
+attempts, linked rescan or
 automatic finding resolution are implemented. See [remediation operations](remediation.md).
 
 Three distinct verified issuer/subject identities are the approved end-state human separation;
@@ -53,9 +56,15 @@ The user authorized bounded repairs/revalidation, then one read-only follow-up o
 Repairs bind append-only finding event IDs and reject pending caller changes before READ;
 pre-repair local proposals require new intent. The unchanged repaired tree received REVIEW_PASS:
 both original findings closed, no new findings and 156 independent tests passed, including 65
-disposable PostgreSQL cases, without skips. Exact-commit acceptance remains gated. The subsequent
+disposable PostgreSQL cases, without skips. Exact-commit review/delivery subsequently passed; main
+CI passed 2,900 backend tests, 130 frontend units, 74 Chromium/Firefox checks and the image build.
+The documentation/progress-contract closeout must clear its gates before 8B preflight. The subsequent
 standing workflow approval covers routine delivery, not architectural/design decisions or live
 AWS/production operations; the active plan records the boundaries and preserved failed review.
+The user's scan-picker/back-navigation report remains untriaged; passing controlled-browser CI
+does not reproduce or repair that report. Revisit it at 8D preflight without silently adding a
+general scan-start workflow. The local Firefox `spawn UNKNOWN` failure remains recorded separately
+from the subsequently passing Linux Chromium/Firefox CI; no live-provider coverage is claimed.
 
 New authority writes retain full actor context, but legacy scan/governance attribution gaps and
 privileged direct INSERT/schema-operator risks remain. Revision 0007 refuses populated downgrade
@@ -450,6 +459,6 @@ Acceptance does not remove the following deferred capabilities or operational ri
 Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
 There is no production Terraform deployment, finding/exception mutation API, remediation execution,
-distributed worker, multi-account orchestration, or AI runtime. Local 8A authority is not yet
-accepted and adds no browser mutations. Their absence is roadmap scope,
+distributed worker, multi-account orchestration, or AI runtime. Accepted 8A authority adds no
+browser mutations. Their absence is roadmap scope,
 not an incomplete Sprint 4 implementation.
