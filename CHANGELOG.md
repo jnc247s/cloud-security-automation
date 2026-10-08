@@ -6,18 +6,22 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8B1 — approved local execution-admission candidate, pending acceptance
+<a name="sprint-8b1--approved-local-execution-admission-candidate-pending-acceptance"></a>
+
+### Sprint 8B1 — accepted execution-admission foundation
 
 - Adds a disabled-by-default, explicit account/Region-scoped third-human EXECUTE request and
   READ history API, retaining old 8A responses and findings/technical results. Exact unrevoked
   approval, retained provenance/governance and newer/equal assessment checks apply. Identical
   authorized retries return original authority without renewal; grant is capped at five minutes.
-- Candidate migration `20261007_0008` adds immutable request/linked journal and paired audit,
+- Additive migration `20261007_0008` adds immutable request/linked journal and paired audit,
   protected singleton/target coordinates, one request per proposal/target and 32 globally under
   short guard-first transactions. Only no-dispatch QUEUED history can be EXPIRED/BLOCKED/released;
-  populated whole-path downgrade refuses before DDL. Owning documents record pending scope/gates.
+  populated whole-path downgrade refuses before DDL. Owning documents record the accepted boundary.
 - No AWS worker/call, credentials, rescan, dashboard mutation or later-sprint implementation.
-  This is not accepted release history or live-operation permission; review/delivery remain gates.
+  Accepted through [PR #55](https://github.com/jnc247s/cloud-security-automation/pull/55) at
+  `0c6005827ae765fe2b2669e4f503af6ca58cdc15`, with exact-commit REVIEW_PASS, both final-head CI
+  and green exact main CI 37726113041. Sprint 8/8B are still IN PROGRESS, not deployment-ready.
 
 <a name="sprint-8a--local-implementation-pending-acceptance"></a>
 

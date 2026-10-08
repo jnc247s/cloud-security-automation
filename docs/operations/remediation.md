@@ -1,8 +1,8 @@
 # Remediation authority operations
 
-This describes the accepted Sprint 8A proposal/decision foundation through PR #53, with
-exact-commit independent review and green exact main CI 37693245169. It is not a deployment or
-live-operation authorization. ROADMAP and the active
+This describes accepted Sprint 8A proposal/decision authority through PR #53 and 8B1 database
+admission through PR #55, with exact-commit independent review, both final-head CI and green exact
+main CI 37726113041. It is not a deployment or live-operation authorization. ROADMAP and the active
 [Sprint 8 plan](../exec-plans/active/sprint-8.md) own status and approved scope. See the
 [API contract](../api.md), [persistence](../persistence.md), SECURITY and THREAT_MODEL.
 
@@ -44,13 +44,13 @@ Do not expose it publicly, invent role headers or bypass authentication to test 
 4. Use READ list/detail to inspect immutable decisions and current derived blocking reasons.
    An APPROVED record can be expired/stale without losing its historical approval. These checks
    use retained database evidence only, not a fresh AWS observation. 8A has no execution step;
-   the local admission-only extension below still cannot dispatch AWS work.
+   accepted 8B1 admission below still cannot dispatch AWS work.
 
 All identities are compared as full verified issuer/subject pairs. IdP policy must prevent one
 person controlling several approval identities and grant human workflow roles only to suitable
-human accounts; cryptographic token validation cannot prove distinct physical people. The future
-execution requester must be a third distinct human principal, with a dedicated worker service
-identity in addition. That third-principal/worker path is not implemented by 8A.
+human accounts; cryptographic token validation cannot prove distinct physical people. Accepted
+8B1 enforces a third distinct execution requester. A dedicated worker service identity is a later
+unimplemented boundary, not part of 8A or database admission.
 
 ## Retry, staleness and recovery
 
@@ -112,11 +112,13 @@ standing approval for routine Sprint 8 workflow; architectural/design decisions 
 not pre-approved. Execution, rescan, UI and whole-Sprint-8 acceptance remain later bounded slices;
 no later sprint is started here.
 
-## Approved local 8B1 admission — pending acceptance
+<a name="approved-local-8b1-admission--pending-acceptance"></a>
 
-This candidate adds a third-human execution request/history, not an AWS worker. Use only an
-explicitly isolated local/test database migrated to candidate `20261007_0008`. The accepted
-baseline remains 0007 until all gates pass. No existing database/demo or live provider is assumed.
+## Accepted 8B1 admission
+
+Accepted 8B1 adds a third-human execution request/history, not an AWS worker. Use only an
+explicitly isolated, authorized local/test database migrated to accepted `20261007_0008`.
+No existing database/demo or live provider is assumed or migrated by code acceptance.
 
 New requests default off. An authorized local/test operator may explicitly configure
 `REMEDIATION_ADMISSION_ENABLED=true`, `REMEDIATION_ACCOUNT_ID` (12 ASCII digits), and

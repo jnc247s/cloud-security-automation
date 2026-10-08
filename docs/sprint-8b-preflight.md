@@ -2,8 +2,11 @@
 
 Current approval: on 2026-10-07 the user approved decisions 1--5 and the API/persistence/sequence
 bundle and requested 8B1 only. Its implementation plan is in the [active Sprint 8 plan](exec-plans/active/sprint-8.md).
-The original analysis and pending-gate predictions below are preserved as historical text, not
-current authorization status. No live operation is authorized and no worker/rescan/UI begins in 8B1.
+8B1 is accepted through PR #55 at `0c6005827ae765fe2b2669e4f503af6ca58cdc15`, with exact-commit
+REVIEW_PASS, both final-head CI and exact main CI 37726113041; head is `20261007_0008`.
+The original analysis baseline and pending-gate predictions below are preserved as historical text,
+not current authorization status. ROADMAP and the active plan own current progress. No live
+operation is authorized and no worker/rescan/UI begins in 8B1.
 
 Analysis only, prepared 2026-10-07. The recommendations below need design approval before
 implementation. Sprint 8 is IN PROGRESS; 8A is COMPLETE and 8B--8E remain PLANNED.

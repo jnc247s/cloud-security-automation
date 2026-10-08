@@ -21,10 +21,13 @@ tests (352 PostgreSQL, no skips), 130 frontend units, all 74 Chromium/Firefox ch
 build. Original failed receipts and local smoke limitations remain recorded.
 The [active Sprint 8 plan](docs/exec-plans/active/sprint-8.md) records accepted scope and the
 accepted documentary closeout through PR #54 at `24dbda32a0babcffff9698ece4a46c406690ef8e`
-(exact merged-main CI 37706030374) and the approved 8B design/8B1 start. The local 8B1 candidate
-adds default-off third-human execution admission/history only, pending acceptance; no worker,
-AWS call, write credentials, linked rescan or dashboard mutation. Candidate migration head is
-`20261007_0008`; accepted baseline head remains 0007. Sprint 8 itself is not complete; no live
+(exact merged-main CI 37706030374) and accepted 8B1 admission through
+[PR #55](https://github.com/jnc247s/cloud-security-automation/pull/55) at
+`0c6005827ae765fe2b2669e4f503af6ca58cdc15`, with independent REVIEW_PASS and both final-head/
+[exact main CI 37726113041](https://github.com/jnc247s/cloud-security-automation/actions/runs/37726113041)
+passed. 8B1 adds default-off third-human execution admission/history only; no worker, AWS call,
+write credentials, linked rescan or dashboard mutation. Accepted migration head is
+`20261007_0008`. Sprint 8/8B remain IN PROGRESS; 8B2/8B3 and 8C--8E remain PLANNED. No live
 operation is authorized, and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
@@ -415,8 +418,9 @@ The local 6F.1 release also adds `20261001_0005` for unresolved relationship per
 apply current migrations only to an explicitly authorized environment. See
 [persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
 Accepted 6G adds `20261001_0006` for the governance category; it was the head after Sprint 7.
-Accepted 8A adds the current repository head `20261006_0007`. Apply migrations only in
-an explicitly authorized environment; populated downgrade across 0007 is blocked before DDL.
+Accepted 8A added `20261006_0007`; accepted 8B1 adds current head `20261007_0008` for database
+admission/journal only. Apply migrations only in an explicitly authorized environment; populated
+downgrade across either authority boundary is blocked before DDL. Code acceptance is not deployment.
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
 `0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains

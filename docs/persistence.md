@@ -11,8 +11,9 @@ No Sprint 7 schema or migration change was introduced; its closeout head was `20
 See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
 Accepted Sprint 8A adds accepted-baseline head `20261006_0007` below, through PR #53 with
 exact-commit independent review, both final-head CI and green exact main CI 37693245169.
-Current authorization/status belongs to ROADMAP and the active Sprint 8 plan; this is not
-authorization to migrate a deployed database.
+Accepted 8B1 adds current head `20261007_0008` below through PR #55 with exact-commit REVIEW_PASS,
+both final-head CI and exact main CI 37726113041. Current authorization/status belongs to ROADMAP
+and the active Sprint 8 plan; this is not authorization to migrate a deployed database.
 
 Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
@@ -538,10 +539,12 @@ downgrade generation across 0007 fails closed. Empty round-trips retain predeces
 and triggers. Do not delete audit or authority history to make a downgrade pass; use forward
 recovery or an explicitly authorized verified backup restoration.
 
-## Sprint 8B1 execution admission — local, pending acceptance
+<a name="sprint-8b1-execution-admission--local-pending-acceptance"></a>
 
-Approved candidate revision `20261007_0008` follows unchanged 0007. It is not yet accepted or
-deployed. It adds four tables, without rewriting existing proposal/decision/request ledgers:
+## Sprint 8B1 execution admission — accepted
+
+Accepted revision `20261007_0008` follows unchanged 0007. No deployment is implied.
+It adds four tables, without rewriting existing proposal/decision/request ledgers:
 
 - `remediation_executions`: immutable full proposal/approval digest bindings, third-human verified
   identity, actor/key request digest, creation and grant expiry. Unique proposal and actor/key,
@@ -583,8 +586,7 @@ Old populated-0007 downgrade protections still apply. Do not delete history or b
 ## Migrations and startup
 
 The initial canonical revision is `20260903_0001`; the accepted repository head is
-`20261006_0007`, following unchanged predecessor `20261001_0006`. This local candidate adds
-`20261007_0008` at repository head, pending its acceptance gates; apply only in an explicitly
+`20261007_0008`, following unchanged predecessors 0007 and 0006. Apply only in an explicitly
 authorized environment, never infer deployed state. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
