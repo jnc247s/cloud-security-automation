@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E and 8A remain closed; later Sprint 8 slices are still unstarted.
+    # Accepted 7A--7E/8A remain closed; approved 8B1 is active, its worker/later slices unstarted.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -422,8 +422,12 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "**8A is COMPLETE**" in roadmap
     assert (
-        "| 8B | Isolated single-action worker, fresh preconditions, recovery | PLANNED |" in sprint8
+        "| 8B | Isolated single-action worker, fresh preconditions, recovery | IN PROGRESS |"
+        in sprint8
     )
+    assert "| 8B1 | IN PROGRESS |" in sprint8
+    assert "| 8B2 | PLANNED |" in sprint8
+    assert "| 8B3 | PLANNED |" in sprint8
     assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8
     assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8
     assert (

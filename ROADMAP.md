@@ -4,11 +4,17 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-07
-Accepted baseline: `main` at `691d8814c785feafc0d9d3b3b43d7d1af89542a0` (Sprint 8A PR #53;
-Sprints 0--7 and the 8A proposal/approval foundation accepted; catalog `0.13.0` and the
-five-control default are unchanged; migration head is `20261006_0007`). Exact-commit review,
-both final-head CI runs and exact merged-main CI 37693245169 passed. Sprint 8 remains IN PROGRESS;
-8A documentary closeout is in progress before any 8B preflight.
+Accepted baseline: `main` at `24dbda32a0babcffff9698ece4a46c406690ef8e` (Sprint 8A closeout
+PR #54; exact-commit independent review, both repaired final-head CI runs and exact merged-main
+CI 37706030374 passed). Sprints 0--7 and the 8A proposal/approval foundation and documentary
+closeout are accepted; catalog `0.13.0`, the five-control default and migration head
+`20261006_0007` are unchanged at the accepted baseline. Sprint 8 remains IN PROGRESS. The user
+approved the [8B execution design](docs/sprint-8b-preflight.md) and starting 8B1 on 2026-10-07.
+8B is IN PROGRESS through bounded 8B1 execution admission/journal only, without a worker, AWS calls
+or write credentials. 8B2/8B3 and 8C--8E remain PLANNED. Implementation acceptance, exact review/CI/
+guarded merge/main-CI gates remain outstanding; no new schema is accepted or deployed yet.
+Prior accepted 8A implementation: `691d8814c785feafc0d9d3b3b43d7d1af89542a0` (PR #53;
+exact-commit review, both final-head CI runs and exact merged-main CI 37693245169 passed).
 Prior accepted baseline: `20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation PR #52;
 Sprints 0--7 COMPLETE, migration `20261001_0006`, green main CI 37354537175).
 Prior 7D documentary checkpoint: `main` at
@@ -800,6 +806,30 @@ refresh 401 and explicit signed-out session recovery, preserving all security/da
 assertions, timeouts and zero retries. Its fresh validation/review/new-head CI/merge/main-CI gates
 remain pending. No application defect is claimed reproduced or fixed; 8B preflight has not begun.
 See the active plan's first-head CI and repair receipt for evidence and limitations.
+
+### 8A closeout acceptance and 8B analysis entry — 2026-10-07
+
+The bounded documentation/progress-contract and frontend-test closeout is accepted through
+[PR #54](https://github.com/jnc247s/cloud-security-automation/pull/54), ordinarily merged at
+`24dbda32a0babcffff9698ece4a46c406690ef8e`, with parents `[691d881, 8ab2853]` and exact reviewed
+tree `46e71bdb21cc5be0c9758b68b1866c417876f54c`. The repaired 16-file head
+`8ab285322bfbcc636c2e64103ae761ba6dfe7797` received independent exact-commit REVIEW_PASS,
+with the diagnostic LOW closed and no new actionable findings. Both repaired final-head
+[push CI 37703707008](https://github.com/jnc247s/cloud-security-automation/actions/runs/37703707008)
+and [PR CI 37703709625](https://github.com/jnc247s/cloud-security-automation/actions/runs/37703709625)
+passed, as did [exact merged-main CI 37706030374](https://github.com/jnc247s/cloud-security-automation/actions/runs/37706030374).
+Each ran 2,900 backend tests including all 352 PostgreSQL cases, no skips and 19 existing
+SQLite warnings, 133 frontend tests in seven files, all 74 browser journeys (37 Chromium,
+37 Firefox, zero retries), quality checks, the image build and cleanup. Main regression took
+990.62s. The initial failed push CI and its unestablished precise cause remain historical;
+the test-only repair is synchronization/observability improvement, not a claimed runtime fix.
+
+This supersedes earlier pending closeout gates, not their original predictions or failed receipts.
+Clean local main was normally fast-forwarded to the accepted merge; the scoped
+`codex/sprint-8b-preflight` branch begins analysis only. 8A is COMPLETE, Sprint 8 IN PROGRESS and
+8B--8E implementation PLANNED. No 8B worker/API/schema implementation, writer credential,
+verification scan, dashboard mutation, live operation or Sprint 9+ work has begun. Existing
+branches/worktrees and unrelated parent `.agents/` files remain preserved and excluded.
 
 ## Status vocabulary
 

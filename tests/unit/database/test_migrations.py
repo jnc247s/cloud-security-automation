@@ -23,7 +23,7 @@ from app.schemas.scan import ScanCreateRequest
 from app.services.scan_service import ScanService
 from tests.unit.database.factories import scan_bundle
 
-_CURRENT_REVISION = "20261006_0007"
+_CURRENT_REVISION = "20261007_0008"
 _PENDING_SCAN_REVISION = "20260904_0002"
 _PREVIOUS_REVISION = "20260903_0001"
 _COMPLETED_IDENTITY_CONSTRAINT = "ck_scans_completed_evidence_identity_present"

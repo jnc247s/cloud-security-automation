@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     aws_region: str = "us-east-1"
     aws_profile: str | None = None
+    remediation_admission_enabled: bool = False
+    remediation_account_id: str | None = Field(default=None, pattern=r"^[0-9]{12}$")
+    remediation_region: str | None = Field(
+        default=None, max_length=64, pattern=r"^[a-z]{2,8}(?:-[a-z0-9]+){1,6}-[0-9]+$"
+    )
     assessment_profile_version: str = Field(
         default=DEFAULT_PROFILE_VERSION,
         max_length=64,
@@ -57,6 +62,22 @@ class Settings(BaseSettings):
         from app.assessment.deployment_policy import load_deployment_policy
 
         return load_deployment_policy(self)
+
+    @property
+    def remediation_admission(self):
+        """Explicit admission-only scope; never derives scope from scanner configuration."""
+        from app.remediation.execution_contracts import AdmissionScope
+
+        return AdmissionScope(
+            enabled=self.remediation_admission_enabled,
+            account_id=self.remediation_account_id,
+            region=self.remediation_region,
+        )
+
+    @model_validator(mode="after")
+    def validate_remediation_admission(self):
+        _ = self.remediation_admission
+        return self
 
     @field_validator("app_env", "auth_mode", mode="before")
     @classmethod

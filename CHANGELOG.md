@@ -6,6 +6,19 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8B1 — approved local execution-admission candidate, pending acceptance
+
+- Adds a disabled-by-default, explicit account/Region-scoped third-human EXECUTE request and
+  READ history API, retaining old 8A responses and findings/technical results. Exact unrevoked
+  approval, retained provenance/governance and newer/equal assessment checks apply. Identical
+  authorized retries return original authority without renewal; grant is capped at five minutes.
+- Candidate migration `20261007_0008` adds immutable request/linked journal and paired audit,
+  protected singleton/target coordinates, one request per proposal/target and 32 globally under
+  short guard-first transactions. Only no-dispatch QUEUED history can be EXPIRED/BLOCKED/released;
+  populated whole-path downgrade refuses before DDL. Owning documents record pending scope/gates.
+- No AWS worker/call, credentials, rescan, dashboard mutation or later-sprint implementation.
+  This is not accepted release history or live-operation permission; review/delivery remain gates.
+
 <a name="sprint-8a--local-implementation-pending-acceptance"></a>
 
 ### Sprint 8A — accepted proposal/approval foundation

@@ -9,7 +9,7 @@ and disposable PostgreSQL, keeping current findings/exceptions separate from his
 Sprint 7 and its documentary closeout are COMPLETE through PR #50/#51 with green final main CI.
 No Sprint 7 schema or migration change was introduced; its closeout head was `20261001_0006`.
 See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
-Accepted Sprint 8A adds current repository head `20261006_0007` below, through PR #53 with
+Accepted Sprint 8A adds accepted-baseline head `20261006_0007` below, through PR #53 with
 exact-commit independent review, both final-head CI and green exact main CI 37693245169.
 Current authorization/status belongs to ROADMAP and the active Sprint 8 plan; this is not
 authorization to migrate a deployed database.
@@ -538,10 +538,54 @@ downgrade generation across 0007 fails closed. Empty round-trips retain predeces
 and triggers. Do not delete audit or authority history to make a downgrade pass; use forward
 recovery or an explicitly authorized verified backup restoration.
 
+## Sprint 8B1 execution admission — local, pending acceptance
+
+Approved candidate revision `20261007_0008` follows unchanged 0007. It is not yet accepted or
+deployed. It adds four tables, without rewriting existing proposal/decision/request ledgers:
+
+- `remediation_executions`: immutable full proposal/approval digest bindings, third-human verified
+  identity, actor/key request digest, creation and grant expiry. Unique proposal and actor/key,
+  restrictive indexed references, separation/approval/lifetime insertion guards.
+- `remediation_execution_events`: immutable REQUESTED then at most one no-write EXPIRED/BLOCKED,
+  sequence and previous digest, actor/context and a unique restrictive paired audit reference.
+- `remediation_admission_guard`: seeded singleton 1, locked before all execution mutations. Ordinary
+  UPDATE/DELETE and PostgreSQL TRUNCATE cannot remove or change it; missing seed fails closed.
+- `remediation_target_reservations`: persistent account/Region/action coordinate, stable Resource
+  reference and nullable unique execution reference. Scope is unique. Clearing/replacing an active
+  reference requires a terminal journal entry first. DELETE/TRUNCATE cannot erase coordinates.
+
+Request/journal history rejects UPDATE/DELETE and PostgreSQL TRUNCATE. Three additive audit types
+are REMEDIATION_EXECUTION_REQUESTED/EXPIRED/BLOCKED. Immutable canonical request/event digests
+and SHA-linked sequences are revalidated with exact paired audit/retained authority on traversal.
+SQL guards enforce basic relationships, not cryptographic authorization of privileged INSERTs.
+Database/schema operators remain trusted. No AWS credentials or bearer tokens enter these rows.
+
+`RemediationExecutionService` owns a short idle-session transaction, locks the singleton before
+Resource → Finding → proposal and target coordination, and atomically writes request, journal,
+audit and reservation. SQLite reserves its writer first. Serialized global admission makes the
+32-outstanding bound database-wide, including different API processes. It trades throughput for
+simple correctness; there is no fleet-scale performance guarantee. All future execution mutations
+must acquire this same guard first. No Scan lock or network/AWS call follows these locks.
+
+Only validated QUEUED/no-dispatch requests can be reaped as expired or replaced as blocked. Such
+cleanup is in the new admission transaction and rolls back if admission fails. Reads and identical
+replays never reap or renew anything. The five-minute grant is not a worker lease: later intent,
+unknown-effect or quarantine phases must never be released just because this time elapsed.
+READ retains 8A's caller ownership/no-autoflush boundary. List pages are bounded; complete retained
+provenance traversal is not a constant-query or fleet-scale claim.
+
+The online environment checks the entire downgrade path before DDL. It excludes writers by locking
+the singleton first on PostgreSQL (SQLite writer reservation), then parent/history tables. Any
+execution, journal, reservation coordinate or new audit row blocks crossing 0008, even to base;
+offline crossing is blocked. The empty singleton seed alone does not block an empty round-trip.
+Old populated-0007 downgrade protections still apply. Do not delete history or bypass guards.
+
 ## Migrations and startup
 
 The initial canonical revision is `20260903_0001`; the accepted repository head is
-`20261006_0007`, following unchanged predecessor `20261001_0006`. All schema
+`20261006_0007`, following unchanged predecessor `20261001_0006`. This local candidate adds
+`20261007_0008` at repository head, pending its acceptance gates; apply only in an explicitly
+authorized environment, never infer deployed state. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
 

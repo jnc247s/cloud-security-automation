@@ -1,8 +1,9 @@
 # Threat model
 
 Status: living model for accepted Sprints 0--7 and accepted 8A authority
-Accepted baseline: `main` commit `691d8814c785feafc0d9d3b3b43d7d1af89542a0` (8A PR #53)
-Last reconciled: 2026-10-07; exact merged-main CI 37693245169 passed
+Accepted baseline: `main` commit `24dbda32a0babcffff9698ece4a46c406690ef8e` (8A closeout PR #54)
+Last reconciled: 2026-10-07; exact merged-main CI 37706030374 passed
+Approved local 8B1 admission candidate below is pending acceptance, not deployment or AWS execution.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
 test-launch isolation repair change no application runtime or security boundary. Original
@@ -259,6 +260,22 @@ and runtime workload identity are supplied by the deployment environment.
 | T18 | Login CSRF, code/session substitution and logout bypass | High | Accepted 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Controlled-issuer acceptance only; live setup unvalidated. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
 | T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B/7C: explicit typed bounded scan/report/investigation GET allowlist through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
 | T20 | Remediation intent substitution, self-approval, stale authority or duplicate decisions | High | Accepted 8A: closed single-action inputs, immutable digest-bound provenance/KMS context, full verified identity separation without ADMIN bypass, 24-hour lifetime, any newer/equal target-control assessment and append-only finding-history governance invalidation, terminal decisions/revocation, capability-checked idempotency and atomic locked audit writes; READ rejects pending caller changes before SQL and suppresses autoflush | Initial review's two MEDIUM governance/caller-ownership defects are independently closed; exact-commit REVIEW_PASS and all PR #53 delivery/main-CI gates passed. IdP roles cannot establish distinct physical humans; no quotas/tenant policy. Stored checks are not live AWS checks. No execution authority path, write identity, worker recovery or verification scan exists yet |
+
+## Approved local 8B1 admission boundary — pending acceptance
+
+8B1 extends T02/T20 with current EXECUTE and third-human full-identity separation, exact approval
+and retained-state revalidation, default-off explicit account/Region scope and a five-minute grant
+capped by proposal expiry. Database admission, not AWS dispatch, is implemented. Immutable request/
+linked journal/audit and guard-first serialized coordination constrain duplicate admission and
+enforce one per proposal/target and 32 globally. Identical authorized retries never renew authority.
+Only validated no-dispatch QUEUED history can release a reservation after an atomic terminal event.
+READ does not reap; privileged INSERT/schema operators, human-account governance, shared READ trust
+domain and fleet-scale/rate-limit risks remain. Independent review and delivery gates are pending.
+
+8B2's approved design still needs implementation and acceptance: isolated temporary write identity,
+durable WRITE_INTENT before one SDK write, live preconditions without a claimed AWS CAS, unknown-
+effect read-only reconciliation and sticky quarantine. No TTL release/replay after possible effect,
+automatic rollback or fabricated PASS is permitted. This candidate adds none of those AWS paths.
 
 ## Future-boundary threats
 

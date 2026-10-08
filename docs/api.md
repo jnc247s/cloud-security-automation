@@ -28,7 +28,8 @@ both green final-head CI runs and green final merged-main CI at
 is accepted at `20c04665f89ae8c8cf9348603fd54e0e100b6076` with merged-main CI 37354537175;
 it changes no interface or capability. The Sprint 8A proposal/decision extension below is accepted
 through PR #53 at `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with exact-commit independent
-review, both final-head CI and green exact main CI 37693245169. No execution endpoint is added.
+review, both final-head CI and green exact main CI 37693245169. 8A added no execution endpoint.
+The approved local 8B1 admission-only extension below is pending acceptance and cannot call AWS.
 
 Accepted [6H](controls/sprint-6h-acceptance.md) verifies all 26 supported controls / 39 assessments
 through the real authenticated asynchronous scan and public resource/history, evidence/source,
@@ -172,9 +173,12 @@ accepted deployment assumption is one trusted security domain.
 | `PROPOSE` | `POST /api/v1/remediations` | Append a proposal, not execute an action (accepted 8A) |
 | `APPROVE` | `POST /api/v1/remediations/{proposal_id}/decisions` | Append the unique initial APPROVE or REJECT (accepted 8A) |
 | `APPROVE` | `POST /api/v1/remediations/{proposal_id}/revocations` | Revoke an existing approval (accepted 8A) |
+| `EXECUTE` | `POST /api/v1/remediations/{proposal_id}/executions` | Record a third-human request only (local 8B1, pending acceptance) |
+| `READ` | `GET /api/v1/remediation-executions` | List requests and derived validity (local 8B1) |
+| `READ` | `GET /api/v1/remediation-executions/{execution_id}` | Read request, journal and reservation state (local 8B1) |
 
 There is no exception-detail route, audit route, finding/exception mutation, rescan/retry,
-cancellation, proposal withdrawal, remediation execution or arbitrary AWS-call endpoint.
+cancellation, proposal withdrawal, AWS remediation dispatch or arbitrary AWS-call endpoint.
 `AuditService` is an internal service boundary only. The dashboard BFF allowlist is unchanged and
 does not proxy these new authority routes; dashboard cookies never authenticate `/api/v1`.
 
@@ -250,6 +254,46 @@ remediation-specific errors use `Cache-Control: no-store`; never cache sensitive
 No response carries AWS credentials, JWTs or raw SQL/provider failures. See
 [remediation operations](operations/remediation.md) for identity and remaining workflow limits.
 
+## Sprint 8B1 execution admission — local, pending acceptance
+
+This approved addition records authority only. No worker, AWS call, write credential, verification
+scan or dashboard mutation is implemented. The 8A proposal/decision responses stay unchanged.
+
+`POST /api/v1/remediations/{proposal_id}/executions` requires current `EXECUTE`, a UUID
+`Idempotency-Key`, and exactly `proposal_sha256`, `approval_decision_id`, `reason`. Reasons use
+the same stripped, nonblank, 2,000-character bound. Account/Region/action, role ARN, credentials,
+endpoint and desired state are not caller parameters. The requester must differ from both the
+proposer and approver by verified issuer/subject; ADMIN has no override. The exact approval must
+be unrevoked, unexpired and eligible against retained provenance, governance and newer/equal
+target-control history. These are database checks, not fresh AWS checks.
+
+New admission is disabled by default. An explicitly enabled, exact configured account/Region
+must match retained intent; missing scope fails startup. First admission returns 202; authorized
+identical replay returns 200 with original content, without renewed authority or duplicate audit.
+The actor/key namespace spans proposals; changed normalized input returns 409. Replay remains
+readable when new admission is disabled, expired or revoked, but still requires current EXECUTE.
+It is not dispatch or renewed permission. Each proposal has at most one execution request.
+
+`ExecutionView` contains immutable `content`, `execution_sha256`, journal-derived `phase`, current
+derived `blocking_reasons`, `validity_checked_at`, `reservation_held`, and immutable `events`.
+Content embeds the full accepted proposal and exact approval with their digests, requester,
+reason, idempotency key, creation time and expiry: the earlier of proposal expiry or creation plus
+five minutes. Events bind sequence, previous digest, actor and paired audit. The only phases are
+`QUEUED`, `EXPIRED`, `BLOCKED`; QUEUED means no worker has dispatched anything, not AWS success.
+Validity adds `EXECUTION_EXPIRED` and `APPROVAL_REVOKED` to existing proposal blockers. READ never
+appends a terminal event: a QUEUED history can have current blockers and still hold its reservation.
+
+One outstanding request per account/Region/action and 32 database-wide outstanding reservations
+are enforced under serialized admission. A subsequent successful admission may journal and release
+only validated expired/ineligible QUEUED requests; cleanup rolls back with any failed admission.
+There is no timer or worker recovery here. Disabled admission/capacity/database failures return
+sanitized 503, scope/reservation/state/provenance conflicts 409, separation/capability denial 403.
+Ordinary 401/404/422 behavior remains unchanged. New success and remediation errors use no-store.
+
+Execution list/detail requires READ; list accepts `proposal_id` UUID, limit 1--100 (default 50) and
+nonnegative offset, ordered by creation descending then execution UUID. Like 8A, readers share
+one trust domain; filtering is not tenant authorization. See [operations](operations/remediation.md).
+
 ## Filtering and pagination
 
 | List | Optional filters |
@@ -265,6 +309,7 @@ No response carries AWS credentials, JWTs or raw SQL/provider failures. See
 | frameworks | `framework_key`, `version` |
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
 | remediations (accepted 8A) | `finding_id`, `account_id` (12 digits) |
+| remediation-executions (local 8B1) | `proposal_id` UUID |
 
 Accepted 6G adds the public control category `governance`. Existing category values, response
 shapes, capabilities and generic control filtering are unchanged. The category migration and

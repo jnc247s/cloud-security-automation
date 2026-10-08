@@ -43,7 +43,8 @@ Do not expose it publicly, invent role headers or bypass authentication to test 
    possible after expiry/staleness. There is no proposer withdrawal or reapproval.
 4. Use READ list/detail to inspect immutable decisions and current derived blocking reasons.
    An APPROVED record can be expired/stale without losing its historical approval. These checks
-   use retained database evidence only, not a fresh AWS observation. No execution step exists.
+   use retained database evidence only, not a fresh AWS observation. 8A has no execution step;
+   the local admission-only extension below still cannot dispatch AWS work.
 
 All identities are compared as full verified issuer/subject pairs. IdP policy must prevent one
 person controlling several approval identities and grant human workflow roles only to suitable
@@ -99,9 +100,53 @@ purge immutable records or disable constraints to force rollback. Prefer reviewe
 or a separately authorized backup restoration.
 
 No deployment, writer-role policy, IAM/secret change or live AWS operation is authorized by code
-implementation or tests. 8A cleared exact-commit independent review, accepted publication, guarded
-ordinary merge and green exact merged-main CI. Documentary closeout gates remain before 8B
-preflight; later slices need their own required review/delivery/acceptance. The active plan records
+implementation or tests. 8A and its documentary closeout cleared exact-commit independent review,
+accepted publication, guarded ordinary merge and green exact merged-main CI. PR #54 closes the
+documentary prerequisite with exact merged-main CI 37706030374 at
+`24dbda32a0babcffff9698ece4a46c406690ef8e`. The
+[8B analysis preflight](../sprint-8b-preflight.md) records the design bundle approved on 2026-10-07.
+Only 8B1 admission/journal implementation was started; the rest is not implemented behavior or
+live-operation permission. Later slices need their own required
+review/delivery/acceptance. The active plan records
 standing approval for routine Sprint 8 workflow; architectural/design decisions and live operations are
 not pre-approved. Execution, rescan, UI and whole-Sprint-8 acceptance remain later bounded slices;
 no later sprint is started here.
+
+## Approved local 8B1 admission — pending acceptance
+
+This candidate adds a third-human execution request/history, not an AWS worker. Use only an
+explicitly isolated local/test database migrated to candidate `20261007_0008`. The accepted
+baseline remains 0007 until all gates pass. No existing database/demo or live provider is assumed.
+
+New requests default off. An authorized local/test operator may explicitly configure
+`REMEDIATION_ADMISSION_ENABLED=true`, `REMEDIATION_ACCOUNT_ID` (12 ASCII digits), and
+`REMEDIATION_REGION` (exact reviewed Region). Enabled-but-missing/invalid scope fails startup.
+Scanner `AWS_PROFILE`/`AWS_REGION` is not reused or changed; there are no writer credentials or
+worker flags in this slice. Never enable a production operation under test/implementation approval.
+
+After proposal and independent approval, a third verified human with EXECUTE supplies exact
+`proposal_sha256`, `approval_decision_id`, nonblank bounded `reason`, and UUID Idempotency-Key to
+`POST /api/v1/remediations/{proposal_id}/executions`. Full issuer/subject pairs must be distinct,
+including ADMIN. Admission rechecks retained eligibility and configured scope. It returns 202 with
+QUEUED history and a grant expiring at the earlier of proposal expiry or request time plus five
+minutes. There is no dispatch; API success does not mean the EBS setting changed or a finding passed.
+The dashboard still cannot submit this request, and one fixed development identity cannot complete
+the three-person flow. IdP governance is required to establish suitable human accounts.
+
+Read `/api/v1/remediation-executions` (optional proposal_id, bounded pagination) and detail by UUID
+with READ. Review `phase`, `blocking_reasons`, `reservation_held` separately: reads may report
+QUEUED with expiry/revocation blockers, and never mutate/release it. Identical EXECUTE retries use
+the original key/body, return 200 without renewed authority or events even when new admission is
+off, and still require current capability. Changed input/key reuse is 409; do not create a new key
+to hide an ambiguous result. One request per proposal; one outstanding per target; 32 globally.
+
+A successful new admission can journal EXPIRED/BLOCKED and release only validated QUEUED/no-write
+history; failed admission rolls cleanup back. There is no periodic reaper, worker recovery or
+WRITE_INTENT phase. Later unknown-effect reservations must stay quarantined, never released by
+this grant's elapsed time. A new proposal/approval is required for a new request after termination.
+
+Revision 0008 preserves old ledgers and adds protected request/journal/coordination records. Any
+execution, event, reservation coordinate or new execution audit blocks downgrade across 0008
+before DDL; offline crossing is blocked. Empty seed alone permits empty round-trip. Quiesce writers,
+verify a backup and obtain separate operational authorization; never delete history/disable guards.
+Review/local/CI/merge/exact-main gates remain pending. No live AWS/production work is authorized.

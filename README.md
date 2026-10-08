@@ -12,7 +12,7 @@ provide certification or claim organization-wide NIST compliance.
 Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
 Sprint 8 is IN PROGRESS; 8A's proposal/approval foundation is COMPLETE through
 [PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Execution, verification
-scans and UI mutations remain unimplemented. The accepted main checkpoint is
+scans and UI mutations remain unimplemented. The 8A implementation checkpoint was
 `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with green
 [exact merged-main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169).
 Exact-commit independent REVIEW_PASS and both final-head CI runs passed; the two initial MEDIUM
@@ -20,7 +20,11 @@ governance-history/caller-state findings are independently closed. Main CI passe
 tests (352 PostgreSQL, no skips), 130 frontend units, all 74 Chromium/Firefox checks and the image
 build. Original failed receipts and local smoke limitations remain recorded.
 The [active Sprint 8 plan](docs/exec-plans/active/sprint-8.md) records accepted scope and the
-documentation-closeout gates before 8B preflight. Sprint 8 itself is not complete; no live
+accepted documentary closeout through PR #54 at `24dbda32a0babcffff9698ece4a46c406690ef8e`
+(exact merged-main CI 37706030374) and the approved 8B design/8B1 start. The local 8B1 candidate
+adds default-off third-human execution admission/history only, pending acceptance; no worker,
+AWS call, write credentials, linked rescan or dashboard mutation. Candidate migration head is
+`20261007_0008`; accepted baseline head remains 0007. Sprint 8 itself is not complete; no live
 operation is authorized, and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.

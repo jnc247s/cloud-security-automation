@@ -9,6 +9,7 @@ from app.api.routes.findings import router as findings_router
 from app.api.routes.frameworks import router as frameworks_router
 from app.api.routes.health import router as health_router
 from app.api.routes.relationships import router as relationships_router
+from app.api.routes.remediation_executions import router as remediation_executions_router
 from app.api.routes.remediations import router as remediations_router
 from app.api.routes.resources import router as resources_router
 from app.api.routes.scans import router as scans_router
@@ -26,6 +27,7 @@ v1_router.include_router(frameworks_router)
 v1_router.include_router(relationships_router)
 v1_router.include_router(resources_router)
 v1_router.include_router(remediations_router)
+v1_router.include_router(remediation_executions_router)
 v1_router.include_router(scans_router)
 v1_router.include_router(source_outcomes_router)
 api_router.include_router(v1_router)
