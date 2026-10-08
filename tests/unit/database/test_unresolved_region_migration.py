@@ -34,35 +34,73 @@ def constraint_name(dialect):
 
 def state(engine):
     with engine.connect() as connection:
-        inspector = inspect(connection)
-        quote = connection.dialect.identifier_preparer.quote
-        tables = inspector.get_table_names()
-        result = {
-            "region_constraint": constraint_name(connection.dialect),
-            "revision": connection.scalar(text("SELECT version_num FROM alembic_version")),
-            "rows": {
-                table: sorted(
-                    json.dumps(dict(row), sort_keys=True, default=str)
-                    for row in connection.execute(text(f"SELECT * FROM {quote(table)}")).mappings()
-                )
-                for table in tables
-                if table != "alembic_version"
-            },
-            "checks": {
-                table: sorted(
-                    (c["name"], c["sqltext"]) for c in inspector.get_check_constraints(table)
-                )
-                for table in tables
-            },
-        }
-        if connection.dialect.name == "sqlite":
-            result["triggers"] = list(
-                connection.execute(
-                    text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' ORDER BY name")
-                )
+        return state_on_connection(connection)
+
+
+def state_on_connection(connection):
+    """Read the same snapshot without acquiring or completing a caller's transaction."""
+    inspector = inspect(connection)
+    quote = connection.dialect.identifier_preparer.quote
+    tables = inspector.get_table_names()
+    result = {
+        "region_constraint": constraint_name(connection.dialect),
+        "revision": connection.scalar(text("SELECT version_num FROM alembic_version")),
+        "rows": {
+            table: sorted(
+                json.dumps(dict(row), sort_keys=True, default=str)
+                for row in connection.execute(text(f"SELECT * FROM {quote(table)}")).mappings()
             )
-            assert connection.scalar(text("PRAGMA foreign_keys")) == 1
-        return result
+            for table in tables
+            if table != "alembic_version"
+        },
+        "checks": {
+            table: sorted((c["name"], c["sqltext"]) for c in inspector.get_check_constraints(table))
+            for table in tables
+        },
+    }
+    if connection.dialect.name == "sqlite":
+        result["triggers"] = list(
+            connection.execute(
+                text("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' ORDER BY name")
+            )
+        )
+        assert connection.scalar(text("PRAGMA foreign_keys")) == 1
+    return result
+
+
+def exercise_state_on_connection_preserves_caller_transaction(engine, monkeypatch):
+    before = state(engine)
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        assert state_on_connection(connection) == before
+        connection.execute(text("CREATE TABLE snapshot_state_probe (value INTEGER NOT NULL)"))
+        connection.execute(text("INSERT INTO snapshot_state_probe (value) VALUES (7)"))
+        completions = []
+
+        @event.listens_for(connection, "commit")
+        def committed(_connection):
+            completions.append("commit")
+
+        @event.listens_for(connection, "rollback")
+        def rolled_back(_connection):
+            completions.append("rollback")
+
+        def unexpected_connection(*_args, **_kwargs):
+            raise AssertionError("snapshot must reuse the caller's connection")
+
+        with monkeypatch.context() as patch:
+            patch.setattr(engine, "connect", unexpected_connection)
+            snapshot = state_on_connection(connection)
+        assert snapshot["rows"]["snapshot_state_probe"] == [
+            json.dumps({"value": 7}, sort_keys=True)
+        ]
+        assert connection.get_transaction() is transaction
+        assert transaction.is_active and not connection.closed
+        assert completions == []
+        assert connection.scalar(text("SELECT value FROM snapshot_state_probe")) == 7
+        transaction.rollback()
+        assert completions == ["rollback"]
+        assert not connection.closed
 
 
 def persist(engine, bundle):
@@ -238,6 +276,10 @@ def exercise_constraint(engine):
 
 def test_populated_upgrade(migrated_engine):
     exercise_upgrade(migrated_engine, _migration_config)
+
+
+def test_state_on_connection_preserves_caller_transaction(migrated_engine, monkeypatch):
+    exercise_state_on_connection_preserves_caller_transaction(migrated_engine, monkeypatch)
 
 
 def test_compatible_populated_round_trip(migrated_engine):

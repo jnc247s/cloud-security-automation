@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
+import { test, expect, type Page, type Locator, type Request } from '@playwright/test';
 import type { NistReport, Reference } from '../src/nist-api';
 
 const oldScan = '11111111-1111-1111-1111-111111111111';
@@ -172,6 +172,39 @@ test('real session expiry clears expanded NIST context and rejects old-context r
   const session = await (await page.request.get('/dashboard/session')).json();
   await panel(page).getByLabel('Select exact framework release').selectOption(report.frameworks[0].framework_id);
   await expand(panel(page), report.frameworks[0].references.find(r => r.level === 'function')!);
+  // Diagnostics expose boundary outcomes only, never URLs, headers or session/evidence data.
+  const events: { event: string; boundary: string; current?: boolean; status?: number; authenticated?: boolean }[] = [];
+  const refreshRequests = new Set<Request>();
+  let refreshing = false;
+  function boundary(url: string) {
+    const path = new URL(url).pathname;
+    return path === '/dashboard/session' ? 'session'
+      : path === '/dashboard/api/scans' ? 'history'
+      : path.endsWith('/technical-posture') ? 'report'
+      : path.startsWith('/dashboard/api/') ? 'other-read' : null;
+  }
+  page.on('request', request => {
+    const name = boundary(request.url());
+    if (name) events.push({ event: 'request', boundary: name, current: refreshing });
+    if (name && refreshing) refreshRequests.add(request);
+  });
+  page.on('requestfailed', request => {
+    const name = boundary(request.url());
+    if (name) events.push({ event: 'request-failed', boundary: name, current: refreshRequests.has(request) });
+  });
+  page.on('response', async response => {
+    const name = boundary(response.url());
+    if (!name) return;
+    events.push({ event: 'response', boundary: name, current: refreshRequests.has(response.request()), status: response.status() });
+    if (name === 'session') {
+      try {
+        const value: unknown = await response.json();
+        if (typeof value === 'object' && value !== null && 'authenticated' in value
+          && typeof value.authenticated === 'boolean')
+          events.push({ event: 'session-state', boundary: name, authenticated: value.authenticated });
+      } catch { events.push({ event: 'session-body-unavailable', boundary: name }); }
+    }
+  });
   let completed!: () => void, failed!: (reason: unknown) => void;
   const expired = new Promise<void>((resolve, reject) => { completed = resolve; failed = reject; });
   await page.route('**/dashboard/api/scans?limit=25&offset=0', async route => {
@@ -181,13 +214,34 @@ test('real session expiry clears expanded NIST context and rejects old-context r
     } catch (error) { failed(error); throw error; }
     await route.continue();
   }, { times: 1 });
-  const rejected = page.waitForResponse(r => r.url().includes('/dashboard/api/') && r.status() === 401);
-  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await expired; await rejected;
-  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
-  await expect(panel(page)).toHaveCount(0);
-  const denied = await page.request.get('/dashboard/api/scans/' + oldScan + '/technical-posture', { headers: { 'X-Dashboard-Context': session.session_context } });
-  expect(denied.status()).toBe(401);
+  // A superseded read's 401 is not proof that the current refresh recovered its session.
+  const rejected = page.waitForResponse(r => refreshRequests.has(r.request())
+    && r.url().includes('/dashboard/api/') && r.status() === 401);
+  const recovered = page.waitForResponse(r => refreshRequests.has(r.request())
+    && new URL(r.url()).pathname === '/dashboard/session');
+  try {
+    refreshing = true;
+    await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expired;
+    expect((await rejected).status()).toBe(401);
+    const recovery = await recovered;
+    expect(recovery.status()).toBe(200);
+    expect((await recovery.json()).authenticated).toBe(false);
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+    await expect(panel(page)).toHaveCount(0);
+    const denied = await page.request.get('/dashboard/api/scans/' + oldScan + '/technical-posture', { headers: { 'X-Dashboard-Context': session.session_context } });
+    expect(denied.status()).toBe(401);
+  } finally {
+    let buttons: { signIn: number; signOut: number; retry: number } | 'unavailable' = 'unavailable';
+    try {
+      buttons = {
+        signIn: await page.getByRole('button', { name: 'Sign in', exact: true }).count(),
+        signOut: await page.getByRole('button', { name: 'Sign out', exact: true }).count(),
+        retry: await page.getByRole('button', { name: 'Retry sign-in check', exact: true }).count()
+      };
+    } catch { /* Optional diagnostics must not replace the primary assertion/page error. */ }
+    console.info('NIST expiry boundary diagnostics:', JSON.stringify({ events: events.slice(-40), buttons }));
+  }
 });
 
 test('hostile mapping/source text remains escaped and bounded without metadata navigation', async ({ page }) => {
