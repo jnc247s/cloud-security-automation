@@ -4,28 +4,31 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-08
-Accepted baseline: `main` at `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (Sprint 8B1 PR #55;
-exact-commit independent REVIEW_PASS, both final-head CI runs and exact merged-main
-CI 37726113041 passed). Sprints 0--7, 8A and 8B1 admission/journal are accepted; migration head is
+Accepted baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (test-only repair PR #57;
+exact-commit independent REVIEW_PASS, both final-head first-attempt CI runs and exact merged-main
+[CI 37827101059](https://github.com/jnc247s/cloud-security-automation/actions/runs/37827101059)
+passed). Sprints 0--7, 8A and 8B1 admission/journal are accepted; migration head is
 `20261007_0008`. Catalog `0.13.0` and the five-control default are unchanged. Sprint 8 and 8B remain
 IN PROGRESS; 8B2/8B3 and 8C--8E remain PLANNED. No worker, AWS calls, write credentials, rescan or
 dashboard mutation is implemented or authorized by 8B1 acceptance. This documentary reconciliation
 must clear its own validation/review/delivery gates before the next slice advances.
-Documentary PR #56 merged at `1478361d395c66e8bb5a6c7454f1c791ce8acdcd`, but its exact-main
+The accepted 8B1 feature baseline remains `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (PR #55;
+exact main CI 37726113041 passed); PR #57 changes tests and planning receipts, not that behavior.
+Historical documentary PR #56 merged at `1478361d395c66e8bb5a6c7454f1c791ce8acdcd`; its exact-main
 [CI 37734136435](https://github.com/jnc247s/cloud-security-automation/actions/runs/37734136435)
-failed the protected PostgreSQL downgrade/writer test (1 failed, 3,017 passed). Closeout acceptance
-is pending. The user approved a bounded test-only synchronization repair on 2026-10-08;
-no production migration or application change is authorized. The active plan retains the failure,
-repair scope and required fresh acceptance gates. Later slices cannot advance before those pass.
-Repair PR #57 remains unmerged: candidate `c2ef20e` passed backend/review gates and PR CI, but
-push CI 37802803710 failed one protected Chromium session-expiry journey. The failure is retained,
-not waived by the passing companion run. On 2026-10-08 the user approved narrowly diagnosing
-that browser test and a synchronization-only fix if justified. Application authentication/design,
-credentials and later slices remain separately gated; the active plan records the bounded scope.
-The synchronization-only follow-up passed 258 focused and 3,024 full backend checks (all 402
-PostgreSQL cases), 133 frontend units and 37 native Chromium journeys. Native Firefox could not
-launch and is not a passing result. Independent new-commit review, both fresh exact-head Linux
-CI runs and guarded merge/exact-main CI remain required; no later slice advances on local results.
+failed the protected PostgreSQL downgrade/writer test (1 failed, 3,017 passed). Its approved test
+repair and the subsequent approved NIST synchronization follow-up are now accepted through PR #57.
+Earlier candidate `c2ef20e` passed review/backend and PR CI, but push 37802803710 failed a protected
+Chromium expiry journey. Both failures and the passing companion are retained, not called transient
+or waived. The historical NIST cause remains unestablished; no authentication/runtime fix is claimed.
+Final head `880380e`, reviewed tree `ad1a43d905823356b2745611cb7b472501e0b379`, passed fresh push
+37823481996, PR 37823491446 and exact main 37827101059. Each proves 3,024 backend tests (all 402
+PostgreSQL cases, no skips, 19 existing warnings), 133 frontend units/seven files, all 74 browser
+journeys (37 Chromium/37 Firefox, zero retries), quality/image/cleanup. The guarded ordinary merge
+preserved the reviewed tree and existing branches/worktrees. Native Firefox launch and the local
+scan-picker/navigation report remain limitations, not fixed by Linux CI. Only ROADMAP and the
+active plan now reconcile final acceptance receipts; application/authentication/API/BFF, migration,
+credentials, scanner access and later implementation remain unchanged and separately gated.
 The approved [8B design](docs/sprint-8b-preflight.md) and active plan retain the bounded authority.
 Prior accepted 8A documentary closeout: `24dbda32a0babcffff9698ece4a46c406690ef8e`
 (PR #54; exact merged-main CI 37706030374 passed; migration `20261006_0007`).
