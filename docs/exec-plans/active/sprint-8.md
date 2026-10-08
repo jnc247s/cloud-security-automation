@@ -873,3 +873,28 @@ pass or live provider coverage is claimed; frontend source is unchanged and Linu
 Git at this receipt: codex/sprint-8b1-closeout, HEAD remains accepted 0c60058; thirteen files are
 unstaged/uncommitted. 8A/B1 are COMPLETE; Sprint 8/8B IN PROGRESS; 8B2/8B3/8C--8E PLANNED.
 No new reviewer, AWS worker, write credentials, live operation or Sprint 9+ work was started.
+
+### 8B1 documentary closeout review corrections — 2026-10-08
+
+The existing read-only reviewer returned REVIEW_FAIL for frozen closeout commit
+`c933a1924cc0204a10678cafe40aab6a0c84aa05`, tree
+`2247c506d8db4444a5d2fb5fdb869ffd3690f6ef`, with two LOW owner inconsistencies and no
+CRITICAL/HIGH/MEDIUM findings. The current architecture migration chain omitted accepted 0008;
+the runbook still named 0007 and unqualifiedly described accepted 8B1 delivery gates as pending.
+These findings are retained, not treated as approval. The bounded repair extends the current
+chain through 0008, updates the runbook head and scopes its remaining gates to this documentary
+closeout. Earlier revisions, predictions, receipts and compatibility anchors remain unchanged.
+
+Independent checks before repair passed 109 contracts/configuration tests in 0.38s, Ruff,
+402-file formatting and commit whitespace. All eight renamed fragments and six earlier anchors
+were preserved without duplicate explicit anchors; all thirteen fingerprints remained unchanged
+and committed blobs matched working files. Read-only metadata verified PR #55 and its three
+successful exact-input CI runs. Full regression, PostgreSQL, image and browser totals were
+inspected root receipts, not independent reruns. No reviewer edits, database use, publication
+or live operations occurred.
+
+Only these three Markdown files change after the first review. Recheck contracts/configuration,
+quality/whitespace and the remaining ten fingerprints, commit the bounded correction without
+rewriting the failed-review commit, and obtain a fresh exact-commit review from the same reviewer.
+Both exact-head CI runs and guarded merge/exact-main CI remain mandatory before this closeout
+is accepted or any later slice advances. No runtime, migration, test or security-design change.

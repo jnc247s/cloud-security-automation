@@ -282,7 +282,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20260924_0004  immutable extended policy and execution-contract storage
     -> 20261001_0005  unresolved regional relationship preservation
     -> 20261001_0006  additive governance category (accepted predecessor)
-    -> 20261006_0007  append-only remediation authority (accepted-main head)
+    -> 20261006_0007  append-only remediation authority (accepted predecessor)
+    -> 20261007_0008  execution admission and journal (accepted-main head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any

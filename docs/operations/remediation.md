@@ -86,7 +86,7 @@ explicit-PASS-only resolution policy. Do not manually change finding results to 
 
 ## Migration, data and acceptance gates
 
-Accepted repository migration head is `20261006_0007`; no deployed database migration is claimed
+Accepted repository migration head is `20261007_0008`; no deployed database migration is claimed
 or authorized by code acceptance. Apply through Alembic only and validate against an explicitly
 disposable TEST_DATABASE_URL. New authority/audit history is sensitive. Restrict DB access and protect
 backups; append-only guards do not protect against privileged schema modification/direct INSERTs.
@@ -151,4 +151,5 @@ Revision 0008 preserves old ledgers and adds protected request/journal/coordinat
 execution, event, reservation coordinate or new execution audit blocks downgrade across 0008
 before DDL; offline crossing is blocked. Empty seed alone permits empty round-trip. Quiesce writers,
 verify a backup and obtain separate operational authorization; never delete history/disable guards.
-Review/local/CI/merge/exact-main gates remain pending. No live AWS/production work is authorized.
+The separate documentary closeout still requires independent review, exact-head CI, ordinary
+guarded merge and exact merged-main CI. No live AWS/production work is authorized.
