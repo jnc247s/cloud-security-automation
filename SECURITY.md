@@ -490,8 +490,43 @@ protected coordination rows and a global 32-reservation cap constrain database e
 may release only validated no-dispatch QUEUED history, atomically with a successful new admission.
 Future intent/unknown/quarantine phases must not inherit time-based release. Privileged INSERT
 or schema changes remain outside these integrity guarantees; protect services, operators/backups.
-Scanner credentials stay read-only. There is no worker, write credential setting/acquisition,
-live AWS check, automatic rescan or browser mutation. Future worker/live-operation gates remain.
+Scanner credentials stay read-only. 8B1 itself adds no worker, write credential acquisition,
+live AWS check, automatic rescan or browser mutation. The candidate boundary below is separate;
+live-operation gates remain.
+
+## Sprint 8B2 worker boundary — candidate, acceptance pending
+
+Only a separately launched, explicitly enabled process handles the single approved enable-default
+action. Worker settings are environment-only with no `.env` or scanner/application fallback;
+the expected account, Region, IAM role and PostgreSQL URL must be explicit. The exclusive ECS
+resolver accepts only a fixed relative task-credential path. Static/session keys, profiles, host
+configuration, web identity, full/custom credential endpoints and AWS endpoint/CA overrides are
+rejected. SDK models/endpoints load only from the installed package, never host model directories
+or AWS_DATA_PATH; STS is explicitly regional and credential-bearing CSM telemetry is disabled.
+The worker fixes endpoints, Region, proxy behavior, timeouts and one total SDK
+attempt; smart-defaults IMDS Region probing is disabled.
+Fresh STS account/assumed-role checks precede regional preconditions/readback. There is
+no caller-selected identity or fourth human EXECUTE impersonation. SDK/SQL dependency logging is
+disabled in this process; output is fixed classifications, not credentials, evidence or raw errors.
+
+Scanner access remains read-only. The separate writer permission ceiling is only enable-default
+and the two regional settings reads; no disable/reset/key mutation, volume conversion, KMS write/
+decrypt, IAM or generic EC2 permissions. ECS task credentials are shared within a task; API/scanner
+must never share a writer-enabled task. ECS-on-EC2 containers are not a security isolation boundary;
+metadata/host isolation requires separate deployment evidence too. No IAM resources, credentials or deployment are provisioned
+by this candidate, and code tests do not establish physical workload/network/credential isolation.
+Role recreation under the same account/name remains an operator trust boundary, not a role-ID pin.
+
+Fresh exact settings and retained authority/governance are checked before committing WRITE_INTENT.
+Expiry/revocation before intent prevents dispatch; after intent cannot cancel/undo an admitted call.
+No AWS work spans SQL locks. Private nonce/durable read budgets fence only pre-intent owners;
+post-intent lease/TTL/expiry never permits resend or release. Unknown effect is sticky quarantine,
+even when readback is true or a late acknowledgment arrives. Only a finished call with a conclusive
+durable receipt can release normal dispatch ownership. Recovery is observation-only, never retry,
+verification, finding resolution or rollback. Incident release needs separate authorization and
+proof that an old worker cannot resume; no force-clear endpoint is provided. Privileged database
+INSERT/schema control and physical-human governance remain trusted. All runtime/delivery gates
+are pending until recorded by the active plan; no live or production operation is authorized.
 
 ## Production authorization
 

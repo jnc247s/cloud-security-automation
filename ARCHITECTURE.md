@@ -284,6 +284,7 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20261001_0006  additive governance category (accepted predecessor)
     -> 20261006_0007  append-only remediation authority (accepted predecessor)
     -> 20261007_0008  execution admission and journal (accepted-main head)
+    -> 20261008_0009  private worker coordination/versioned journal (8B2 candidate)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -588,6 +589,36 @@ verification scan, BFF mutation or general scan-start UI exists in this slice. T
 bounded Sprint 8 slices; acceptance authorizes no live or production operation.
 
 ## API boundary
+
+### Sprint 8B2 isolated worker — implementation candidate, acceptance pending
+
+The separately launched `python -m app.remediation.worker UUID` process is default off and is
+not imported/started by API or scanner runtime. It handles only the approved EC2-004 enable-default
+action; no generic dispatch, disabling, key changes or existing-volume conversion. Independent
+`REMEDIATION_WORKER_*` environment settings never read `.env`, application/scanner settings or
+caller-supplied AWS parameters. Enabled runtime requires its own PostgreSQL URL and one explicit
+account/Region/expected IAM role. Initial credentials are exclusively ECS task-role temporary
+credentials from the fixed relative metadata source, with no static/profile/host-role fallback.
+Code separation is not proof that deployed tasks/identities are isolated; deployment remains gated.
+
+`RemediationWorkerService` uses short admission-guard-first Resource → Finding → proposal → target
+→ claim transactions. Credential construction, STS, EC2 and client shutdown occur only after those
+transactions close. A private 30-second pre-intent claim can be reclaimed with a new fenced nonce;
+the three-read budget persists across owners. Fresh complete boolean false and exact present/absent
+KMS context must match approved intent. Authority and expiry are rechecked after lock waits.
+WRITE_INTENT and paired service audit commit before one SDK write, with `total_max_attempts=1`.
+Intent commit is the revocation cutoff; the original caller checks its grant immediately before
+dispatch. No SQL/AWS compare-and-swap exists, and a pause after that final check remains a race.
+
+Revision 0009 retains version-1 admission/event bytes and adds version-2 worker events plus private
+claim coordinates. Post-intent owner/lease cannot be reclaimed. Crashes, missing/malformed responses
+or ambiguous commits retain intent or sticky quarantine and the reservation/capacity. A conclusive
+completed call with a durable acknowledgment releases only ordinary ownership; a late acknowledgment
+never clears prior quarantine. Read-only recovery may observe after authority expiry; its global
+three-poll, thirty-second window persists across restarts. Readback does not prove causation, key
+usability, PASS, verification or finding resolution. 8C exact-policy rescan is not implemented here.
+0009 downgrades require online compatibility checks before any DDL; worker history refuses rollback.
+Current acceptance and later-slice gates remain owned by ROADMAP and the active plan.
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at
 `/api/v1` and exposes scans, resources/history, assessments/evidence, source outcomes/artifacts,

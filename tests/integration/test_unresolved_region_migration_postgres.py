@@ -97,7 +97,7 @@ def test_writer_is_serialized_before_downgrade_preflight(postgres_engine, _attem
                     # with the guard by acquiring graph/parent locks in reverse order.
                     assert ddl == [] and baselines == []
                     baselines.append(state_on_connection(connection))
-                    assert baselines[0]["revision"] == "20261007_0008"
+                    assert baselines[0]["revision"] == "20261008_0009"
                     assert any(
                         json.loads(row)["scan_id"] == str(bundle["snapshot"].scan_id)
                         for row in baselines[0]["rows"]["scans"]

@@ -1,8 +1,8 @@
-"""Durable third-human execution admission only; no AWS dispatch contract."""
+"""Immutable human admission and versioned execution READ views; no AWS dependency."""
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import Field, StrictBool, model_validator
@@ -16,6 +16,8 @@ from app.remediation.contracts import (
     ReasonedContract,
     Sha256,
 )
+from app.remediation.execution_phases import ExecutionBlockingReason, ExecutionPhase
+from app.remediation.worker_contracts import WorkerBlockingReason, WorkerEventContent
 
 REGION_PATTERN = r"^[a-z]{2,8}(?:-[a-z0-9]+){1,6}-[0-9]+$"
 ADMISSION_CAPACITY = 32
@@ -38,21 +40,10 @@ class ExecutionRequest(ReasonedContract):
     approval_decision_id: UUID
 
 
-class ExecutionPhase(StrEnum):
-    QUEUED = "QUEUED"
-    EXPIRED = "EXPIRED"
-    BLOCKED = "BLOCKED"
-
-
 class ExecutionEventKind(StrEnum):
     REQUESTED = "REQUESTED"
     EXPIRED = "EXPIRED"
     BLOCKED = "BLOCKED"
-
-
-class ExecutionBlockingReason(StrEnum):
-    EXECUTION_EXPIRED = "EXECUTION_EXPIRED"
-    APPROVAL_REVOKED = "APPROVAL_REVOKED"
 
 
 class ExecutionContent(ReasonedContract):
@@ -75,7 +66,7 @@ class ExecutionEventContent(Contract):
     execution_sha256: Sha256
     sequence: int = Field(ge=1, le=2)
     kind: ExecutionEventKind
-    phase: ExecutionPhase
+    phase: Literal[ExecutionPhase.QUEUED, ExecutionPhase.EXPIRED, ExecutionPhase.BLOCKED]
     previous_event_sha256: Sha256 | None
     actor: ActorContext
     created_at: datetime
@@ -83,7 +74,9 @@ class ExecutionEventContent(Contract):
 
 
 class ExecutionEventView(Contract):
-    content: ExecutionEventContent
+    content: Annotated[
+        ExecutionEventContent | WorkerEventContent, Field(discriminator="schema_version")
+    ]
     event_sha256: Sha256
     audit_event_id: UUID
 
@@ -92,7 +85,7 @@ class ExecutionView(Contract):
     content: ExecutionContent
     execution_sha256: Sha256
     phase: ExecutionPhase
-    blocking_reasons: tuple[BlockingReason | ExecutionBlockingReason, ...]
+    blocking_reasons: tuple[BlockingReason | ExecutionBlockingReason | WorkerBlockingReason, ...]
     validity_checked_at: datetime
     reservation_held: StrictBool
     events: tuple[ExecutionEventView, ...]

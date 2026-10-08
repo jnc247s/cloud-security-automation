@@ -94,7 +94,32 @@ physical-human identity and shared READ-domain limitations remain. Scanner crede
 
 0008 downgrade preflights writers/history before all DDL and refuses any execution/event/reservation
 coordinate/new execution audit. Do not delete or rewrite history to force rollback. 8B2/8B3 and
-8C--8E remain PLANNED; the user's scan-picker/navigation report remains untriaged for 8D preflight.
+8C--8E remain PLANNED at 8B1 acceptance; the user's scan-picker/navigation report remains untriaged
+for 8D preflight. Current 8B2 candidate scope is recorded below and in ROADMAP.
+
+### Isolated worker candidate and unknown-effect recovery — HIGH
+
+8B2 is IN PROGRESS, not accepted: disabled-by-default ECS-only single-action worker, versioned
+service history and private fenced coordination in candidate 0009. No live credentials, IAM,
+deployment or production validation. API/scanner never launch it, but physical task/role/network
+separation is an external requirement; all containers in one ECS task share its credentials.
+Configured role-name identity is not a stable role-ID pin against operator role recreation.
+Scanner permissions, technical results and findings remain unchanged.
+
+AWS provides neither expected-state CAS nor a client idempotency token for this action. SQL checks
+cannot eliminate post-check live-state/expiry/revocation races or cancel a paused original worker.
+At most one SDK write is attempted per grant; after intent, crashes and ambiguous outcomes are
+sticky quarantine, not proof of no effect. Expiry, lease, desired observation or late acknowledgment
+never makes automatic release/resend safe. This deliberately strands some safe-but-unprovable
+requests and holds reservation/capacity; incident recovery needs separate human authorization and
+proof of quiescence/effect, with no force-clear endpoint or compensating disable.
+
+EC2 readback proves neither causation nor key/workload usability. Durable three-poll/thirty-second
+reads are unverified; 8C exact-policy rescan, 8D mutation UI and whole-Sprint-8 acceptance remain
+unimplemented. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
+limitations, not fixes claimed by this slice. New enum/event versions require client coordination;
+new code's execution-history service requires 0009 schema and never auto-migrates. Backups, rollout,
+production PostgreSQL grants and offline/populated downgrade procedures remain separately gated.
 
 ### Governance category transition — ACCEPTED 6G
 

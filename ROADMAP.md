@@ -4,7 +4,20 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-08
-Accepted baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (test-only repair PR #57;
+Current accepted baseline: `main` at `cfd1fcba87dee504df9adc21c3f7382370ee5af2`
+(documentary closeout PR #58; exact merged-main
+[CI 37838138349](https://github.com/jnc247s/cloud-security-automation/actions/runs/37838138349)
+passed). Sprints 0--7, 8A and 8B1 are COMPLETE; Sprint 8/8B remain IN PROGRESS.
+**8B2 is IN PROGRESS**, authorized for an isolated disabled-by-default worker and offline tests.
+The user approved ECS task-role-only credentials for its initial implementation on 2026-10-08;
+static keys, profiles, shared host roles, custom credential endpoints and fallback are excluded.
+No role creation, deployment, live AWS/remediation or production operation is authorized.
+8B3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. Accepted migration head remains
+`20261007_0008`; no worker implementation is accepted yet. The active plan records the bounded
+implementation and remaining gates. Existing branches, worktrees and unrelated skills are preserved.
+
+Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
+Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;
 exact-commit independent REVIEW_PASS, both final-head first-attempt CI runs and exact merged-main
 [CI 37827101059](https://github.com/jnc247s/cloud-security-automation/actions/runs/37827101059)
 passed). Sprints 0--7, 8A and 8B1 admission/journal are accepted; migration head is

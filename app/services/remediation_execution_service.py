@@ -1,4 +1,4 @@
-"""Third-human execution admission/history. No AWS, credentials, worker or rescan."""
+"""Third-human admission and versioned history. No AWS, credentials or orchestration."""
 
 from collections.abc import Callable
 from datetime import datetime, timedelta
@@ -17,6 +17,7 @@ from app.models.remediation_execution import (
     RemediationExecution,
     RemediationExecutionEvent,
     RemediationTargetReservation,
+    RemediationWorkerClaim,
 )
 from app.remediation.contracts import DecisionKind
 from app.remediation.execution_contracts import (
@@ -32,6 +33,11 @@ from app.remediation.execution_contracts import (
     ExecutionView,
 )
 from app.remediation.provenance import utc
+from app.remediation.worker_contracts import (
+    WorkerEventContent,
+    WorkerEventKind,
+    validate_worker_entry,
+)
 from app.schemas.api_views import Page
 from app.security.authentication import Principal
 from app.security.authorization import Capability, capabilities_for
@@ -131,7 +137,7 @@ class RemediationExecutionService:
     @staticmethod
     def _audit_metadata(content, digest):
         return {
-            "schema_version": "1.0.0",
+            "schema_version": content.schema_version,
             "actor": content.actor.model_dump(mode="json"),
             "execution_id": str(content.execution_id),
             "execution_sha256": content.execution_sha256,
@@ -152,10 +158,54 @@ class RemediationExecutionService:
         previous = None
         result = []
         try:
-            if not 1 <= len(rows) <= 2:
+            if not rows:
                 raise ValueError("missing execution journal")
             for index, event in enumerate(rows, 1):
-                entry = ExecutionEventContent.model_validate(event.content)
+                worker = event.content.get("schema_version") == "2.0.0"
+                entry = (
+                    WorkerEventContent.model_validate(event.content)
+                    if worker
+                    else ExecutionEventContent.model_validate(event.content)
+                )
+                if worker:
+                    if not result:
+                        raise ValueError("missing human admission event")
+                    validate_worker_entry(entry, result[-1].content.phase, content)
+                    actor_type = "service"
+                    actor_id = canonical_json_sha256(entry.actor.model_dump(mode="json"))
+                else:
+                    actor_type = "human"
+                    actor_id = _identity(entry.actor)
+                    if (
+                        entry.phase is not _PHASES[entry.kind]
+                        or entry.actor.capability is not Capability.EXECUTE
+                        or (
+                            index == 1
+                            and (
+                                entry.kind is not ExecutionEventKind.REQUESTED
+                                or entry.blocking_reasons
+                                or entry.actor != content.requested_by
+                                or entry.created_at != content.created_at
+                            )
+                        )
+                        or (
+                            index == 2
+                            and (
+                                entry.kind is ExecutionEventKind.REQUESTED
+                                or not entry.blocking_reasons
+                                or result[-1].content.phase is not ExecutionPhase.QUEUED
+                            )
+                        )
+                        or (
+                            entry.kind is ExecutionEventKind.EXPIRED
+                            and (
+                                entry.created_at < content.expires_at
+                                or ExecutionBlockingReason.EXECUTION_EXPIRED
+                                not in entry.blocking_reasons
+                            )
+                        )
+                    ):
+                        raise ValueError("human execution journal mismatch")
                 audit = self.session.get(AuditEvent, event.audit_event_id)
                 if (
                     canonical_json_sha256(event.content) != event.event_sha256
@@ -165,39 +215,14 @@ class RemediationExecutionService:
                     or entry.sequence != index
                     or event.sequence != index
                     or entry.kind.value != event.kind
-                    or entry.phase is not _PHASES[entry.kind]
                     or entry.previous_event_sha256 != previous
                     or event.previous_event_sha256 != previous
                     or entry.created_at != utc(event.created_at)
-                    or entry.actor.capability is not Capability.EXECUTE
                     or entry.created_at
                     < (result[-1].content.created_at if result else content.created_at)
-                    or (
-                        index == 1
-                        and (
-                            entry.kind is not ExecutionEventKind.REQUESTED
-                            or entry.blocking_reasons
-                            or entry.actor != content.requested_by
-                            or entry.created_at != content.created_at
-                        )
-                    )
-                    or (
-                        index == 2
-                        and (
-                            entry.kind is ExecutionEventKind.REQUESTED or not entry.blocking_reasons
-                        )
-                    )
-                    or (
-                        entry.kind is ExecutionEventKind.EXPIRED
-                        and (
-                            entry.created_at < content.expires_at
-                            or ExecutionBlockingReason.EXECUTION_EXPIRED
-                            not in entry.blocking_reasons
-                        )
-                    )
                     or audit is None
-                    or audit.actor_type != "human"
-                    or audit.actor_id != _identity(entry.actor)
+                    or audit.actor_type != actor_type
+                    or audit.actor_id != actor_id
                     or audit.target_type != "remediation_execution"
                     or audit.target_id != row.execution_id
                     or audit.event_type.value != "REMEDIATION_EXECUTION_" + entry.kind.value
@@ -213,6 +238,47 @@ class RemediationExecutionService:
                     )
                 )
                 previous = event.event_sha256
+            claim = self.session.get(
+                RemediationWorkerClaim, row.execution_id, populate_existing=True
+            )
+            claimed = [e for e in result if e.content.kind is WorkerEventKind.CLAIMED]
+            intents = [e for e in result if e.content.kind is WorkerEventKind.WRITE_INTENT]
+            if bool(claimed) != (claim is not None) or len(intents) > 1:
+                raise ValueError("worker coordination mismatch")
+            if claim is not None and (
+                claim.generation != len(claimed)
+                or bool(intents) != (claim.write_intent_event_id is not None)
+                or (intents and claim.write_intent_event_id != intents[0].content.event_id)
+                or any(
+                    e.content.actor.expected_role_arn != claim.expected_role_arn
+                    for e in result
+                    if isinstance(e.content, WorkerEventContent)
+                )
+            ):
+                raise ValueError("worker claim history mismatch")
+            observed = [
+                e.content
+                for e in result
+                if isinstance(e.content, WorkerEventContent)
+                and e.content.kind
+                in {
+                    WorkerEventKind.OBSERVED,
+                    WorkerEventKind.OBSERVATION_FAILED,
+                }
+            ]
+            if observed and (claim is None or claim.readback_started_at is None):
+                raise ValueError("missing readback budget")
+            if len({e.polls for e in observed}) != len(observed) or any(
+                e.polls > claim.readback_attempts
+                or (
+                    e.observed_at is not None
+                    and not utc(claim.readback_started_at)
+                    <= e.observed_at
+                    < utc(claim.readback_started_at) + timedelta(seconds=30)
+                )
+                for e in observed
+            ):
+                raise ValueError("readback budget mismatch")
             return tuple(result)
         except (ValueError, TypeError, KeyError):
             raise RemediationError("remediation_provenance_conflict") from None
@@ -246,7 +312,15 @@ class RemediationExecutionService:
         if reservation is None or reservation.resource_id != content.proposal.resource_id:
             raise RemediationError("remediation_provenance_conflict")
         held = reservation.execution_id == row.execution_id
-        if held != (events[-1].content.phase is ExecutionPhase.QUEUED):
+        if held != (
+            events[-1].content.phase
+            in {
+                ExecutionPhase.QUEUED,
+                ExecutionPhase.CLAIMED,
+                ExecutionPhase.WRITE_INTENT,
+                ExecutionPhase.QUARANTINED,
+            }
+        ):
             raise RemediationError("remediation_provenance_conflict")
         return ExecutionView(
             content=content,
@@ -363,9 +437,10 @@ class RemediationExecutionService:
                 or reservation.account_id != content.proposal.account_id
                 or reservation.region != content.proposal.region
                 or reservation.action_id != content.proposal.action_id
-                or self._events(row, content)[-1].content.phase is not ExecutionPhase.QUEUED
             ):
                 raise RemediationError("remediation_provenance_conflict")
+            if self._events(row, content)[-1].content.phase is not ExecutionPhase.QUEUED:
+                continue  # Only the worker can terminate a fenced no-intent claim.
             self._journal(
                 row,
                 actor,
@@ -483,6 +558,11 @@ class RemediationExecutionService:
                 if reservation is not None and reservation.execution_id is not None:
                     previous = self._row(reservation.execution_id)
                     previous_content = self._content(previous)
+                    if (
+                        self._events(previous, previous_content)[-1].content.phase
+                        is not ExecutionPhase.QUEUED
+                    ):
+                        raise RemediationError("remediation_execution_target_reserved")
                     reasons = self._blocking(previous_content, at)
                     if not reasons:
                         raise RemediationError("remediation_execution_target_reserved")

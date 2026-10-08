@@ -281,21 +281,49 @@ It is not dispatch or renewed permission. Each proposal has at most one executio
 derived `blocking_reasons`, `validity_checked_at`, `reservation_held`, and immutable `events`.
 Content embeds the full accepted proposal and exact approval with their digests, requester,
 reason, idempotency key, creation time and expiry: the earlier of proposal expiry or creation plus
-five minutes. Events bind sequence, previous digest, actor and paired audit. The only phases are
-`QUEUED`, `EXPIRED`, `BLOCKED`; QUEUED means no worker has dispatched anything, not AWS success.
+five minutes. Events bind sequence, previous digest, actor and paired audit. Version-1 admission
+events retain `QUEUED`, `EXPIRED`, `BLOCKED`; QUEUED means no dispatch, not AWS success.
 Validity adds `EXECUTION_EXPIRED` and `APPROVAL_REVOKED` to existing proposal blockers. READ never
 appends a terminal event: a QUEUED history can have current blockers and still hold its reservation.
 
 One outstanding request per account/Region/action and 32 database-wide outstanding reservations
 are enforced under serialized admission. A subsequent successful admission may journal and release
 only validated expired/ineligible QUEUED requests; cleanup rolls back with any failed admission.
-There is no timer or worker recovery here. Disabled admission/capacity/database failures return
+8B1 itself adds no timer or worker recovery. Disabled admission/capacity/database failures return
 sanitized 503, scope/reservation/state/provenance conflicts 409, separation/capability denial 403.
 Ordinary 401/404/422 behavior remains unchanged. New success and remediation errors use no-store.
 
 Execution list/detail requires READ; list accepts `proposal_id` UUID, limit 1--100 (default 50) and
 nonnegative offset, ordered by creation descending then execution UUID. Like 8A, readers share
 one trust domain; filtering is not tenant authorization. See [operations](operations/remediation.md).
+
+### 8B2 versioned worker history — candidate, acceptance pending
+
+The same READ list/detail and identical EXECUTE replay now project additive worker phases
+`CLAIMED`, `WRITE_INTENT`, `NO_WRITE`, `ACKNOWLEDGED`, `QUARANTINED`. Existing request content,
+version-1 event bytes, routes, status codes, capabilities and authentication remain unchanged.
+New journal entries discriminate on `schema_version="2.0.0"`; strict clients must support both
+versions and the expanded phase vocabulary before enabling the separately authorized worker.
+No new public worker launch, claim, force-clear, AWS-parameter or credential endpoint is added.
+
+Version-2 content binds the same IDs/digest/sequence/previous digest, creation time, service actor
+(`service_id="remediation-worker"`, expected role ARN), and paired service audit. Closed kinds are
+`CLAIMED`, `WRITE_INTENT`, `NO_WRITE`, `ACKNOWLEDGED`, `QUARANTINED`, `OBSERVED`,
+`OBSERVATION_FAILED`; the last two retain acknowledged/quarantined phase. Outcome blockers live
+in each event, separately from top-level current authority blockers. They use retained authority
+codes or `PRECONDITION_CHANGED`, `READ_UNAVAILABLE`, `WRITER_SCOPE_MISMATCH`,
+`READ_BUDGET_EXHAUSTED`, `WRITE_UNCERTAIN`, `LATE_DISPATCH`, `RECOVERY_UNCERTAIN`.
+Optional structured observation contains strict boolean encryption, exact nonblank present KMS
+string or explicit absent/null context, and observation time; acknowledgment has only a bounded
+sanitized request ID. Poll ordinal is 1--3 for observations and zero otherwise. No ownership nonce,
+nonce digest, lease, generation, credential, provider response or raw exception is exposed.
+
+CLAIMED/WRITE_INTENT/QUARANTINED retain the reservation. NO_WRITE releases only pre-intent
+ownership; normal ACKNOWLEDGED means a completed call with durable receipt and releases ordinary
+ownership, not verification. A late acknowledgment/true observation never clears quarantine or
+its reservation/capacity. READ remains non-mutating and may show expiry/revocation after intent.
+Neither acknowledgment nor desired readback sets technical PASS or resolves findings; 8C rescan
+and 8D dashboard mutation remain unimplemented. The scanner still uses read-only credentials.
 
 ## Filtering and pagination
 

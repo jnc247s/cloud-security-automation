@@ -694,6 +694,41 @@ module; it is not replaced by these performance tests.
 
 ## Current boundary and deferred work
 
+### Sprint 8B2 worker persistence — candidate, acceptance pending
+
+Accepted-main head remains 0008 until the active plan's delivery gates pass. Candidate revision
+`20261008_0009` follows frozen 0008 and preserves all immutable human request/event bytes and
+authority. It expands linked execution/audit kinds for schema-version-2 service events, retaining
+legacy sequence limits for version-1 terminal entries. A partial unique index permits at most one
+WRITE_INTENT and one ACKNOWLEDGED receipt per execution. Findings, assessments, profiles, catalogs,
+scan persistence and the old remediation-request operation enum are unchanged.
+
+`remediation_worker_claims` is private mutable coordination, not an API view: execution PK/FK,
+nonce SHA-256, fixed expected role, generation, pre-intent reads (0--3), immutable-after-start
+readback window/ordinal (0--3), pre-intent lease and optional restrictive WRITE_INTENT event FK.
+Nonce/lease rotate together only with a new CLAIMED event after the old lease and before intent;
+read budgets never reset. After intent the owner/generation/lease/intent reference are frozen.
+Delete/TRUNCATE is rejected. Indexed lease and intent references support bounded coordination.
+No coordination time can authorize repeat writing or erase unknown effects.
+
+All worker mutations take the admission singleton first, then Resource → Finding → proposal →
+target → claim. No subsequent Scan lock or AWS/credential/client-close call belongs in those short
+transactions. History and paired audit commit atomically; replay/READ validates both versions and
+never autoflushes pending caller work or releases ownership. Quarantine is sticky; target clearing
+is denied without a validated pre-intent terminal outcome or ordinary completed acknowledgment.
+Late acknowledgments remain quarantined and retain the 32-slot global reservation.
+
+0009 uses online SQLite FK-checked transactional rebuilds and PostgreSQL ordered exclusive locks;
+predecessor triggers, rows/references and constraints must survive populated upgrade and safe B1
+rollback. The current application requires the candidate schema before its execution-history
+service is used; it never auto-migrates or acquires credentials to compensate for a missing schema.
+Coordinate application/schema rollout only under separately authorized operational maintenance.
+Any worker claim, dispatch/observation event or new worker audit blocks the whole downgrade path
+across 0009 before DDL. Deep paths retain prior 0008/0007 protection too. Offline crossing is refused.
+Never delete history or bypass guards to force rollback; quiesce writers, verify a restorable backup
+and prefer reviewed forward repair. Service/DB roles, privileged INSERT/schema changes and backups
+remain trust boundaries; tests do not provision runtime privileges or authorize production writes.
+
 ### Migration comparison compatibility
 
 Alembic `1.20` or later is required. The named CHECK-constraint comparison plugin is explicitly
