@@ -1,5 +1,9 @@
 # Sprint 8 analysis-only preflight
 
+This retains the original 2026-10-06 baseline analysis and predictions, not current implementation
+status. Subsequent accepted 8A scope and the remaining entry gates are recorded in ROADMAP and
+the [active Sprint 8 plan](exec-plans/active/sprint-8.md).
+
 ## Verified baseline — 2026-10-06
 
 The task checkout was clean on main at

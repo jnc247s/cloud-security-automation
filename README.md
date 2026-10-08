@@ -10,15 +10,18 @@ provide certification or claim organization-wide NIST compliance.
 ## Status
 
 Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
-Sprint 8 is IN PROGRESS with bounded local 8A authority/API implementation, pending acceptance.
-Execution, verification scans and UI mutations remain unimplemented. The accepted main checkpoint
-is `20c04665f89ae8c8cf9348603fd54e0e100b6076`, documentation reconciliation PR #52 with green
-merged-main CI 37354537175. The [active Sprint 8 plan](docs/exec-plans/active/sprint-8.md)
-records local authority, decisions and remaining gates; no live operation is authorized.
-Initial 8A independent review found two MEDIUM defects; bounded governance-history/caller-state
-repairs pass local revalidation and an independently authorized follow-up REVIEW_PASS for the
-unchanged uncommitted tree. Exact-commit review, publication/merge and main-CI acceptance remain
-required; neither 8A nor Sprint 8 is complete.
+Sprint 8 is IN PROGRESS; 8A's proposal/approval foundation is COMPLETE through
+[PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Execution, verification
+scans and UI mutations remain unimplemented. The accepted main checkpoint is
+`691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with green
+[exact merged-main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169).
+Exact-commit independent REVIEW_PASS and both final-head CI runs passed; the two initial MEDIUM
+governance-history/caller-state findings are independently closed. Main CI passed 2,900 backend
+tests (352 PostgreSQL, no skips), 130 frontend units, all 74 Chromium/Firefox checks and the image
+build. Original failed receipts and local smoke limitations remain recorded.
+The [active Sprint 8 plan](docs/exec-plans/active/sprint-8.md) records accepted scope and the
+documentation-closeout gates before 8B preflight. Sprint 8 itself is not complete; no live
+operation is authorized, and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
 Whole-sprint 6H acceptance merged through
@@ -58,7 +61,7 @@ original multi-tab repetitions; application behavior/headers, dependencies, asse
 and timeouts stayed unchanged. Failed runs and diagnostic limits are preserved in the
 [acceptance evidence](docs/sprint-7e-acceptance.md). This is accepted offline code, not live-provider,
 production deployment or formal accessibility certification. At this historical checkpoint
-Sprint 8 was NEXT; its later approved local 8A scope is recorded in the active plan.
+Sprint 8 was NEXT; its later accepted 8A scope is recorded in the active plan.
 [ROADMAP.md](ROADMAP.md) alone owns progress; the
 [completed Sprint 6 plan](docs/exec-plans/completed/sprint-6.md) records exact approvals and gates.
 The [completed Sprint 7 plan](docs/exec-plans/completed/sprint-7.md) records exact scoped authority,
@@ -169,7 +172,7 @@ not a production deployment. Acceptance does not authorize live operations.
 No production Terraform, finding/exception mutation API, remediation execution,
 distributed worker, or AI runtime exists yet. AWS resources are never modified. See
 [known limitations](docs/operations/known-limitations.md) before production use.
-Local 8A appends proposals, human approval/rejection/revocation and paired audit only, through
+Accepted 8A appends proposals, human approval/rejection/revocation and paired audit only, through
 normal bearer APIs. It preserves findings, technical results, scanner read-only credentials,
 profiles/defaults and the read-only dashboard. See [remediation operations](docs/operations/remediation.md).
 
@@ -215,7 +218,7 @@ profiles/defaults and the read-only dashboard. See [remediation operations](docs
 │   ├── database/            # Validation, transactions, persistence, and governance
 │   ├── logging/             # Central logging configuration
 │   ├── models/              # SQLAlchemy history and lifecycle records
-│   ├── remediation/         # Local 8A proposal contracts/provenance; no execution handler
+│   ├── remediation/         # Accepted 8A proposal contracts/provenance; no execution handler
 │   ├── rules/               # Deterministic technical controls
 │   ├── schemas/             # Inventory, persistence, and HTTP contracts
 │   ├── security/            # Authentication and capability policy
@@ -407,8 +410,8 @@ requires migration `20260924_0004`.
 The local 6F.1 release also adds `20261001_0005` for unresolved relationship persistence;
 apply current migrations only to an explicitly authorized environment. See
 [persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
-Accepted 6G adds `20261001_0006` for the governance category; it remains the accepted-main head
-after Sprint 7. Local 8A adds `20261006_0007`, pending delivery/acceptance. Apply migrations only in
+Accepted 6G adds `20261001_0006` for the governance category; it was the head after Sprint 7.
+Accepted 8A adds the current repository head `20261006_0007`. Apply migrations only in
 an explicitly authorized environment; populated downgrade across 0007 is blocked before DDL.
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog

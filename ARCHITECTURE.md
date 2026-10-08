@@ -1,8 +1,8 @@
 # Architecture
 
-This document describes accepted Sprints 0--7 and the local, not-yet-accepted Sprint 8A extension
-below. The accepted baseline is `main` commit `20c04665f89ae8c8cf9348603fd54e0e100b6076`
-(documentation reconciliation PR #52; merged-main CI 37354537175), after the Sprint 5
+This document describes accepted Sprints 0--7 and the accepted Sprint 8A extension
+below. The accepted baseline is `main` commit `691d8814c785feafc0d9d3b3b43d7d1af89542a0`
+(8A PR #53; exact-commit independent review and merged-main CI 37693245169), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
@@ -280,8 +280,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20260915_0003  shared source-outcome and relationship evidence graph
     -> 20260924_0004  immutable extended policy and execution-contract storage
     -> 20261001_0005  unresolved regional relationship preservation
-    -> 20261001_0006  additive governance category (accepted-main head)
-    -> 20261006_0007  append-only remediation authority (local 8A head, pending acceptance)
+    -> 20261001_0006  additive governance category (accepted predecessor)
+    -> 20261006_0007  append-only remediation authority (accepted-main head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -515,11 +515,18 @@ ADMIN     -> READ, PROPOSE, APPROVE, EXECUTE
 ```
 
 Current read routes require `READ`; scan creation requires `EXECUTE`, so only `ADMIN` can start a
-scan. Local 8A proposal creation requires `PROPOSE`; approval/rejection/revocation requires
+scan. Accepted 8A proposal creation requires `PROPOSE`; approval/rejection/revocation requires
 `APPROVE`. No finding/exception mutation or remediation execution route exists. Authorization
 remains control-plane-wide, not tenant/account-scoped; see `THREAT_MODEL.md`.
 
-## Sprint 8A remediation authority — local, pending acceptance
+<a name="sprint-8a-remediation-authority--local-pending-acceptance"></a>
+
+## Sprint 8A remediation authority — accepted
+
+The proposal/approval foundation is accepted through PR #53 at
+`691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with exact-commit independent review, both final-head
+CI runs and green exact main CI 37693245169. This is accepted code, not deployment or execution
+authority. The active Sprint 8 plan retains historical receipts and the remaining slice gates.
 
 The generic bearer API calls `RemediationService`, which reads accepted immutable history and
 appends proposal, decision and idempotency records with paired audit events. It has no AWS,
@@ -629,7 +636,8 @@ history, control, finding/exception and source-outcome/relationship reads to the
 Every read re-enters the authenticated bearer API; no direct service/DB shortcut or generic proxy.
 The additive optional `scan_id` UUID filter on resource history uses the existing unique
 `(scan_id, resource_id)` index. Omitting it preserves ordering, pagination, schema and errors.
-Migration head remains `20261001_0006`; no model, catalog, profile or dependency changes.
+At 7C acceptance, migration head was `20261001_0006`; 7C introduced no migration, model,
+catalog, profile or dependency changes. The current accepted head is recorded in the chain above.
 
 The React client loads 25-row lists and details on demand. It binds historical assessment,
 profile/control versions, definition checksum, evidence and snapshot IDs to the selected scan.
@@ -688,8 +696,8 @@ workload-role configuration remain deployment responsibilities.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
   NIST mapped-subset context. Whole-Sprint-7 acceptance is COMPLETE with scoped offline evidence.
   Production setup remains unimplemented.
-- No Terraform deployment, remediation execution or AI runtime. Local 8A authority records/API
-  passed repaired-tree independent review but remain pending exact-commit delivery and acceptance;
+- No Terraform deployment, remediation execution or AI runtime. Accepted 8A authority records/API
+  passed exact-commit independent review and delivery/main-CI gates through PR #53;
   no remediation dashboard or worker is added.
 
 Operational detail and required follow-up are recorded in

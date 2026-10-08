@@ -4,10 +4,13 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-07
-Accepted baseline: `main` at `20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation reconciliation PR #52;
-Sprints 0--7 accepted, including exact-scan READ reporting, opt-in authenticated investigation,
-retained NIST technical context and whole-sprint acceptance; catalog `0.13.0` and migration
-`20261001_0006` are unchanged; exact-head review, both final-head CI and merged-main CI passed).
+Accepted baseline: `main` at `691d8814c785feafc0d9d3b3b43d7d1af89542a0` (Sprint 8A PR #53;
+Sprints 0--7 and the 8A proposal/approval foundation accepted; catalog `0.13.0` and the
+five-control default are unchanged; migration head is `20261006_0007`). Exact-commit review,
+both final-head CI runs and exact merged-main CI 37693245169 passed. Sprint 8 remains IN PROGRESS;
+8A documentary closeout is in progress before any 8B preflight.
+Prior accepted baseline: `20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation PR #52;
+Sprints 0--7 COMPLETE, migration `20261001_0006`, green main CI 37354537175).
 Prior 7D documentary checkpoint: `main` at
 `9927b768f8d3cbc1ffa958c50262eef18271da13` (PR #49; green merged-main CI).
 7E implementation was accepted through PR #50 at `7998e12786b817aa6de3abd63b37d22b5c4a99b6`.
@@ -259,7 +262,7 @@ at that closeout; the subsequent approved 7A start is recorded below.
 ## Completed: Sprint 7 — Dashboard / NIST Technical Posture
 
 All slices 7A--7E are COMPLETE, including whole-sprint review and documentary closeout through
-PR #50/#51 with green final merged-main CI. Sprint 8 is NEXT only, not started.
+PR #50/#51 with green final merged-main CI. At that closeout, Sprint 8 was NEXT only, not started.
 The dated history below preserves the original preparation, approvals, failures and gates.
 Its superseded IN PROGRESS/PLANNED/pending statements describe those checkpoints, not current status.
 
@@ -762,6 +765,41 @@ IAM/secret change, production operation or Sprint 9+ work is authorized. Later s
 require analysis preflight; unresolved architecture/design choices must be presented before
 implementation. The active plan records exact review, application-smoke limitations and scope.
 8A and Sprint 8 remain IN PROGRESS; 8B--8E remain PLANNED until their entry gates pass.
+
+### 8A accepted implementation and documentary closeout — 2026-10-07
+
+**8A is COMPLETE** as accepted proposal/approval code through
+[PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53), ordinarily merged at
+`691d8814c785feafc0d9d3b3b43d7d1af89542a0`. Independent exact-commit REVIEW_PASS covers
+`df5e8576a6621e6bcdb1d6efc4e460dc239f0c16` with no actionable findings; both initial MEDIUM
+findings remain independently closed. The merge has the expected baseline/feature parents and
+the exact reviewed tree. The user specifically approved the public push/PR; standing approval
+covered the guarded ordinary merge, without bypass, force-push or branch deletion.
+
+[Push CI 37690504169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37690504169),
+[PR CI 37690509162](https://github.com/jnc247s/cloud-security-automation/actions/runs/37690509162)
+and [exact main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169)
+each passed 2,900 backend tests, including 352 PostgreSQL cases, 130 frontend units, all 74 browser
+checks (37 Chromium, 37 Firefox), quality checks and the image build; no skips. Each full backend
+run retained 19 existing SQLite adapter warnings. Main regression took 928.72s.
+Migration head is `20261006_0007`; existing migrations, controls, profile/catalog defaults,
+authentication, finding/technical lifecycles and scanner read-only access are unchanged.
+
+This supersedes the earlier current-state 8A pending statements, not their historical receipts.
+The `codex/sprint-8a-closeout` branch reconciles owner documents, the active plan and the
+stage-specific progress-contract test with this accepted code. Its validation/review/publication/
+CI/merge/main-CI gates remain pending before 8B preflight. The Sprint 8 plan stays active,
+Sprint 8 IN PROGRESS and 8B--8E PLANNED.
+No execution handler, writer credentials, rescan, dashboard mutation, live operation or Sprint 9+
+work is introduced. Existing worktrees/branches and unrelated parent `.agents/` files are preserved.
+
+The first closeout head `1df1aef` is published in PR #54, not merged. PR CI passed, but push
+CI 37698569530 failed one existing Chromium return-to-sign-in assertion (73/74 browser checks).
+The failure is not waived. A bounded test-only synchronization/diagnostic repair observes current
+refresh 401 and explicit signed-out session recovery, preserving all security/data-clearing
+assertions, timeouts and zero retries. Its fresh validation/review/new-head CI/merge/main-CI gates
+remain pending. No application defect is claimed reproduced or fixed; 8B preflight has not begun.
+See the active plan's first-head CI and repair receipt for evidence and limitations.
 
 ## Status vocabulary
 

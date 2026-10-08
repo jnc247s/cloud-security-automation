@@ -7,10 +7,12 @@ omitting it preserves the accepted contract. The browser never reads PostgreSQL 
 control versions, evidence digests, source artifacts and directional relationships on SQLite
 and disposable PostgreSQL, keeping current findings/exceptions separate from historical facts.
 Sprint 7 and its documentary closeout are COMPLETE through PR #50/#51 with green final main CI.
-No Sprint 7 schema or migration change was introduced; accepted-main head remains `20261001_0006`.
+No Sprint 7 schema or migration change was introduced; its closeout head was `20261001_0006`.
 See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
-Local Sprint 8A adds `20261006_0007` below, pending exact-commit delivery and acceptance; current
-authorization/status belongs to ROADMAP and the active Sprint 8 plan.
+Accepted Sprint 8A adds current repository head `20261006_0007` below, through PR #53 with
+exact-commit independent review, both final-head CI and green exact main CI 37693245169.
+Current authorization/status belongs to ROADMAP and the active Sprint 8 plan; this is not
+authorization to migrate a deployed database.
 
 Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
@@ -475,7 +477,9 @@ The migration-installed history guards protect audit rows from ordinary updates 
 Audit metadata, evidence, and normalized configurations can still contain sensitive infrastructure
 or organizational information; protect database access and backups accordingly.
 
-## Sprint 8A remediation authority — local, pending acceptance
+<a name="sprint-8a-remediation-authority--local-pending-acceptance"></a>
+
+## Sprint 8A remediation authority — accepted
 
 Revision `20261006_0007` adds three append-only tables; it does not alter existing assessment,
 snapshot, finding or exception contents:
@@ -521,7 +525,8 @@ Governance checks bind sorted append-only finding event IDs through the existing
 No maximum-timestamp shortcut is used: equal-time or reversible status changes cannot renew old
 authority. No schema migration is needed. Pre-repair unaccepted local proposals keep their
 original content/digest but derive STALE_GOVERNANCE; create reviewed new intent instead of
-rewriting immutable rows. Accepted main has no remediation proposal data.
+rewriting immutable rows. The pre-8A accepted 0006 baseline had no remediation tables;
+code acceptance does not establish the migration or data state of any deployed database.
 
 Constraints/guards enforce basic stored integrity, not complete service eligibility or a paired
 audit for every privileged direct INSERT. Database/schema operators remain trusted. Scope writes
@@ -535,8 +540,8 @@ recovery or an explicitly authorized verified backup restoration.
 
 ## Migrations and startup
 
-The initial canonical revision is `20260903_0001`; the accepted-main head is `20261001_0006` and
-the pending local 8A head is `20261006_0007`. All schema
+The initial canonical revision is `20260903_0001`; the accepted repository head is
+`20261006_0007`, following unchanged predecessor `20261001_0006`. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
 

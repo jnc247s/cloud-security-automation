@@ -12,7 +12,10 @@ The documentary closeout is accepted through
 [PR #51](https://github.com/jnc247s/cloud-security-automation/pull/51), with exact-head review,
 both green final-head CI runs and green
 [final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
-All 7A--7E states are COMPLETE and the plan is archived; Sprint 8 is NEXT only.
+All 7A--7E states are COMPLETE and the plan is archived. Sprint 8 was NEXT at that closeout;
+it is now IN PROGRESS with accepted 8A bearer proposal/decision APIs through PR #53.
+The dashboard remains READ-only and does not proxy those routes; execution, verification scans
+and browser mutations remain later bounded slices under the active Sprint 8 plan.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
@@ -161,6 +164,10 @@ then runs full regression and container gates and removes only that created data
 It never reuses an operator database. The browser fixture is test-only and excluded from the image.
 Browser traces/videos/screenshots are disabled for automated authenticated journeys to avoid
 retaining credentials/evidence. A separately requested local visual check must use synthetic data.
+The combined expiry journey logs only sanitized boundary labels, response codes, an authenticated
+boolean and sign-in button counts. It observes a current-refresh 401 and explicit signed-out
+session recovery before checking Sign in; these diagnostics never contain headers, cookies,
+URLs, identities, CSRF tokens or evidence payloads.
 For 7C include focused `tests/unit/services/test_investigation_history.py`,
 `tests/api/test_dashboard_investigation_api.py` and `tests/integration/test_investigation_postgres.py`.
 The browser suite covers retained history/proofs/relationships/current exceptions across the

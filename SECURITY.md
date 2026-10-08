@@ -1,9 +1,10 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--7 and local
-Sprint 8A authority below, pending acceptance. The accepted `main` baseline is
-`20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation reconciliation PR #52;
-merged-main CI 37354537175 passed). That baseline includes the versioned assessment
+This document defines permanent repository security rules for accepted Sprints 0--7 and
+Sprint 8A authority below. The accepted `main` baseline is
+`691d8814c785feafc0d9d3b3b43d7d1af89542a0` (8A PR #53;
+exact-commit independent review, both final-head CI and main CI 37693245169 passed).
+That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -93,7 +94,7 @@ intentionally unauthenticated. They must not return secrets or resource evidence
 | `ADMIN` | `READ`, `PROPOSE`, `APPROVE`, `EXECUTE` |
 
 Current query endpoints—including source-outcome/artifact and resource-relationship reads—require
-`READ`; `POST /api/v1/scans` requires `EXECUTE`, which only `ADMIN` currently holds. Local 8A
+`READ`; `POST /api/v1/scans` requires `EXECUTE`, which only `ADMIN` currently holds. Accepted 8A
 `POST /api/v1/remediations` requires `PROPOSE`; its decision and revocation routes require
 `APPROVE`. Roles and scan authorization are unchanged. Do not collapse the four capabilities
 into a generic administrator permission.
@@ -410,7 +411,7 @@ Subsequent approvals and gates accepted 7B/7C/7D and 7E whole-sprint acceptance;
 COMPLETE. 7E adds tests/documentation and restores normal Firefox isolation only in the pinned
 test launcher; application headers/authentication, dependencies, timeouts and all assertions are
 unchanged. No live IdP/AWS/IAM/secret/deployment/remediation operation is authorized by acceptance.
-At that historical closeout Sprint 8 was NEXT. Its subsequent bounded local 8A authorization and
+At that historical closeout Sprint 8 was NEXT. Its subsequent bounded accepted 8A scope and
 current status are recorded in ROADMAP and the active Sprint 8 plan; live-operation authority
 remains separate and absent.
 
@@ -420,7 +421,9 @@ changes, and never edit a stored version or rewrite scan references. Pending sca
 their persisted profile rather than current environment policy, so a restart cannot silently
 change an accepted assessment definition.
 
-## Sprint 8A authority — local, pending acceptance
+<a name="sprint-8a-authority--local-pending-acceptance"></a>
+
+## Sprint 8A authority — accepted
 
 The approved 8A boundary persists intent and human decisions only. There is no execution handler,
 writer credential setting/acquisition, worker submission, automatic rescan or browser mutation.
