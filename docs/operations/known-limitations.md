@@ -1,6 +1,6 @@
 # Current known limitations
 
-This register records accepted Sprints 0--7 and accepted Sprint 8A implementation reality, including
+This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1 implementation reality, including
 the shared evidence graph, evidence producers, and opt-in production controls. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
@@ -41,8 +41,8 @@ attempts, linked rescan or
 automatic finding resolution are implemented. See [remediation operations](remediation.md).
 
 Three distinct verified issuer/subject identities are the approved end-state human separation;
-8A enforces proposer versus initial approver/rejector, including ADMIN. The third execution
-requester path is not present. IdP governance, not subject inequality alone, must prevent one
+8A enforces proposer versus initial approver/rejector, including ADMIN; accepted 8B1 adds the third
+requester for database admission only. IdP governance, not subject inequality alone, must prevent one
 physical person controlling all identities. Development's fixed identity cannot self-approve.
 All readers still share one trust domain with access to persisted accounts; filters are not
 tenant/account authorization. No live IdP or production configuration has been validated.
@@ -58,8 +58,8 @@ pre-repair local proposals require new intent. The unchanged repaired tree recei
 both original findings closed, no new findings and 156 independent tests passed, including 65
 disposable PostgreSQL cases, without skips. Exact-commit review/delivery subsequently passed; main
 CI passed 2,900 backend tests, 130 frontend units, 74 Chromium/Firefox checks and the image build.
-The documentation/progress-contract closeout must clear its gates before 8B preflight. The subsequent
-standing workflow approval covers routine delivery, not architectural/design decisions or live
+The 8A documentary closeout subsequently passed through PR #54; 8B1 admission is accepted below.
+Standing workflow approval covers routine delivery, not architectural/design decisions or live
 AWS/production operations; the active plan records the boundaries and preserved failed review.
 The user's scan-picker/back-navigation report remains untriaged; passing controlled-browser CI
 does not reproduce or repair that report. Revisit it at 8D preflight without silently adding a
@@ -72,14 +72,17 @@ before any DDL across the complete path, even when only a new audit event exists
 a verified backup, quiesced writers and separate authorization; do not remove immutable history
 to make rollback possible. Existing accepted migration safeguards remain in force.
 
-### Approved local 8B1 admission — pending acceptance
+<a name="approved-local-8b1-admission--pending-acceptance"></a>
 
-8A's absent third-requester limitation is addressed only in this local candidate: EXECUTE can
+### Accepted 8B1 admission
+
+8A's absent third-requester limitation is addressed by accepted 8B1: EXECUTE can
 record a distinct third-human request and READ can inspect it. Default-off scope, retained-state
 validation, five-minute grant, immutable paired journal/audit and guard-first reservation limits
 are not live AWS readiness or effect. No worker, write credentials, live preconditions, WRITE_INTENT,
 unknown-effect recovery/quarantine, exact-policy rescan or dashboard mutation is implemented.
-Candidate head 0008 is not yet accepted or deployed. Independent review and delivery remain gates.
+Head 0008 is accepted through PR #55, exact-commit review, both final-head CI and main CI
+37726113041. This is not deployment or live AWS validation.
 
 READ/replay never reaps expired/revoked requests; a later successful admission can terminally
 journal and release only validated no-dispatch QUEUED history. Failed admission rolls this back.

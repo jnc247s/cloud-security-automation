@@ -3,16 +3,17 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-07
-Accepted baseline: `main` at `24dbda32a0babcffff9698ece4a46c406690ef8e` (Sprint 8A closeout
-PR #54; exact-commit independent review, both repaired final-head CI runs and exact merged-main
-CI 37706030374 passed). Sprints 0--7 and the 8A proposal/approval foundation and documentary
-closeout are accepted; catalog `0.13.0`, the five-control default and migration head
-`20261006_0007` are unchanged at the accepted baseline. Sprint 8 remains IN PROGRESS. The user
-approved the [8B execution design](docs/sprint-8b-preflight.md) and starting 8B1 on 2026-10-07.
-8B is IN PROGRESS through bounded 8B1 execution admission/journal only, without a worker, AWS calls
-or write credentials. 8B2/8B3 and 8C--8E remain PLANNED. Implementation acceptance, exact review/CI/
-guarded merge/main-CI gates remain outstanding; no new schema is accepted or deployed yet.
+Last verified: 2026-10-08
+Accepted baseline: `main` at `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (Sprint 8B1 PR #55;
+exact-commit independent REVIEW_PASS, both final-head CI runs and exact merged-main
+CI 37726113041 passed). Sprints 0--7, 8A and 8B1 admission/journal are accepted; migration head is
+`20261007_0008`. Catalog `0.13.0` and the five-control default are unchanged. Sprint 8 and 8B remain
+IN PROGRESS; 8B2/8B3 and 8C--8E remain PLANNED. No worker, AWS calls, write credentials, rescan or
+dashboard mutation is implemented or authorized by 8B1 acceptance. This documentary reconciliation
+must clear its own validation/review/delivery gates before the next slice advances.
+The approved [8B design](docs/sprint-8b-preflight.md) and active plan retain the bounded authority.
+Prior accepted 8A documentary closeout: `24dbda32a0babcffff9698ece4a46c406690ef8e`
+(PR #54; exact merged-main CI 37706030374 passed; migration `20261006_0007`).
 Prior accepted 8A implementation: `691d8814c785feafc0d9d3b3b43d7d1af89542a0` (PR #53;
 exact-commit review, both final-head CI runs and exact merged-main CI 37693245169 passed).
 Prior accepted baseline: `20c04665f89ae8c8cf9348603fd54e0e100b6076` (documentation PR #52;
@@ -830,6 +831,38 @@ Clean local main was normally fast-forwarded to the accepted merge; the scoped
 8B--8E implementation PLANNED. No 8B worker/API/schema implementation, writer credential,
 verification scan, dashboard mutation, live operation or Sprint 9+ work has begun. Existing
 branches/worktrees and unrelated parent `.agents/` files remain preserved and excluded.
+
+### 8B1 accepted execution admission and documentary closeout — 2026-10-07
+
+**8B1 is COMPLETE** as admission-only code through
+[PR #55](https://github.com/jnc247s/cloud-security-automation/pull/55), ordinarily merged at
+`0c6005827ae765fe2b2669e4f503af6ca58cdc15`. Exact-commit REVIEW_PASS covers
+`7c3633557cc3d15ccedf3635297f22c58172e000`, with no actionable findings and all 40 fingerprints
+unchanged. The merge retains reviewed tree `1a01c9198220cc7d7efc054efe6826c70685a8f5` and exactly
+the accepted 8A closeout and reviewed feature parents. The standing routine workflow approval
+covered publication and the expected-head guarded ordinary merge, with no bypass or deletion.
+
+[Push CI 37724540662](https://github.com/jnc247s/cloud-security-automation/actions/runs/37724540662),
+[PR CI 37724587400](https://github.com/jnc247s/cloud-security-automation/actions/runs/37724587400)
+and [exact main CI 37726113041](https://github.com/jnc247s/cloud-security-automation/actions/runs/37726113041)
+each passed 3,018 backend tests, including all 397 PostgreSQL cases, no skips and 19 existing SQLite
+warnings; 133 frontend tests/seven files; all 74 browser journeys (37 Chromium, 37 Firefox, zero
+retries); quality/image/cleanup gates. Backend times were 801.81s, 772.66s and 1171.85s.
+
+Accepted migration `20261007_0008` adds execution intent/journal, paired audit and protected
+coordination without rewriting prior migrations or authority. Current EXECUTE, three distinct
+verified identities, default-off explicit scope, five-minute expiry, nonrenewing replay, fresh
+retained-state checks and guard-first one-per-proposal/target/32-global admission are preserved.
+Only no-dispatch QUEUED history can be terminally released. Findings/technical results, scanner
+read-only credentials, authentication, catalogs/profiles and dashboard behavior are unchanged.
+
+This separate documentation/progress-contract reconciliation records accepted code, not a new
+runtime feature or deployment. Its local/full/review/CI/merge/main gates remain pending at entry;
+the active Sprint 8 plan stays active, Sprint 8/8B IN PROGRESS and 8B2/8B3/8C--8E PLANNED.
+Original predictions, failed runs, root's truncated local-summary limit, the reviewer's initial
+native temporary-folder failure, local Firefox limitation and untriaged scan-picker/navigation
+report remain preserved. No user database, existing branch/worktree or unrelated `.agents/` data
+was removed. No AWS execution, credential acquisition, IAM/secret/deployment or Sprint 9+ work.
 
 ## Status vocabulary
 

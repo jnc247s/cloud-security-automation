@@ -671,7 +671,7 @@ independent review when the completed 8B1 candidate is ready; no delegation is s
 
 | Bounded implementation | State | Scope |
 | --- | --- | --- |
-| 8B1 | IN PROGRESS | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
+| 8B1 | COMPLETE | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
 | 8B2 | PLANNED | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
 | 8B3 | PLANNED | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
 
@@ -789,3 +789,112 @@ execution journal types. Future worker phases require atomic model/migration/API
 validation; this admission-only version fails closed on unsupported history rather than releasing
 a possible-effect reservation. Database operators/direct INSERT and physical-human governance,
 shared READ trust domain, no fleet-scale/rate-limit guarantee and no live provider validation remain.
+
+### 8B1 independent review and delivery acceptance — 2026-10-07
+
+The existing authorized read-only reviewer returned REVIEW_PASS with no findings for exact commit
+`7c3633557cc3d15ccedf3635297f22c58172e000`, parent `24dbda32a0babcffff9698ece4a46c406690ef8e` and
+tree `1a01c9198220cc7d7efc054efe6826c70685a8f5`. All 40 committed/working-file fingerprints stayed
+unchanged; worktree/index remained clean. Independent checks passed 195 focused SQLite/config/
+migration/signed-HTTP/security/contracts in 51.14s, 47 disposable PostgreSQL admission/predecessor-
+writer checks in 143.26s, 18 caller-ownership probes and four database-guard negatives, plus
+Ruff/402-file format/whitespace. The first native focused run failed temporary-folder permissions
+and is not a passing receipt; its unchanged fresh selection subsequently passed. Full regression,
+image, frontend and browsers were inspected root receipts, not independently rerun. The reviewer
+removed only its disposable container and three owned directories, without repo edits.
+
+[PR #55](https://github.com/jnc247s/cloud-security-automation/pull/55) published the exact reviewed
+commit under standing routine approval. The integration lacked PR-creation permission; the
+already connected authorized GitHub CLI created the same scoped PR instead. No protection was
+bypassed. A first merge guard stopped before mutation because an overly broad frontend-receipt
+match also found a timestamp; exact normalized Tests summaries confirmed 133 in each run.
+
+| Exact CI input | Backend receipt | Other required gates |
+| --- | --- | --- |
+| [Push 37724540662](https://github.com/jnc247s/cloud-security-automation/actions/runs/37724540662), reviewed `7c36335` | 3,018 passed in 801.81s | 133 frontend/seven files, 74 browser journeys, quality/image/cleanup passed |
+| [PR 37724587400](https://github.com/jnc247s/cloud-security-automation/actions/runs/37724587400), reviewed `7c36335` | 3,018 passed in 772.66s | 133 frontend/seven files, 74 browser journeys, quality/image/cleanup passed |
+| [Main 37726113041](https://github.com/jnc247s/cloud-security-automation/actions/runs/37726113041), merge `0c60058` | 3,018 passed in 1171.85s | 133 frontend/seven files, 74 browser journeys, quality/image/cleanup passed |
+
+Each run includes all 397 PostgreSQL cases, no skips, 19 existing SQLite warnings, 37 Chromium/
+37 Firefox journeys and zero retries. Linux CI is not live IdP/AWS/production coverage and does not
+waive the local Firefox or scan-picker/navigation limitations. Existing CI warnings remain.
+
+The ordinary expected-head guarded merge completed at 2026-10-08T04:09:19Z, retaining exactly
+parents `[24dbda3, 7c36335]` and the reviewed tree at
+`0c6005827ae765fe2b2669e4f503af6ca58cdc15`. Exact-main CI finished 2026-10-08T04:33:38Z.
+Remote refs preserve the feature branch; all existing worktrees/branches and parent `.agents/`
+files remain. 8B1 admission is accepted, not AWS execution or whole-sprint completion.
+
+The separate `codex/sprint-8b1-closeout` reconciliation updates current owner status and its
+progress-contract assertion only. Original predictions, implementation differences and all
+failed/limited receipts remain intact. This closeout's validation/exact-review/publication/CI/
+ordinary merge/exact-main gates are pending at entry, before any later slice advances.
+Sprint 8/8B remain IN PROGRESS; 8B2/8B3 and 8C--8E PLANNED; Sprint 9+ unstarted. No new worker,
+credentials, AWS calls, rescan, dashboard mutation, schema/runtime or live-operation change.
+
+### 8B1 documentary closeout local validation — 2026-10-08
+
+The bounded candidate changes twelve owner documents and one progress-contract test, not app,
+Alembic, frontend, scripts or dependency sources. The assertion now requires accepted B1 COMPLETE
+in the active plan and ROADMAP, while retaining all protected/later-slice checks. Eight renamed
+8B1 headings retain their former fragment IDs exactly once; explicit anchors have no duplicates.
+Current T20 distinguishes absent per-actor quotas from the implemented global capacity limit.
+
+| Local gate | Observed outcome |
+| --- | --- |
+| Focused contracts/configuration | 109 passed in 0.52s |
+| Ruff check and format check | Passed; 402 files already formatted |
+| Full regression with harness-owned TEST_DATABASE_URL | 3,018 passed in 1159.83s, including all 397 PostgreSQL cases; no skips, 19 existing SQLite warnings |
+| Whitespace and Compose configuration | Passed; no Compose services started |
+| API image build | Passed |
+| Owner readback and fragment compatibility | Passed for the bounded changes and eight renamed fragments |
+
+The validation script completed every source/quality/container gate and removed its owned
+disposable database. The outer PowerShell wrapper nevertheless exited 1: its final temp guard
+rejected every reparse-point attribute, including OneDrive Cloud E metadata. This wrapper failure
+is retained, not reported as exit 0 or a failed test assertion. Read-only checks identified the
+exact generated UUID folder and creation time, Cloud E tag 0x9000E01A without name surrogacy,
+and no real descendant links. The Windows handle-resolved final path matched that exact workspace
+folder. Separate narrowly scoped cleanup then exited 0 and removed only those generated fixtures.
+[Microsoft's tag definition](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c8e77b37-3909-4fe6-a4ea-2b9d423b1ee4)
+identifies this tag as Cloud Files metadata, not a symlink/junction. No OneDrive configuration
+was changed or filesystem tag stripped to force cleanup. No user data, existing database,
+branch or worktree was modified or deleted.
+
+All thirteen source fingerprints were identical throughout the targeted/full/quality/image run
+and cleanup. Only this Markdown receipt, verification dates and the per-actor quota clarification
+are edited afterward; no runtime, schema or test code changes after full regression. Recheck
+contracts/configuration, quality/whitespace and unchanged remaining fingerprints before the
+scoped commit and exact review by the existing authorized reviewer. Original predictions,
+unsuccessful/limited receipts and existing warnings remain preserved. This is local validation,
+not documentary acceptance; publication and exact-head/main CI remain gates. No local browser
+pass or live provider coverage is claimed; frontend source is unchanged and Linux CI is required.
+
+Git at this receipt: codex/sprint-8b1-closeout, HEAD remains accepted 0c60058; thirteen files are
+unstaged/uncommitted. 8A/B1 are COMPLETE; Sprint 8/8B IN PROGRESS; 8B2/8B3/8C--8E PLANNED.
+No new reviewer, AWS worker, write credentials, live operation or Sprint 9+ work was started.
+
+### 8B1 documentary closeout review corrections — 2026-10-08
+
+The existing read-only reviewer returned REVIEW_FAIL for frozen closeout commit
+`c933a1924cc0204a10678cafe40aab6a0c84aa05`, tree
+`2247c506d8db4444a5d2fb5fdb869ffd3690f6ef`, with two LOW owner inconsistencies and no
+CRITICAL/HIGH/MEDIUM findings. The current architecture migration chain omitted accepted 0008;
+the runbook still named 0007 and unqualifiedly described accepted 8B1 delivery gates as pending.
+These findings are retained, not treated as approval. The bounded repair extends the current
+chain through 0008, updates the runbook head and scopes its remaining gates to this documentary
+closeout. Earlier revisions, predictions, receipts and compatibility anchors remain unchanged.
+
+Independent checks before repair passed 109 contracts/configuration tests in 0.38s, Ruff,
+402-file formatting and commit whitespace. All eight renamed fragments and six earlier anchors
+were preserved without duplicate explicit anchors; all thirteen fingerprints remained unchanged
+and committed blobs matched working files. Read-only metadata verified PR #55 and its three
+successful exact-input CI runs. Full regression, PostgreSQL, image and browser totals were
+inspected root receipts, not independent reruns. No reviewer edits, database use, publication
+or live operations occurred.
+
+Only these three Markdown files change after the first review. Recheck contracts/configuration,
+quality/whitespace and the remaining ten fingerprints, commit the bounded correction without
+rewriting the failed-review commit, and obtain a fresh exact-commit review from the same reviewer.
+Both exact-head CI runs and guarded merge/exact-main CI remain mandatory before this closeout
+is accepted or any later slice advances. No runtime, migration, test or security-design change.

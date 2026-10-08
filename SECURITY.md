@@ -1,10 +1,10 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7 and
-Sprint 8A authority below. The accepted `main` baseline is
-`24dbda32a0babcffff9698ece4a46c406690ef8e` (8A documentary closeout PR #54;
-exact-commit independent review, both repaired final-head CI and main CI 37706030374 passed).
-The approved local 8B1 admission candidate below is pending acceptance, not deployed authority.
+Sprint 8A/8B1 authority below. The accepted `main` baseline is
+`0c6005827ae765fe2b2669e4f503af6ca58cdc15` (8B1 admission PR #55;
+exact-commit independent review, both final-head CI and main CI 37726113041 passed).
+Accepted 8B1 database admission is not deployment or AWS execution authority.
 That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -468,7 +468,9 @@ See [API](docs/api.md), [operations](docs/operations/remediation.md) and the act
 contracts and remaining acceptance gates. Local validation is not live IdP, AWS or production
 validation and grants no operational authorization.
 
-## Sprint 8B1 admission boundary — approved local candidate, pending acceptance
+<a name="sprint-8b1-admission-boundary--approved-local-candidate-pending-acceptance"></a>
+
+## Sprint 8B1 admission boundary — accepted
 
 Admission-only POST requires current EXECUTE and a third distinct verified issuer/subject pair;
 ADMIN cannot bypass proposer/approver separation. READ history uses the existing shared trust

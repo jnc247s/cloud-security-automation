@@ -1,15 +1,15 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7 and accepted 8A authority
-Accepted baseline: `main` commit `24dbda32a0babcffff9698ece4a46c406690ef8e` (8A closeout PR #54)
-Last reconciled: 2026-10-07; exact merged-main CI 37706030374 passed
-Approved local 8B1 admission candidate below is pending acceptance, not deployment or AWS execution.
+Status: living model for accepted Sprints 0--7 and accepted 8A/8B1 authority
+Accepted baseline: `main` commit `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (8B1 admission PR #55)
+Last reconciled: 2026-10-08; exact merged-main CI 37726113041 passed
+Accepted 8B1 is database admission, not deployment or AWS execution.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
 test-launch isolation repair change no application runtime or security boundary. Original
 navigation/security assertions, COOP and other headers, dependencies, timeouts and zero retries
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
-and merged-main CI passed. Current Sprint 8 status and accepted 8A scope are owned
+and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1 scope are owned
 by ROADMAP and the active plan; remediation execution remains unimplemented and risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
@@ -259,9 +259,11 @@ and runtime workload identity are supplied by the deployment environment.
 | T17 | Browser token/code theft, XSS and evidence caching | High | Accepted 7B: opaque HttpOnly host-only cookies; server-only tokens; scoped CSP/no-store/no-referrer including unexpected 500s; text-only metadata rendering; clean callback redirect and error-path access-log query removal; identity-client debug redaction; no Web Storage/offline cache/third-party assets | Controlled-issuer acceptance only; live setup unvalidated. HttpOnly does not prevent malicious same-origin scripts making reads. Ingress must also omit callback queries; process memory and browser extensions remain trusted |
 | T18 | Login CSRF, code/session substitution and logout bypass | High | Accepted 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Controlled-issuer acceptance only; live setup unvalidated. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
 | T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B/7C: explicit typed bounded scan/report/investigation GET allowlist through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
-| T20 | Remediation intent substitution, self-approval, stale authority or duplicate decisions | High | Accepted 8A: closed single-action inputs, immutable digest-bound provenance/KMS context, full verified identity separation without ADMIN bypass, 24-hour lifetime, any newer/equal target-control assessment and append-only finding-history governance invalidation, terminal decisions/revocation, capability-checked idempotency and atomic locked audit writes; READ rejects pending caller changes before SQL and suppresses autoflush | Initial review's two MEDIUM governance/caller-ownership defects are independently closed; exact-commit REVIEW_PASS and all PR #53 delivery/main-CI gates passed. IdP roles cannot establish distinct physical humans; no quotas/tenant policy. Stored checks are not live AWS checks. No execution authority path, write identity, worker recovery or verification scan exists yet |
+| T20 | Remediation intent substitution, self-approval, stale authority or duplicate decisions | High | Accepted 8A: closed single-action inputs, immutable digest-bound provenance/KMS context, full verified identity separation without ADMIN bypass, 24-hour lifetime, any newer/equal target-control assessment and append-only finding-history governance invalidation, terminal decisions/revocation, capability-checked idempotency and atomic locked audit writes; READ rejects pending caller changes before SQL and suppresses autoflush | Initial review's two MEDIUM governance/caller-ownership defects are independently closed; exact-commit REVIEW_PASS and all PR #53 delivery/main-CI gates passed. IdP roles cannot establish distinct physical humans; no per-actor quotas/tenant policy. Stored checks are not live AWS checks. Accepted 8B1 adds database admission only; no AWS dispatch, write identity, worker recovery or verification scan exists yet |
 
-## Approved local 8B1 admission boundary — pending acceptance
+<a name="approved-local-8b1-admission-boundary--pending-acceptance"></a>
+
+## Accepted 8B1 admission boundary
 
 8B1 extends T02/T20 with current EXECUTE and third-human full-identity separation, exact approval
 and retained-state revalidation, default-off explicit account/Region scope and a five-minute grant
@@ -270,12 +272,13 @@ linked journal/audit and guard-first serialized coordination constrain duplicate
 enforce one per proposal/target and 32 globally. Identical authorized retries never renew authority.
 Only validated no-dispatch QUEUED history can release a reservation after an atomic terminal event.
 READ does not reap; privileged INSERT/schema operators, human-account governance, shared READ trust
-domain and fleet-scale/rate-limit risks remain. Independent review and delivery gates are pending.
+domain and fleet-scale/rate-limit risks remain. Exact-commit review and PR #55 delivery/main-CI
+gates passed; this does not validate or authorize a live provider operation.
 
 8B2's approved design still needs implementation and acceptance: isolated temporary write identity,
 durable WRITE_INTENT before one SDK write, live preconditions without a claimed AWS CAS, unknown-
 effect read-only reconciliation and sticky quarantine. No TTL release/replay after possible effect,
-automatic rollback or fabricated PASS is permitted. This candidate adds none of those AWS paths.
+automatic rollback or fabricated PASS is permitted. Admission adds none of those AWS paths.
 
 ## Future-boundary threats
 
