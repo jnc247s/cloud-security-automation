@@ -17,6 +17,15 @@ failed the protected PostgreSQL downgrade/writer test (1 failed, 3,017 passed). 
 is pending. The user approved a bounded test-only synchronization repair on 2026-10-08;
 no production migration or application change is authorized. The active plan retains the failure,
 repair scope and required fresh acceptance gates. Later slices cannot advance before those pass.
+Repair PR #57 remains unmerged: candidate `c2ef20e` passed backend/review gates and PR CI, but
+push CI 37802803710 failed one protected Chromium session-expiry journey. The failure is retained,
+not waived by the passing companion run. On 2026-10-08 the user approved narrowly diagnosing
+that browser test and a synchronization-only fix if justified. Application authentication/design,
+credentials and later slices remain separately gated; the active plan records the bounded scope.
+The synchronization-only follow-up passed 258 focused and 3,024 full backend checks (all 402
+PostgreSQL cases), 133 frontend units and 37 native Chromium journeys. Native Firefox could not
+launch and is not a passing result. Independent new-commit review, both fresh exact-head Linux
+CI runs and guarded merge/exact-main CI remain required; no later slice advances on local results.
 The approved [8B design](docs/sprint-8b-preflight.md) and active plan retain the bounded authority.
 Prior accepted 8A documentary closeout: `24dbda32a0babcffff9698ece4a46c406690ef8e`
 (PR #54; exact merged-main CI 37706030374 passed; migration `20261006_0007`).

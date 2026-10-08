@@ -979,3 +979,110 @@ application behavior, findings, scanner credentials or security boundary changes
 Git at this receipt: `codex/sprint-8b1-test-synchronization`, HEAD `1478361`, four unstaged files.
 Review/publication/exact-head CI/guarded merge/exact-main CI remain pending. Sprint 8/8B remain
 IN PROGRESS, 8A/B1 COMPLETE, later slices PLANNED, and no Sprint 9+ work or live operation started.
+
+### 8B1 browser gate failure and approved diagnosis — 2026-10-08
+
+Frozen migration-test repair `c2ef20e03f19220016e255e63f4de07a73da4e23`, tree
+`e286fcffd156646be43f729f006f2146aa8822af`, received independent REVIEW_PASS with zero findings.
+The existing reviewer independently passed 158 tests in 32.56s, including 16 PostgreSQL cases
+and all five fresh-schema races, no skips, Ruff/402-file formatting/whitespace, AST snapshot
+equivalence and unchanged fingerprints. Owned database/temp cleanup passed. Root full/image
+receipts were inspected evidence, not independently rerun. [PR #57](https://github.com/jnc247s/cloud-security-automation/pull/57)
+published that exact candidate by an ordinary non-force push and remains OPEN/unmerged.
+
+| Exact final-head run, attempt 1 | Backend and frontend | Browser and remaining gates |
+| --- | --- | --- |
+| [Push 37802803710](https://github.com/jnc247s/cloud-security-automation/actions/runs/37802803710) FAILED | 3,024 passed in 1036.11s; 133 frontend/seven files; quality passed | 1 failed, 73 passed: 36 Chromium/37 Firefox, zero retries; image dependency-skipped; owned database cleanup passed |
+| [PR 37802814292](https://github.com/jnc247s/cloud-security-automation/actions/runs/37802814292) PASSED | 3,024 passed in 1221.79s; 133 frontend/seven files; quality passed | 74 passed: 37 Chromium/37 Firefox, zero retries; image and cleanup passed |
+
+Both backend runs include all 402 PostgreSQL cases, no skips and 19 existing SQLite warnings.
+The push failed `frontend/e2e/nist.spec.ts:170:1`, real session expiry: line 187 did not find the
+exact Sign in button within 5,000ms after test-triggered expiry and an API 401 observation.
+Passing companion CI does not erase that failure. The [public receipt](https://github.com/jnc247s/cloud-security-automation/pull/57#issuecomment-6064047504)
+retains both results, the unresolved response-to-UI recovery boundary and the next approval gate.
+No CI rerun or merge occurred; main remains `1478361` with the earlier PR #56 failure retained.
+
+The user explicitly answered Yes to the proposed narrow browser-test diagnosis and a
+synchronization-only fix if justified on 2026-10-08. This resolves that scope gate, not an
+authentication-design gate. Continue on the clean existing repair branch at `c2ef20e`; preserve
+the two reviewed Python tests unchanged. The only new test source permitted is
+`frontend/e2e/nist.spec.ts`, alongside ROADMAP and this plan. Capture sanitized boundary events,
+diagnose current-versus-superseded reads and session recovery with the existing controlled issuer
+and a uniquely owned disposable test database. Keep all original real-expiry, Sign in,
+NIST-context clearing and old-context 401 assertions. A justified fix may bind waits to the
+current refresh and explicitly verify anonymous session recovery; it may not add retries/skips,
+inflate timeouts or treat a cleared panel/old 401 as completed recovery.
+
+App, session/authentication policy, API/BFF, migrations, dependencies, fixture servers, browser
+configuration and credentials may not change. Any evidence requiring such a change must be
+reported as a separate design/implementation gate. Never read or reuse operator secrets/data,
+stop existing servers or use live AWS/production. Preserve failed/limited receipts and existing
+worktrees/branches and parent `.agents/` files. No new agent; reuse the existing authorized reviewer
+after a completed frozen candidate. Targeted diagnosis/security tests, full backend/PostgreSQL,
+frontend typecheck/lint/unit/build, Chromium/Firefox acceptance, quality/Compose/image, exact
+independent review, both new exact-head CI runs, ordinary guarded merge and exact-main CI remain
+required. 8A/B1 COMPLETE, Sprint 8/8B IN PROGRESS, 8B2+ PLANNED and Sprint 9+ unstarted.
+
+The diagnostic baseline kept the original waits/assertions and passed one native Chromium case
+in 14.7s (journey 1.2s). Sanitized events showed two current 401s, two session requests and two
+200 anonymous recoveries before Sign in appeared. This confirms concurrent rejection/recovery
+activity and an incomplete original synchronization point, not the historical CI failure's exact
+cause or a transient classification. The synchronization-only change binds rejected/recovery
+responses to refresh-started requests and additionally requires recovery status 200 with
+`authenticated=false` before the unchanged Sign in, empty NIST panel and old-context 401 checks.
+It follows the accepted combined-expiry observation contract. No timeout, retry, launch preference,
+cookie, authentication generation or application behavior changed.
+
+The corrected focused Chromium case passed in 10.7s (journey 857ms); typecheck/lint/whitespace
+passed. Both runs used separate uniquely owned loopback/tmpfs databases and native temporary
+output directories; cleanup and wrappers exited 0. Diagnostics expose only boundary labels,
+current-request booleans, status/authenticated booleans and button counts, never URLs, headers,
+cookies, CSRF, identities or evidence. These are focused receipts, not full acceptance. Full
+frontend/native browsers/backend/PostgreSQL/quality/image and exact review/delivery remain gates;
+earlier local Firefox limitations and both historical failed CI runs remain retained.
+
+### 8B1 browser follow-up local validation — 2026-10-08, not acceptance
+
+The bounded synchronization-only test and both owner documents were held unchanged throughout
+the full runs. All five source fingerprints were reverified after both commands terminated;
+the two previously reviewed Python files remain byte-for-byte unchanged from `c2ef20e`.
+No application, authentication, API/BFF, migration, fixture, browser preference, dependency,
+script or CI changes were made. The historical CI failure was not reproduced or classified
+as transient, and no runtime-fix claim is made.
+
+Backend used the existing `python -m scripts.validate --focused` runner with security,
+dashboard/investigation/Sprint 7 API, contract, admission-config, unresolved-region and
+governance-migration selections, then its complete regression, quality and container gates:
+
+- 258 focused checks passed in 90.50s; 3,024 full tests passed in 1049.65s, including all 402
+  PostgreSQL cases and all five fresh-schema downgrade/writer races, no skips, 19 existing
+  SQLite datetime-adapter warnings.
+- `python -m ruff check .` passed; `python -m ruff format --check .` reported 402 files already
+  formatted. Whitespace, `docker compose config --quiet` and the API/dashboard image build passed.
+- Its uniquely owned loopback/tmpfs database and native temporary fixture directory were removed;
+  wrapper exit 0. User databases, branches, worktrees, servers and parent `.agents/` were untouched.
+
+The separate frontend run used the provided validation primitives, a separately owned test
+database, the unchanged controlled issuer and native temporary browser output. Typecheck, lint,
+build and all 133 unit tests/seven files passed. The unchanged zero-retry two-browser command
+reported 37 passed and 37 failed in 1.1m: all 37 Chromium journeys passed, including the strengthened
+real-expiry test; every Firefox case failed at `browserType.launch: spawn UNKNOWN` before reaching
+the application. The pinned Firefox executable exists; this matches the previously retained
+native launcher limitation, not proof of an application/authentication defect. No browser
+configuration change or repeated unchanged launch attempt was made. The full browser command
+and outer wrapper exited 1, not 0; both its owned database and temporary output were removed.
+
+Native Firefox coverage is therefore absent, not skipped or passed. Complete fresh Linux
+Chromium/Firefox acceptance on both new exact-head CI runs remains mandatory before any merge;
+neither the passing local Chromium/backend results nor the older passing companion CI waive a
+failed result. Diagnostics remain boundary labels, current-request and authenticated booleans,
+status codes and button counts only. Scanner access, technical/finding/remediation lifecycles, production
+authentication, migration head `20261007_0008` and the three-human execution boundary are unchanged.
+
+This receipt is on `codex/sprint-8b1-test-synchronization` at `c2ef20e`, three unstaged follow-up
+files (five aggregate PR files). Only these two Markdown owners may now gain receipts before
+documentation-contract/quality rechecks and a scoped commit. Reuse the existing reviewer for
+that exact new commit; publication must update the existing PR #57 without force or duplicate PRs.
+Review, both fresh exact-head CI runs, ordinary expected-head guarded merge and exact-main CI are
+pending. Sprint 8/8B remain IN PROGRESS, 8A/B1 COMPLETE, 8B2+ PLANNED and Sprint 9+ unstarted.
+No live IdP/AWS/production operation, write credential, worker, rescan or dashboard mutation began.
