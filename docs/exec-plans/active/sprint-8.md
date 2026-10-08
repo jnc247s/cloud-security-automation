@@ -1086,3 +1086,102 @@ that exact new commit; publication must update the existing PR #57 without force
 Review, both fresh exact-head CI runs, ordinary expected-head guarded merge and exact-main CI are
 pending. Sprint 8/8B remain IN PROGRESS, 8A/B1 COMPLETE, 8B2+ PLANNED and Sprint 9+ unstarted.
 No live IdP/AWS/production operation, write credential, worker, rescan or dashboard mutation began.
+
+### 8B1 accepted repair and documentary reconciliation — 2026-10-08
+
+[PR #57](https://github.com/jnc247s/cloud-security-automation/pull/57) is MERGED, not pending.
+Its final head `880380eedc26e851e19481b83f47d241a4667ec8`, tree
+`ad1a43d905823356b2745611cb7b472501e0b379`, received exact-commit independent REVIEW_PASS,
+zero actionable findings. Independent validation passed one targeted Chromium expiry journey
+in 10.4s (661ms, zero retries), 127 contracts/config checks in 0.42s, frontend typecheck/lint,
+ten request-correlation assertions and four diagnostic/error-preservation scenarios, Ruff,
+402-file formatting and incremental/aggregate whitespace. The two Python files remained identical
+to previously reviewed `c2ef20e`; snapshot AST, all five fingerprints, normalized blobs and clean
+index/worktree were verified. Root full/image receipts were carried evidence, not independent
+reruns. The first selector matched no tests and an initial probe hit sandbox child-process EPERM;
+neither was passing coverage. Corrected exact selection/local inspection passed, and both newly
+owned PostgreSQL containers/native TEMP directories were removed. No user service was reused.
+
+The new test excludes superseded requests and additionally requires current recovery
+`200/authenticated=false` before all original real-expiry, Sign in, NIST-panel clearing and
+old-context 401 assertions. Diagnostics are sanitized, optional and cannot mask primary errors.
+No assertion, configured timeout, retry, authentication policy or browser preference weakened.
+The historical NIST CI failure was not reproduced or established as transient/runtime-fixed.
+
+All three attempt-1 CI runs were verified by exact SHA/event/branch, every mandatory step and
+complete log counts; no failed-run rerun or passing-companion waiver was used:
+
+| Verified run | Exact head | Backend receipt | Remaining gates |
+| --- | --- | --- | --- |
+| [Push 37823481996](https://github.com/jnc247s/cloud-security-automation/actions/runs/37823481996) PASSED | `880380e` | 3,024 passed in 1281.46s | frontend, both browsers, quality, image, cleanup passed |
+| [PR 37823491446](https://github.com/jnc247s/cloud-security-automation/actions/runs/37823491446) PASSED | `880380e` | 3,024 passed in 1239.13s | frontend, both browsers, quality, image, cleanup passed |
+| [Main 37827101059](https://github.com/jnc247s/cloud-security-automation/actions/runs/37827101059) PASSED | `890b4d5` | 3,024 passed in 1258.12s | frontend, both browsers, quality, image, cleanup passed |
+
+Each includes all 402 PostgreSQL cases, no skips, 19 existing SQLite warnings, 133 frontend
+tests/seven files, 74 browser journeys (37 Chromium/37 Firefox, zero retries), Ruff/402-file
+formatting, image and cleanup. Existing CI action/runtime and runner-migration notices remain;
+no dependency/CI change or warning suppression occurred. Linux acceptance does not waive the
+retained native Firefox launcher failure or repair the untriaged local scan-picker/navigation
+report. The earlier failed exact-main 37734136435 and push 37802803710, with their real faults,
+remain in the historical sections above and public receipts.
+
+Ordinary expected-head guarded merge completed at 2026-10-08T18:48:15Z as
+`890b4d58f725f164600a73cf0aee1c173f6f65f0`, with parents
+`[1478361d395c66e8bb5a6c7454f1c791ce8acdcd, 880380eedc26e851e19481b83f47d241a4667ec8]`
+and exactly reviewed tree `ad1a43d905823356b2745611cb7b472501e0b379`. No admin/bypass/force/delete
+was used. After exact-main success the reused worktree normally fast-forwarded to that clean
+main, preserving every branch/worktree and parent untracked `.agents/`; all five fingerprints
+still matched. The [final public acceptance receipt](https://github.com/jnc247s/cloud-security-automation/pull/57#issuecomment-6067263151)
+retains identities, counts, limitations and the next documentation gate. The immediate post-push
+PR read had not confirmed the new head; a later exact remote read did so without a duplicate push.
+
+This closes the test-only repair gate, not the whole sprint. Standing routine workflow approval
+now reconciles only ROADMAP and this active plan on `codex/sprint-8b1-repair-closeout`, starting
+from clean accepted main `890b4d5`; the original predictions and failed receipts are preserved.
+No preflight/architecture/security/API/operations/changelog owner changes are needed because no
+accepted runtime, interface, schema or security boundary changes. Validate contracts/config,
+Ruff/format/whitespace, full regression with an explicitly owned disposable PostgreSQL, Compose
+and image; required frontend/both-browser coverage also remains a fresh CI delivery gate.
+Freeze a two-file candidate and reuse the existing authorized reviewer, without new agents.
+Then ordinary scoped publication, both exact-head CI runs, guarded merge and exact-main CI.
+These documentary gates are pending at this receipt; this is not authority to implement 8B2.
+
+Sprint 8/8B remain IN PROGRESS, 8A/B1 COMPLETE, 8B2/8B3/8C--8E PLANNED and Sprint 9+ unstarted.
+Catalog `0.13.0`, five-control default, migration head `20261007_0008`, scanner read-only access,
+separate findings/technical/remediation lifecycles and three-human authority remain unchanged.
+No AWS worker, write credentials, remediation execution, rescan or dashboard mutation is added;
+no live IdP/AWS/IAM/secret/production operation or production migration occurred.
+
+### 8B1 repair-receipt reconciliation local validation — 2026-10-08
+
+Only ROADMAP and this active plan changed from accepted `890b4d5`; the first updates reconcile
+current acceptance, and historical predictions/failed receipts remain intact. During full
+validation both owner documents and all three accepted test-source fingerprints stayed unchanged.
+All five were reverified after the runs; no runtime, source-test, schema, dependency or CI change.
+
+Restricted execution failed before backend test gates because local Docker API access was denied;
+its owned empty TEMP directory was removed, exit 1, no database or passing coverage. Frontend
+typecheck/lint passed there, but Vitest configuration hit child-process `spawn EPERM` before tests,
+exit 1; build was not reached. Read-only probes confirmed both direct and Python-child Docker
+reads were denied on `desktop-linux`. These are retained tooling outcomes, not hidden test passes.
+
+Permission-reviewed execution explicitly selected the local `desktop-linux` context; Docker
+29.5.2 was reachable. The same provided isolated validation runner then passed:
+
+- `python -m scripts.validate --focused tests/unit/contracts tests/unit/test_config.py
+  tests/unit/test_execution_admission_config.py`: 127 focused passed in 1.56s, followed by 3,024
+  full tests passed in 1052.80s, all 402 PostgreSQL cases/five fresh-schema downgrade races,
+  no skips, 19 existing SQLite datetime-adapter warnings.
+- Ruff passed; 402 files already formatted; whitespace, quiet Compose validation and cached-source
+  API/dashboard image build passed. Its uniquely owned loopback/tmpfs database and native TEMP
+  subtree were removed; wrapper exit 0. No user database/service or operator secret was used.
+- Fresh permission-reviewed frontend typecheck/lint, 133 unit tests/seven files (Vitest 21.60s)
+  and production bundle build passed, wrapper exit 0. No source or security setting changed to
+  obtain these passes. Native browser coverage was not rerun; prior exact-main Linux 74-browser
+  acceptance is carried evidence, while both new final-head and merged-main browser gates remain
+  mandatory. No local Firefox pass is claimed and no failed CI was rerun.
+
+Only these documentation receipts may now be added, then contracts/quality/whitespace and the
+unchanged three test fingerprints rechecked before a scoped two-file commit. Exact independent
+review by the existing reviewer, ordinary publication, both final-head CI, guarded merge and
+exact merged-main CI remain pending. No worker/later slice or Sprint 9+ work starts here.
