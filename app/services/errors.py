@@ -22,6 +22,16 @@ class RemediationError(RuntimeError):
     """Closed, sanitized errors; never retain SQL, credentials or evidence in messages."""
 
     RESPONSES = {
+        "remediation_execution_disabled": (503, "Execution request admission is disabled."),
+        "remediation_execution_capacity": (503, "Execution request capacity is unavailable."),
+        "remediation_execution_scope_conflict": (
+            409,
+            "The approved target is outside the configured execution admission scope.",
+        ),
+        "remediation_execution_target_reserved": (
+            409,
+            "The target already has an outstanding execution request.",
+        ),
         "insufficient_capability": (403, "The required remediation capability is missing."),
         "remediation_separation_required": (403, "A different verified principal is required."),
         "remediation_state_conflict": (

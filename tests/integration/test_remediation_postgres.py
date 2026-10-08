@@ -186,7 +186,7 @@ def test_committing_authority_writer_is_excluded_before_any_downgrade_ddl(
 
             @event.listens_for(connection, "before_cursor_execute")
             def observe(_connection, _cursor, sql, *_args):
-                if sql.startswith("LOCK TABLE scans, resources, findings, remediation_"):
+                if sql.startswith("LOCK TABLE remediation_admission_guard, scans, resources"):
                     attempted.set()
                 if sql.lstrip().upper().startswith(("ALTER", "CREATE", "DROP")):
                     ddl.append(sql)
@@ -315,7 +315,7 @@ def test_postgres_predecessor_upgrade_keeps_legacy_history_and_matches_metadata(
     with postgres_engine.begin() as connection:
         command.upgrade(migration_config(connection), "head")
         command.check(migration_config(connection))
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261006_0007"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261007_0008"
     with Session(postgres_engine) as session:
         assert (
             session.scalars(select(AuditEvent.event_id).order_by(AuditEvent.event_id)).all()

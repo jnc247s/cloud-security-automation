@@ -226,7 +226,7 @@ def exercise_transition_rollback(engine, config_factory):
     finally:
         event.remove(engine, "before_cursor_execute", fail_after_first_ddl)
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261006_0007"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261007_0008"
         assert "assessment_policy_artifacts" in inspect(connection).get_table_names()
         assert "execution_contract" in {
             c["name"] for c in inspect(connection).get_columns("control_versions")

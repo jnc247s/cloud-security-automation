@@ -144,11 +144,15 @@ def exercise_remediation_http(engine, monkeypatch, tmp_path):
             == 200
         )
         assert client.get(detail_route, headers=viewer).json()["approval_status"] == "REVOKED"
-        for suffix in ("execute", "executions", "withdraw"):
+        for suffix in ("execute", "withdraw"):
             assert (
                 client.post(detail_route + "/" + suffix, headers=administrator, json={}).status_code
                 == 404
             )
+        # Additive 8B1 admission exists, but defaults off; this is not an AWS execution route.
+        disabled = client.post(detail_route + "/executions", json=revocation, headers=administrator)
+        assert disabled.status_code == 503
+        assert disabled.json()["detail"]["code"] == "remediation_execution_disabled"
         # The accepted dashboard proxy remains GET-only; cookies do not grant bearer API authority.
         sign_in(client, issuer)
         assert client.get(detail_route).status_code == 401

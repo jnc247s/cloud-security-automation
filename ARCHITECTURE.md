@@ -1,8 +1,9 @@
 # Architecture
 
 This document describes accepted Sprints 0--7 and the accepted Sprint 8A extension
-below. The accepted baseline is `main` commit `691d8814c785feafc0d9d3b3b43d7d1af89542a0`
-(8A PR #53; exact-commit independent review and merged-main CI 37693245169), after the Sprint 5
+below, plus the approved local 8B1 candidate pending acceptance. The accepted baseline is `main`
+commit `24dbda32a0babcffff9698ece4a46c406690ef8e` (8A documentary closeout PR #54;
+exact-commit independent review and merged-main CI 37706030374), after the Sprint 5
 evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
@@ -561,6 +562,27 @@ The third distinct execution requester, isolated worker/write identity, fresh li
 crash recovery and exact-policy read-only rescan are later separately approved slices, not 8A
 behavior. Stored approval is not permission for this version to execute anything. See
 [remediation operations](docs/operations/remediation.md).
+
+## Sprint 8B1 execution admission — approved local candidate, pending acceptance
+
+The third-human bearer request now calls a separate `RemediationExecutionService`, composing
+8A's retained authority/provenance checks without changing `ProposalView`, old service callers,
+assessment/profile contracts or finding lifecycle. Admission requires current EXECUTE, distinct
+verified proposer/approver/requester pairs, unrevoked exact approval, fresh retained eligibility
+and explicit default-off account/Region scope. It records authority; no AWS handler or worker runs.
+
+Candidate migration 0008 adds immutable execution requests and SHA-linked paired-audit journals,
+a protected singleton admission guard, and retained unique target coordinates. Short transactions
+lock the singleton before Resource → Finding → proposal and target reservation. At most one request
+per proposal, one outstanding per target and 32 globally are admitted. Only no-dispatch QUEUED
+requests can be terminally EXPIRED/BLOCKED and released; READ/replay only derives validity.
+All future worker mutations must participate in the same guard order, with no transaction across
+AWS calls. The five-minute grant is not an unknown-effect lease or proof of safe replay.
+
+The API/operations/persistence owners define exact contracts. Admission remains disabled by
+default. No write identity/configuration, worker startup, WRITE_INTENT, reconciliation/quarantine,
+verification scan, BFF mutation or general scan-start UI exists in this slice. These are later
+bounded Sprint 8 slices; no live or production operation is authorized by this candidate.
 
 ## API boundary
 

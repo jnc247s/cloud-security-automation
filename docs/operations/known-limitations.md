@@ -72,6 +72,27 @@ before any DDL across the complete path, even when only a new audit event exists
 a verified backup, quiesced writers and separate authorization; do not remove immutable history
 to make rollback possible. Existing accepted migration safeguards remain in force.
 
+### Approved local 8B1 admission — pending acceptance
+
+8A's absent third-requester limitation is addressed only in this local candidate: EXECUTE can
+record a distinct third-human request and READ can inspect it. Default-off scope, retained-state
+validation, five-minute grant, immutable paired journal/audit and guard-first reservation limits
+are not live AWS readiness or effect. No worker, write credentials, live preconditions, WRITE_INTENT,
+unknown-effect recovery/quarantine, exact-policy rescan or dashboard mutation is implemented.
+Candidate head 0008 is not yet accepted or deployed. Independent review and delivery remain gates.
+
+READ/replay never reaps expired/revoked requests; a later successful admission can terminally
+journal and release only validated no-dispatch QUEUED history. Failed admission rolls this back.
+Each proposal has one execution request, so a new grant requires new reviewed proposal/approval.
+One outstanding per target and 32 globally is database-serialized; this is not a rate limit or
+fleet-scale query/throughput guarantee. Future workers must share guard-first locking and must
+never release possible-effect reservations merely on expiry. Operator/schema/privileged INSERT,
+physical-human identity and shared READ-domain limitations remain. Scanner credentials are unchanged.
+
+0008 downgrade preflights writers/history before all DDL and refuses any execution/event/reservation
+coordinate/new execution audit. Do not delete or rewrite history to force rollback. 8B2/8B3 and
+8C--8E remain PLANNED; the user's scan-picker/navigation report remains untriaged for 8D preflight.
+
 ### Governance category transition — ACCEPTED 6G
 
 Revision `20261001_0006` adds only `governance` to the existing control-version category CHECK.

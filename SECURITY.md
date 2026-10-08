@@ -2,8 +2,9 @@
 
 This document defines permanent repository security rules for accepted Sprints 0--7 and
 Sprint 8A authority below. The accepted `main` baseline is
-`691d8814c785feafc0d9d3b3b43d7d1af89542a0` (8A PR #53;
-exact-commit independent review, both final-head CI and main CI 37693245169 passed).
+`24dbda32a0babcffff9698ece4a46c406690ef8e` (8A documentary closeout PR #54;
+exact-commit independent review, both repaired final-head CI and main CI 37706030374 passed).
+The approved local 8B1 admission candidate below is pending acceptance, not deployed authority.
 That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).
@@ -466,6 +467,29 @@ database writes to trusted services and protect backups/operator access.
 See [API](docs/api.md), [operations](docs/operations/remediation.md) and the active plan for exact
 contracts and remaining acceptance gates. Local validation is not live IdP, AWS or production
 validation and grants no operational authorization.
+
+## Sprint 8B1 admission boundary — approved local candidate, pending acceptance
+
+Admission-only POST requires current EXECUTE and a third distinct verified issuer/subject pair;
+ADMIN cannot bypass proposer/approver separation. READ history uses the existing shared trust
+domain, not account tenancy. Closed input binds the exact proposal digest and approval ID plus
+bounded reason/key; callers cannot choose AWS parameters, scope, credentials or endpoints.
+Retained provenance, unrevoked approval, governance and any newer/equal target-control assessment
+are rechecked under locks. Grant expiry is min(proposal expiry, admission time + five minutes).
+
+`REMEDIATION_ADMISSION_ENABLED` defaults false. Enabling requires explicit
+`REMEDIATION_ACCOUNT_ID` and `REMEDIATION_REGION`, never scanner profile/Region fallback. This flag
+only permits database admission; it cannot start AWS execution. Identical retries require current
+EXECUTE and return historical authority without requeue/renewal, including when admission is off.
+Expiry/revocation is derived on READ without changing history or erasing reservations.
+
+Immutable requests/events with full human context and paired audit, restrictive references,
+protected coordination rows and a global 32-reservation cap constrain database effects. Cleanup
+may release only validated no-dispatch QUEUED history, atomically with a successful new admission.
+Future intent/unknown/quarantine phases must not inherit time-based release. Privileged INSERT
+or schema changes remain outside these integrity guarantees; protect services, operators/backups.
+Scanner credentials stay read-only. There is no worker, write credential setting/acquisition,
+live AWS check, automatic rescan or browser mutation. Future worker/live-operation gates remain.
 
 ## Production authorization
 

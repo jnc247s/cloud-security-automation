@@ -138,6 +138,7 @@ def dashboard_client(engine, monkeypatch, tmp_path, *, raise_server_exceptions=T
         "DASHBOARD_STATIC_DIR": str(static),
         "DASHBOARD_SCOPES": "openid",
         "ASSESSMENT_PROFILE_VERSION": "1.0.0",
+        "REMEDIATION_ADMISSION_ENABLED": "false",
     }.items():
         monkeypatch.setenv(name, value)
     monkeypatch.delenv("ASSESSMENT_PROFILE_FILE", raising=False)
