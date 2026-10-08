@@ -11,6 +11,12 @@ CI 37726113041 passed). Sprints 0--7, 8A and 8B1 admission/journal are accepted;
 IN PROGRESS; 8B2/8B3 and 8C--8E remain PLANNED. No worker, AWS calls, write credentials, rescan or
 dashboard mutation is implemented or authorized by 8B1 acceptance. This documentary reconciliation
 must clear its own validation/review/delivery gates before the next slice advances.
+Documentary PR #56 merged at `1478361d395c66e8bb5a6c7454f1c791ce8acdcd`, but its exact-main
+[CI 37734136435](https://github.com/jnc247s/cloud-security-automation/actions/runs/37734136435)
+failed the protected PostgreSQL downgrade/writer test (1 failed, 3,017 passed). Closeout acceptance
+is pending. The user approved a bounded test-only synchronization repair on 2026-10-08;
+no production migration or application change is authorized. The active plan retains the failure,
+repair scope and required fresh acceptance gates. Later slices cannot advance before those pass.
 The approved [8B design](docs/sprint-8b-preflight.md) and active plan retain the bounded authority.
 Prior accepted 8A documentary closeout: `24dbda32a0babcffff9698ece4a46c406690ef8e`
 (PR #54; exact merged-main CI 37706030374 passed; migration `20261006_0007`).
