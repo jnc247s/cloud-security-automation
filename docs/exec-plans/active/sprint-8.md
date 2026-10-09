@@ -1439,3 +1439,72 @@ publication, both first-attempt final-head CI runs, guarded ordinary merge and e
 are still pending here. 8A/B1/B2 are COMPLETE as code; Sprint 8/8B remain IN PROGRESS, 8B3/8C--8E
 PLANNED and Sprint 9+ unstarted. No new agent, live IdP/AWS/IAM/secret/deployment/production
 operation, credential issuance, operator migration, rescan or dashboard mutation occurred.
+
+### 8B2 documentary review findings and bounded repair — 2026-10-08
+
+The existing reviewer returned **REVIEW_FAIL** for exact frozen head
+`c01509603286882ac35406bda4e133da2e7c4cff`, tree
+`249fa4f74826d489564251cddba37695eeb0f51e`: three LOW documentation findings, no runtime defect.
+Independent 92 contracts passed in 0.35s, Ruff/415-file formatting and committed whitespace passed.
+Fresh provider metadata confirmed PR #59 ancestry, all three first-attempt successful runs and
+all 18 exact-main job steps. All thirteen candidate/242 protected fingerprints and normalized
+committed bytes matched; clean index/worktree, 68 branches/three worktrees/parent skills were
+preserved. Only the reviewer's owned native TEMP was removed. No publication occurred.
+
+The findings are unqualified current owner openings that retain accepted PR #55/8A/B1 instead
+of PR #59/8B2; current summaries that deny an execution-admission route/worker implementation;
+and the operations audit paragraph that incorrectly applies human issuer/subject/roles/capability
+to worker service attribution. Explicit old slice-specific 8A/B1 boundaries and README's 7B
+paragraph remain valid history; the latter is only clarified as "7B itself."
+
+Standing approval covers this bounded documentary repair without an architectural decision.
+Reconcile current ARCHITECTURE/SECURITY/THREAT_MODEL/known-limitations openings and summaries,
+preserving undeployed/default-off/live-authorization limits. Describe human authority/admission
+audit separately from `actor_type="service"` and canonical `WorkerActor(service_id,
+expected_role_arn)` hashing, not a fourth human. No implementation, schema, API or permission
+change is needed. Add five strict documentation regression cases in the already-owned contract
+test: three owner headers against ROADMAP's current accepted baseline, limitations scope and
+human/service audit distinction. All five failed against the pre-repair documents in 0.47s
+(12 existing cases deselected); this is intentional reproduction, not a passing run or a test
+waiver. Their owned TEMP was removed.
+
+The repair remains within the same thirteen owned paths and original accepted design. Run all
+targeted contracts and a fresh complete disposable-PostgreSQL/quality/Compose/image validation,
+capture unchanged-source fingerprints and freeze a new scoped commit retaining c015096 history.
+Only then reuse the existing reviewer for exact-new-head review; publication, both fresh
+first-attempt final-head CI runs, guarded merge and exact-main CI remain required. The failed
+review and previous receipts remain intact. No runtime/auth/scanner/default/credential/frontend/
+dependency/CI or production boundary changes, new agent, live operation or later slice is started.
+8A/B1/B2 are COMPLETE as code; Sprint 8/8B remain IN PROGRESS; 8B3/8C--8E PLANNED and 9+ unstarted.
+
+### 8B2 documentary repair fresh local validation — 2026-10-08
+
+The unchanged validator used the existing project interpreter, a newly owned loopback/tmpfs
+PostgreSQL 16 database and uniquely owned native TEMP. All 97 targeted contracts passed in
+0.40s, including the five new guards; Ruff and 415-file formatting passed. Fresh full regression
+passed all 3,259 tests in 1302.80s (21:42), including all 441 PostgreSQL cases, no skips and
+19 existing SQLite datetime-adapter warnings. Protected migration races, authority/admission,
+worker claim/recovery and read-only scanner/assessment checks passed without runtime changes.
+Whitespace, quiet Compose and a fresh-source image build passed; wrapper exit 0. Image SDK
+boto3/botocore resolved 1.43.110. Only the run-owned database and native TEMP subtree were removed.
+
+All thirteen candidate fingerprints and 242 protected runtime/frontend/migration/script/CI/
+dependency fingerprints matched after the run. All 68 local branches, three worktrees and the
+parent's three unrelated untracked skill files remain preserved/excluded. Only this exact receipt
+is appended after the full run; repeat targeted/quality/whitespace and fingerprint checks before
+freezing. Unchanged frontend/browser and prior image probes remain explicitly carried evidence,
+not a new whole-8B3 or live acceptance claim.
+
+Post-receipt 97 contracts passed again in 0.40s; Ruff/415-file formatting, whitespace,
+Compose and the final-metadata image build passed. The immutable image
+`sha256:2c98397e5c28b2586e1064773635b7c2e1e5edd344ed5a3961bae357c2ed1faf`
+returned `WORKER_DISABLED`, exit 0, with the required synthetic UUID, no network, host mounts,
+credentials or database. The first probe omitted that required argument and correctly returned
+`WORKER_INVALID_ARGUMENT`, worker exit 2; the corrected invocation is not a runtime repair or
+a waiver. This is a default-off entry-point check, not enabled-worker or whole-HTTP acceptance.
+
+The initial REVIEW_FAIL and intentional five-case red reproduction remain historical evidence.
+Fresh exact-new-head review by the existing reviewer, both first-attempt final-head CI runs,
+guarded ordinary merge and exact merged-main CI are still required. No new architecture, runtime,
+schema, API, permission, credential, default, deployment, live operation or later slice is added.
+8A/B1/B2 remain COMPLETE as code; Sprint 8/8B IN PROGRESS; 8B3/8C--8E PLANNED and 9+ unstarted.

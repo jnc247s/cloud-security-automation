@@ -49,7 +49,8 @@ merged through [PR #42](https://github.com/jnc247s/cloud-security-automation/pul
 7B is COMPLETE through [PR #43](https://github.com/jnc247s/cloud-security-automation/pull/43),
 with independent review and green merged-main CI. Its opt-in read-only browser shell uses a
 server-side OIDC session boundary, Cognito Essentials as target and a controlled local issuer
-for tests. No live IdP resources, remediation execution or production deployment are implemented.
+for tests. 7B itself implements no live IdP resources, remediation execution or production
+deployment.
 7C is COMPLETE through [PR #45](https://github.com/jnc247s/cloud-security-automation/pull/45) and
 [test-only CI repair PR #46](https://github.com/jnc247s/cloud-security-automation/pull/46),
 with zero unresolved independent-review findings and green exact-head and merged-main CI.

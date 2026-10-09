@@ -1,10 +1,12 @@
 # Architecture
 
-This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1 extensions
-below. The accepted baseline is `main` commit `0c6005827ae765fe2b2669e4f503af6ca58cdc15`
-(8B1 admission PR #55; exact-commit independent review, both final-head CI runs and
-merged-main CI 37726113041), after the Sprint 5
-evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
+This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions
+below. The accepted implementation baseline is `main` commit
+`7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59; exact-commit independent review,
+both final-head first-attempt CI runs and exact merged-main CI 37864100728 passed).
+Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
+That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
+6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
 7C's exact-scan investigation and client-only 7D NIST hierarchy are accepted with green main CI.
@@ -519,8 +521,10 @@ ADMIN     -> READ, PROPOSE, APPROVE, EXECUTE
 
 Current read routes require `READ`; scan creation requires `EXECUTE`, so only `ADMIN` can start a
 scan. Accepted 8A proposal creation requires `PROPOSE`; approval/rejection/revocation requires
-`APPROVE`. No finding/exception mutation or remediation execution route exists. Authorization
-remains control-plane-wide, not tenant/account-scoped; see `THREAT_MODEL.md`.
+`APPROVE`. Accepted 8B1 execution admission requires `EXECUTE` from a distinct third human
+and records authority, not AWS dispatch. No finding/exception mutation or public remediation-
+worker launch/dispatch route exists. Authorization remains control-plane-wide, not tenant/account-
+scoped; see `THREAT_MODEL.md`.
 
 <a name="sprint-8a-remediation-authority--local-pending-acceptance"></a>
 
@@ -757,9 +761,10 @@ workload-role configuration remain deployment responsibilities.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
   NIST mapped-subset context. Whole-Sprint-7 acceptance is COMPLETE with scoped offline evidence.
   Production setup remains unimplemented.
-- No Terraform deployment, remediation execution or AI runtime. Accepted 8A authority records/API
-  passed exact-commit independent review and delivery/main-CI gates through PR #53;
-  no remediation dashboard or worker is added.
+- No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
+  authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
+  No public worker launch, linked exact-policy verification or remediation dashboard mutation
+  exists yet. Code acceptance grants no live AWS/IAM/secret/production authority.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

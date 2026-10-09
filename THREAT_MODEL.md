@@ -1,16 +1,18 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7 and accepted 8A/8B1 authority
-Accepted baseline: `main` commit `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (8B1 admission PR #55)
-Last reconciled: 2026-10-08; exact merged-main CI 37726113041 passed
-Accepted 8B1 is database admission, not deployment or AWS execution.
+Status: living model for accepted Sprints 0--7 and accepted 8A/8B1/8B2 boundaries
+Accepted implementation baseline: `main` commit `7a36ddde20aafc60712b38165acd25460418ab92`
+(8B2 worker PR #59; exact-commit review and both final-head first-attempt CI runs passed)
+Last reconciled: 2026-10-08; exact merged-main CI 37864100728 passed
+Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
 test-launch isolation repair change no application runtime or security boundary. Original
 navigation/security assertions, COOP and other headers, dependencies, timeouts and zero retries
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
-and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1 scope are owned
-by ROADMAP and the active plan; remediation execution remains unimplemented and risks remain open.
+and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1/8B2 scope are owned
+by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
+policy verification and dashboard mutation remain unimplemented, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
 ## Scope and security objectives
@@ -80,8 +82,11 @@ OIDC/development authentication, capability authorization, FastAPI, and the in-p
 executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fact-only
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
-production deployment, Terraform infrastructure, remediation execution, or AI agent is
-implemented. The opt-in 7B frontend/session boundary below is accepted code, not a production
+production deployment, Terraform infrastructure or AI agent is implemented. Accepted 8A/B1
+govern human proposal/approval/execution-admission authority; accepted 8B2 adds separate default-off
+single-action worker code, not live execution or deployment proof. No public worker-launch
+endpoint, linked exact-policy verification or remediation UI is implemented. The opt-in 7B
+frontend/session boundary below is accepted code, not a production
 deployment or live-provider validation. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
 6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7

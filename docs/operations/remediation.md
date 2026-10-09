@@ -95,8 +95,11 @@ Accepted repository migration head is `20261008_0009`; no deployed database migr
 or authorized by code acceptance. Apply through Alembic only and validate against an explicitly
 disposable TEST_DATABASE_URL. New authority/audit history is sensitive. Restrict DB access and protect
 backups; append-only guards do not protect against privileged schema modification/direct INSERTs.
-New audit actor IDs are canonical issuer/subject identity digests; full identity/roles/capability
-are retained in metadata. Legacy audit limitations remain unchanged.
+Human authority/admission audit actor IDs are canonical issuer/subject identity digests; full
+human identity/roles/capability are retained in metadata. Worker events instead use
+`actor_type="service"` and the canonical JSON SHA-256 of `WorkerActor`
+(`service_id`, `expected_role_arn`), without human roles or capability. Service history is not a
+fourth human approval. Legacy audit limitations remain unchanged.
 
 Before any separately authorized downgrade, quiesce writers, verify a restorable backup and use
 the current online migration environment. Any 8A authority row or new remediation audit event

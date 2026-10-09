@@ -1,10 +1,11 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7 and
-Sprint 8A/8B1 authority below. The accepted `main` baseline is
-`0c6005827ae765fe2b2669e4f503af6ca58cdc15` (8B1 admission PR #55;
-exact-commit independent review, both final-head CI and main CI 37726113041 passed).
-Accepted 8B1 database admission is not deployment or AWS execution authority.
+Sprint 8A/8B1/8B2 boundaries below. The accepted implementation `main` baseline is
+`7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59; exact-commit independent review,
+both final-head first-attempt CI and exact main CI 37864100728 passed).
+Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
+live AWS execution authority.
 That baseline includes the versioned assessment
 foundation and opt-in IAM, EC2, network, S3 and CloudTrail controls; default catalog `0.2.1`
 remains unchanged. Threats and residual risks are tracked in [THREAT_MODEL.md](THREAT_MODEL.md).

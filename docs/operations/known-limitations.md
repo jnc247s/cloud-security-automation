@@ -1,7 +1,8 @@
 # Current known limitations
 
-This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1 implementation reality, including
-the shared evidence graph, evidence producers, and opt-in production controls. These items are
+This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1/8B2 implementation reality,
+including the shared evidence graph, evidence producers, opt-in production controls and disabled/
+undeployed isolated worker code. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
 Sprint 7 is COMPLETE: 7A READ reporting is accepted through PR #42, with zero unresolved
@@ -511,7 +512,8 @@ NIST mapped-subset context; 7E whole-Sprint-7 acceptance and documentary closeou
 Acceptance does not remove the following deferred capabilities or operational risks.
 Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
-There is no production Terraform deployment, finding/exception mutation API, remediation execution,
-distributed worker, multi-account orchestration, or AI runtime. Accepted 8A authority adds no
-browser mutations. Their absence is roadmap scope,
-not an incomplete Sprint 4 implementation.
+There is no production Terraform deployment, finding/exception mutation API, generic distributed
+worker, multi-account orchestration or AI runtime. Accepted 8A/B1 human authority/admission and
+accepted isolated worker code in 8B2 add no browser mutations; the worker remains disabled and
+undeployed. Public worker launch, linked exact-policy verification and remediation UI remain
+later slices. Their absence is roadmap scope, not an incomplete Sprint 4 implementation.
