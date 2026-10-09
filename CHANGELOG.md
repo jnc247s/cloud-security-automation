@@ -6,19 +6,27 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8B2 — local isolated-worker candidate, acceptance pending
+<a name="sprint-8b2--local-isolated-worker-candidate-acceptance-pending"></a>
+
+### Sprint 8B2 — accepted isolated-worker code, not deployed
 
 - Adds a separate default-off single-job process with explicit account/Region/role/database scope,
   exclusive ECS task-role temporary credentials, strict fresh regional preconditions and one SDK
   enable-default invocation. Scanner credentials and retry behavior remain read-only/unchanged.
-- Candidate revision `20261008_0009` adds private pre-intent fencing/bounded durable read budgets,
+- Accepted revision `20261008_0009` adds private pre-intent fencing/bounded durable read budgets,
   version-2 paired service history and immutable post-intent ownership. Conservative read-only
   recovery retains unknown-effect quarantine/reservation even after true observations or late ACK.
   Version-1 human authority/event bytes, findings, assessments and protected defaults are retained.
-- Owning API/persistence/architecture/security/threat/operations documents describe candidate
-  compatibility and deployment/incident limits. Offline PostgreSQL/runtime/full validation,
-  independent review and delivery remain acceptance gates. No live AWS, IAM/secret/deployment,
-  production operation, rescan, dashboard mutation, 8B3/later slice or later sprint is started.
+- Accepted through [PR #59](https://github.com/jnc247s/cloud-security-automation/pull/59) at
+  `7a36ddde20aafc60712b38165acd25460418ab92`, with exact-commit REVIEW_PASS, both final-head
+  first-attempt CI runs and [exact main CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
+  passed: 3,254 backend tests (441 PostgreSQL, no skips), 133 frontend units, all 74 Chromium/
+  Firefox journeys and quality/image/cleanup gates. Owning documents record compatibility and
+  deployment/incident limits; documentary reconciliation retains its own gates.
+- Updated execution-history readers require 0009 before code rollout even with the worker off;
+  strict clients must support both event versions and expanded phases before enablement. No
+  automatic operator migration, live AWS, IAM/secret/deployment, production operation, rescan,
+  dashboard mutation, 8B3/later slice or later sprint is started. Sprint 8/8B remain IN PROGRESS.
 
 <a name="sprint-8b1--approved-local-execution-admission-candidate-pending-acceptance"></a>
 

@@ -283,8 +283,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20261001_0005  unresolved regional relationship preservation
     -> 20261001_0006  additive governance category (accepted predecessor)
     -> 20261006_0007  append-only remediation authority (accepted predecessor)
-    -> 20261007_0008  execution admission and journal (accepted-main head)
-    -> 20261008_0009  private worker coordination/versioned journal (8B2 candidate)
+    -> 20261007_0008  execution admission and journal (accepted predecessor)
+    -> 20261008_0009  private worker coordination/versioned journal (accepted head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -590,7 +590,9 @@ bounded Sprint 8 slices; acceptance authorizes no live or production operation.
 
 ## API boundary
 
-### Sprint 8B2 isolated worker — implementation candidate, acceptance pending
+<a name="sprint-8b2-isolated-worker--implementation-candidate-acceptance-pending"></a>
+
+### Sprint 8B2 isolated worker — accepted code, not deployed
 
 The separately launched `python -m app.remediation.worker UUID` process is default off and is
 not imported/started by API or scanner runtime. It handles only the approved EC2-004 enable-default
@@ -618,6 +620,9 @@ never clears prior quarantine. Read-only recovery may observe after authority ex
 three-poll, thirty-second window persists across restarts. Readback does not prove causation, key
 usability, PASS, verification or finding resolution. 8C exact-policy rescan is not implemented here.
 0009 downgrades require online compatibility checks before any DDL; worker history refuses rollback.
+Updated execution-history readers require 0009 even while the worker is disabled; schema must
+precede updated code, with separately authorized maintenance and no automatic operator migration.
+Strict READ clients must support retained v1/new v2 events and expanded phases before enablement.
 Current acceptance and later-slice gates remain owned by ROADMAP and the active plan.
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at

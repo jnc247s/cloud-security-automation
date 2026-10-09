@@ -11,8 +11,9 @@ provide certification or claim organization-wide NIST compliance.
 
 Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
 Sprint 8 is IN PROGRESS; 8A's proposal/approval foundation is COMPLETE through
-[PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Execution, verification
-scans and UI mutations remain unimplemented. The 8A implementation checkpoint was
+[PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Accepted 8B2 now adds the
+isolated worker described below; linked verification scans and UI mutations remain unimplemented.
+The 8A implementation checkpoint was
 `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with green
 [exact merged-main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169).
 Exact-commit independent REVIEW_PASS and both final-head CI runs passed; the two initial MEDIUM
@@ -25,10 +26,17 @@ accepted documentary closeout through PR #54 at `24dbda32a0babcffff9698ece4a46c4
 [PR #55](https://github.com/jnc247s/cloud-security-automation/pull/55) at
 `0c6005827ae765fe2b2669e4f503af6ca58cdc15`, with independent REVIEW_PASS and both final-head/
 [exact main CI 37726113041](https://github.com/jnc247s/cloud-security-automation/actions/runs/37726113041)
-passed. 8B1 adds default-off third-human execution admission/history only; no worker, AWS call,
-write credentials, linked rescan or dashboard mutation. Accepted migration head is
-`20261007_0008`. Sprint 8/8B remain IN PROGRESS; 8B2/8B3 and 8C--8E remain PLANNED. No live
-operation is authorized, and architecture/design decisions still require approval.
+passed. 8B1 adds default-off third-human execution admission/history only, not AWS dispatch.
+8B2 is COMPLETE as separate default-off, ECS-task-role-only, single-action worker code through
+[PR #59](https://github.com/jnc247s/cloud-security-automation/pull/59) at
+`7a36ddde20aafc60712b38165acd25460418ab92`, with independent REVIEW_PASS, both final-head CI runs
+and [exact merged-main CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
+passed: 3,254 backend tests (441 PostgreSQL, no skips), 133 frontend units, all 74 Chromium/Firefox
+journeys and quality/image/cleanup gates. Accepted migration head is `20261008_0009`; new
+execution-history code requires that schema even while the worker is disabled. The active plan
+records the bounded documentary closeout's entry gates before the next slice advances.
+Sprint 8/8B remain IN PROGRESS; 8B3 and 8C--8E remain PLANNED. No live operation is authorized,
+and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
 Whole-sprint 6H acceptance merged through
@@ -176,8 +184,10 @@ recognized roles can read its security data, and query filters are not object- o
 authorization. The opt-in dashboard shell, investigation and NIST context are accepted
 7B/7C/7D code,
 not a production deployment. Acceptance does not authorize live operations.
-No production Terraform, finding/exception mutation API, remediation execution,
-distributed worker, or AI runtime exists yet. AWS resources are never modified. See
+No production Terraform, finding/exception mutation API, generic distributed worker or AI runtime
+exists yet. Scanner/API startup never modifies AWS resources or launches the separate remediation
+worker. Its accepted code remains disabled and undeployed; AWS acknowledgment/readback is not
+technical PASS, finding resolution or exact-policy verification. See
 [known limitations](docs/operations/known-limitations.md) before production use.
 Accepted 8A appends proposals, human approval/rejection/revocation and paired audit only, through
 normal bearer APIs. It preserves findings, technical results, scanner read-only credentials,
@@ -397,8 +407,10 @@ schema. Never point `TEST_DATABASE_URL` at production. See
 
 ## Configuration safety
 
-Configuration comes from environment variables and optional local `.env`; the example documents
-all fields. Never put AWS keys, bearer tokens, OIDC secrets, database production passwords, or
+Application/scanner configuration comes from environment variables and optional local `.env`;
+the example documents those fields. The separate worker uses environment-only settings described
+in [remediation operations](docs/operations/remediation.md), never shared `.env` or scanner settings.
+Never put AWS keys, bearer tokens, OIDC secrets, database production passwords, or
 other credentials in `.env` or Git.
 
 With `ASSESSMENT_PROFILE_FILE` unset, `ASSESSMENT_PROFILE_VERSION` selects the immutable `default`
@@ -418,9 +430,12 @@ The local 6F.1 release also adds `20261001_0005` for unresolved relationship per
 apply current migrations only to an explicitly authorized environment. See
 [persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
 Accepted 6G adds `20261001_0006` for the governance category; it was the head after Sprint 7.
-Accepted 8A added `20261006_0007`; accepted 8B1 adds current head `20261007_0008` for database
-admission/journal only. Apply migrations only in an explicitly authorized environment; populated
-downgrade across either authority boundary is blocked before DDL. Code acceptance is not deployment.
+Accepted 8A added `20261006_0007`; accepted 8B1 added `20261007_0008` for database admission/
+journal. Accepted 8B2 adds current head `20261008_0009` for private worker coordination/versioned
+service history. Apply that schema before updated execution-history code even with the worker
+disabled; coordinate strict v1/v2-event and phase clients before worker enablement. Migrate only
+an explicitly authorized environment; no operator database is auto-migrated. Populated downgrade
+across each authority/worker boundary is blocked before DDL. Code acceptance is not deployment.
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
 `0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains

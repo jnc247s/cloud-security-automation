@@ -79,8 +79,9 @@ to make rollback possible. Existing accepted migration safeguards remain in forc
 8A's absent third-requester limitation is addressed by accepted 8B1: EXECUTE can
 record a distinct third-human request and READ can inspect it. Default-off scope, retained-state
 validation, five-minute grant, immutable paired journal/audit and guard-first reservation limits
-are not live AWS readiness or effect. No worker, write credentials, live preconditions, WRITE_INTENT,
-unknown-effect recovery/quarantine, exact-policy rescan or dashboard mutation is implemented.
+are not live AWS readiness or effect. 8B1 itself implements no worker, write credentials, live
+preconditions, WRITE_INTENT, unknown-effect recovery/quarantine, exact-policy rescan or dashboard
+mutation; accepted 8B2's separate worker limits are below.
 Head 0008 is accepted through PR #55, exact-commit review, both final-head CI and main CI
 37726113041. This is not deployment or live AWS validation.
 
@@ -95,12 +96,15 @@ physical-human identity and shared READ-domain limitations remain. Scanner crede
 0008 downgrade preflights writers/history before all DDL and refuses any execution/event/reservation
 coordinate/new execution audit. Do not delete or rewrite history to force rollback. 8B2/8B3 and
 8C--8E remain PLANNED at 8B1 acceptance; the user's scan-picker/navigation report remains untriaged
-for 8D preflight. Current 8B2 candidate scope is recorded below and in ROADMAP.
+for 8D preflight. Current accepted 8B2 scope is recorded below and in ROADMAP.
 
-### Isolated worker candidate and unknown-effect recovery — HIGH
+<a name="isolated-worker-candidate-and-unknown-effect-recovery--high"></a>
 
-8B2 is IN PROGRESS, not accepted: disabled-by-default ECS-only single-action worker, versioned
-service history and private fenced coordination in candidate 0009. No live credentials, IAM,
+### Accepted isolated worker and unknown-effect recovery — HIGH
+
+8B2 is COMPLETE as code through PR #59 and exact main CI 37864100728: disabled-by-default
+ECS-only single-action worker, versioned service history and private fenced coordination in
+accepted 0009. This is not deployment acceptance. No live credentials, IAM,
 deployment or production validation. API/scanner never launch it, but physical task/role/network
 separation is an external requirement; all containers in one ECS task share its credentials.
 Configured role-name identity is not a stable role-ID pin against operator role recreation.

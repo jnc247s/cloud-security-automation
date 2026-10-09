@@ -491,10 +491,12 @@ may release only validated no-dispatch QUEUED history, atomically with a success
 Future intent/unknown/quarantine phases must not inherit time-based release. Privileged INSERT
 or schema changes remain outside these integrity guarantees; protect services, operators/backups.
 Scanner credentials stay read-only. 8B1 itself adds no worker, write credential acquisition,
-live AWS check, automatic rescan or browser mutation. The candidate boundary below is separate;
+live AWS check, automatic rescan or browser mutation. The accepted worker boundary below is separate;
 live-operation gates remain.
 
-## Sprint 8B2 worker boundary — candidate, acceptance pending
+<a name="sprint-8b2-worker-boundary--candidate-acceptance-pending"></a>
+
+## Sprint 8B2 worker boundary — accepted code, not deployed
 
 Only a separately launched, explicitly enabled process handles the single approved enable-default
 action. Worker settings are environment-only with no `.env` or scanner/application fallback;
@@ -514,7 +516,7 @@ and the two regional settings reads; no disable/reset/key mutation, volume conve
 decrypt, IAM or generic EC2 permissions. ECS task credentials are shared within a task; API/scanner
 must never share a writer-enabled task. ECS-on-EC2 containers are not a security isolation boundary;
 metadata/host isolation requires separate deployment evidence too. No IAM resources, credentials or deployment are provisioned
-by this candidate, and code tests do not establish physical workload/network/credential isolation.
+by code acceptance, and code tests do not establish physical workload/network/credential isolation.
 Role recreation under the same account/name remains an operator trust boundary, not a role-ID pin.
 
 Fresh exact settings and retained authority/governance are checked before committing WRITE_INTENT.
@@ -525,8 +527,12 @@ even when readback is true or a late acknowledgment arrives. Only a finished cal
 durable receipt can release normal dispatch ownership. Recovery is observation-only, never retry,
 verification, finding resolution or rollback. Incident release needs separate authorization and
 proof that an old worker cannot resume; no force-clear endpoint is provided. Privileged database
-INSERT/schema control and physical-human governance remain trusted. All runtime/delivery gates
-are pending until recorded by the active plan; no live or production operation is authorized.
+INSERT/schema control and physical-human governance remain trusted. 8B2's offline/runtime/review/
+delivery gates passed through PR #59 and exact merged-main CI 37864100728; the active plan retains
+exact evidence and documentary/later-slice gates. No live or production operation is
+authorized. Current execution-history readers require 0009 even with the worker disabled; schema/
+application maintenance, strict v1/v2-event and phase clients, and deployment isolation remain
+separately coordinated boundaries, not automatic migrations or operational approval.
 
 ## Production authorization
 

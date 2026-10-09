@@ -672,7 +672,7 @@ independent review when the completed 8B1 candidate is ready; no delegation is s
 | Bounded implementation | State | Scope |
 | --- | --- | --- |
 | 8B1 | COMPLETE | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
-| 8B2 | IN PROGRESS | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
+| 8B2 | COMPLETE | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
 | 8B3 | PLANNED | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
 
 8B1 starts on `codex/sprint-8b1-execution-authority` at accepted `24dbda3`, with remote main
@@ -1334,3 +1334,108 @@ CI remain pending. No worker is enabled or deployed, and no live IdP/AWS/IAM/sec
 operation, operator migration, rescan, dashboard mutation, later slice or Sprint 9+ work occurred.
 8B2 and Sprint 8 remain IN PROGRESS, not COMPLETE; accepted-main migration remains 0008 until
 the candidate's required acceptance gates succeed.
+
+### 8B2 independent review and exact-main implementation acceptance — 2026-10-08
+
+The completed 38-file candidate was frozen at
+`398747ba089e70f8042b1761782d3e1fd9739761`, tree
+`56eadb5741261904f65df09d3e2425ff799dce3e`, sole parent
+`cfd1fcba87dee504df9adc21c3f7382370ee5af2`. Only the final receipt changed after the complete
+local run; refreshed contracts passed 92 in 0.39s, Ruff/415-file formatting and whitespace passed,
+and all other 37 fingerprints matched. No runtime source changed during validation or delivery.
+
+The existing authorized reviewer returned **REVIEW_PASS**, with no actionable findings:
+348 offline checks in 87.98s and 84 newly owned disposable-PostgreSQL checks in 209.38s
+(all 39 new worker and 45 legacy admission cases), 432 total with no skips. Fresh-process
+default-off probes replaced application-settings/database/credential lookup with failure sentinels
+and still passed.
+Quality/415-file formatting, whitespace, clean exact branch/head/tree, all 38 fingerprints and
+normalized committed bytes matched. Only the reviewer's own database and native TEMP subtrees
+were removed. No new reviewer was launched or live operation performed.
+
+Ordinary publication created [PR #59](https://github.com/jnc247s/cloud-security-automation/pull/59).
+Both exact-final-head first-attempt runs passed:
+
+| Run | Backend receipt | Other passed mandatory gates |
+| --- | --- | --- |
+| [Push 37861202543](https://github.com/jnc247s/cloud-security-automation/actions/runs/37861202543) | 3,254 passed, 19 existing warnings, 1469.35s | 133 frontend units/seven files, 74 Chromium/Firefox journeys, Ruff/415-file formatting, image and cleanup |
+| [PR 37861227043](https://github.com/jnc247s/cloud-security-automation/actions/runs/37861227043) | 3,254 passed, 19 existing warnings, 1500.84s | Same mandatory frontend/browser/quality/image/cleanup gates |
+| [Exact main 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728) | 3,254 passed, 19 existing warnings, 1414.80s | Same mandatory gates; all 18 job steps succeeded |
+
+Every complete CI suite ran all 441 PostgreSQL cases, no skips, and both browser projects with
+zero configured retries. These final-head/main CI runs passed on attempt 1; no failed-CI rerun
+or passing companion substitutes for a required gate.
+The earlier failed local 3,252-pass run and all historical failures remain intact above.
+Native Windows Firefox launch and the local scan-picker/navigation report are not fixed or waived.
+
+Fresh checks reverified clean local reviewed head/tree, OPEN/CLEAN PR with both required checks,
+remote main at cfd1fcb and feature at 398747b before guarded ordinary merge with exact-head
+matching; no admin/protection bypass, force or branch deletion. Merge main is
+`7a36ddde20aafc60712b38165acd25460418ab92`, retaining tree 56eadb5 and exact parents
+`cfd1fcba87dee504df9adc21c3f7382370ee5af2` and
+`398747ba089e70f8042b1761782d3e1fd9739761`. Exact-main run 37864100728 is push/main/that SHA/
+attempt 1, completed SUCCESS; actual logs and every mandatory/cleanup step were inspected.
+The [final public receipt](https://github.com/jnc247s/cloud-security-automation/pull/59#issuecomment-6071961094)
+supersedes delivery-pending checkpoints, not their original predictions or failed evidence.
+
+**8B2 is COMPLETE** as accepted disabled-by-default code; migration head is `20261008_0009`.
+Updated execution-history readers require 0009 even while the worker is disabled: apply schema
+before updated code only in a separately authorized environment. Strict READ clients must accept
+retained v1/new v2 events and expanded phases before worker enablement. No operator database is
+auto-migrated. ACK/readback is unverified, not PASS, finding resolution or an exact-policy rescan.
+Sticky quarantine, no AWS CAS/cancellation guarantee, same-role-name recreation, physical task/
+IAM/network/DB isolation, IdP human-account governance and privileged operator trust remain
+explicit limits. No credentials/resources are provisioned and no live operation is authorized.
+
+### 8B2 bounded documentary closeout entry — 2026-10-08
+
+Only after the exact-main gate passed, clean local main was normally fast-forwarded to 7a36ddd
+and `codex/sprint-8b2-documentary-closeout` created, preserving the implementation branch,
+all other branches/worktrees and the parent's three unrelated untracked skill files.
+Reconcile the twelve owning Markdown documents (including README's stale current-head/no-worker
+statements) and the matching current-status assertions in the progress-contract test. Retain all
+historical predictions/failed receipts, existing published heading anchors, B1 introduction of 0008,
+unknown-effect/production limits and default-off read-only-scanner boundaries. No runtime, schema,
+API shape, authentication,
+frontend, dependency, CI, scanner/rule or operational configuration change belongs in this branch.
+
+The documentation skill preserves historical evidence and separates accepted code from deployment;
+backend/configuration/short ordered PostgreSQL transaction decisions remain unchanged. Record the
+0009-before-code compatibility requirement even with the worker off and strict-client coordination.
+Run targeted contracts, Ruff/format, complete regression with newly owned disposable PostgreSQL,
+whitespace/Compose/fresh-source image and unchanged-source fingerprints. Freeze a scoped candidate,
+reuse only the existing authorized reviewer, then ordinary publication, both final-head first-
+attempt CI runs, guarded merge and exact-main CI. These documentary gates are pending at entry;
+8B3 cannot advance until they pass. 8A/B1/B2 are COMPLETE; Sprint 8/8B and the whole goal remain
+IN PROGRESS; 8B3/8C--8E remain PLANNED and Sprint 9+ unstarted. No live IdP/AWS/IAM/secret/
+deployment/production operation, operator migration, rescan or dashboard mutation is introduced.
+
+### 8B2 documentary closeout local validation — 2026-10-08
+
+The unchanged provided validator used the existing project interpreter, a newly owned loopback/
+tmpfs PostgreSQL 16 database and uniquely owned native TEMP. Targeted contracts/link/status checks
+passed all 92 in 0.43s. Ruff and 415-file formatting passed. Full regression passed all 3,254 in
+1310.29s (21:50), including all 441 PostgreSQL cases, no skips and 19 existing SQLite datetime-
+adapter warnings. The protected migration races and both previously corrected retry cases passed.
+Whitespace, quiet Compose and a fresh-source image build passed, wrapper exit 0; only the
+run-owned database and TEMP subtree were removed. No user database was touched.
+
+All thirteen frozen candidate fingerprints matched after that complete validation. All three
+worktrees, 68 local branches (only one new scoped closeout branch) and the parent's three unrelated
+untracked skill files remain preserved/excluded. The 242 tracked runtime/frontend/migration/
+script/CI/dependency fingerprints are retained for final unchanged-source comparison.
+Fresh-source image dependencies resolved boto3/botocore 1.43.110; no host dependencies were
+installed or changed. Unchanged frontend/browser and network-disabled worker/image acceptance
+from PR #59 are carried evidence, not new native browser or whole-8B3 coverage. Both fresh
+exact-final-head CI suites and exact merged-main CI remain mandatory for this closeout.
+
+Only this receipt and neutral entry-time-gate wording in ROADMAP/README/SECURITY/THREAT_MODEL
+change after the full run; no status, runtime, security boundary, compatibility requirement,
+contract assertion, historical prediction or failed receipt changes. This avoids leaving the
+same closeout's entry-time gates described as permanently pending after its own acceptance.
+Recheck every targeted contract, quality/whitespace, all unchanged validated/protected fingerprints
+and the final-metadata source image before freezing. Independent existing-reviewer review,
+publication, both first-attempt final-head CI runs, guarded ordinary merge and exact-main CI
+are still pending here. 8A/B1/B2 are COMPLETE as code; Sprint 8/8B remain IN PROGRESS, 8B3/8C--8E
+PLANNED and Sprint 9+ unstarted. No new agent, live IdP/AWS/IAM/secret/deployment/production
+operation, credential issuance, operator migration, rescan or dashboard mutation occurred.

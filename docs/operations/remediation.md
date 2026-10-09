@@ -6,8 +6,10 @@ main CI 37726113041. It is not a deployment or live-operation authorization. ROA
 [Sprint 8 plan](../exec-plans/active/sprint-8.md) own status and approved scope. See the
 [API contract](../api.md), [persistence](../persistence.md), SECURITY and THREAT_MODEL.
 
-The 8B2 section below describes a local worker candidate, not accepted deployment behavior.
-Accepted head remains 0008 until the active plan records its own complete gates.
+The 8B2 section below describes accepted code through PR #59 and exact main CI 37864100728,
+not deployment behavior or live authorization. Accepted head is `20261008_0009`; current
+execution-history readers require it even while the worker is disabled. Apply schema before
+updated code only under separately authorized maintenance; no operator database is auto-migrated.
 
 ## Implemented boundary
 
@@ -52,8 +54,8 @@ Do not expose it publicly, invent role headers or bypass authentication to test 
 All identities are compared as full verified issuer/subject pairs. IdP policy must prevent one
 person controlling several approval identities and grant human workflow roles only to suitable
 human accounts; cryptographic token validation cannot prove distinct physical people. Accepted
-8B1 enforces a third distinct execution requester. A dedicated worker service identity is a later
-unimplemented boundary, not part of 8A or database admission.
+8B1 enforces a third distinct execution requester. Accepted 8B2 adds separate worker service
+attribution; that identity is not a fourth human or part of 8A/database admission.
 
 ## Retry, staleness and recovery
 
@@ -89,7 +91,7 @@ explicit-PASS-only resolution policy. Do not manually change finding results to 
 
 ## Migration, data and acceptance gates
 
-Accepted repository migration head is `20261007_0008`; no deployed database migration is claimed
+Accepted repository migration head is `20261008_0009`; no deployed database migration is claimed
 or authorized by code acceptance. Apply through Alembic only and validate against an explicitly
 disposable TEST_DATABASE_URL. New authority/audit history is sensitive. Restrict DB access and protect
 backups; append-only guards do not protect against privileged schema modification/direct INSERTs.
@@ -108,19 +110,20 @@ accepted publication, guarded ordinary merge and green exact merged-main CI. PR 
 documentary prerequisite with exact merged-main CI 37706030374 at
 `24dbda32a0babcffff9698ece4a46c406690ef8e`. The
 [8B analysis preflight](../sprint-8b-preflight.md) records the design bundle approved on 2026-10-07.
-Only 8B1 admission/journal implementation was started; the rest is not implemented behavior or
-live-operation permission. Later slices need their own required
+8B1 admission/journal and 8B2 isolated-worker code are accepted; neither is live-operation
+permission. Remaining slices need their own required
 review/delivery/acceptance. The active plan records
 standing approval for routine Sprint 8 workflow; architectural/design decisions and live operations are
-not pre-approved. Execution, rescan, UI and whole-Sprint-8 acceptance remain later bounded slices;
-no later sprint is started here.
+not pre-approved. Integrated 8B acceptance, rescan, UI and whole-Sprint-8 acceptance remain later
+bounded slices; no later sprint is started here.
 
 <a name="approved-local-8b1-admission--pending-acceptance"></a>
 
 ## Accepted 8B1 admission
 
-Accepted 8B1 adds a third-human execution request/history, not an AWS worker. Use only an
-explicitly isolated, authorized local/test database migrated to accepted `20261007_0008`.
+Accepted 8B1 adds a third-human execution request/history, not an AWS worker. It introduced
+`20261007_0008`; current code requires accepted `20261008_0009` even with the worker disabled.
+Use only an explicitly isolated, authorized local/test database with the matching current schema.
 No existing database/demo or live provider is assumed or migrated by code acceptance.
 
 New requests default off. An authorized local/test operator may explicitly configure
@@ -146,8 +149,8 @@ off, and still require current capability. Changed input/key reuse is 409; do no
 to hide an ambiguous result. One request per proposal; one outstanding per target; 32 globally.
 
 A successful new admission can journal EXPIRED/BLOCKED and release only validated QUEUED/no-write
-history; failed admission rolls cleanup back. There is no periodic reaper, worker recovery or
-WRITE_INTENT phase. Later unknown-effect reservations must stay quarantined, never released by
+history; failed admission rolls cleanup back. 8B1 itself supplies no periodic reaper, worker recovery
+or WRITE_INTENT phase. 8B2 unknown-effect reservations stay quarantined, never released by
 this grant's elapsed time. A new proposal/approval is required for a new request after termination.
 
 Revision 0008 preserves old ledgers and adds protected request/journal/coordination records. Any
@@ -158,7 +161,9 @@ The subsequent test-only repair/documentary reconciliation completed through PR 
 exact merged-main CI; ROADMAP retains the original failures and final receipts. No live AWS or
 production work is authorized.
 
-## 8B2 isolated worker candidate — not authorized for live operation
+<a name="8b2-isolated-worker-candidate--not-authorized-for-live-operation"></a>
+
+## Accepted 8B2 isolated worker — not authorized for live operation
 
 The disabled-by-default one-job entry point is `python -m app.remediation.worker UUID`. It is
 never started by API, scanner or Compose startup. A default-off invocation exits with
@@ -168,7 +173,7 @@ the process or run a live job under implementation, test, CI or merge approval.
 After separate operational approval, the isolated process requires environment-only
 `REMEDIATION_WORKER_ENABLED`, `REMEDIATION_WORKER_ACCOUNT_ID`, `REMEDIATION_WORKER_REGION`,
 `REMEDIATION_WORKER_ROLE_ARN`, `REMEDIATION_WORKER_DATABASE_URL`; enabled mode requires all four
-scope/database values and PostgreSQL migrated to candidate 0009. `.env` and scanner/application
+scope/database values and PostgreSQL migrated to accepted 0009. `.env` and scanner/application
 settings are not loaded. Do not copy scanner keys/profiles or put credentials/URLs in CLI arguments.
 No worker values are added to shared `.env.example` or automatically injected into Compose.
 Runtime receives only ECS task-role temporary credentials through the fixed relative metadata

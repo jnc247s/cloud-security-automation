@@ -4,17 +4,19 @@
 prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-08
-Current accepted baseline: `main` at `cfd1fcba87dee504df9adc21c3f7382370ee5af2`
-(documentary closeout PR #58; exact merged-main
-[CI 37838138349](https://github.com/jnc247s/cloud-security-automation/actions/runs/37838138349)
-passed). Sprints 0--7, 8A and 8B1 are COMPLETE; Sprint 8/8B remain IN PROGRESS.
-**8B2 is IN PROGRESS**, authorized for an isolated disabled-by-default worker and offline tests.
+Current accepted implementation baseline: `main` at
+`7a36ddde20aafc60712b38165acd25460418ab92` (isolated-worker PR #59; exact merged-main
+[CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
+passed). Sprints 0--7, 8A, 8B1 and 8B2 are COMPLETE; Sprint 8/8B remain IN PROGRESS.
+**8B2 is COMPLETE** as separately launched, disabled-by-default, offline-validated worker code.
 The user approved ECS task-role-only credentials for its initial implementation on 2026-10-08;
 static keys, profiles, shared host roles, custom credential endpoints and fallback are excluded.
+Accepted migration head is `20261008_0009`; updated execution-history readers require it even
+with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
-8B3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. Accepted migration head remains
-`20261007_0008`; no worker implementation is accepted yet. The active plan records the bounded
-implementation and remaining gates. Existing branches, worktrees and unrelated skills are preserved.
+8B3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
+receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
+Existing branches, worktrees and unrelated skills are preserved.
 
 Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
 Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;
@@ -894,6 +896,28 @@ Original predictions, failed runs, root's truncated local-summary limit, the rev
 native temporary-folder failure, local Firefox limitation and untriaged scan-picker/navigation
 report remain preserved. No user database, existing branch/worktree or unrelated `.agents/` data
 was removed. No AWS execution, credential acquisition, IAM/secret/deployment or Sprint 9+ work.
+
+### 8B2 accepted isolated worker and documentary reconciliation — 2026-10-08
+
+**8B2 is COMPLETE** as code through PR #59 at
+`7a36ddde20aafc60712b38165acd25460418ab92`, with exact-commit REVIEW_PASS, both final-head
+first-attempt CI runs and exact main CI 37864100728 passed. Each CI run proves 3,254 backend
+tests (all 441 PostgreSQL cases, no skips, 19 existing warnings), 133 frontend units/seven files,
+all 74 Chromium/Firefox journeys with zero configured retries, quality/image/cleanup. The
+[public delivery receipt](https://github.com/jnc247s/cloud-security-automation/pull/59#issuecomment-6071961094)
+and active plan retain exact reviewed/merged trees, run durations, local image checks, original
+failures and known limits. Accepted head is 0009; scanner credentials, findings, technical results
+and five-control defaults remain unchanged. Worker code is disabled and undeployed, not live
+effect, attributed verification or production approval.
+
+Clean local main was normally fast-forwarded to that verified merge, then scoped branch
+`codex/sprint-8b2-documentary-closeout` began owner-document reconciliation and matching
+status-contract assertions only. Its targeted/full disposable-PostgreSQL/quality/Compose/image,
+independent frozen-head review, publication, both final-head CI runs, guarded merge and exact-main
+CI gates remain pending at entry. This does not introduce runtime, schema, scanner, credential,
+API, frontend, dependency or CI changes. 8B3/8C--8E remain PLANNED until the documentary prerequisite
+passes; Sprint 8/8B remain IN PROGRESS and Sprint 9+ unstarted. Preserve original predictions,
+failed receipts, all existing worktrees/branches and unrelated parent skills; no live operation.
 
 ## Status vocabulary
 

@@ -359,12 +359,12 @@ sensitive buckets rather than assuming unencrypted modern buckets are common.
 
 ## Troubleshooting
 
-The default-off Sprint 8B2 worker candidate is separate from this inventory credential chain and
+The accepted default-off Sprint 8B2 worker is separate from this inventory credential chain and
 read-only policy. Never add enable-default or any mutation permission to the scanner role or
 share a writer-enabled ECS task with API/scanner. ECS-on-EC2 host/metadata isolation also needs
 independent deployment evidence. The worker rejects profiles/host credentials and uses only the
 explicit ECS task source; it neither scans nor changes collector retries. Its narrowly scoped
-permission ceiling, incident limits and unaccepted implementation status are described in
+permission ceiling, incident limits and undeployed status are described in
 [remediation operations](remediation.md). No live configuration or IAM change is authorized here.
 
 - `ProfileNotFound`: unset an incorrect `AWS_PROFILE`, or configure that profile first.
