@@ -216,6 +216,7 @@ def exercise_failed_transition(engine, config_factory, direction):
             "remediation_execution_events",
             "remediation_admission_guard",
             "remediation_target_reservations",
+            "remediation_worker_claims",
         }
         if direction == "upgrade"
         else set()

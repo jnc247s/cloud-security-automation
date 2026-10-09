@@ -31,6 +31,7 @@ _UNRESOLVED_REGION_REVISION: Final = "20261001_0005"
 _GOVERNANCE_CATEGORY_REVISION: Final = "20261001_0006"
 _REMEDIATION_AUTHORITY_REVISION: Final = "20261006_0007"
 _EXECUTION_ADMISSION_REVISION: Final = "20261007_0008"
+_REMEDIATION_WORKER_REVISION: Final = "20261008_0009"
 _RECOVERY_DOCUMENT: Final = "docs/operations/known-limitations.md"
 _UNSAFE_DOWNGRADE_MESSAGE: Final = (
     "Downgrade blocked before revision 20260904_0002: retained scan history contains "
@@ -402,6 +403,53 @@ def _assert_execution_admission_downgrade_safe(connection: Connection) -> None:
         )
 
 
+def _downgrades_remediation_worker(current_revisions) -> bool:
+    if not current_revisions:
+        return False
+    try:
+        return any(
+            revision.revision == _REMEDIATION_WORKER_REVISION
+            for revision in script_directory.iterate_revisions(
+                current_revisions, context.get_revision_argument(), select_for_downgrade=True
+            )
+        )
+    except (KeyError, RangeNotAncestorError):
+        return False
+
+
+def _assert_remediation_worker_downgrade_safe(connection: Connection) -> None:
+    if connection.dialect.name == "postgresql":
+        connection.execute(
+            text(
+                "LOCK TABLE remediation_admission_guard, remediation_executions, "
+                "remediation_execution_events, remediation_worker_claims, "
+                "remediation_target_reservations, audit_events IN ACCESS EXCLUSIVE MODE"
+            )
+        )
+    elif connection.dialect.name == "sqlite":
+        if not connection.connection.driver_connection.in_transaction:
+            connection.execute(text("BEGIN IMMEDIATE"))
+        else:
+            connection.execute(text("UPDATE alembic_version SET version_num = version_num WHERE 0"))
+    if connection.scalar(
+        text(
+            "SELECT EXISTS (SELECT 1 FROM remediation_worker_claims UNION ALL "
+            "SELECT 1 FROM remediation_execution_events WHERE kind NOT IN "
+            "('REQUESTED', 'EXPIRED', 'BLOCKED') UNION ALL SELECT 1 FROM audit_events "
+            "WHERE event_type IN ('REMEDIATION_EXECUTION_CLAIMED', "
+            "'REMEDIATION_EXECUTION_WRITE_INTENT', 'REMEDIATION_EXECUTION_NO_WRITE', "
+            "'REMEDIATION_EXECUTION_ACKNOWLEDGED', 'REMEDIATION_EXECUTION_QUARANTINED', "
+            "'REMEDIATION_EXECUTION_OBSERVED', 'REMEDIATION_EXECUTION_OBSERVATION_FAILED'))"
+        )
+    ):
+        raise util.CommandError(
+            "Downgrade blocked before revision 20261008_0009: retained worker claims, "
+            "dispatch or observation history cannot be represented by the older schema. "
+            "No schema or data changes were applied. Keep this revision, verify backups, "
+            "and follow docs/operations/known-limitations.md."
+        )
+
+
 def run_migrations_offline() -> None:
     """Run migrations without creating a database connection."""
 
@@ -418,6 +466,11 @@ def run_migrations_offline() -> None:
         raise util.CommandError(
             "Offline downgrade blocked before revision 20261007_0008: execution admission "
             "history compatibility requires an online check."
+        )
+    if _downgrades_remediation_worker(starting_revision):
+        raise util.CommandError(
+            "Offline downgrade blocked before revision 20261008_0009: worker history "
+            "compatibility requires an online check."
         )
     if _downgrades_remediation_authority(starting_revision):
         raise util.CommandError(
@@ -461,6 +514,8 @@ def run_migrations_online() -> None:
             current_heads = context.get_context().get_current_heads()
             if _downgrades_execution_admission(current_heads):
                 _assert_execution_admission_downgrade_safe(supplied_connection)
+            if _downgrades_remediation_worker(current_heads):
+                _assert_remediation_worker_downgrade_safe(supplied_connection)
             if _downgrades_remediation_authority(current_heads):
                 _assert_remediation_authority_downgrade_safe(supplied_connection)
             if _downgrades_assessment_execution(current_heads):
@@ -492,6 +547,8 @@ def run_migrations_online() -> None:
             current_heads = context.get_context().get_current_heads()
             if _downgrades_execution_admission(current_heads):
                 _assert_execution_admission_downgrade_safe(connection)
+            if _downgrades_remediation_worker(current_heads):
+                _assert_remediation_worker_downgrade_safe(connection)
             if _downgrades_remediation_authority(current_heads):
                 _assert_remediation_authority_downgrade_safe(connection)
             if _downgrades_assessment_execution(current_heads):

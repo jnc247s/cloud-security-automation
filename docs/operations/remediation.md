@@ -6,6 +6,9 @@ main CI 37726113041. It is not a deployment or live-operation authorization. ROA
 [Sprint 8 plan](../exec-plans/active/sprint-8.md) own status and approved scope. See the
 [API contract](../api.md), [persistence](../persistence.md), SECURITY and THREAT_MODEL.
 
+The 8B2 section below describes a local worker candidate, not accepted deployment behavior.
+Accepted head remains 0008 until the active plan records its own complete gates.
+
 ## Implemented boundary
 
 8A stores immutable intent, initial approval/rejection, approval revocation, idempotency results
@@ -151,5 +154,46 @@ Revision 0008 preserves old ledgers and adds protected request/journal/coordinat
 execution, event, reservation coordinate or new execution audit blocks downgrade across 0008
 before DDL; offline crossing is blocked. Empty seed alone permits empty round-trip. Quiesce writers,
 verify a backup and obtain separate operational authorization; never delete history/disable guards.
-The separate documentary closeout still requires independent review, exact-head CI, ordinary
-guarded merge and exact merged-main CI. No live AWS/production work is authorized.
+The subsequent test-only repair/documentary reconciliation completed through PR #57/#58 with
+exact merged-main CI; ROADMAP retains the original failures and final receipts. No live AWS or
+production work is authorized.
+
+## 8B2 isolated worker candidate — not authorized for live operation
+
+The disabled-by-default one-job entry point is `python -m app.remediation.worker UUID`. It is
+never started by API, scanner or Compose startup. A default-off invocation exits with
+`WORKER_DISABLED` before database/credential lookup. Tests use fakes/Stubber only. Do not enable
+the process or run a live job under implementation, test, CI or merge approval.
+
+After separate operational approval, the isolated process requires environment-only
+`REMEDIATION_WORKER_ENABLED`, `REMEDIATION_WORKER_ACCOUNT_ID`, `REMEDIATION_WORKER_REGION`,
+`REMEDIATION_WORKER_ROLE_ARN`, `REMEDIATION_WORKER_DATABASE_URL`; enabled mode requires all four
+scope/database values and PostgreSQL migrated to candidate 0009. `.env` and scanner/application
+settings are not loaded. Do not copy scanner keys/profiles or put credentials/URLs in CLI arguments.
+No worker values are added to shared `.env.example` or automatically injected into Compose.
+Runtime receives only ECS task-role temporary credentials through the fixed relative metadata
+source. Static keys, profiles/shared host roles, web identity, custom credential/service endpoints
+and fallback are rejected. Factory/code flags cannot prove physical credential isolation.
+
+Deployment must independently prove an isolated writer task not shared with API/scanner, expected
+STS account/role and reviewed account/Region-limited IAM ceiling: enable-default and only the two
+regional settings reads. No policy/role/network/credential/deployment change is supplied here.
+EC2 settings reads do not prove key usability or future workload compatibility. Operators retain
+the approved compatibility review; no additional KMS permission or key change is inferred.
+
+Only original immutable three-human admission permits claim/intent. Pre-intent attempts are
+fenced, short-lived and capped at three across owners; expiry/revocation/changed settings terminate
+without dispatch. Committed WRITE_INTENT is the cancellation cutoff, followed by one SDK write
+with bounded timeouts and no retry. A conclusive completed call/durable receipt may release normal
+ownership; it is ACKNOWLEDGED_UNVERIFIED, not a repair verdict. Worker dependency logs are disabled
+and output is fixed classifications only; use authenticated sensitive READ journal/audit to inspect
+history, not raw provider logs or credentials. READ errors/absence must not be interpreted as success.
+
+Crash/timeout/malformed result/ambiguous receipt commit leaves possible effect and sticky
+quarantine. Restart is read-only after intent, even after grant expiry; the global three-poll/
+thirty-second observation window never renews on restart. True readback or a late original receipt
+does not clear quarantine. No repeat enable, lease/TTL release, force-clear API, automatic rollback,
+manual finding resolution or rescan is provided. Separately authorized incident recovery must prove
+the old worker cannot resume and reconcile effect before any forward repair/release is designed.
+Preserve history and obtain approval; do not create another proposal to bypass a held target.
+8B3 whole-worker acceptance, 8C exact-policy read-only verification, 8D UI and 8E remain later gates.

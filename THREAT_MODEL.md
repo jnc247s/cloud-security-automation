@@ -248,7 +248,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T06 | Scan abuse or denial of service | High | `EXECUTE` required; bounded two-worker/32-outstanding executor; 503 on capacity exhaustion | No rate limit, quota, cancellation, timeout, caller idempotency key, or global multi-process capacity control |
 | T07 | Sensitive evidence exposure | High | Authentication, read capability, structured projections, sanitized failures, and no standalone artifact listing | Every reader can see all stored accounts, normalized source artifacts on outcome detail, topology, and detailed configuration; add field/object policy before broader tenancy |
 | T08 | Audit tampering or ambiguous attribution | High | Transactional append-only audit guards; explicit scan actor subject; accepted 8A pairs authority writes with full issuer/subject/roles/capability metadata and identity digest | Legacy scan/governance events do not retain full identity context. Guards cannot prevent privileged schema changes/direct INSERTs or require direct finding/exception writes to have a paired audit event. Restrict database roles to service-only writes and protect operator access. |
-| T09 | AWS credential theft or scanner overprivilege | Critical | Standard credential chain; no key settings; documented read-only calls; no AWS mutation code | Deployment owns role scope, rotation, metadata-service controls, and secret isolation |
+| T09 | AWS credential theft or scanner overprivilege | Critical | Scanner standard credential chain and documented read-only calls remain unchanged; isolated default-off 8B2 candidate rejects fallback and constrains one action | Deployment owns role scope, rotation, metadata-service controls and isolation; candidate code is not deployment proof |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, audit/evidence-graph history guards, terminal graph-completeness checks, and fail-closed populated-downgrade preflights | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
 | T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, 5B independently paginates network sources, 5C independently validates IAM sources, 5D validates and fully paginates Analyzer sources, 5E strictly validates independent S3/KMS sources, and 5F isolates CloudTrail identity/configuration/status/selector/tag sources while retaining valid siblings | Remaining legacy collectors still discard the affected collector's otherwise valid items on malformed data |
@@ -275,10 +275,32 @@ READ does not reap; privileged INSERT/schema operators, human-account governance
 domain and fleet-scale/rate-limit risks remain. Exact-commit review and PR #55 delivery/main-CI
 gates passed; this does not validate or authorize a live provider operation.
 
-8B2's approved design still needs implementation and acceptance: isolated temporary write identity,
+8B2's approved design is now a local implementation candidate, still awaiting acceptance: isolated temporary write identity,
 durable WRITE_INTENT before one SDK write, live preconditions without a claimed AWS CAS, unknown-
 effect read-only reconciliation and sticky quarantine. No TTL release/replay after possible effect,
 automatic rollback or fabricated PASS is permitted. Admission adds none of those AWS paths.
+
+## 8B2 candidate execution threats and controls
+
+- Confused deputy/provider fallback: one explicit account/Region/role, ECS-only temporary task
+  provider with no host/static/profile/custom-endpoint fallback, fresh STS and a fixed single
+  handler. Scanner/API never construct it. Physical task/IAM/network isolation is unvalidated;
+  all containers in one task share its role. Role recreation and privileged host/DB access remain
+  trusted. No credential issuance or deployment is authorized.
+- Duplicate/unknown effect: guard-first short transactions fence pre-intent owners and persist
+  three read attempts. WRITE_INTENT plus service audit commits before at most one SDK invocation
+  (`total_max_attempts=1`). No DB locks span AWS. Missing result/crash/timeout/parsing failure
+  quarantines conservatively; post-intent owner/lease cannot be reclaimed. Even a late receipt or
+  desired readback retains prior quarantine/capacity. No force clear or compensating disable.
+- Stale authority/state: strict false and exact complete KMS context, fresh eligibility/governance/
+  approval and grant checks after lock waits. Intent commit is the revocation cutoff. Expiry or
+  later revocation cannot prove cancellation; an old worker paused after its final deadline check
+  might resume at AWS. Two reads/SQL cannot provide CAS, KMS usability or workload compatibility.
+- False repair/leakage: structured sensitive READ history, separate service attribution, paired
+  immutable audit, private claim coordinates, sanitized process output and suppressed dependency
+  logs. Durable global three-poll/thirty-second recovery observes only; it never creates PASS,
+  finding resolution or attributed verification. Exact-policy rescan remains 8C. All candidate
+  security, runtime, review and delivery gates remain pending in the active plan.
 
 ## Future-boundary threats
 

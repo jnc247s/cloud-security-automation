@@ -315,7 +315,7 @@ def test_postgres_predecessor_upgrade_keeps_legacy_history_and_matches_metadata(
     with postgres_engine.begin() as connection:
         command.upgrade(migration_config(connection), "head")
         command.check(migration_config(connection))
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261007_0008"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261008_0009"
     with Session(postgres_engine) as session:
         assert (
             session.scalars(select(AuditEvent.event_id).order_by(AuditEvent.event_id)).all()

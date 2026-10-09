@@ -165,6 +165,33 @@ def exercise_execution_http(engine, monkeypatch, tmp_path):
             "QUEUED",
             "EXPIRED",
             "BLOCKED",
+            "CLAIMED",
+            "WRITE_INTENT",
+            "NO_WRITE",
+            "ACKNOWLEDGED",
+            "QUARANTINED",
+        }
+        # Only the approved additive worker vocabulary changes. Old human event bytes and
+        # closed input contracts remain version 1; no worker launch/credential API is added.
+        legacy = schema["components"]["schemas"]["ExecutionEventContent"]
+        assert set(legacy["properties"]["phase"]["enum"]) == {"QUEUED", "EXPIRED", "BLOCKED"}
+        assert legacy["properties"]["schema_version"]["const"] == "1.0.0"
+        worker = schema["components"]["schemas"]["WorkerEventContent"]
+        assert worker["additionalProperties"] is False
+        assert worker["properties"]["schema_version"]["const"] == "2.0.0"
+        assert set(schema["components"]["schemas"]["WorkerEventKind"]["enum"]) == {
+            "CLAIMED",
+            "WRITE_INTENT",
+            "NO_WRITE",
+            "ACKNOWLEDGED",
+            "QUARANTINED",
+            "OBSERVED",
+            "OBSERVATION_FAILED",
+        }
+        assert set(schema["components"]["schemas"]["ExecutionRequest"]["properties"]) == {
+            "proposal_sha256",
+            "approval_decision_id",
+            "reason",
         }
         assert client.post(route + "/execute", json=body, headers=requester).status_code == 404
         sign_in(client, issuer)

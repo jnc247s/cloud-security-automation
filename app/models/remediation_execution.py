@@ -13,6 +13,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,13 +61,25 @@ class RemediationExecutionEvent(Base):
     __table_args__ = (
         UniqueConstraint("execution_id", "sequence", name="uq_remediation_execution_sequence"),
         UniqueConstraint("audit_event_id", name="uq_remediation_execution_audit"),
-        CheckConstraint("sequence BETWEEN 1 AND 2", name="execution_event_sequence"),
-        CheckConstraint("kind IN ('REQUESTED', 'EXPIRED', 'BLOCKED')", name="execution_event_kind"),
+        CheckConstraint("sequence >= 1", name="execution_event_sequence"),
+        CheckConstraint(
+            "kind IN ('REQUESTED', 'EXPIRED', 'BLOCKED', 'CLAIMED', 'WRITE_INTENT', "
+            "'NO_WRITE', 'ACKNOWLEDGED', 'QUARANTINED', 'OBSERVED', 'OBSERVATION_FAILED')",
+            name="execution_event_kind",
+        ),
         CheckConstraint("length(event_sha256) = 64", name="execution_event_digest"),
+        Index(
+            "uq_remediation_execution_single_intent_receipt",
+            "execution_id",
+            "kind",
+            unique=True,
+            sqlite_where=text("kind IN ('WRITE_INTENT', 'ACKNOWLEDGED')"),
+            postgresql_where=text("kind IN ('WRITE_INTENT', 'ACKNOWLEDGED')"),
+        ),
         CheckConstraint(
             "(sequence = 1 AND kind = 'REQUESTED' AND previous_event_sha256 IS NULL) OR "
-            "(sequence = 2 AND kind IN ('EXPIRED', 'BLOCKED') "
-            "AND length(previous_event_sha256) = 64)",
+            "(sequence >= 2 AND kind <> 'REQUESTED' AND length(previous_event_sha256) = 64 "
+            "AND (kind NOT IN ('EXPIRED', 'BLOCKED') OR sequence = 2))",
             name="execution_event_transition",
         ),
     )
@@ -78,7 +91,7 @@ class RemediationExecutionEvent(Base):
         ForeignKey("audit_events.event_id", ondelete="RESTRICT"), nullable=False
     )
     sequence: Mapped[int] = mapped_column(Integer, nullable=False)
-    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
     content: Mapped[JsonObject] = mapped_column(json_document_type(), nullable=False)
     event_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     previous_event_sha256: Mapped[str | None] = mapped_column(String(64))
@@ -112,4 +125,37 @@ class RemediationTargetReservation(Base):
     action_id: Mapped[str] = mapped_column(String(64), nullable=False)
     execution_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("remediation_executions.execution_id", ondelete="RESTRICT")
+    )
+
+
+class RemediationWorkerClaim(Base):
+    """Private mutable fencing coordinate. Never returned by execution READ APIs."""
+
+    __tablename__ = "remediation_worker_claims"
+    __table_args__ = (
+        CheckConstraint("length(token_sha256) = 64", name="worker_token_digest"),
+        CheckConstraint("generation >= 1", name="worker_claim_generation"),
+        CheckConstraint("read_attempts BETWEEN 0 AND 3", name="worker_read_budget"),
+        CheckConstraint("readback_attempts BETWEEN 0 AND 3", name="worker_readback_budget"),
+        CheckConstraint(
+            "(readback_attempts = 0 AND readback_started_at IS NULL) OR "
+            "(readback_attempts > 0 AND readback_started_at IS NOT NULL)",
+            name="worker_readback_window",
+        ),
+        CheckConstraint("length(trim(expected_role_arn)) > 0", name="worker_role"),
+        Index("ix_remediation_worker_claims_lease", "lease_until", "execution_id"),
+        Index("ix_remediation_worker_claims_intent", "write_intent_event_id"),
+    )
+    execution_id: Mapped[UUID] = mapped_column(
+        ForeignKey("remediation_executions.execution_id", ondelete="RESTRICT"), primary_key=True
+    )
+    token_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    expected_role_arn: Mapped[str] = mapped_column(String(2048), nullable=False)
+    generation: Mapped[int] = mapped_column(Integer, nullable=False)
+    read_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+    readback_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+    readback_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_until: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    write_intent_event_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("remediation_execution_events.event_id", ondelete="RESTRICT")
     )

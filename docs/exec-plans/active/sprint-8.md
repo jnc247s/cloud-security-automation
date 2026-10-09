@@ -672,7 +672,7 @@ independent review when the completed 8B1 candidate is ready; no delegation is s
 | Bounded implementation | State | Scope |
 | --- | --- | --- |
 | 8B1 | COMPLETE | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
-| 8B2 | PLANNED | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
+| 8B2 | IN PROGRESS | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
 | 8B3 | PLANNED | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
 
 8B1 starts on `codex/sprint-8b1-execution-authority` at accepted `24dbda3`, with remote main
@@ -1185,3 +1185,152 @@ Only these documentation receipts may now be added, then contracts/quality/white
 unchanged three test fingerprints rechecked before a scoped two-file commit. Exact independent
 review by the existing reviewer, ordinary publication, both final-head CI, guarded merge and
 exact merged-main CI remain pending. No worker/later slice or Sprint 9+ work starts here.
+
+### Approved 8B2 worker implementation and credential source — 2026-10-08
+
+PR #58 completed the preceding two-file reconciliation at main
+`cfd1fcba87dee504df9adc21c3f7382370ee5af2`; exact merged-main CI 37838138349 passed.
+Earlier preparation-time pending gates and failed receipts above remain historical, not current
+blocks. The user approved 8B2's disabled-by-default isolated worker implementation with offline
+tests, then explicitly approved ECS task-role-only credentials as its initial source. This
+resolves the provider design gate; routine delivery remains covered by the standing workflow.
+No ECS resources, IAM policy/role, credential issuance, deployment or live operation is authorized.
+
+8B2 starts from that freshly verified clean local/remote main on
+`codex/sprint-8b2-isolated-worker`, reusing this checkout. Existing branches/worktrees and the
+parent's three unrelated untracked skill files remain preserved and excluded. 8B2 is IN PROGRESS,
+not accepted; 8A/B1 remain COMPLETE, 8B3/8C--8E PLANNED and Sprint 9+ unstarted.
+
+Implement the approved preflight's decisions 1--5 within this slice: a separately launched
+default-off worker for exactly configured account/Region/expected role; exclusive ECS temporary
+task credentials, no static/profile/host-role/scanner fallback or custom endpoint; fresh STS and
+strict regional false/KMS preconditions; fenced pre-intent claims; short guard-first ordered
+transactions committing WRITE_INTENT and audit before at most one SDK write; bounded readback;
+read-only unknown-effect recovery with sticky quarantine and reservation. Keep the five-minute
+dispatch grant, no post-intent owner reclaim/repeat write/TTL release/rollback, and no network
+inside database transactions. Readback and acknowledgment are unverified observations, not
+technical PASS, finding resolution or a rescan. Keep scanner authentication and retry policy intact.
+
+Add worker states atomically across contracts, model, a new Alembic revision, service, READ API
+and owning documentation; retain old immutable request/event bytes and predecessor migrations.
+Recheck every caller and enum consumer. Tests use fakes/Stubber and synthetic credentials only,
+including actual transport-attempt limits, scope/provider/endpoint negatives, authority races,
+claim fencing, crash/recovery, paired audit rollback, populated upgrades and pre-DDL full-path
+downgrade refusal on SQLite/disposable PostgreSQL. Run targeted tests, Ruff/format, full regression,
+runtime/Compose/image and relevant security acceptance. Required independent exact-head review,
+ordinary publication, both final-head CI runs, guarded merge and exact-main CI remain acceptance
+gates. Reuse the existing authorized reviewer only when a complete frozen candidate is ready.
+
+The configuration and backend skills preserve process separation and existing Python/container
+architecture; PostgreSQL guidance keeps AWS outside short consistently ordered transactions.
+The documentation skill preserves original predictions and distinguishes this approval from
+implementation/acceptance. ECS task credentials alone do not prove deployment-level isolation;
+API/scanner and worker must not share a writer-enabled task, and production isolation needs
+separately authorized deployment evidence. No exact-policy scan or UI mutation belongs in 8B2.
+
+### 8B2 local construction and initial validation receipts — 2026-10-08
+
+Implementation remains a local, uncommitted candidate on the scoped branch. Added independent
+worker settings/factory/one-job entry point, private fenced coordination, linked version-2 service
+events, one SDK dispatch after committed intent, sticky recovery and durable readback budget/window.
+Candidate revision is `20261008_0009`; accepted-main head is still 0008. SDK host model directories
+and AWS_DATA_PATH are excluded, endpoints are fixed/regional, CSM telemetry is disabled and process
+dependency logging is suppressed. No API/scanner factory startup, new public launch route, default
+policy, credential issuance, IAM/Compose startup, rescan or UI change. Owning domain documents now
+describe this candidate and its compatibility/operational limits, not accepted/live behavior.
+
+Retain initial outcomes rather than calling them passes:
+
+- System-Python adapter selection first had three constructor-flag assertion failures and test
+  setup errors; the SDK consumes the ignore-endpoint flag rather than retaining it in client
+  metadata. Corrected tests assert the constructor flag plus actual fixed endpoint routing after
+  hostile late environment changes. Isolated rerun passed 137 checks, then legacy SQLite/schema/
+  adapter selection passed 179. These used synthetic credentials, no AWS transport.
+- The first new worker suite had seven failures/22 passes: six test setup/assertion issues and one
+  implementation issue where an expired pre-intent lease bypassed safe no-write termination.
+  Fixed the expiry ordering without weakening assertions; 29 worker checks then passed. A new
+  migration test initially tried current code against missing 0009 schema; populated B1 is now
+  seeded before safe downgrade, then upgraded/revalidated. Reflected SQLite CHECK clause order
+  is not stable; round-trip compares every column/constraint/FK/index and exact triggers/rows,
+  while refused downgrade still compares byte-identical complete DDL and rows. Combined offline
+  selection passed 231; subsequent source additions still require fresh complete gates.
+- A disposable PostgreSQL/API attempt stopped at collection: system Python lacked the already
+  required httpx2 dependency. It ran no tests and cleaned its owned database/TEMP. Correct project
+  interpreter is the existing parent `.venv\Scripts\python.exe`, not a dependency installation.
+  Corrected selection passed 260 and failed one protected signed-API enum expectation that still
+  described admission-only phases. Updated the exact expectation atomically with the approved
+  worker vocabulary, adding explicit old version-1 phase/bytes and closed-input/version assertions.
+  A subsequent native attempt passed 34 worker cases but API setup failed on shared pytest TEMP
+  permissions; it is not API coverage. All subsequent gates use uniquely owned native TEMP.
+- Correct project SDK 1.43.87 adapter rerun passed 127 checks, including actual single transport
+  attempts, exclusive provider/host model/endpoint/telemetry negatives; no warnings or live AWS.
+  Ruff and format passed (415 files) before additional PostgreSQL fault/rollback cases were added.
+
+Next run the unchanged provided validator with that interpreter, an explicitly owned disposable
+PostgreSQL and native TEMP, targeted checks then complete regression, quality/Compose/image.
+Also validate the separate process/image offline and fresh frontend quality/bundle. Existing native
+Firefox launch failure is not rerun unchanged; required fresh Linux CI/both-browser gates remain.
+No independent review, commit, push, PR or merge has occurred for this candidate yet. Freeze only
+after all local gates, reuse the existing authorized reviewer, and preserve every branch/worktree/
+unrelated skill. 8B2/8B remain IN PROGRESS; 8B3/8C--8E and Sprint 9+ are unstarted.
+
+### 8B2 first complete local regression and corrected dependency — 2026-10-08
+
+The expanded offline/disposable-PostgreSQL selection passed 285 tests in 173.06s. Fresh frontend
+typecheck/lint, 133 unit tests/seven files (3.81s) and production bundle passed; no frontend source
+changed and no native browser pass is claimed. The unchanged isolated validator then passed 353
+focused tests in 123.79s, Ruff and formatting (415 files), but complete regression ended with two
+failures, 3,252 passes and 19 existing SQLite datetime-adapter warnings in 1313.54s. All 441
+PostgreSQL cases ran with no skips; the owned loopback/tmpfs database and native TEMP were removed.
+Compose/image gates were not reached, and this failed run is not acceptance.
+
+Both failures were `test_failed_transition_is_atomic_and_retryable[upgrade]` in the PostgreSQL and
+SQLite unresolved-region suites. Their shared helper's exact added-table set omitted the new
+approved `remediation_worker_claims` table. Failure injection, complete atomic rollback, retained
+rows and successful retry had already passed before that final set comparison. Initial progress
+output was mistaken for a concurrency failure; the final traces establish this schema-expectation
+cause instead. All five existing writer/downgrade races passed. All 37 candidate-file fingerprints
+matched before any correction. Add only the worker table to the exact set, retaining empty-table,
+guard-row, original-history, DDL rollback and all other assertions; no runtime/migration change,
+timeout increase, skip, retry waiver or weakened assertion. This adds one protected-test caller to
+the 38-file candidate. Include both affected suites in fresh focused checks and then rerun every
+required local gate before freeze/review/publication. 8B2 remains unaccepted and no later slice,
+credential issuance or live operation has started.
+
+### 8B2 corrected complete local validation — 2026-10-08
+
+Fresh permission-reviewed execution used the existing project interpreter and unchanged provided
+validator, a newly owned loopback/tmpfs PostgreSQL 16 database and uniquely owned native TEMP.
+The focused selection included both corrected migration suites and passed 373 tests in 146.91s.
+Ruff passed; all 415 files were already formatted. Complete regression passed all 3,254 tests in
+1304.43s, including all 441 PostgreSQL cases, no skips and the 19 existing SQLite datetime-adapter
+warnings. Both previously failing upgrade-retry cases and all five protected downgrade races
+passed. Whitespace, quiet Compose validation and a fresh-source API/dashboard image build passed,
+wrapper exit 0. Only this run's database and TEMP subtree were removed; user databases were untouched.
+
+All 38 candidate fingerprints matched after validation. All three existing worktrees, 67 local
+branches and the parent's three unrelated untracked `.agents/` skill files remain preserved and
+excluded. No dependency, CI, frontend, scanner, collector, rule or frozen predecessor migration
+changed. The independent frontend quality/unit/bundle receipt above remains applicable to those
+unchanged sources; fresh exact-head Linux CI/both-browser gates are still required.
+
+Pinned the freshly built image by immutable ID
+`sha256:c5634da2dfe6fb1012d4117ebc460daade45e6ea29ac70a04b884864a4d5eb6c` and ran three separate
+containers with `--network none`, no host mounts, no operator database or real credentials:
+
+- The standalone worker returned `WORKER_DISABLED`, exit 0, before database/credential lookup.
+- The installed image SDK (boto3/botocore 1.43.110) passed synthetic ECS metadata, built-in-only
+  models, fixed regional endpoints, disabled CSM/smart-defaults probing, fresh STS and strict
+  observations/acknowledgment, plus actual one-attempt timeout and 503 transports, exit 0.
+- API import/OpenAPI registration passed with explicit test/development and SQLite settings:
+  old version-1 event schema, version-2 discriminator, unchanged closed three-field admission
+  input, health route and no public worker route/factory import, exit 0. This is an image
+  import/schema check, not a running HTTP/lifespan or whole-worker 8B3 acceptance claim.
+
+Only this receipt is added after the full run; recheck contracts, quality, whitespace and unchanged
+source fingerprints before a scoped freeze/commit. Independent exact-head review by the existing
+authorized reviewer, ordinary publication, both final-head CI runs, guarded merge and exact-main
+CI remain pending. No worker is enabled or deployed, and no live IdP/AWS/IAM/secret/production
+operation, operator migration, rescan, dashboard mutation, later slice or Sprint 9+ work occurred.
+8B2 and Sprint 8 remain IN PROGRESS, not COMPLETE; accepted-main migration remains 0008 until
+the candidate's required acceptance gates succeed.
