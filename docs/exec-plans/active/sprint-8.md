@@ -673,7 +673,7 @@ independent review when the completed 8B1 candidate is ready; no delegation is s
 | --- | --- | --- |
 | 8B1 | COMPLETE | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
 | 8B2 | COMPLETE | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
-| 8B3 | PLANNED | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
+| 8B3 | IN PROGRESS | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
 
 8B1 starts on `codex/sprint-8b1-execution-authority` at accepted `24dbda3`, with remote main
 reverified exact and the four owned analysis Markdown changes retained. The analysis branch,
@@ -1508,3 +1508,195 @@ Fresh exact-new-head review by the existing reviewer, both first-attempt final-h
 guarded ordinary merge and exact merged-main CI are still required. No new architecture, runtime,
 schema, API, permission, credential, default, deployment, live operation or later slice is added.
 8A/B1/B2 remain COMPLETE as code; Sprint 8/8B IN PROGRESS; 8B3/8C--8E PLANNED and 9+ unstarted.
+
+### 8B2 documentary acceptance and 8B3 analysis entry — 2026-10-11
+
+PR #60 is accepted at `04803adbb8baf825ec62f19c5b2bea015f907277`, retaining reviewed head
+`c17d47dc2f57b8e38f5c2faf363ca0561b58d79d`, tree
+`5320218b39707d353fe96f91413ab1dc7f9b4099`, and exactly parents accepted implementation `7a36ddde`
+and reviewed documentary head. Exact-head REVIEW_PASS closes all three earlier LOW documentation
+findings; the failed review and intentional red reproduction above remain historical evidence.
+The user's 2026-10-11 confirmation approved the exact twelve-documents/one-contract-test public
+push and PR. Both first-attempt final-head CI runs passed, followed by an expected-head guarded
+ordinary merge and green exact-main CI. No admin bypass, force push or branch deletion occurred.
+
+| Verified CI | Backend result | Other gates |
+| --- | --- | --- |
+| Push 38168820905 | 3,259 passed / 19 existing warnings / 1457.07s | All 441 PostgreSQL cases; 133 frontend units/seven files; 74 browsers (37 Chromium/37 Firefox), zero configured retries; quality/image/cleanup and all 18 job steps |
+| PR 38168905080 | 3,259 passed / 19 existing warnings / 1494.20s | Same complete gates |
+| Exact main 38171117595 at 04803ad | 3,259 passed / 19 existing warnings / 1464.94s | Same complete gates |
+
+Provider job logs/counts and terminal metadata were checked, not inferred from a green summary.
+The documentary prerequisite is closed; its earlier pending descriptions are preparation-time
+history. This acceptance changes no runtime, schema, API, permission or production authority.
+All 68 pre-existing local branches, three worktrees and unrelated parent skills were preserved.
+
+Clean local/remote main at the accepted merge was reverified before creating the scoped
+`codex/sprint-8b3-preflight` branch. The [8B3 preflight](../../sprint-8b3-preflight.md) inspects
+signed authority/API callers, worker/closed adapter, audit/history/claim persistence, scanner and
+finding ownership, separate existing tests and runtime packaging. Recommended bounded delivery:
+8B3.1 integrated signed HTTP/real PostgreSQL/offline adapter/READ coverage; 8B3.2 combined faults,
+races and conservative recovery; 8B3.3 installed-image/process/security acceptance and 8B closeout.
+Accept one delivery slice before advancing. No new architectural decision is identified for the
+test-only first slice; standing implementation workflow applies only within accepted design.
+Stop before a new credential source, recovery policy, API/schema/topology or success definition.
+
+Only analysis/progress Markdown is changed at this checkpoint. No implementation, application
+launch, new reviewer, commit, push, PR or merge in 8B3; no live IdP/AWS/IAM/secret/deployment,
+operator migration, production operation, rescan or dashboard mutation. 8A/B1/B2 remain COMPLETE;
+Sprint 8/8B IN PROGRESS; 8B3/8C--8E PLANNED; Sprint 9+ unstarted. Native Firefox launch and the
+user's local picker/back-navigation report remain limitations, not fixes claimed from Linux CI.
+
+Analysis validation: `python -m pytest tests/unit/contracts -q -p no:cacheprovider` with a freshly
+owned workspace basetemp passed all 98 cases in 3.67s. Ruff check and formatting passed; the latter
+reported 416 files. A nonfatal cache-write access warning was followed by a no-cache formatting
+check, also passed/416. The existing Python launcher-location warning remains visible; no repair
+or environment installation is claimed. Whitespace passed, and only the owned TEMP subtree was
+removed. All prior branch refs/worktrees and the parent's three skill hashes/status remain intact.
+No fresh full regression, PostgreSQL, image, application or browser acceptance ran in this analysis;
+those remain implementation gates. Only ROADMAP, this active plan and the new preflight are edited.
+The verification/backend/database/documentation skills kept the plan within existing FastAPI/ECS
+and short transactions, traced the whole signed-to-history journey and preserved owning documents
+and historical receipts; no platform migration, external Page write or runtime change was made.
+
+### 8B3.1 test-only execution plan and implementation entry — 2026-10-11
+
+The user requested continued Sprint 8 goal work; standing routine authority applies within the
+approved 8B design and completed [8B3 preflight](../../sprint-8b3-preflight.md). No new architectural
+decision is introduced. Remote main and successful exact-main CI were reverified at accepted
+04803ad before implementation. Reuse the scoped `codex/sprint-8b3-preflight` branch and preserve
+its three owned analysis Markdown changes; do not develop on main or replace any worktree.
+
+| Bounded acceptance slice | Status | Scope |
+| --- | --- | --- |
+| 8B3.1 | IN PROGRESS | Signed human proposal/approval/admission, real migrated DB, offline real worker/closed adapter, public READ/replay and unchanged technical/finding history |
+| 8B3.2 | PLANNED | Combined deterministic fault/race/recovery acceptance |
+| 8B3.3 | PLANNED | Installed-image/separate-process/security acceptance and 8B closeout |
+
+Predictions: add a focused shared test helper and SQLite/explicit disposable-PostgreSQL journeys
+for expected-absence, ARN and exact legacy non-ARN key contexts; already-enabled and changed-key/
+absence no-write behavior; three signed human identities with real production-mode authorization;
+durable intent/audit before one offline SDK write; v1/v2 READ/audit digest fidelity; no autoflush/
+mutation from history/replay; no provider/worker construction from API startup/admission; no scan,
+assessment, finding/exception/governance or protected evidence changes. Intercept synthetic ECS
+metadata and every SDK transport, forbid ambient host AWS configuration, and assert closed API/
+worker/engine transactions plus separate PostgreSQL NOWAIT lock probes at provider/AWS/close.
+No application, migration, dependency, IAM, frontend or CI change is planned. Update only the
+current progress contract to reflect 8B3 IN PROGRESS; preserve old predictions/receipts.
+
+Validate new journeys first, affected API/worker/security/history/migration tests, then Ruff,
+formatting, complete regression with a freshly owned disposable PostgreSQL, Compose/image and
+documentation. Freeze for the existing authorized reviewer, resolve actionable findings, require
+both first-attempt final-head CI runs, expected-head guarded ordinary merge and green exact-main
+CI before the next delivery slice. 8B3/8B/Sprint 8 stay incomplete; 8C--8E/Sprint 9+ do not start.
+No live AWS/IdP/IAM/secret/deployment/production operation, operator DB migration, additional
+reviewer, force clear, rescan or dashboard mutation is authorized or performed.
+
+Initial local implementation adds the three focused test files and current progress-contract
+assertions only; runtime/schema/API/security/defaults remain unchanged. Seven migrated-SQLite
+journeys passed in 15.30s with reviewed local socket access. Subsequent stricter human audit and
+closed-input assertions still require fresh validation. Initial lint found only newly added long
+lines; formatting and a bounded line wrap corrected them without assertion changes.
+
+The first restricted native test session produced no result and was interrupted (exit 1).
+A single-case diagnostic then emitted a 30-second thread dump: Windows socket.py accept/
+_fallback_socketpair -> ProactorEventLoop self-pipe -> AnyIO/TestClient.__enter__, before HTTP
+or worker execution. That session was also stopped (exit 1), not called a passing or transient
+application run. Reviewed local-socket permission allowed the unchanged journey to run; no
+authentication, production configuration, timeout/assertion waiver or runtime repair was added.
+Both interrupted sessions' uniquely owned TEMP subtrees are cleaned separately after exact-path
+validation; no user files, credentials, database or worktree is removed. Targeted PostgreSQL,
+full regression, independent exact-head review and delivery remain pending at this checkpoint.
+
+Fresh validation of the strengthened candidate passed all 335 focused API/worker/security/
+contract cases in 68.30s, including the seven signed-HTTP/migrated-SQLite journeys. Exact focused
+paths: `tests/api/test_remediation_worker_acceptance.py`, `test_remediation_executions.py` and
+`test_remediations.py` in the same API directory; `tests/unit/test_remediation_worker_aws.py`,
+`test_remediation_worker_process.py`, `services/test_remediation_worker.py`,
+`database/test_remediation_worker_migration.py`, `database/test_execution_admission_migration.py`,
+`contracts/` and `security/` under `tests/unit/`. Ruff check, 419-file formatting and whitespace
+passed. Formatting emitted a nonfatal cache-write access warning; an additional `--no-cache`
+formatting check also passed, all 419 files. Only the uniquely owned test TEMP was removed.
+SHA-256 comparisons confirm all nine candidate files and 485 other tracked files were unchanged
+through that test run. These are focused results, not complete PostgreSQL or regression acceptance.
+
+The provided full validator's first attempt exited 1 before creating PostgreSQL or running its
+focused/full suites because the local Docker engine was unavailable. Its owned TEMP was removed;
+no validation database was created and no user database/container was touched. Read-only checks
+verified context `desktop-linux` and the local named-pipe endpoint, not a remote Docker host.
+The exact installed Docker Desktop executable was started hidden as a local test prerequisite.
+Desktop/backend processes started, but the engine and Desktop status requests remained
+unresponsive; categorized startup diagnostics contained deadline errors. `wsl --status` reported
+version 2 and `wsl --list --verbose` showed `docker-desktop` stopped. The two tracked read-only
+diagnostic clients were interrupted (exit 1), not reported as engine readiness. No service change,
+WSL shutdown/reset, reinstall, container/volume deletion, database migration or credential action
+was attempted. Local engine readiness is required before retrying the unchanged owned disposable
+PostgreSQL/full/container validation; none of those gates is waived. Independent frozen-candidate
+review and publication remain pending, and 8B3.1/8B3/Sprint 8 are not complete.
+
+### 8B3.1 local validation and review preparation — 2026-10-11
+
+After the user resumed the goal, local Docker engine 29.5.2 responded successfully. The client
+still targeted `desktop-linux`/its local named pipe, with no host/context override to a remote
+engine. Remote main remained accepted 04803ad; all existing branches, three worktrees and the
+parent's three unrelated skill files/status were preserved. The earlier stopped-engine and
+restricted-socket failures above remain historical evidence, not passing runs or waived gates.
+
+The unchanged candidate passed all 491 focused cases in 419.51s, with an explicitly owned
+loopback/tmpfs PostgreSQL (verified version 16.15), including all fourteen new SQLite/PostgreSQL
+journeys. The run then exited 1 because the root's run-only `RUFF_NO_CACHE=1` was invalid: this
+installed Ruff accepts `true`/`false`. No lint/full-regression success is claimed for that run.
+Its owned database and TEMP were removed. SHA-256 checks confirmed all nine candidate files and
+485 other tracked files were unchanged, retaining the exact-source focused evidence.
+
+Correcting only that process cache setting to `true`, the provided validator continued the
+remaining gates on another fresh owned PostgreSQL 16 container. It did not reuse an operator
+DATABASE_URL/TEST_DATABASE_URL, weaken assertions, change source or repeat a cloud write.
+`python -m ruff check .` and `python -m ruff format --check .` passed (419 files formatted);
+complete `python -m pytest` passed 3,274 cases in 1370.08s, no skips, including all 448 PostgreSQL
+cases across 24 files. The 19 existing warnings are SQLite datetime-adapter deprecations in the
+protected migration tests. Whitespace and quiet Compose validation passed; the image build
+passed using cached layers. Validator exit was 0, followed by exact owned-database/TEMP cleanup.
+Separate checks found no remaining labeled validation container or either owned TEMP subtree.
+
+The actual built immutable image is
+`sha256:4f5fe51eca6bb118982e7422c08248559191c6b38438fdafa347b76f4a33b801`.
+Networkless, read-only, unprivileged probes without host mounts, credentials or a database verified
+Python 3.12.15, boto3/botocore 1.43.110 and `WORKER_DISABLED`, exit 0, with the required synthetic
+UUID. These are installed-version/default-off probes, not enabled separate-process/whole-8B3,
+deployment or physical-isolation acceptance. Frontend/browser regressions remain CI gates; no
+new native Firefox coverage or picker/navigation repair is claimed.
+
+All nine candidate and 485 protected tracked-file hashes remained identical through focused/full/
+image validation, before these receipt-only owner updates. No runtime, API, schema, migration,
+permission, credential, dependency, scanner, frontend or CI behavior changes. Migration head
+0009, accepted catalogs/profile, separate remediation/finding/technical lifecycles and all live/
+production authorization limits are unchanged. The verification/database/documentation skills
+kept the signed-to-history story offline, checked short transaction/lock boundaries and preserved
+actual failures and original predictions in their owning records. Validate final receipts, freeze
+the exact candidate for the existing reviewer and resolve findings before final-head CI, guarded
+ordinary merge and exact-main acceptance. 8B3.1/8B3/Sprint 8 stay IN PROGRESS; 8B3.2/8B3.3 and
+8C--8E remain PLANNED, and Sprint 9+ remains unstarted.
+
+### 8B3.1 exact source review and final receipt preparation — 2026-10-11
+
+The existing authorized reviewer returned REVIEW_PASS with no actionable HIGH/MEDIUM/LOW
+findings for exact head `daff23a0b43e4e2081f5ba436be3be546309d1e6`, tree
+`e51a1acb858588659bbe3696b95175393a5696d8`, sole parent accepted `04803ad`. The scoped local
+commit contains exactly five Markdown/four test files and the worktree/index are clean.
+Independent targeted validation passed 335 affected offline cases in 66.22s (including the
+seven new SQLite journeys and 98 contracts), all seven new PostgreSQL journeys in 31.52s
+with no skips on separately owned loopback/tmpfs PostgreSQL 16.15, Ruff/419-file formatting
+and committed whitespace. Only that reviewer's exact database and two owned TEMP subtrees
+were removed. Before/after all nine candidate and 485 other tracked fingerprints, normalized
+committed blobs, 69 branch refs, three worktrees and the three parent skill hashes matched.
+
+The reviewer inspected, but did not independently rerun, root's complete 3,274-case/448-PG
+regression and Compose/product-image/default-off evidence. No enabled separate process,
+frontend/browser, physical-isolation or live-provider acceptance is claimed. This receipt
+updates only owning Markdown; all tested source, protected interfaces, accepted design and
+operational limits remain unchanged. Validate the receipt-only final tree and obtain the same
+reviewer's exact-head confirmation before publishing its scoped PR. Both first-attempt
+final-head CI runs, guarded ordinary merge and exact merged-main CI remain required for
+acceptance. No push, PR, merge, new reviewer or later-slice/live operation has occurred at
+this preparation checkpoint; 8B3.1/8B3/8B/Sprint 8 remain IN PROGRESS.

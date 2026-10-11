@@ -6,6 +6,20 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8B3.1 — local integrated offline acceptance candidate, not accepted
+
+- Adds signed three-human proposal/approval/admission -> real migrated SQLite/PostgreSQL ->
+  existing worker/closed ECS-only SDK adapter -> authenticated v1/v2 history/replay tests.
+  Covers exact expected-absence, ARN/legacy key context and changed-precondition no-write cases.
+- Intercepts every synthetic credential/AWS transport, checks durable intent/paired service audit
+  before enable, closed transactions/separate PostgreSQL lock probes, and unchanged protected
+  evidence, scan, assessment, findings, exceptions and governance. READ/replay never dispatches.
+- No application, schema, interface, authentication, scanner credential, dependency, frontend or
+  CI change. Local validation and tested-source independent review passed; final receipt-head
+  confirmation and CI/delivery acceptance remain required;
+  whole 8B3, linked rescan,
+  dashboard and Sprint 8 remain incomplete. No live or production operation is authorized.
+
 <a name="sprint-8b2--local-isolated-worker-candidate-acceptance-pending"></a>
 
 ### Sprint 8B2 — accepted isolated-worker code, not deployed

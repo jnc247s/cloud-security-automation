@@ -205,3 +205,23 @@ manual finding resolution or rescan is provided. Separately authorized incident 
 the old worker cannot resume and reconcile effect before any forward repair/release is designed.
 Preserve history and obtain approval; do not create another proposal to bypass a held target.
 8B3 whole-worker acceptance, 8C exact-policy read-only verification, 8D UI and 8E remain later gates.
+
+## Integrated offline acceptance candidate 8B3.1
+
+The test-only first slice of the [8B3 preflight](../sprint-8b3-preflight.md) joins production-mode
+signed human authority/admission, real migrated database history, the existing isolated-worker
+driver/closed ECS-only adapter and authenticated execution READ/replay. Tests intercept synthetic
+credential metadata and SDK responses; they do not access an ECS metadata service or AWS.
+The PostgreSQL version uses only an explicitly configured disposable TEST_DATABASE_URL and
+separate NOWAIT lock probes. Expected-absence, ARN and exact legacy key contexts are retained;
+already-enabled or changed key/absence preconditions produce NO_WRITE without enable dispatch.
+
+The candidate verifies durable intent/audit before one offline write and acknowledged-unverified
+history without changing scans, technical results, findings, exceptions or governance. Local
+focused/full backend and PostgreSQL, quality, Compose/image and cleanup gates passed, followed by
+exact tested-source REVIEW_PASS. Final receipt-head confirmation and CI/delivery/main gates
+remain required before acceptance. Signed fault/race/recovery and enabled
+installed-image/separate-process acceptance are subsequent bounded 8B3 slices. This is not
+deployment, physical credential isolation, attributed verification, automatic incident recovery,
+operator migration or live execution proof. The API/dashboard/scanner behavior and all operator
+authorization boundaries above remain unchanged. ROADMAP owns current status.
