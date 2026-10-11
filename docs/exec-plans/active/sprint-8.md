@@ -1677,3 +1677,26 @@ actual failures and original predictions in their owning records. Validate final
 the exact candidate for the existing reviewer and resolve findings before final-head CI, guarded
 ordinary merge and exact-main acceptance. 8B3.1/8B3/Sprint 8 stay IN PROGRESS; 8B3.2/8B3.3 and
 8C--8E remain PLANNED, and Sprint 9+ remains unstarted.
+
+### 8B3.1 exact source review and final receipt preparation — 2026-10-11
+
+The existing authorized reviewer returned REVIEW_PASS with no actionable HIGH/MEDIUM/LOW
+findings for exact head `daff23a0b43e4e2081f5ba436be3be546309d1e6`, tree
+`e51a1acb858588659bbe3696b95175393a5696d8`, sole parent accepted `04803ad`. The scoped local
+commit contains exactly five Markdown/four test files and the worktree/index are clean.
+Independent targeted validation passed 335 affected offline cases in 66.22s (including the
+seven new SQLite journeys and 98 contracts), all seven new PostgreSQL journeys in 31.52s
+with no skips on separately owned loopback/tmpfs PostgreSQL 16.15, Ruff/419-file formatting
+and committed whitespace. Only that reviewer's exact database and two owned TEMP subtrees
+were removed. Before/after all nine candidate and 485 other tracked fingerprints, normalized
+committed blobs, 69 branch refs, three worktrees and the three parent skill hashes matched.
+
+The reviewer inspected, but did not independently rerun, root's complete 3,274-case/448-PG
+regression and Compose/product-image/default-off evidence. No enabled separate process,
+frontend/browser, physical-isolation or live-provider acceptance is claimed. This receipt
+updates only owning Markdown; all tested source, protected interfaces, accepted design and
+operational limits remain unchanged. Validate the receipt-only final tree and obtain the same
+reviewer's exact-head confirmation before publishing its scoped PR. Both first-attempt
+final-head CI runs, guarded ordinary merge and exact merged-main CI remain required for
+acceptance. No push, PR, merge, new reviewer or later-slice/live operation has occurred at
+this preparation checkpoint; 8B3.1/8B3/8B/Sprint 8 remain IN PROGRESS.

@@ -218,8 +218,9 @@ already-enabled or changed key/absence preconditions produce NO_WRITE without en
 
 The candidate verifies durable intent/audit before one offline write and acknowledged-unverified
 history without changing scans, technical results, findings, exceptions or governance. Local
-focused/full backend and PostgreSQL, quality, Compose/image and cleanup gates passed; independent
-review and CI/delivery/main gates remain pending. Signed fault/race/recovery and enabled
+focused/full backend and PostgreSQL, quality, Compose/image and cleanup gates passed, followed by
+exact tested-source REVIEW_PASS. Final receipt-head confirmation and CI/delivery/main gates
+remain required before acceptance. Signed fault/race/recovery and enabled
 installed-image/separate-process acceptance are subsequent bounded 8B3 slices. This is not
 deployment, physical credential isolation, attributed verification, automatic incident recovery,
 operator migration or live execution proof. The API/dashboard/scanner behavior and all operator

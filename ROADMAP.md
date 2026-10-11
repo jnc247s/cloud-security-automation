@@ -30,7 +30,8 @@ workflow applies within approved design; any new architectural/design decision r
 
 8B3.1 local validation passed: 491 focused cases, then 3,274 complete backend cases including
 all 448 PostgreSQL cases with no skips, quality/Compose/image and owned-resource cleanup.
-Independent exact-candidate review and final-head CI/delivery/main gates remain pending;
+Initial exact-candidate REVIEW_PASS is recorded at `daff23a`; final receipt-head confirmation
+and final-head CI/delivery/main gates remain required before acceptance;
 local success does not complete 8B3.1, 8B3 or Sprint 8. The active plan retains the earlier
 environment failures and the installed-image/default-off limits.
 
