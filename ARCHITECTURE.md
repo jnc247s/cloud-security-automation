@@ -1,10 +1,12 @@
 # Architecture
 
-This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1 extensions
-below. The accepted baseline is `main` commit `0c6005827ae765fe2b2669e4f503af6ca58cdc15`
-(8B1 admission PR #55; exact-commit independent review, both final-head CI runs and
-merged-main CI 37726113041), after the Sprint 5
-evidence expansion and all Sprint 6 controls. 6H added acceptance tests and documentation,
+This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions
+below. The accepted implementation baseline is `main` commit
+`7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59; exact-commit independent review,
+both final-head first-attempt CI runs and exact merged-main CI 37864100728 passed).
+Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
+That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
+6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
 CI passed. 7B's opt-in client/session boundary is accepted with green merged-main CI;
 7C's exact-scan investigation and client-only 7D NIST hierarchy are accepted with green main CI.
@@ -283,8 +285,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20261001_0005  unresolved regional relationship preservation
     -> 20261001_0006  additive governance category (accepted predecessor)
     -> 20261006_0007  append-only remediation authority (accepted predecessor)
-    -> 20261007_0008  execution admission and journal (accepted-main head)
-    -> 20261008_0009  private worker coordination/versioned journal (8B2 candidate)
+    -> 20261007_0008  execution admission and journal (accepted predecessor)
+    -> 20261008_0009  private worker coordination/versioned journal (accepted head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -519,8 +521,10 @@ ADMIN     -> READ, PROPOSE, APPROVE, EXECUTE
 
 Current read routes require `READ`; scan creation requires `EXECUTE`, so only `ADMIN` can start a
 scan. Accepted 8A proposal creation requires `PROPOSE`; approval/rejection/revocation requires
-`APPROVE`. No finding/exception mutation or remediation execution route exists. Authorization
-remains control-plane-wide, not tenant/account-scoped; see `THREAT_MODEL.md`.
+`APPROVE`. Accepted 8B1 execution admission requires `EXECUTE` from a distinct third human
+and records authority, not AWS dispatch. No finding/exception mutation or public remediation-
+worker launch/dispatch route exists. Authorization remains control-plane-wide, not tenant/account-
+scoped; see `THREAT_MODEL.md`.
 
 <a name="sprint-8a-remediation-authority--local-pending-acceptance"></a>
 
@@ -590,7 +594,9 @@ bounded Sprint 8 slices; acceptance authorizes no live or production operation.
 
 ## API boundary
 
-### Sprint 8B2 isolated worker — implementation candidate, acceptance pending
+<a name="sprint-8b2-isolated-worker--implementation-candidate-acceptance-pending"></a>
+
+### Sprint 8B2 isolated worker — accepted code, not deployed
 
 The separately launched `python -m app.remediation.worker UUID` process is default off and is
 not imported/started by API or scanner runtime. It handles only the approved EC2-004 enable-default
@@ -618,6 +624,9 @@ never clears prior quarantine. Read-only recovery may observe after authority ex
 three-poll, thirty-second window persists across restarts. Readback does not prove causation, key
 usability, PASS, verification or finding resolution. 8C exact-policy rescan is not implemented here.
 0009 downgrades require online compatibility checks before any DDL; worker history refuses rollback.
+Updated execution-history readers require 0009 even while the worker is disabled; schema must
+precede updated code, with separately authorized maintenance and no automatic operator migration.
+Strict READ clients must support retained v1/new v2 events and expanded phases before enablement.
 Current acceptance and later-slice gates remain owned by ROADMAP and the active plan.
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at
@@ -752,9 +761,10 @@ workload-role configuration remain deployment responsibilities.
 - The accepted opt-in 7B/7C/7D shell provides read-only exact-scan investigation and retained
   NIST mapped-subset context. Whole-Sprint-7 acceptance is COMPLETE with scoped offline evidence.
   Production setup remains unimplemented.
-- No Terraform deployment, remediation execution or AI runtime. Accepted 8A authority records/API
-  passed exact-commit independent review and delivery/main-CI gates through PR #53;
-  no remediation dashboard or worker is added.
+- No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
+  authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
+  No public worker launch, linked exact-policy verification or remediation dashboard mutation
+  exists yet. Code acceptance grants no live AWS/IAM/secret/production authority.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

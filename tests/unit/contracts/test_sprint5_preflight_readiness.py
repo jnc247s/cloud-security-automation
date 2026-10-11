@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E/8A/8B1 remain closed; only the approved 8B2 worker is in progress.
+    # Accepted 7A--7E/8A/8B1/8B2 remain closed; integrated 8B acceptance stays planned.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -427,8 +427,9 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "| 8B1 | COMPLETE |" in sprint8
     assert "**8B1 is COMPLETE**" in roadmap
-    assert "| 8B2 | IN PROGRESS |" in sprint8
-    assert "**8B2 is IN PROGRESS**" in roadmap
+    assert "| 8B2 | COMPLETE |" in sprint8
+    assert "**8B2 is COMPLETE**" in roadmap
+    assert "Accepted migration head is `20261008_0009`" in roadmap
     assert "ECS task-role-only credentials" in sprint8
     assert "| 8B3 | PLANNED |" in sprint8
     assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8
@@ -536,3 +537,37 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert '"cloudtrail-evidence"' in runtime
     assert 'collector_name = "cloudtrail_evidence"' in runtime
     assert "class CloudTrailCollectionBundle" in runtime
+
+
+@pytest.mark.parametrize("owner", ["ARCHITECTURE.md", "SECURITY.md", "THREAT_MODEL.md"])
+def test_worker_owner_opening_matches_authoritative_baseline(owner: str) -> None:
+    roadmap = _read(ROADMAP_PATH)
+    baseline = re.search(
+        r"Current accepted implementation baseline:\s*`main` at\s*`([0-9a-f]{40})`",
+        roadmap,
+    )
+    assert baseline is not None
+    opening = "\n".join(_read(ROOT / owner).splitlines()[:16])
+    assert baseline.group(1) in opening
+    assert "8B2" in opening
+
+
+def test_worker_limitations_register_includes_accepted_code_not_deployment() -> None:
+    limitations = _read(ROOT / "docs/operations/known-limitations.md")
+    assert "8B2" in "\n".join(limitations.splitlines()[:10])
+    deferred = limitations.split("## Deferred by design", 1)[1].lower()
+    assert "accepted isolated worker code" in deferred
+    assert "disabled" in deferred
+    assert "undeployed" in deferred
+
+
+def test_worker_audit_attribution_is_distinct_from_human_authority() -> None:
+    operations = _read(ROOT / "docs/operations/remediation.md")
+    audit_section = operations.split("## Migration, data and acceptance gates", 1)[1].split(
+        "Before any separately authorized downgrade", 1
+    )[0]
+    assert "Human authority/admission audit" in audit_section
+    assert 'actor_type="service"' in audit_section
+    for field in ("WorkerActor", "service_id", "expected_role_arn"):
+        assert field in audit_section
+    assert "without human roles or capability" in audit_section

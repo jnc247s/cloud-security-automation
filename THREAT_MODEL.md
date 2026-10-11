@@ -1,16 +1,18 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7 and accepted 8A/8B1 authority
-Accepted baseline: `main` commit `0c6005827ae765fe2b2669e4f503af6ca58cdc15` (8B1 admission PR #55)
-Last reconciled: 2026-10-08; exact merged-main CI 37726113041 passed
-Accepted 8B1 is database admission, not deployment or AWS execution.
+Status: living model for accepted Sprints 0--7 and accepted 8A/8B1/8B2 boundaries
+Accepted implementation baseline: `main` commit `7a36ddde20aafc60712b38165acd25460418ab92`
+(8B2 worker PR #59; exact-commit review and both final-head first-attempt CI runs passed)
+Last reconciled: 2026-10-08; exact merged-main CI 37864100728 passed
+Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
 test-launch isolation repair change no application runtime or security boundary. Original
 navigation/security assertions, COOP and other headers, dependencies, timeouts and zero retries
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
-and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1 scope are owned
-by ROADMAP and the active plan; remediation execution remains unimplemented and risks remain open.
+and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1/8B2 scope are owned
+by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
+policy verification and dashboard mutation remain unimplemented, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
 ## Scope and security objectives
@@ -80,8 +82,11 @@ OIDC/development authentication, capability authorization, FastAPI, and the in-p
 executor. It includes the merged 5A fact-only EC2/EBS producer, the merged 5B fact-only
 security-group, VPC, subnet, and Flow Log implementation, the merged fact-only 5C IAM account,
 identity, and policy implementation, and the merged fact-only 5D IAM Access Analyzer producer. No
-production deployment, Terraform infrastructure, remediation execution, or AI agent is
-implemented. The opt-in 7B frontend/session boundary below is accepted code, not a production
+production deployment, Terraform infrastructure or AI agent is implemented. Accepted 8A/B1
+govern human proposal/approval/execution-admission authority; accepted 8B2 adds separate default-off
+single-action worker code, not live execution or deployment proof. No public worker-launch
+endpoint, linked exact-policy verification or remediation UI is implemented. The opt-in 7B
+frontend/session boundary below is accepted code, not a production
 deployment or live-provider validation. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
 6G required tags and whole-sprint 6H acceptance are accepted; Sprint 6 is complete and Sprint 7
@@ -248,7 +253,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T06 | Scan abuse or denial of service | High | `EXECUTE` required; bounded two-worker/32-outstanding executor; 503 on capacity exhaustion | No rate limit, quota, cancellation, timeout, caller idempotency key, or global multi-process capacity control |
 | T07 | Sensitive evidence exposure | High | Authentication, read capability, structured projections, sanitized failures, and no standalone artifact listing | Every reader can see all stored accounts, normalized source artifacts on outcome detail, topology, and detailed configuration; add field/object policy before broader tenancy |
 | T08 | Audit tampering or ambiguous attribution | High | Transactional append-only audit guards; explicit scan actor subject; accepted 8A pairs authority writes with full issuer/subject/roles/capability metadata and identity digest | Legacy scan/governance events do not retain full identity context. Guards cannot prevent privileged schema changes/direct INSERTs or require direct finding/exception writes to have a paired audit event. Restrict database roles to service-only writes and protect operator access. |
-| T09 | AWS credential theft or scanner overprivilege | Critical | Scanner standard credential chain and documented read-only calls remain unchanged; isolated default-off 8B2 candidate rejects fallback and constrains one action | Deployment owns role scope, rotation, metadata-service controls and isolation; candidate code is not deployment proof |
+| T09 | AWS credential theft or scanner overprivilege | Critical | Scanner standard credential chain and documented read-only calls remain unchanged; accepted isolated default-off 8B2 worker rejects fallback and constrains one action | Deployment owns role scope, rotation, metadata-service controls and isolation; accepted code is not deployment proof |
 | T10 | Assessment or history corruption | High | Checksums, composite foreign keys, immutable version checks, caller-owned transactions, audit/evidence-graph history guards, terminal graph-completeness checks, and fail-closed populated-downgrade preflights | Backups and operator access remain privileged; current migration tooling and an approved maintenance window are still required |
 | T11 | Duplicate or abandoned scan execution | Medium | Durable IDs, startup resubmission, in-process de-duplication, idempotent persistence | Recovery is startup-only; multiple API processes can duplicate AWS work; no lease/heartbeat/periodic recovery |
 | T12 | Malicious or malformed AWS metadata | Medium | Explicit typed response-boundary validation, strict identities and promoted nested facts, sanitized evidence errors, duplicate consistency checks, strict normalized source artifacts/outcomes, Pydantic normalization, deterministic rules; 5A isolates its four sources, 5B independently paginates network sources, 5C independently validates IAM sources, 5D validates and fully paginates Analyzer sources, 5E strictly validates independent S3/KMS sources, and 5F isolates CloudTrail identity/configuration/status/selector/tag sources while retaining valid siblings | Remaining legacy collectors still discard the affected collector's otherwise valid items on malformed data |
@@ -275,12 +280,15 @@ READ does not reap; privileged INSERT/schema operators, human-account governance
 domain and fleet-scale/rate-limit risks remain. Exact-commit review and PR #55 delivery/main-CI
 gates passed; this does not validate or authorize a live provider operation.
 
-8B2's approved design is now a local implementation candidate, still awaiting acceptance: isolated temporary write identity,
-durable WRITE_INTENT before one SDK write, live preconditions without a claimed AWS CAS, unknown-
-effect read-only reconciliation and sticky quarantine. No TTL release/replay after possible effect,
-automatic rollback or fabricated PASS is permitted. Admission adds none of those AWS paths.
+8B2's approved design is accepted code through PR #59, not deployed behavior: isolated temporary
+write identity, durable WRITE_INTENT before one SDK write, live preconditions without a claimed
+AWS CAS, unknown-effect read-only reconciliation and sticky quarantine. No TTL release/replay
+after possible effect, automatic rollback or fabricated PASS is permitted. Admission adds none
+of those AWS paths.
 
-## 8B2 candidate execution threats and controls
+<a name="8b2-candidate-execution-threats-and-controls"></a>
+
+## Accepted 8B2 execution threats and controls
 
 - Confused deputy/provider fallback: one explicit account/Region/role, ECS-only temporary task
   provider with no host/static/profile/custom-endpoint fallback, fresh STS and a fixed single
@@ -299,8 +307,9 @@ automatic rollback or fabricated PASS is permitted. Admission adds none of those
 - False repair/leakage: structured sensitive READ history, separate service attribution, paired
   immutable audit, private claim coordinates, sanitized process output and suppressed dependency
   logs. Durable global three-poll/thirty-second recovery observes only; it never creates PASS,
-  finding resolution or attributed verification. Exact-policy rescan remains 8C. All candidate
-  security, runtime, review and delivery gates remain pending in the active plan.
+  finding resolution or attributed verification. Exact-policy rescan remains 8C. 8B2's offline/
+  runtime/review/delivery gates passed, including exact main CI 37864100728; owning documents and
+  the active plan retain deployment/incident limits and documentary/later-slice gates.
 
 ## Future-boundary threats
 

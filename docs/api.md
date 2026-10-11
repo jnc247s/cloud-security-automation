@@ -297,7 +297,9 @@ Execution list/detail requires READ; list accepts `proposal_id` UUID, limit 1--1
 nonnegative offset, ordered by creation descending then execution UUID. Like 8A, readers share
 one trust domain; filtering is not tenant authorization. See [operations](operations/remediation.md).
 
-### 8B2 versioned worker history — candidate, acceptance pending
+<a name="8b2-versioned-worker-history--candidate-acceptance-pending"></a>
+
+### 8B2 versioned worker history — accepted code
 
 The same READ list/detail and identical EXECUTE replay now project additive worker phases
 `CLAIMED`, `WRITE_INTENT`, `NO_WRITE`, `ACKNOWLEDGED`, `QUARANTINED`. Existing request content,
@@ -305,6 +307,9 @@ version-1 event bytes, routes, status codes, capabilities and authentication rem
 New journal entries discriminate on `schema_version="2.0.0"`; strict clients must support both
 versions and the expanded phase vocabulary before enabling the separately authorized worker.
 No new public worker launch, claim, force-clear, AWS-parameter or credential endpoint is added.
+Updated execution-history readers require migration `20261008_0009` even while the worker is
+disabled. Apply the schema before updated code in a separately authorized environment; neither
+API startup nor worker startup automatically migrates operator databases.
 
 Version-2 content binds the same IDs/digest/sequence/previous digest, creation time, service actor
 (`service_id="remediation-worker"`, expected role ARN), and paired service audit. Closed kinds are

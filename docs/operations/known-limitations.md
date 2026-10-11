@@ -1,7 +1,8 @@
 # Current known limitations
 
-This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1 implementation reality, including
-the shared evidence graph, evidence producers, and opt-in production controls. These items are
+This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1/8B2 implementation reality,
+including the shared evidence graph, evidence producers, opt-in production controls and disabled/
+undeployed isolated worker code. These items are
 not silently repaired by documentation work.
 Whole-sprint 6H acceptance did not remove these limitations or authorize production operations;
 Sprint 7 is COMPLETE: 7A READ reporting is accepted through PR #42, with zero unresolved
@@ -79,8 +80,9 @@ to make rollback possible. Existing accepted migration safeguards remain in forc
 8A's absent third-requester limitation is addressed by accepted 8B1: EXECUTE can
 record a distinct third-human request and READ can inspect it. Default-off scope, retained-state
 validation, five-minute grant, immutable paired journal/audit and guard-first reservation limits
-are not live AWS readiness or effect. No worker, write credentials, live preconditions, WRITE_INTENT,
-unknown-effect recovery/quarantine, exact-policy rescan or dashboard mutation is implemented.
+are not live AWS readiness or effect. 8B1 itself implements no worker, write credentials, live
+preconditions, WRITE_INTENT, unknown-effect recovery/quarantine, exact-policy rescan or dashboard
+mutation; accepted 8B2's separate worker limits are below.
 Head 0008 is accepted through PR #55, exact-commit review, both final-head CI and main CI
 37726113041. This is not deployment or live AWS validation.
 
@@ -95,12 +97,15 @@ physical-human identity and shared READ-domain limitations remain. Scanner crede
 0008 downgrade preflights writers/history before all DDL and refuses any execution/event/reservation
 coordinate/new execution audit. Do not delete or rewrite history to force rollback. 8B2/8B3 and
 8C--8E remain PLANNED at 8B1 acceptance; the user's scan-picker/navigation report remains untriaged
-for 8D preflight. Current 8B2 candidate scope is recorded below and in ROADMAP.
+for 8D preflight. Current accepted 8B2 scope is recorded below and in ROADMAP.
 
-### Isolated worker candidate and unknown-effect recovery — HIGH
+<a name="isolated-worker-candidate-and-unknown-effect-recovery--high"></a>
 
-8B2 is IN PROGRESS, not accepted: disabled-by-default ECS-only single-action worker, versioned
-service history and private fenced coordination in candidate 0009. No live credentials, IAM,
+### Accepted isolated worker and unknown-effect recovery — HIGH
+
+8B2 is COMPLETE as code through PR #59 and exact main CI 37864100728: disabled-by-default
+ECS-only single-action worker, versioned service history and private fenced coordination in
+accepted 0009. This is not deployment acceptance. No live credentials, IAM,
 deployment or production validation. API/scanner never launch it, but physical task/role/network
 separation is an external requirement; all containers in one ECS task share its credentials.
 Configured role-name identity is not a stable role-ID pin against operator role recreation.
@@ -507,7 +512,8 @@ NIST mapped-subset context; 7E whole-Sprint-7 acceptance and documentary closeou
 Acceptance does not remove the following deferred capabilities or operational risks.
 Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
-There is no production Terraform deployment, finding/exception mutation API, remediation execution,
-distributed worker, multi-account orchestration, or AI runtime. Accepted 8A authority adds no
-browser mutations. Their absence is roadmap scope,
-not an incomplete Sprint 4 implementation.
+There is no production Terraform deployment, finding/exception mutation API, generic distributed
+worker, multi-account orchestration or AI runtime. Accepted 8A/B1 human authority/admission and
+accepted isolated worker code in 8B2 add no browser mutations; the worker remains disabled and
+undeployed. Public worker launch, linked exact-policy verification and remediation UI remain
+later slices. Their absence is roadmap scope, not an incomplete Sprint 4 implementation.

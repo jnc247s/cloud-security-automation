@@ -11,9 +11,11 @@ No Sprint 7 schema or migration change was introduced; its closeout head was `20
 See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation limits.
 Accepted Sprint 8A adds accepted-baseline head `20261006_0007` below, through PR #53 with
 exact-commit independent review, both final-head CI and green exact main CI 37693245169.
-Accepted 8B1 adds current head `20261007_0008` below through PR #55 with exact-commit REVIEW_PASS,
-both final-head CI and exact main CI 37726113041. Current authorization/status belongs to ROADMAP
-and the active Sprint 8 plan; this is not authorization to migrate a deployed database.
+Accepted 8B1 added predecessor `20261007_0008` below through PR #55 with exact-commit REVIEW_PASS,
+both final-head CI and exact main CI 37726113041. Accepted 8B2 adds current head `20261008_0009`
+through PR #59 with exact-commit REVIEW_PASS, both final-head first-attempt CI runs and exact main
+CI 37864100728. Current authorization/status belongs to ROADMAP and the active Sprint 8 plan;
+this is not authorization to migrate a deployed database.
 
 Accepted 6G adds category `governance` and narrow migration `20261001_0006` after accepted
 `20261001_0005`. Only the control-version category CHECK changes; all historical rows, other
@@ -586,7 +588,7 @@ Old populated-0007 downgrade protections still apply. Do not delete history or b
 ## Migrations and startup
 
 The initial canonical revision is `20260903_0001`; the accepted repository head is
-`20261007_0008`, following unchanged predecessors 0007 and 0006. Apply only in an explicitly
+`20261008_0009`, following unchanged predecessors 0008, 0007 and 0006. Apply only in an explicitly
 authorized environment, never infer deployed state. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
@@ -694,13 +696,15 @@ module; it is not replaced by these performance tests.
 
 ## Current boundary and deferred work
 
-### Sprint 8B2 worker persistence — candidate, acceptance pending
+<a name="sprint-8b2-worker-persistence--candidate-acceptance-pending"></a>
 
-Accepted-main head remains 0008 until the active plan's delivery gates pass. Candidate revision
-`20261008_0009` follows frozen 0008 and preserves all immutable human request/event bytes and
-authority. It expands linked execution/audit kinds for schema-version-2 service events, retaining
-legacy sequence limits for version-1 terminal entries. A partial unique index permits at most one
-WRITE_INTENT and one ACKNOWLEDGED receipt per execution. Findings, assessments, profiles, catalogs,
+### Sprint 8B2 worker persistence — accepted code
+
+Accepted revision `20261008_0009` follows frozen 0008 and preserves all immutable human
+request/event bytes and authority. It expands linked execution/audit kinds for schema-version-2
+service events, retaining legacy sequence limits for version-1 terminal entries. A partial unique
+index permits at most one WRITE_INTENT and one ACKNOWLEDGED receipt per execution. Findings,
+assessments, profiles, catalogs,
 scan persistence and the old remediation-request operation enum are unchanged.
 
 `remediation_worker_claims` is private mutable coordination, not an API view: execution PK/FK,
@@ -720,8 +724,9 @@ Late acknowledgments remain quarantined and retain the 32-slot global reservatio
 
 0009 uses online SQLite FK-checked transactional rebuilds and PostgreSQL ordered exclusive locks;
 predecessor triggers, rows/references and constraints must survive populated upgrade and safe B1
-rollback. The current application requires the candidate schema before its execution-history
-service is used; it never auto-migrates or acquires credentials to compensate for a missing schema.
+rollback. The current application's execution-history service requires 0009 even with the worker
+disabled. Apply schema before updated code; it never auto-migrates or acquires credentials to
+compensate for a missing schema.
 Coordinate application/schema rollout only under separately authorized operational maintenance.
 Any worker claim, dispatch/observation event or new worker audit blocks the whole downgrade path
 across 0009 before DDL. Deep paths retain prior 0008/0007 protection too. Offline crossing is refused.
