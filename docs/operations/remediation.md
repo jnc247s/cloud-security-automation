@@ -206,7 +206,9 @@ the old worker cannot resume and reconcile effect before any forward repair/rele
 Preserve history and obtain approval; do not create another proposal to bypass a held target.
 8B3 whole-worker acceptance, 8C exact-policy read-only verification, 8D UI and 8E remain later gates.
 
-## Integrated offline acceptance candidate 8B3.1
+<a name="integrated-offline-acceptance-candidate-8b31"></a>
+
+## Accepted integrated offline tests 8B3.1
 
 The test-only first slice of the [8B3 preflight](../sprint-8b3-preflight.md) joins production-mode
 signed human authority/admission, real migrated database history, the existing isolated-worker
@@ -216,12 +218,15 @@ The PostgreSQL version uses only an explicitly configured disposable TEST_DATABA
 separate NOWAIT lock probes. Expected-absence, ARN and exact legacy key contexts are retained;
 already-enabled or changed key/absence preconditions produce NO_WRITE without enable dispatch.
 
-The candidate verifies durable intent/audit before one offline write and acknowledged-unverified
+The accepted tests verify durable intent/audit before one offline write and acknowledged-unverified
 history without changing scans, technical results, findings, exceptions or governance. Local
 focused/full backend and PostgreSQL, quality, Compose/image and cleanup gates passed, followed by
-exact tested-source REVIEW_PASS. Final receipt-head confirmation and CI/delivery/main gates
-remain required before acceptance. Signed fault/race/recovery and enabled
-installed-image/separate-process acceptance are subsequent bounded 8B3 slices. This is not
+exact tested-source and final-head REVIEW_PASS. [PR #61](https://github.com/jnc247s/cloud-security-automation/pull/61)
+merged at `eea2f0c` with the reviewed tree unchanged after both first-attempt candidate CI runs;
+exact merged-main [CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377)
+passed. Each run passed all 3,274 backend tests, 448 PostgreSQL cases without skips, 133 frontend
+tests, 74 Chromium/Firefox journeys and all quality/image/cleanup steps. Signed fault/race/recovery
+and enabled installed-image/separate-process acceptance are subsequent bounded 8B3 slices. This is not
 deployment, physical credential isolation, attributed verification, automatic incident recovery,
 operator migration or live execution proof. The API/dashboard/scanner behavior and all operator
 authorization boundaries above remain unchanged. ROADMAP owns current status.

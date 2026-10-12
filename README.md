@@ -35,7 +35,14 @@ passed: 3,254 backend tests (441 PostgreSQL, no skips), 133 frontend units, all 
 journeys and quality/image/cleanup gates. Accepted migration head is `20261008_0009`; new
 execution-history code requires that schema even while the worker is disabled. The active plan
 records the bounded documentary closeout's entry gates before the next slice advances.
-Sprint 8/8B remain IN PROGRESS; 8B3 and 8C--8E remain PLANNED. No live operation is authorized,
+Sprint 8/8B remain IN PROGRESS; 8B3 is IN PROGRESS. Integrated offline acceptance slice
+8B3.1 is COMPLETE through [PR #61](https://github.com/jnc247s/cloud-security-automation/pull/61)
+at `eea2f0c48a72cd14c0184a332f535ef315855b86`, with exact-head independent REVIEW_PASS,
+both final-head CI runs and green
+[exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
+This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
+authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
+8B3.2/8B3.3 and 8C--8E remain PLANNED. No live operation is authorized,
 and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
@@ -212,7 +219,7 @@ profiles/defaults and the read-only dashboard. See [remediation operations](docs
 | [docs/persistence.md](docs/persistence.md) | Data model, history, transactions, and migrations |
 | [docs/operations/aws-inventory.md](docs/operations/aws-inventory.md) | AWS permissions and inventory operation |
 | [docs/operations/dashboard.md](docs/operations/dashboard.md) | Opt-in dashboard configuration, sessions, investigation, and browser validation |
-| [docs/operations/remediation.md](docs/operations/remediation.md) | Pending 8A authority/API operation, identity separation, retries and remaining gates |
+| [docs/operations/remediation.md](docs/operations/remediation.md) | Remediation authority, isolated worker, identity separation, recovery and acceptance limits |
 | [docs/operations/known-limitations.md](docs/operations/known-limitations.md) | Accepted limitations requiring follow-up |
 | [docs/sprint-7e-acceptance.md](docs/sprint-7e-acceptance.md) | Whole-Sprint-7 acceptance evidence, review/merge receipts, and validation limits |
 
@@ -236,7 +243,7 @@ profiles/defaults and the read-only dashboard. See [remediation operations](docs
 │   ├── database/            # Validation, transactions, persistence, and governance
 │   ├── logging/             # Central logging configuration
 │   ├── models/              # SQLAlchemy history and lifecycle records
-│   ├── remediation/         # Accepted 8A proposal contracts/provenance; no execution handler
+│   ├── remediation/         # Proposal/admission contracts and isolated default-off worker
 │   ├── rules/               # Deterministic technical controls
 │   ├── schemas/             # Inventory, persistence, and HTTP contracts
 │   ├── security/            # Authentication and capability policy
