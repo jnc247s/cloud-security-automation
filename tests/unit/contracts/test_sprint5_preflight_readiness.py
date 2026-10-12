@@ -433,9 +433,11 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert "ECS task-role-only credentials" in sprint8
     assert "| 8B3 | IN PROGRESS |" in sprint8
     assert "**8B3 is IN PROGRESS**" in roadmap
-    assert "| 8B3.1 | IN PROGRESS |" in sprint8
-    assert "| 8B3.2 | PLANNED |" in sprint8
-    assert "| 8B3.3 | PLANNED |" in sprint8
+    current_8b3 = sprint8.rsplit("### Current 8B3 acceptance status", 1)[1]
+    assert "| 8B3.1 | COMPLETE |" in current_8b3
+    assert "**8B3.1 is COMPLETE**" in roadmap
+    assert "| 8B3.2 | PLANNED |" in current_8b3
+    assert "| 8B3.3 | PLANNED |" in current_8b3
     assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8
     assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8
     assert (

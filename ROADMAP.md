@@ -14,26 +14,35 @@ static keys, profiles, shared host roles, custom credential endpoints and fallba
 Accepted migration head is `20261008_0009`; updated execution-history readers require it even
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
-**8B3 is IN PROGRESS** with test-only integrated acceptance slice 8B3.1; 8B3.2/8B3.3 and 8C--8E
-remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
+**8B3 is IN PROGRESS**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
+8B3.2/8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
 receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
 Existing branches, worktrees and unrelated skills are preserved.
 
-Current accepted documentary baseline: `04803adbb8baf825ec62f19c5b2bea015f907277` (PR #60;
+Prior accepted 8B2 documentary baseline: `04803adbb8baf825ec62f19c5b2bea015f907277` (PR #60;
 exact merged-main [CI 38171117595](https://github.com/jnc247s/cloud-security-automation/actions/runs/38171117595)
 passed). This supersedes the documentary prerequisite's preparation-time pending gates, not
 accepted implementation/design or historical failures. The scoped [8B3 analysis preflight](docs/sprint-8b3-preflight.md)
-is recorded; its recommended first slice has started under standing accepted-design authority:
+is recorded; its recommended first slice is accepted under standing accepted-design authority:
 test-only signed HTTP admission -> disposable PostgreSQL -> offline worker/closed AWS adapter -> authorized READ
 history, with no rescan, UI, runtime/schema/credential change or live operation. Standing routine
 workflow applies within approved design; any new architectural/design decision requires approval.
 
-8B3.1 local validation passed: 491 focused cases, then 3,274 complete backend cases including
-all 448 PostgreSQL cases with no skips, quality/Compose/image and owned-resource cleanup.
-Initial exact-candidate REVIEW_PASS is recorded at `daff23a`; final receipt-head confirmation
-and final-head CI/delivery/main gates remain required before acceptance;
-local success does not complete 8B3.1, 8B3 or Sprint 8. The active plan retains the earlier
-environment failures and the installed-image/default-off limits.
+Accepted 8B3.1 test baseline: `eea2f0c48a72cd14c0184a332f535ef315855b86`
+([PR #61](https://github.com/jnc247s/cloud-security-automation/pull/61);
+exact merged-main [CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377)
+passed). Exact final-head REVIEW_PASS at `c132343`, both first-attempt candidate CI runs,
+guarded ordinary merge and exact-main CI passed with the reviewed tree unchanged. Each CI run
+passed 3,274 backend tests, all 448 PostgreSQL cases across 24 files without skips, 133 frontend
+tests and 74 browser journeys; quality, image, cleanup and all 18 job steps passed.
+The active plan retains the local 491-case focused/3,274-case full results, historical failures,
+independent review receipts and installed-image/default-off limits. Runtime baseline `7a36ddde`,
+migration 0009, interfaces, authentication, scanner credentials and accepted design are unchanged.
+
+The owning acceptance reconciliation is bounded to five Markdown files and the current-status
+contract on `codex/sprint-8b31-closeout`. Its fresh validation, exact review, both final-head CI
+runs, guarded ordinary merge and exact-main CI must pass before 8B3.2 advances. This documentary
+preparation does not complete 8B3, 8B or Sprint 8, authorize a live operation, or start 8C--8E/9+.
 
 Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
 Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;

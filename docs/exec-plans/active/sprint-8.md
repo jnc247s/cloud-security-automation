@@ -1700,3 +1700,85 @@ reviewer's exact-head confirmation before publishing its scoped PR. Both first-a
 final-head CI runs, guarded ordinary merge and exact merged-main CI remain required for
 acceptance. No push, PR, merge, new reviewer or later-slice/live operation has occurred at
 this preparation checkpoint; 8B3.1/8B3/8B/Sprint 8 remain IN PROGRESS.
+
+### Accepted 8B3.1 integrated offline tests — 2026-10-11
+
+[PR #61](https://github.com/jnc247s/cloud-security-automation/pull/61) is accepted at
+`eea2f0c48a72cd14c0184a332f535ef315855b86`, retaining reviewed head
+`c1323437931fd198ac1309bc40ebb9c0b6d56ebe`, tree
+`81788a08b114e3e38f41ac43dd4ea6a57eff228c` and exactly parents accepted `04803ad` and reviewed
+head. The existing reviewer returned exact final-head REVIEW_PASS with no actionable findings.
+Independent final receipt checks passed 98 contracts in 2.66s, Ruff/419-file formatting and
+incremental/aggregate whitespace checks. The previously reviewed test source and all 485 other
+tracked files stayed unchanged; earlier independent 335 offline/seven PostgreSQL results and
+root's complete local validation are carried evidence, not new independent full-suite runs.
+
+Both first-attempt final-head CI runs passed, followed by an expected-head guarded ordinary
+merge and green exact-main CI. Complete provider logs, checkout commits, test counts and all
+terminal steps were inspected. The PR's tested merge `503c2c99` had the same reviewed tree and
+parents as the delivered merge. No admin bypass, force push or branch deletion occurred.
+
+| Verified CI | Backend result | Other gates |
+| --- | --- | --- |
+| [Push 38182744106](https://github.com/jnc247s/cloud-security-automation/actions/runs/38182744106) | 3,274 passed / 19 existing warnings / 1510.16s | All 448 PostgreSQL cases/24 files, no skips; 133 frontend tests/seven files; 74 browsers (37 Chromium/37 Firefox), one worker/zero retries; quality/image/cleanup and all 18 job steps |
+| [PR 38183014262](https://github.com/jnc247s/cloud-security-automation/actions/runs/38183014262) | 3,274 passed / 19 existing warnings / 1475.02s | Same complete gates |
+| [Exact main 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377) at eea2f0c | 3,274 passed / 19 existing warnings / 1001.16s | Same complete gates |
+
+This accepts only the seven SQLite/seven PostgreSQL signed-human/real-database/offline-worker/
+closed-adapter/READ journeys and their protected regressions. No application, schema, migration,
+API, authentication, permission, credential, dependency, frontend or CI behavior changes. Runtime
+baseline 7a36ddde, migration 0009 and accepted catalog/profile remain unchanged. ACK/readback
+is unverified, not PASS, attributed verification or finding resolution. Combined signed fault/
+race/recovery and enabled installed-image/separate-process acceptance remain later 8B3 slices;
+physical isolation, deployment, operator migration and live IdP/AWS/IAM/secret/production
+operations are not proved or authorized. Native Firefox launch remains a validation limitation;
+the local picker/navigation report remains untriaged. Neither is repaired by Linux browser regression.
+
+### Current 8B3 acceptance status
+
+The dated preparation tables and predictions above remain historical and are not rewritten.
+This table is the current bounded status, consistent with ROADMAP.
+
+| Bounded acceptance slice | Status | Scope |
+| --- | --- | --- |
+| 8B3.1 | COMPLETE | Accepted integrated signed HTTP, migrated database, offline worker/closed adapter and authorized READ/replay tests through PR #61 |
+| 8B3.2 | PLANNED | Combined deterministic fault/race/recovery acceptance |
+| 8B3.3 | PLANNED | Installed-image/separate-process/security acceptance and 8B closeout |
+
+The user requested continued goal work under standing accepted-design workflow authority.
+Clean accepted main was ordinarily fast-forwarded to eea2f0c only after exact-main CI passed,
+then `codex/sprint-8b31-closeout` was created for five owning Markdown files and a narrowly
+scoped current-status contract. All 69 existing local branches, three worktrees and unrelated
+parent skill files are preserved; only the new closeout branch is added. No new reviewer or
+next-slice implementation is started by this preparation. Targeted contracts, Ruff/formatting,
+complete disposable-PostgreSQL regression, exact independent review, both first-attempt
+final-head CI runs, guarded ordinary merge and exact-main CI are required for this reconciliation
+before 8B3.2 advances. Sprint 8/8B/8B3 remain IN PROGRESS, 8C--8E PLANNED and Sprint 9+ unstarted.
+
+### 8B3.1 documentary local validation and review preparation — 2026-10-11
+
+The six-path closeout preserves dated predictions and failed receipts, adds an explicit current
+status table and scopes its progress contract to that table. Five Markdown files and one contract
+test change; application/runtime/schema/API/authentication/credentials/frontend/CI are untouched.
+The initial restricted 98-contract run passed in 2.91s with the existing nonfatal Python launcher
+location warning; no runtime repair or waived test is claimed. After prose-only refinements, the
+unchanged validator ran fresh targeted contracts and full regression on its own loopback/tmpfs
+PostgreSQL 16 with an explicit disposable TEST_DATABASE_URL, not an operator database.
+
+Fresh targeted 98 contracts passed in 0.40s, Ruff/419-file formatting passed, and complete
+`python -m pytest` passed all 3,274 cases in 1371.91s with no skips, including all 448 PostgreSQL
+cases across 24 files. The 19 existing warnings are SQLite datetime-adapter deprecations.
+Whitespace, quiet Compose and the cached-layer image build passed; validator/wrapper exit was 0.
+Its exact owned database and TEMP were removed. Read-only follow-up confirmed TEMP absence and
+zero labeled validation containers; no user database, container, branch or worktree was deleted.
+
+The actual immutable image `sha256:73a0b1dd9f58720747fd3c3d05ba6e94fc9ab77e481136ecd9a92e23cf6b87ae`
+verified Python 3.12.15, boto3/botocore 1.43.110 and `WORKER_DISABLED`, exit 0, in networkless,
+read-only, unprivileged ephemeral probes without host mounts, credentials or a database. This is
+installed-version/default-off evidence, not enabled separate-process, deployment or physical
+isolation acceptance. Frontend/browser coverage remains a fresh final-head CI gate, not a local
+Firefox or picker/navigation repair. All six candidate and 488 other tracked SHA-256 hashes
+matched before/after full validation, prior to this receipt-only append. Validate final receipts,
+freeze the exact scoped commit for the existing reviewer and resolve findings before both
+final-head CI runs, guarded ordinary merge and exact-main acceptance of this reconciliation.
+No new reviewer, next-slice implementation, live/production operation or Sprint 9+ work started.

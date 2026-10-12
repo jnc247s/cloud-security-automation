@@ -1,6 +1,13 @@
 # Sprint 8B3 integrated offline acceptance preflight
 
 Prepared: 2026-10-11. Analysis only; 8B3 implementation remains PLANNED.
+
+This is the original preparation checkpoint; its predictions and PLANNED statements below are
+historical. 8B3.1 integrated offline tests are now accepted through PR #61, while 8B3 remains
+IN PROGRESS. [ROADMAP](../ROADMAP.md) owns current status; the
+[active plan](exec-plans/active/sprint-8.md#accepted-8b31-integrated-offline-tests--2026-10-11)
+records exact acceptance and the remaining documentary and 8B3.2/8B3.3 gates.
+
 ROADMAP owns status; the [active plan](exec-plans/active/sprint-8.md) owns approved detail.
 
 ## Verified entry and authority
