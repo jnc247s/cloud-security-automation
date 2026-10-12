@@ -436,14 +436,16 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     current_8b3 = sprint8.rsplit("### Current 8B3 acceptance status", 1)[1]
     assert "| 8B3.1 | COMPLETE |" in current_8b3
     assert "**8B3.1 is COMPLETE**" in roadmap
-    assert "| 8B3.2 | IN PROGRESS |" in current_8b3
+    assert "| 8B3.2 | COMPLETE |" in current_8b3
+    assert "**8B3.2 is COMPLETE**" in roadmap
     assert "| 8B3.3 | PLANNED |" in current_8b3
     readme_status = (
         _read(ROOT / "README.md").split("## Status\n", 1)[1].split("Latest opt-in catalog", 1)[0]
     )
     assert "8B3 is IN PROGRESS" in readme_status
     assert "8B3.1 is COMPLETE" in readme_status
-    assert "8B3.2 is IN PROGRESS; 8B3.3 and 8C--8E remain PLANNED" in readme_status
+    assert "8B3.2 is COMPLETE; 8B3.3 and 8C--8E remain PLANNED" in readme_status
+    assert "8B3.2 is IN PROGRESS" not in readme_status
     assert "8B3.2/8B3.3 and 8C--8E remain PLANNED" not in readme_status
     assert "8B3 and 8C--8E remain PLANNED" not in readme_status
     assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8

@@ -226,16 +226,18 @@ merged at `eea2f0c` with the reviewed tree unchanged after both first-attempt ca
 exact merged-main [CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377)
 passed. Each run passed all 3,274 backend tests, 448 PostgreSQL cases without skips, 133 frontend
 tests, 74 Chromium/Firefox journeys and all quality/image/cleanup steps. Signed fault/race/recovery
-and enabled installed-image/separate-process acceptance are subsequent bounded 8B3 slices. This is not
+is accepted below; enabled installed-image/separate-process acceptance remains a later 8B3 gate. This is not
 deployment, physical credential isolation, attributed verification, automatic incident recovery,
 operator migration or live execution proof. The API/dashboard/scanner behavior and all operator
 authorization boundaries above remain unchanged. ROADMAP owns current status.
 
-## Local fault and recovery test candidate 8B3.2
+<a name="local-fault-and-recovery-test-candidate-8b32"></a>
 
-The [8B3.2 preflight](../sprint-8b32-preflight.md) bounds the next test-only slice to combined
+## Accepted combined fault and recovery tests 8B3.2
+
+The [8B3.2 preflight](../sprint-8b32-preflight.md) bounds the accepted test-only slice to combined
 signed authority, unchanged database/worker/adapter behavior, deterministic faults and authorized
-history. Its local candidate intercepts metadata and every real STS/EC2 transport, counts actual
+history. The tests intercept metadata and every real STS/EC2 transport, count actual
 enable sends as well as SDK invocations, and exercises PostgreSQL ownership/lock races. No AWS,
 ECS metadata service, operator database, credential issuance or production system is contacted.
 
@@ -243,6 +245,14 @@ Tests preserve the intent cutoff and uncertain-effect quarantine after crashes, 
 true observations and grant expiry. Read-only recovery retains global budgets/window and target/
 capacity ownership; a conclusive acknowledgment durably committed before a lost return remains
 ACKNOWLEDGED and unverified. Neither result verifies the control or resolves a finding. These
-are local test candidates, not accepted whole-slice, enabled-process or deployment evidence.
-The active plan records exact fresh validation and remaining review/delivery gates; ROADMAP
-continues to own status. No operator procedure or authorization boundary above changes.
+are offline fault/recovery tests, not enabled-process, physical-isolation or deployment evidence.
+The corrected fault suite and cleanup repair received independent exact-head REVIEW_PASS.
+[PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64) ordinarily merged at
+`9c3df32` with the reviewed tree unchanged after both first-attempt candidate CI runs;
+exact merged-main [CI 38294459508](https://github.com/jnc247s/cloud-security-automation/actions/runs/38294459508)
+passed. Each final run passed 3,330 backend tests (all 478 PostgreSQL cases without skips),
+139 frontend cases, all 76 browser journeys and quality/image/cleanup gates. The original failed
+main Firefox cause remains unconfirmed; application layout is unchanged and its demonstrated
+pointer-interaction race remains for 8D. The active plan retains failures, exact acceptance and
+the documentary closeout's separate gates before 8B3.3. ROADMAP owns status.
+No operator procedure, authorization boundary, scanner privilege or runtime behavior above changes.

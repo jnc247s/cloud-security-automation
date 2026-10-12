@@ -42,8 +42,19 @@ both final-head CI runs and green
 [exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
-8B3.2 is IN PROGRESS; 8B3.3 and 8C--8E remain PLANNED. No live operation is authorized,
-and architecture/design decisions still require approval.
+8B3.2 is COMPLETE; 8B3.3 and 8C--8E remain PLANNED. Combined signed fault/race/recovery
+tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
+and its test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
+at `9c3df3256f81edf85a262b55b949c38b43d6d226`, after exact repair-head REVIEW_PASS,
+both first-attempt candidate CI runs, guarded ordinary merge and green
+[exact merged-main CI 38294459508](https://github.com/jnc247s/cloud-security-automation/actions/runs/38294459508).
+Each final run passed 3,330 backend tests (478 PostgreSQL cases, no skips), 139 frontend tests,
+all 76 browser journeys and quality/image/cleanup gates. The earlier failed main receipt is
+retained; its precise Firefox cause is unconfirmed, and the separately demonstrated layout race
+remains unfixed. This is offline test acceptance, not a runtime or user-interface repair,
+enabled installed-process proof, linked verification, deployment or live authorization.
+The active plan records the documentary reconciliation's gates before the next slice advances.
+Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
 Whole-sprint 6H acceptance merged through

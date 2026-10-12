@@ -6,7 +6,26 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8B3.2 — local fault and recovery test candidate not accepted
+<a name="sprint-8b32--local-fault-and-recovery-test-candidate-not-accepted"></a>
+
+### Sprint 8B3.2 — accepted combined fault and recovery tests
+
+- Accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63) and
+  bounded test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
+  at `9c3df32`, after exact repair-head REVIEW_PASS, both first-attempt candidate CI runs,
+  guarded ordinary merge and green
+  [exact merged-main CI 38294459508](https://github.com/jnc247s/cloud-security-automation/actions/runs/38294459508).
+  All three final CI runs passed 3,330 backend cases (478 PostgreSQL, no skips), 139 frontend
+  cases, all 76 browser journeys and quality/image/cleanup gates. All three MEDIUM fault-test
+  guards and the LOW cleanup-masking issue are independently closed.
+- Runtime, schema, API, authentication, scanner credentials and accepted recovery semantics are
+  unchanged. Enabled installed-process acceptance, linked verification, dashboard workflow and
+  whole Sprint 8 remain incomplete; no live operation is authorized.
+
+#### Historical preparation and failed validation
+
+The checkpoints below predate final acceptance. Their predictions and failures are retained,
+not current pending gates or evidence of a repaired application layout.
 
 - Adds signed authority-to-worker fault journeys using real migrated SQLite/PostgreSQL,
   the unchanged driver/ECS-only adapter and entirely intercepted real SDK transport/parsing.
@@ -61,7 +80,8 @@ record the development history. Sprint state itself is authoritative only in
   tests (448 PostgreSQL cases, no skips), 133 frontend tests, 74 Chromium/Firefox journeys and
   quality/image/cleanup gates. The active plan owns detailed acceptance receipts.
 - No application, schema, interface, authentication, scanner credential, dependency, frontend or
-  CI change. Combined fault/recovery and enabled separate-process acceptance, linked rescan,
+  CI change. At 8B3.1 acceptance, combined fault/recovery and enabled separate-process acceptance
+  remained later slices; 8B3.2 is now accepted above. Enabled process acceptance, linked rescan,
   dashboard and whole Sprint 8 remain incomplete. No live or production operation is authorized.
 
 <a name="sprint-8b2--local-isolated-worker-candidate-acceptance-pending"></a>
