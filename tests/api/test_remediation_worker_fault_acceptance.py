@@ -4,11 +4,13 @@ import pytest
 
 from tests.unit.services.test_scan_service import migrated_engine as migrated_engine
 from tests.worker_fault_http import (
+    GUARD_CASES,
     PREINTENT_CASES,
     RECOVERY_CASES,
     UNCERTAIN_CASES,
     exercise_after_intent_revoke,
     exercise_capacity,
+    exercise_guard_rejection,
     exercise_preintent,
     exercise_readback,
     exercise_reclaim,
@@ -49,3 +51,10 @@ def test_signed_quarantine_retains_target_and_actual_capacity(
     migrated_engine, monkeypatch, tmp_path
 ):
     exercise_capacity(migrated_engine, monkeypatch, tmp_path)
+
+
+@pytest.mark.parametrize("case", GUARD_CASES)
+def test_signed_fault_helper_rejects_injected_guard_failures(
+    migrated_engine, monkeypatch, tmp_path, case
+):
+    exercise_guard_rejection(migrated_engine, monkeypatch, tmp_path, case)

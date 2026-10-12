@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from types import SimpleNamespace
 from urllib.parse import parse_qs
-from uuid import UUID
+from uuid import UUID, uuid4
 from xml.sax.saxutils import escape
 
 import pytest
@@ -19,28 +19,41 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
 from app.database import session as database_session
+from app.database.base import Base
 from app.database.governance import set_finding_disposition
-from app.database.persistence import persist_scan_result
+from app.database.integrity import canonical_json_sha256
+from app.database.persistence import append_audit_event, persist_scan_result
 from app.models import (
     AuditEvent,
     Control,
+    ControlAssessment,
     Finding,
     FindingOccurrence,
     RemediationProposal,
     Resource,
+    ResourceSnapshot,
 )
-from app.models.enums import FindingStatus
+from app.models.enums import AuditEventType, FindingStatus
 from app.models.remediation_execution import (
     RemediationAdmissionGuard,
     RemediationTargetReservation,
     RemediationWorkerClaim,
 )
-from app.remediation.contracts import ACTION_ID, ACTION_VERSION, DecisionView, ProposalRequest
+from app.remediation.contracts import (
+    ACTION_ID,
+    ACTION_VERSION,
+    BlockingReason,
+    DecisionView,
+    ProposalRequest,
+)
 from app.remediation.execution_contracts import ADMISSION_CAPACITY, ExecutionPhase, ExecutionView
 from app.remediation.provenance import utc
 from app.remediation.worker_aws import EbsDefaultWriter, _WorkloadSession
 from app.remediation.worker_contracts import RegionalObservation, WorkerEventKind
 from app.remediation.worker_driver import RemediationWorker, WorkerResult
+from app.services import remediation_service as authority_module
+from app.services.errors import RemediationError
+from app.services.remediation_execution_service import RemediationExecutionService
 from app.services.remediation_service import RemediationService
 from app.services.remediation_worker_service import RemediationWorkerService
 from tests.dashboard_fixtures import dashboard_client, sign_in
@@ -68,6 +81,7 @@ PREINTENT_CASES = (
     "revoked",
     "governance",
     "newer-assessment",
+    "equal-assessment",
     "during-read-revoke",
     "permanent-read",
     "transient-budget",
@@ -81,6 +95,7 @@ RECOVERY_CASES = (
     "ack-return-lost",
     "late-dispatch",
 )
+GUARD_CASES = ("newer-detection", "denial-side-effects")
 
 
 class DomainClock:
@@ -119,6 +134,7 @@ class SignedFaultJourney:
         assert transport.calls == [] and executor.submissions == []
 
     def signed_grant(self, source, *, expected_status=202):
+        before = database_state(self.engine)
         proposal = self.client.post(
             "/api/v1/remediations",
             json=source.model_dump(mode="json"),
@@ -151,8 +167,13 @@ class SignedFaultJourney:
         get_settings.cache_clear()
         requester = signed_headers(self.issuer, "requester", "ADMIN")
         admission = route + "/executions"
+        before_admission = database_state(self.engine)
         response = self.client.post(admission, json=body, headers=requester)
         assert response.status_code == expected_status, response.text
+        after = database_state(self.engine)
+        if expected_status != 202:
+            assert after == before_admission, "failed admission changed persistence"
+        self._authority_delta(before, after, proposal, approval.json(), expected_status == 202)
         if expected_status != 202:
             return response
         assert response.headers["cache-control"] == "no-store"
@@ -164,6 +185,105 @@ class SignedFaultJourney:
         assert len(initial.events) == 1
         assert_history(self.engine, initial, initial, self.issuer)
         return initial, admission, body, requester
+
+    def _authority_delta(self, before, after, proposal, approval, admitted):
+        """Permit exact new authority rows, never changed old/protected rows or stray audit."""
+        increments = {
+            "remediation_proposals": 1,
+            "remediation_decisions": 1,
+            # Execution admission's idempotency lives in its immutable execution row;
+            # only proposal/approval use the separate authority request ledger.
+            "remediation_requests": 2,
+            "remediation_executions": int(admitted),
+            "remediation_execution_events": int(admitted),
+            "remediation_target_reservations": int(admitted),
+            "audit_events": 2 + int(admitted),
+        }
+        for name, old_rows in before.items():
+            columns = tuple(column.name for column in Base.metadata.tables[name].primary_key)
+
+            def key(row, columns=columns):
+                return tuple(getattr(row, column) for column in columns)
+
+            current = {key(row): row for row in after[name]}
+            assert all(current.get(key(row)) == row for row in old_rows), (
+                "unexpected signed authority persistence changes"
+            )
+            assert len(after[name]) == len(old_rows) + increments.get(name, 0), (
+                f"unexpected signed authority persistence changes in {name}"
+            )
+        old_ids = {row.event_id for row in before["audit_events"]}
+        added = [row for row in after["audit_events"] if row.event_id not in old_ids]
+        proposal_id = UUID(proposal["content"]["proposal_id"])
+        authorities = [row for row in added if row.target_type == "remediation"]
+        assert len(authorities) == 2
+        for kind, actor, decision in (
+            (AuditEventType.REMEDIATION_PROPOSED, proposal["content"]["proposer"], None),
+            (AuditEventType.REMEDIATION_APPROVED, approval["actor"], approval["decision_id"]),
+        ):
+            matched = [row for row in authorities if row.event_type is kind]
+            assert len(matched) == 1
+            row = matched[0]
+            assert row.target_id == proposal_id and row.actor_type == "human"
+            assert row.actor_id == canonical_json_sha256([actor["issuer"], actor["subject"]])
+            assert row.metadata == {
+                "schema_version": "1.0.0",
+                "actor": actor,
+                "proposal_id": str(proposal_id),
+                "proposal_sha256": proposal["proposal_sha256"],
+                "decision_id": decision,
+            }
+        # Initial authority is our owned history. Later capacity authority is unrelated and
+        # must be allowed explicitly, not absorbed by a snapshot after all API operations.
+        if hasattr(self, "initial"):
+            self.other_audits.update({row.event_id: row for row in added})
+            assert self._other_audits() == self.other_audits, "unexpected unrelated audit changes"
+
+    def evidence_fixture(self, before, *, account=ACCOUNT):
+        """Advance expectations only immediately after trusted offline scan persistence."""
+        assert protected_state(before) == self.protected
+        old_audits = {row.event_id: row for row in before["audit_events"]}
+        after = database_state(self.engine)
+        new_audits = {row.event_id: row for row in after["audit_events"]}
+        assert all(new_audits.get(key) == row for key, row in old_audits.items())
+        for name, rows in before.items():
+            if name.startswith("remediation_"):
+                assert after[name] == rows
+        old_scans = {row.scan_id for row in before["scans"]}
+        new_scans = {row.scan_id for row in after["scans"]} - old_scans
+        assert len(new_scans) == 1
+        finding_ids = {
+            row.finding_id
+            for row in after["findings"]
+            if row.aws_account_id == account and row.region == REGION
+        }
+        additions = {key: row for key, row in new_audits.items() if key not in old_audits}
+        assert additions and all(
+            (row.target_type == "scan" and row.target_id in new_scans)
+            or (row.target_type == "finding" and row.target_id in finding_ids)
+            for row in additions.values()
+        )
+        self.protected = protected_state(after)
+        self.other_audits.update(additions)
+        assert self._other_audits() == self.other_audits, "unexpected unrelated audit changes"
+
+    def expect_governance_audits(self, rows):
+        """Only the two actual fixture rows may extend the original unrelated-audit baseline."""
+        assert len(rows) == 2
+        assert {row.event_type for row in rows} == {
+            AuditEventType.FINDING_ACKNOWLEDGED,
+            AuditEventType.FINDING_UPDATED,
+        }
+        assert {tuple(sorted(row.metadata.items())) for row in rows} == {
+            tuple(sorted({"previous_status": "OPEN", "status": "ACKNOWLEDGED"}.items())),
+            tuple(sorted({"previous_status": "ACKNOWLEDGED", "status": "OPEN"}.items())),
+        }
+        for row in rows:
+            assert row.target_type == "finding" and row.target_id == self.source.finding_id
+            assert row.actor_type == "user" and row.actor_id == "offline-risk-owner"
+            assert utc(row.timestamp) == self.clock()
+            assert row.event_id not in self.other_audits
+        self.other_audits.update({row.event_id: row for row in rows})
 
     def read(self):
         return self.client.get(self.detail, headers=signed_headers(self.issuer, "reader", "VIEWER"))
@@ -244,8 +364,8 @@ class SignedFaultJourney:
         assert len(added) == 2
         assert {row.metadata["status"] for row in added} == {"ACKNOWLEDGED", "OPEN"}
         assert all(row.target_id == self.source.finding_id for row in added)
-        self.protected = protected_state(after)
-        self.other_audits = self._other_audits()
+        assert protected_state(after) == self.protected
+        self.expect_governance_audits(added)
 
     def check(self, phase, held):
         assert not self.transport.script, "unconsumed planned transport responses"
@@ -254,7 +374,7 @@ class SignedFaultJourney:
         assert current.phase is phase and current.reservation_held is held
         assert_history(self.engine, self.initial, current, self.issuer, revocation=self.revocation)
         assert protected_state(database_state(self.engine)) == self.protected
-        assert self._other_audits() == self.other_audits
+        assert self._other_audits() == self.other_audits, "unexpected unrelated audit changes"
         with Session(self.engine) as session:
             assert session.get(Finding, self.source.finding_id).status is FindingStatus.OPEN
             target = session.scalar(
@@ -571,13 +691,31 @@ def exercise_preintent(engine, monkeypatch, tmp_path, case):
             journey.revoke()
         elif case == "governance":
             journey.govern()
-        elif case == "newer-assessment":
-            bundle = ec2_bundle()
+        elif case in {"newer-assessment", "equal-assessment"}:
+            baseline_at = journey.initial.content.proposal.baseline.observed_at
+            observed = baseline_at + timedelta(seconds=1 if case == "newer-assessment" else 0)
+            with monkeypatch.context() as fixture_patch:
+                fixture_patch.setattr("tests.ec2_fixtures.OBSERVED", observed)
+                bundle = ec2_bundle()
+            before_fixture = database_state(engine)
             with Session(engine) as session, session.begin():
                 persist_scan_result(session, **bundle)
-            # Normal persistence is deliberate fixture work, never a worker verification scan.
-            journey.protected = protected_state(database_state(engine))
-            journey.other_audits = journey._other_audits()
+            with Session(engine) as session:
+                snapshot = session.scalar(
+                    select(ResourceSnapshot).where(
+                        ResourceSnapshot.scan_id == bundle["snapshot"].scan_id,
+                        ResourceSnapshot.resource_id
+                        == journey.initial.content.proposal.resource_id,
+                    )
+                )
+                assert utc(snapshot.observed_at) == observed
+                assert (utc(snapshot.observed_at) > baseline_at) is (case == "newer-assessment")
+            journey.evidence_fixture(before_fixture)
+            assert BlockingReason.STALE_TARGET in journey.view().blocking_reasons, (
+                "expected STALE_TARGET after strictly newer evidence"
+                if case == "newer-assessment"
+                else "expected STALE_TARGET after equal-time evidence"
+            )
         elif case == "during-read-revoke":
             script = READ_FALSE
 
@@ -606,6 +744,8 @@ def exercise_preintent(engine, monkeypatch, tmp_path, case):
                 3 if case == "transient-budget" else int(bool(script))
             )
         assert current.events[-1].content.blocking_reasons
+        if case in {"newer-assessment", "equal-assessment"}:
+            assert BlockingReason.STALE_TARGET in current.events[-1].content.blocking_reasons
         journey.check_reads_and_replay()
 
 
@@ -841,9 +981,14 @@ def exercise_capacity(engine, monkeypatch, tmp_path):
         conflict = journey.signed_grant(journey.source, expected_status=409)
         assert conflict.json()["detail"]["code"] == "remediation_execution_target_reserved"
         for number in range(ADMISSION_CAPACITY - 1):
-            source = source_for_account(engine, f"{100000000000 + number:012d}")
+            account = f"{100000000000 + number:012d}"
+            before_fixture = database_state(engine)
+            source = source_for_account(engine, account)
+            journey.evidence_fixture(before_fixture, account=account)
             journey.signed_grant(source)
+        before_fixture = database_state(engine)
         source = source_for_account(engine, "999999999999")
+        journey.evidence_fixture(before_fixture, account="999999999999")
         before = database_state(engine)
         denied = journey.signed_grant(source, expected_status=503)
         assert denied.json()["detail"]["code"] == "remediation_execution_capacity"
@@ -860,8 +1005,73 @@ def exercise_capacity(engine, monkeypatch, tmp_path):
             sum(row.execution_id is not None for row in after["remediation_target_reservations"])
             == 32
         )
-        journey.protected = protected_state(after)
-        journey.other_audits = journey._other_audits()
         journey.check(ExecutionPhase.QUARANTINED, True)
         assert tuple(journey.transport.calls) == calls
         journey.check_reads_and_replay()
+
+
+def exercise_guard_rejection(engine, monkeypatch, tmp_path, case):
+    """Negative regressions: bad runtime effects must make the acceptance helper fail."""
+    if case == "newer-detection":
+
+        def equal_only(session, finding, baseline):
+            return (
+                session.scalar(
+                    select(ControlAssessment.assessment_id)
+                    .join(
+                        ResourceSnapshot,
+                        ResourceSnapshot.snapshot_id == ControlAssessment.resource_snapshot_id,
+                    )
+                    .where(
+                        ControlAssessment.resource_id == finding.resource_id,
+                        ControlAssessment.control_id == finding.control_id,
+                        ControlAssessment.assessment_id != baseline.assessment_id,
+                        ResourceSnapshot.observed_at == baseline.observed_at,
+                    )
+                    .limit(1)
+                )
+                is not None
+            )
+
+        monkeypatch.setattr(authority_module, "has_newer_assessment", equal_only)
+        with pytest.raises(
+            AssertionError, match="expected STALE_TARGET after strictly newer evidence"
+        ):
+            exercise_preintent(engine, monkeypatch, tmp_path, "newer-assessment")
+    elif case == "denial-side-effects":
+        original = RemediationExecutionService.admit
+
+        def bad_denial(service, *args, **kwargs):
+            try:
+                return original(service, *args, **kwargs)
+            except RemediationError as error:
+                if error.code == "remediation_execution_capacity":
+                    with Session(engine) as session, session.begin():
+                        finding = session.scalar(
+                            select(Finding)
+                            .join(Control)
+                            .where(
+                                Finding.aws_account_id == ACCOUNT,
+                                Control.control_key == "EC2-004",
+                            )
+                        )
+                        finding.last_detected_at = utc(finding.last_detected_at) + timedelta(
+                            seconds=1
+                        )
+                        append_audit_event(
+                            session,
+                            AuditEventType.SCAN_STARTED,
+                            "scan",
+                            uuid4(),
+                            service.authority._now(),
+                            actor_type="service",
+                            actor_id="unexpected-worker",
+                            metadata={"probe": True},
+                        )
+                raise
+
+        monkeypatch.setattr(RemediationExecutionService, "admit", bad_denial)
+        with pytest.raises(AssertionError, match="failed admission changed persistence"):
+            exercise_capacity(engine, monkeypatch, tmp_path)
+    else:
+        raise AssertionError("unknown guard probe")

@@ -116,6 +116,15 @@ do not alter assertions to fit a different intent.
 
 ## Compatibility and acceptance gates
 
+The first frozen test candidate's review found three validation gaps. The bounded repair keeps
+equal-time ambiguity as a separate case and proves strictly greater persisted observation time
+plus STALE_TARGET for newer evidence. Governance expectations allow only the two exact fixture
+audit rows captured before worker completion. Capacity checks compare full state immediately
+before/after admission; denial permits no change. Trusted evidence fixture deltas are kept
+separate from signed API effects, and every existing row remains protected. Negative regressions
+inject the reviewer's weakened detector/unrelated audit/finding effects and require the helpers
+to reject them. Passing ordinary cases cannot substitute for these guards or exact repair review.
+
 Preserve routes, status codes, enums, constructors, history schemas, canonical IDs, profile/catalog
 versions, fail-closed authentication, no-store/private projections and scanner startup. Migration
 0009 remains schema-before-code even with the worker disabled; no new migration is predicted.

@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-11
+Last verified: 2026-10-12
 Current accepted implementation baseline: `main` at
 `7a36ddde20aafc60712b38165acd25460418ab92` (isolated-worker PR #59; exact merged-main
 [CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
@@ -54,6 +54,11 @@ fault/race/recovery composition under standing accepted-design authority. Its an
 from clean accepted main on `codex/sprint-8b32-preflight`; its test-only implementation is now
 IN PROGRESS, not accepted. Runtime/schema/security contracts remain unchanged. This slice does
 not complete 8B3/8B/Sprint 8, authorize a live operation, or start 8B3.3/8C--8E/9+.
+Independent review of frozen `1f40aa9` found three medium test-guard gaps despite passing normal
+validation: strict-newer evidence was not distinguished from equal time, and governance/capacity
+baselines could absorb unrelated audit/finding effects. The active plan retains the failed review
+and diagnostic receipts. Routine test-only repair and fresh validation/review remain in progress;
+no publication, accepted-runtime change or new design decision is inferred.
 
 Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
 Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;

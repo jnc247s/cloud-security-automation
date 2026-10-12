@@ -20,6 +20,12 @@ record the development history. Sprint state itself is authoritative only in
   Local targeted/full PostgreSQL regression, quality, Compose/image and cleanup passed as
   recorded in the active plan; independent review, both final-head CI suites, guarded merge
   and exact-main CI remain gates.
+- Independent review found three medium guard gaps in the first frozen candidate, not runtime
+  defects. The bounded test-only repair distinguishes strictly newer/equal-time evidence, allows
+  exact fixture audit deltas, and requires complete no-change state on failed admission; negative
+  regressions require rejection of the injected effects. Fresh repaired validation passed all
+  3,330 backend tests, including 478 PostgreSQL cases without skips; exact repair review and
+  delivery/main-CI gates remain required.
 - No application, schema, API, authentication, scanner credential, dependency, frontend or CI
   change. 8B3.3/8C--8E and whole Sprint 8 remain incomplete; no live operation is authorized.
 
