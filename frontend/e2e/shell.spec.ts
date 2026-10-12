@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { runWithHistoryCleanup, turnHistoryPage } from './history-page';
 
 async function login(page: Page, role = 'VIEWER', subject = 'test-reader') {
   await page.goto('/dashboard/');
@@ -50,7 +51,7 @@ for (const role of ['VIEWER', 'ANALYST', 'APPROVER', 'ADMIN']) {
 test('bounded pages, partial/running/failed lifecycle, navigation and missing scan', async ({ page }) => {
   await login(page);
   await expect(page.getByRole('button', { name: 'Next page' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Next page' }).click();
+  await turnHistoryPage(page, 'Next page', 25);
   await expect(page.getByRole('button', { name: 'Previous page' })).toBeEnabled();
   await openScan(page, '22222222-2222-2222-2222-222222222222');
   await expect(page.locator('dd').filter({ hasText: /^PARTIAL$/ })).toBeVisible();
@@ -63,7 +64,7 @@ test('bounded pages, partial/running/failed lifecycle, navigation and missing sc
   await expect(page.getByRole('alert')).toHaveText(/unavailable or no longer exists/);
   await openScan(page, 'latest');
   await expect(page.getByRole('alert')).toHaveText(/valid scan UUID/);
-  await page.getByRole('button', { name: 'Previous page' }).click();
+  await turnHistoryPage(page, 'Previous page', 0);
   const session = await (await page.request.get('/dashboard/session')).json();
   const scans = await (await page.request.get('/dashboard/api/scans?limit=100',
     { headers: { 'X-Dashboard-Context': session.session_context } })).json();
@@ -73,6 +74,71 @@ test('bounded pages, partial/running/failed lifecycle, navigation and missing sc
     await expect(page.locator('dd').filter({ hasText: new RegExp(`^${status}$`) })).toBeVisible();
     await expect(page.getByText(status === 'RUNNING' ? /counts are unavailable, not zero/ : /not a passing assessment/)).toBeVisible();
   }
+});
+
+test('pagination settlement holds selection until the current history page is rendered', async ({ page }) => {
+  await login(page);
+  await expect(page.getByRole('button', { name: 'Next page' })).toBeEnabled();
+  await turnHistoryPage(page, 'Next page', 25);
+  const previous = '22222222-2222-2222-2222-222222222222';
+  await openScan(page, previous);
+  await expect(page.locator('dd').filter({ hasText: /^PARTIAL$/ })).toBeVisible();
+  const session = await (await page.request.get('/dashboard/session')).json();
+  const scans = await (await page.request.get('/dashboard/api/scans?limit=100',
+    { headers: { 'X-Dashboard-Context': session.session_context } })).json();
+  const running = scans.items.find((scan: { status: string }) => scan.status === 'RUNNING');
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  let held = false;
+  const pattern = '**/dashboard/api/scans?limit=25&offset=0';
+  await page.route(pattern, async route => {
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    held = true;
+    await gate;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  let settled = false;
+  let selectionStarted = false;
+  const selectionReads: string[] = [];
+  function record(request: import('@playwright/test').Request) {
+    const path = new URL(request.url()).pathname;
+    if (path === `/dashboard/api/scans/${running.scan_id}`
+      || path === `/dashboard/api/scans/${running.scan_id}/technical-posture`) selectionReads.push(path);
+  }
+  page.on('request', record);
+  const journey = turnHistoryPage(page, 'Previous page', 0).then(async () => {
+    settled = true;
+    selectionStarted = true;
+    await openScan(page, running.scan_id);
+    await expect(page.locator('dd').filter({ hasText: /^RUNNING$/ })).toBeVisible();
+    await expect(page.getByText(/counts are unavailable, not zero/)).toBeVisible();
+  });
+  // Retain the original rejection for the await below, while ensuring a failure
+  // during the deliberately held interval cannot become an unhandled rejection.
+  void journey.catch(() => undefined);
+  await runWithHistoryCleanup(async () => {
+    await expect.poll(() => held).toBe(true);
+    await expect(page.getByText('Loading scan history…', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('Open scan by UUID')).toHaveValue(previous);
+    expect(new URL(page.url()).searchParams.get('scan')).toBe(previous);
+    expect(settled).toBe(false);
+    expect(selectionStarted).toBe(false);
+    expect(selectionReads).toEqual([]);
+    release();
+    await journey;
+    expect(settled).toBe(true);
+    expect(selectionStarted).toBe(true);
+    expect(new URL(page.url()).searchParams.get('scan')).toBe(running.scan_id);
+    expect(selectionReads.sort()).toEqual([
+      `/dashboard/api/scans/${running.scan_id}`, `/dashboard/api/scans/${running.scan_id}/technical-posture`
+    ]);
+  }, async () => {
+    release();
+    await journey.catch(() => undefined);
+    page.off('request', record);
+    await page.unroute(pattern);
+  });
 });
 
 test('expiry clears context, keyboard controls and mobile layout', async ({ page, context }) => {

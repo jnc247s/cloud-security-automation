@@ -60,6 +60,21 @@ baselines could absorb unrelated audit/finding effects. The active plan retains 
 and diagnostic receipts. Routine test-only repair and fresh validation/review remain in progress;
 no publication, accepted-runtime change or new design decision is inferred.
 
+Subsequent corrected `0f34006` received exact-head REVIEW_PASS and both first-attempt candidate
+CI passes, then merged through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63).
+Exact merged-main `59bb9c9b` [CI 38215419817](https://github.com/jnc247s/cloud-security-automation/actions/runs/38215419817)
+failed one protected Firefox lifecycle check: 73 browser journeys passed, RUNNING did not render,
+and the image step was skipped. This merge is not accepted; 8B3.2 stays IN PROGRESS. An isolated
+controlled probe demonstrated that pagination relayout can lose an Open-scan pointer interaction,
+but the artifact-free historical CI cause remains unconfirmed. The bounded repair synchronizes
+only test pagination to the exact response and rendered page; it does not repair application
+layout or waive the failure. Fresh regression, review and delivery/main-CI gates remain required.
+The active plan owns its scope, diagnostic receipts and unfixed user-interaction limitation.
+After the user resumed Docker/workflow on 2026-10-12, the unavailable old regression result was
+not accepted or relabeled as success. A preliminary review's LOW test-cleanup error masking is
+now addressed by a test-only guard and six permanent unit regressions; targeted validation passed.
+Fresh full validation, exact-commit review and delivery/main-CI gates still precede acceptance.
+
 Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
 Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;
 exact-commit independent REVIEW_PASS, both final-head first-attempt CI runs and exact merged-main
