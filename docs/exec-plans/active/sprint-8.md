@@ -2080,3 +2080,201 @@ main CI remain required. Retain the failed candidate and all diagnostic receipts
 reset or discard. 8B3.2/8B3/8B/Sprint 8 remain IN PROGRESS, not accepted or COMPLETE; 8B3.3/8C--8E
 and Sprint 9+ remain unstarted. Native Firefox launch and local picker/navigation limits remain;
 no optional public-comment retry, live operation or production authorization is inferred.
+
+### 8B3.2 failed exact main and browser repair preflight — 2026-10-12
+
+The corrected test candidate `0f34006394b4fca56d6aed350567247a0ca42c3f`, tree
+`1f9eaf3692e82440c9475ea15ecac73b1a8e2386`, received exact-head independent REVIEW_PASS:
+all three MEDIUM guards closed, no new actionable findings. Independent normal checks passed
+258 SQLite/contract/SDK cases in 91.90s and 37 PostgreSQL cases in 250.41s. Each original adverse
+diagnostic now failed at the intended strengthened guard; those intentional failures are not
+normal acceptance failures and the original failed review remains retained.
+
+Both first-attempt candidate CI runs passed complete primary-log checks: push 38211966967
+(job 114687932198; backend 1775.03s) and PR 38212044406 (job 114688170968; backend 1792.70s).
+Each passed all 3,330 backend tests with 19 existing warnings, 478 PostgreSQL cases across 25
+files without skips, 133 frontend tests across seven files, 74 Chromium/Firefox journeys,
+423-file Ruff formatting, image, cleanup and all 18 steps. The PR checkout was synthetic
+`0b54ddd7d151976eb0aff8e1a933f7be256fffd3`, with the exact reviewed tree and parents accepted
+`01db441d` plus `0f34006`. CLI progress watchers ended with TLS handshake errors; the underlying
+same first attempts completed successfully, without a CI rerun or waiver.
+
+[PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63) merged ordinarily with the
+exact-head guard at 2026-10-12 07:00:42 UTC. Actual merged-main
+`59bb9c9b294e2b18aae20fd5d6f7297d3ab2832a` retains tree `1f9eaf3` and parents `01db441d`/`0f34006`.
+Exact-main first-attempt [CI 38215419817](https://github.com/jnc247s/cloud-security-automation/actions/runs/38215419817),
+job 114698895732, FAILED. Backend 3,330/1625.40s, all 478 PostgreSQL cases and frontend 133 passed.
+Browser results were 37 Chromium plus 36 Firefox passes and one Firefox failure; workers one,
+retries zero. `shell.spec.ts:50` failed its line-73 RUNNING lifecycle assertion after Open scan,
+with the existing 5,000ms timeout. The image step was skipped and cleanup passed. No diagnostic
+artifact was retained by that run. No acceptance or closeout is inferred from the successful
+candidate runs or merge, and no blind rerun is authorized by these receipts.
+
+The failure was investigated without editing the reviewed tree. A tracked-only archive excluded
+untracked files, host credentials, `.git`, operator databases and parent skills. An owned Linux
+image used Playwright 1.63.0/Firefox build 1543, Node 24.19.0, pnpm 11.19.0 and Python 3.12.3;
+the Python patch version differs from the earlier installed-image probe, so this is diagnostic
+evidence, not a replacement exact-main or production-image receipt. Real test login/BFF/bearer
+checks and a fresh migrated tmpfs PostgreSQL 16 ran on an internal network. Boto clients remained
+forbidden, no authentication dependencies were overridden and no host credential mount existed.
+Browser preferences, original actions/assertions and timeouts were unchanged. Source and a
+renamed original test copy had identical SHA-256 `c360c4c18301eec56606ea796c0b2360c316dc58eee6d858eb0b51af56bb75b4`.
+Two observed replays passed in 15.9s: pagination completed before native selection, both exact
+detail/posture responses were 200 and schema-valid, and RUNNING/FAILED rendered. These passes
+do not reproduce or waive the failed CI case. Bounded probes logged only synthetic transition
+categories and scan data, never cookies, tokens, headers, secrets or raw payloads.
+
+A separate controlled route gate returned the real authorized history response at two different
+pointer boundaries. Both used a diagnostic-only 250ms mouse dwell to separate down/up, not a
+production change or an accepted test repair. Release before pointer-down passed; release after
+pointer-down failed the unchanged 5,000ms RUNNING assertion (one pass/one failure, 17.5s).
+The latter retained the correct input but `scan=latest`, with no submit, no detail/posture reads
+and no session loss. History repopulation moved Open scan after pointer-down. This demonstrates
+a lost-click mechanism capable of the symptom, not the actual artifact-free historical cause.
+All owned test containers, databases, internal networks and in-memory credentials were removed.
+All 498 tracked hashes, 71 local branches, three worktrees and parent skill hashes remained intact.
+The initial image probe lacked venv/ensurepip; only the disposable image received the required
+package. Native dashboard checks also stopped at sandbox path access and then the installed
+pnpm 11.25.0 mismatch; no global tooling, engine guard or dependency pin was changed or waived.
+
+The existing independent reviewer supports a bounded test-only settlement repair under standing
+accepted-design authority, not REVIEW_PASS for unimplemented source. It must correlate a new
+exact GET history request to the pagination action, reject old matching responses, require 200,
+`isPage`, limit 25/expected offset/bounded item count, then await the exact ordered rendered UUID
+list and removal of the history loading indicator. Native clicks, original lifecycle/navigation/
+security checks, both browsers, existing timeouts and zero retries remain. A held-response
+regression must establish actual interception and prove no helper completion, selection or scan
+reads before release; after release it must require settlement and original RUNNING assertions.
+Its gate must always release on failure. No forced click, sleep, timeout increase, retry, relaxed
+assertion, auth bypass or runtime change belongs to the repair.
+
+The clean new branch `codex/sprint-8b32-browser-repair` starts from freshly fetched remote main
+`59bb9c9b`, not an assertion that the failed merge is accepted. Local accepted `main` stays at
+`01db441d`, the prior feature branch stays at `0f34006`, and all 71 pre-existing branches and
+three worktrees remain. This repair adds one branch and touches only browser-test helper/caller
+and owning status/receipt documentation. Targeted browser, complete pinned frontend/browser,
+Ruff/whitespace, complete backend/disposable-PostgreSQL, Compose/image, exact independent repair
+review, final-head CI, guarded ordinary merge and exact-main CI are still required. Until then
+8B3.2/8B3/8B/Sprint 8 remain IN PROGRESS, with 8B3.3/8C--8E PLANNED and Sprint 9+ unstarted.
+
+The observed application pagination/layout race remains an unfixed user-interaction limitation;
+test settlement is not a UI repair. Revisit it with the separately scoped 8D dashboard preflight,
+alongside the user's still-untriaged picker/back-navigation report. Its eventual application
+behavior/design cannot be silently chosen here. Historical CI attribution remains unconfirmed;
+future failures must be diagnosed at their actual boundary rather than relabeled as this race.
+No live AWS/IdP/IAM/secret operation, deployment, operator migration, production change, optional
+denied public-comment retry or later-sprint implementation is authorized or performed.
+
+### 8B3.2 browser repair local targeted and browser validation — 2026-10-12
+
+The bounded test helper and shell caller now implement the preflight's exact new-request,
+response-shape/limit/offset and ordered rendered-page guards. Both original pagination clicks
+are still native; all original lifecycle/navigation/security assertions remain. The new held
+response case proves no helper completion, subsequent selection or exact detail/posture request
+while the real signed history response is held. Release then requires the exact current page,
+RUNNING availability text and both exact scan reads. Cleanup always releases the gate.
+
+Pinned Linux checks passed typecheck, lint, all 133 client tests in seven files and the frontend
+build. Targeted modified lifecycle plus held-response regression passed four cases across both
+Chromium and Firefox in 14.9s. A fresh disposable fixture then passed the full 76-journey browser
+suite in 1.6 minutes, including the original 74 journeys and the new case in both projects, with
+one worker and zero retries. Its aggregate result and terminal exit 0 are retained; the local
+console transport truncated some individual progress lines, so this is not an individually
+enumerated 76-line primary-log audit. Future exact-head/exact-main CI must supply complete logs.
+All owned databases, test containers, networks and in-memory credentials were removed again.
+
+The browser image tested exact shell SHA-256
+`ae566f3d4d7ff3da8e6b2c4cefe0a8a557ebc1fa48c9219ebef666e4ed64f5df` and helper SHA-256
+`a3a94f1585a72c07f634a20495e1e6f7f2abcd97d6e06c9a4394ba7326c5fcc8`; only those two test
+files were overlaid on the reviewed tracked-source image, with temporary diagnostic wrappers
+removed. Application/browser configuration, dependencies, authentication and fixture remain
+unchanged. These local passes do not waive failed exact-main CI or prove a repaired user layout.
+Complete fresh backend/PostgreSQL, Ruff/whitespace, Compose/image, exact repair review and all
+delivery/main-CI gates remain pending. No acceptance, closeout, live operation or later slice
+is inferred. Changes are limited to two browser-test files and four owning Markdown files.
+
+### 8B3.2 resumed cleanup repair and fresh validation — 2026-10-12
+
+The user explicitly authorized starting Docker and resuming the full Sprint 8 goal, with ordinary
+approved workflow automatic and only new architectural/design decisions escalated. This does not
+authorize live AWS, IAM/secrets, deployment, operator databases, production or Sprint 9+. Docker's
+Linux engine was available at the resumed check (29.5.2); an existing Desktop process was reused,
+not duplicated. No old validation process, test container or owned test network remained. The two
+unrelated stopped containers, all 72 branches, three worktrees and parent skills were preserved.
+
+The prior local full-regression handle was unavailable and its final result could not be verified.
+Earlier observed pass markers, including all 478 PostgreSQL cases, are not a completed full-run
+receipt. No partial checkpoint is reused as success; fresh validation is required. The historical
+exact-main Firefox failure, diagnostic timing limits and unfixed UI layout race remain unchanged.
+
+Preliminary independent source inspection of the six-file frozen repair found one LOW issue in
+the held-response test: `page.unroute` rejecting in `finally` could replace the original body
+assertion. Other response/DOM guards, native clicks, original assertions and honest documentation
+were sound. This was not an immutable-commit REVIEW_PASS, and no tests were run by that reviewer.
+A networkless, read-only source-fragment probe of exact pre-fix shell SHA `ae566f3d` confirmed four
+error combinations: success, primary-only and cleanup-only were correct; both errors reported
+cleanup instead of the primary. Gate release and cleanup attempt occurred once in every case.
+This proves source error propagation, not a browser failure or historical CI cause.
+
+`runWithHistoryCleanup` is a private test helper, not application/runtime policy. It captures the
+body outcome, always attempts cleanup, then rethrows the original failed value or, after a
+successful body, the cleanup error. Both failures emit only a fixed secondary classification;
+even diagnostic failure cannot replace the primary. Boolean failure markers preserve falsy thrown
+values without converting them to success. The caller's gate release, journey handling, route
+cleanup and every original assertion stay intact. Six permanent unit cases cover all these paths;
+five falsy values are checked within the sixth case. Scope is three test files plus the four
+owning Markdown files, with no application, schema, API, authentication, dependency, configuration,
+browser security preference, credential or CI change.
+
+The initial attempted guard's throw in `finally` correctly failed ESLint `no-unsafe-finally` before
+tests. No rule was suppressed; the corrected guard defers propagation until after cleanup without
+throwing from `finally`. Corrected pinned typecheck, lint, six cleanup unit cases and frontend build
+passed. The affected original lifecycle plus held-response journeys passed four cases across both
+Chromium and Firefox in 16.0s, with one worker/zero retries. Complete sanitized logs are saved only
+in the owned ignored diagnostic directory; all its temporary databases/containers/networks were
+removed. These receipts replace no historical failed attempt and are not full acceptance.
+
+Fresh full pinned frontend/browser, complete native backend/disposable-PostgreSQL, Ruff/whitespace,
+Compose/image, exact independent repair review, final-head CI, guarded ordinary merge and exact
+merged-main CI remain required. Expected frontend total is 139 across eight files; browser total
+remains 76. Backend 3,330/25-file PostgreSQL 478 and 423-file Ruff expectations are unchanged.
+No full result, commit, publication, merge, acceptance, closeout or later slice is inferred here.
+
+### 8B3.2 resumed cleanup repair full local receipt — 2026-10-12
+
+Fresh pinned frontend validation passed typecheck, lint, all 139 unit cases across eight files,
+build and all 76 browser journeys in 1.9 minutes. The saved primary log contains every unique
+case index 1--76, with 38 Chromium and 38 Firefox passes; one worker, zero retries and no skips.
+The complete local log SHA-256 is `abb1c25d005c7ae6f0c6b042f9a16a88c4907e92c38daef67287b799bed66e41`.
+This post-cleanup-fix result replaces no historical failed attempt and requires no CI rerun.
+
+Fresh native validation completed with exit 0 on Python 3.14.5/pytest 9.1.1/AnyIO 4.14.2, using
+the unchanged repository runner and its own loopback/tmpfs PostgreSQL 16 URL, never an operator
+database. Focused contracts passed 99 cases in 0.44s, followed by Ruff and 423-file formatting.
+Complete pytest passed 3,330 cases in 1794.79s; all individual case markers are retained and
+audited as passes. All 478 PostgreSQL cases across 25 files passed without skips: the protected
+24-file/448-case expectations matched, plus 30 fault cases. The 19 warnings remain the existing
+SQLite datetime-adapter deprecations, not suppressed errors. Whitespace, Compose and fresh image
+build passed; the exact owned database was removed and the runner's final success marker was
+retained. The complete local log SHA-256 is `9956a79a4c9f6d7ca096d5ed5cc51c0789a5aada53beeb4f2e30ca1dd2768efe`.
+
+Read-only follow-up found only the two preserved unrelated stopped containers, no validation/
+diagnostic containers or owned internal network. All 500 frozen hashes, 72 branch refs, three
+worktrees and parent three skill hashes matched before/after. The seven scoped files are three
+tests and four owning Markdown files; the other 493 files are unchanged. No user data or existing
+branch/worktree was removed. The prior unavailable native run remains unverified, not retrospectively
+accepted by this fresh result.
+
+The actual built image is `sha256:dbfe8befe3c7618990debdecfe0ec646ac700121719c1f6e4085b98a35eb00b9`.
+Networkless, read-only, non-root probes without mounts, credentials or database confirmed Python
+3.12.15, boto3/botocore 1.43.111, packaged README SHA-256
+`70a338da970fa813dc9d914189ce5f19cfa1c59344080fead127f8ae3da5d57d` and WORKER_DISABLED/exit 0.
+Frontend output assets remained unchanged. These do not establish enabled separate-process or
+physical isolation, live AWS/IdP/IAM behavior, deployment, operator migration or verification.
+
+Only result receipts change after this run; tested source remains frozen. Final lightweight
+contracts/quality/whitespace, a logical scoped commit, immutable-commit independent review by one
+necessary replacement reviewer (the old reviewer is unavailable), both candidate CI runs, guarded
+ordinary merge and exact-main CI remain required. Source diagnostics/normal passing unit tests
+are evidence for the LOW repair, not an independent closure verdict. 8B3.2/8B3/8B/Sprint 8 remain
+IN PROGRESS; 8B3.3/8C--8E stay PLANNED and Sprint 9+ unstarted. No live operation is authorized.

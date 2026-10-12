@@ -164,6 +164,17 @@ then runs full regression and container gates and removes only that created data
 It never reuses an operator database. The browser fixture is test-only and excluded from the image.
 Browser traces/videos/screenshots are disabled for automated authenticated journeys to avoid
 retaining credentials/evidence. A separately requested local visual check must use synthetic data.
+Pagination acceptance now correlates the new exact GET to its limit/offset, validates its bounded
+page, and awaits the ordered Scan history UUID list and disappearance of loading before the next
+native selection. A controlled held-response regression requires no selection or report reads
+before settlement. This is test synchronization, not a layout change: a diagnostic probe showed
+that a history response between pointer-down/up can move Open scan and lose submission. That
+user-interaction race remains unfixed and belongs in the separately scoped 8D preflight; it does
+not establish the cause of the artifact-free failed main CI recorded in the Sprint 8 plan.
+The held-response test uses a test-only cleanup guard: it always attempts gate/route cleanup,
+preserves the first body failure if cleanup also fails, and fails on cleanup-only errors. A
+secondary diagnostic is a fixed classification, never an exception payload; diagnostic failure
+cannot replace the primary error. Permanent unit tests cover these paths and falsy thrown values.
 The combined expiry journey logs only sanitized boundary labels, response codes, an authenticated
 boolean and sign-in button counts. It observes a current-refresh 401 and explicit signed-out
 session recovery before checking Sign in; these diagnostics never contain headers, cookies,

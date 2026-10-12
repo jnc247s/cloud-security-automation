@@ -26,7 +26,23 @@ record the development history. Sprint state itself is authoritative only in
   regressions require rejection of the injected effects. Fresh repaired validation passed all
   3,330 backend tests, including 478 PostgreSQL cases without skips; exact repair review and
   delivery/main-CI gates remain required.
-- No application, schema, API, authentication, scanner credential, dependency, frontend or CI
+- Corrected `0f34006` received exact-head REVIEW_PASS and both first-attempt candidate CI passes,
+  then merged through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63).
+  Exact merged-main [CI 38215419817](https://github.com/jnc247s/cloud-security-automation/actions/runs/38215419817)
+  failed one Firefox lifecycle journey. The 3,330 backend tests, all 478 PostgreSQL cases and
+  133 frontend tests passed, but 73/74 browser journeys passed and the image step was skipped.
+  This is not acceptance. A bounded browser-test repair waits for exact pagination response
+  and rendered UUID list, retaining native clicks and every original assertion; a held-response
+  regression prevents early subsequent selection. Validation and exact repair review are pending.
+- Addresses a preliminary LOW test-cleanup finding: cleanup cannot replace the original failed
+  assertion; cleanup-only failure still fails, and secondary diagnostic failure cannot hide the
+  primary error. Six permanent unit regressions cover success, primary/cleanup/both errors,
+  diagnostic failure and falsy thrown values. Fresh validation passed all 3,330 backend cases
+  (478 PostgreSQL), 139 client tests and 76 browser journeys; quality, Compose/image and cleanup
+  passed. Exact-commit review and fresh delivery/main-CI gates remain required, not acceptance.
+- Controlled offline timing probes demonstrate a pagination/layout lost-click mechanism, not
+  the unrecorded historical CI cause or a repaired user experience. Application layout remains
+  unchanged. No application, schema, API, authentication, scanner credential, dependency or CI
   change. 8B3.3/8C--8E and whole Sprint 8 remain incomplete; no live operation is authorized.
 
 <a name="sprint-8b31--local-integrated-offline-acceptance-candidate-not-accepted"></a>
