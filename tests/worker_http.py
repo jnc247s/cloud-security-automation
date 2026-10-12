@@ -299,7 +299,7 @@ def offline_worker_boundary(engine, monkeypatch, *, outcome, baseline_key):
             event.remove(engine, name, callback)
 
 
-def assert_history(engine, initial, current, issuer):
+def assert_history(engine, initial, current, issuer, *, revocation=None):
     assert current.content == initial.content
     assert current.execution_sha256 == initial.execution_sha256
     assert current.execution_sha256 == canonical_json_sha256(
@@ -326,12 +326,18 @@ def assert_history(engine, initial, current, issuer):
                 AuditEvent.target_id == current.content.proposal.proposal_id,
             )
         ).all()
-        assert len(authority_audits) == 2
+        assert len(authority_audits) == (2 if revocation is None else 3)
         for actor, subject, _role, capability in humans[:2]:
             audit = next(
                 audit
                 for audit in authority_audits
                 if audit.event_metadata["actor"]["subject"] == subject
+                and audit.event_type
+                is (
+                    AuditEventType.REMEDIATION_PROPOSED
+                    if capability == "PROPOSE"
+                    else AuditEventType.REMEDIATION_APPROVED
+                )
             )
             assert audit.actor_type == "human"
             assert audit.actor_id == canonical_json_sha256([issuer.issuer, subject])
@@ -348,6 +354,33 @@ def assert_history(engine, initial, current, issuer):
                 "decision_id": (
                     str(current.content.approval.decision_id) if capability == "APPROVE" else None
                 ),
+            }
+        if revocation is not None:
+            assert revocation.kind.value == "REVOKE"
+            assert revocation.approval_decision_id == current.content.approval.decision_id
+            assert revocation.proposal_sha256 == current.content.proposal_sha256
+            revoked = [
+                audit
+                for audit in authority_audits
+                if audit.event_type is AuditEventType.REMEDIATION_REVOKED
+            ]
+            assert len(revoked) == 1
+            audit = revoked[0]
+            actor = revocation.actor.model_dump(mode="json")
+            assert actor == {
+                "issuer": issuer.issuer,
+                "subject": "approver",
+                "roles": ["APPROVER"],
+                "capability": "APPROVE",
+            }
+            assert audit.actor_type == "human"
+            assert audit.actor_id == canonical_json_sha256([issuer.issuer, "approver"])
+            assert audit.event_metadata == {
+                "schema_version": "1.0.0",
+                "actor": actor,
+                "proposal_id": str(current.content.proposal.proposal_id),
+                "proposal_sha256": current.content.proposal_sha256,
+                "decision_id": str(revocation.decision_id),
             }
         for number, entry in enumerate(current.events, 1):
             content = entry.content.model_dump(mode="json")

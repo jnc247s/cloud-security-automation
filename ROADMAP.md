@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-11
+Last verified: 2026-10-12
 Current accepted implementation baseline: `main` at
 `7a36ddde20aafc60712b38165acd25460418ab92` (isolated-worker PR #59; exact merged-main
 [CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
@@ -15,7 +15,7 @@ Accepted migration head is `20261008_0009`; updated execution-history readers re
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
 **8B3 is IN PROGRESS**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-8B3.2/8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
+8B3.2 is IN PROGRESS; 8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
 receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
 Existing branches, worktrees and unrelated skills are preserved.
 
@@ -39,10 +39,26 @@ The active plan retains the local 491-case focused/3,274-case full results, hist
 independent review receipts and installed-image/default-off limits. Runtime baseline `7a36ddde`,
 migration 0009, interfaces, authentication, scanner credentials and accepted design are unchanged.
 
-The owning acceptance reconciliation is bounded to six Markdown files and the current-status
-contract on `codex/sprint-8b31-closeout`. Its fresh validation, exact review, both final-head CI
-runs, guarded ordinary merge and exact-main CI must pass before 8B3.2 advances. This documentary
-preparation does not complete 8B3, 8B or Sprint 8, authorize a live operation, or start 8C--8E/9+.
+Accepted 8B3.1 documentary baseline: `01db441ddeee8466e068b30f0547f29a3906f4e7`
+([PR #62](https://github.com/jnc247s/cloud-security-automation/pull/62);
+exact merged-main [CI 38194672821](https://github.com/jnc247s/cloud-security-automation/actions/runs/38194672821)
+passed). Exact final-head REVIEW_PASS at `e64ccd1`, both first-attempt candidate CI runs,
+guarded ordinary merge and exact-main CI passed with reviewed tree `1d713ea2` unchanged.
+Each CI run passed 3,274 backend tests, all 448 PostgreSQL cases across 24 files without skips,
+133 frontend tests and 74 browser journeys, quality/image/cleanup and all 18 job steps.
+The active plan preserves the failed review/formatting receipts and the push watch's transport-only
+interruption; the underlying first-attempt CI succeeded without a rerun or test waiver.
+
+The [8B3.2 analysis preflight](docs/sprint-8b32-preflight.md) recommends bounded test-only signed
+fault/race/recovery composition under standing accepted-design authority. Its analysis starts
+from clean accepted main on `codex/sprint-8b32-preflight`; its test-only implementation is now
+IN PROGRESS, not accepted. Runtime/schema/security contracts remain unchanged. This slice does
+not complete 8B3/8B/Sprint 8, authorize a live operation, or start 8B3.3/8C--8E/9+.
+Independent review of frozen `1f40aa9` found three medium test-guard gaps despite passing normal
+validation: strict-newer evidence was not distinguished from equal time, and governance/capacity
+baselines could absorb unrelated audit/finding effects. The active plan retains the failed review
+and diagnostic receipts. Routine test-only repair and fresh validation/review remain in progress;
+no publication, accepted-runtime change or new design decision is inferred.
 
 Historical repair and reconciliation checkpoint below predates PR #58 acceptance and 8B2 authority.
 Accepted test-only repair baseline: `main` at `890b4d58f725f164600a73cf0aee1c173f6f65f0` (PR #57;

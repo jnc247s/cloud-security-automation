@@ -6,6 +6,29 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8B3.2 — local fault and recovery test candidate not accepted
+
+- Adds signed authority-to-worker fault journeys using real migrated SQLite/PostgreSQL,
+  the unchanged driver/ECS-only adapter and entirely intercepted real SDK transport/parsing.
+  Covers pre-intent stale/expired/revoked authority, one-attempt timeout/503/malformed receipts,
+  simulated death and both rolled-back/lost committed acknowledgment returns, fenced reclaim,
+  persistent readback limits, sticky late receipts and actual target/32-slot capacity retention.
+- Adds deterministic PostgreSQL competing-owner and expiry/governance/signed-revocation lock
+  races. Authorized READ/replay and denied access retain immutable v1/v2 history, exact paired
+  human/service audit and unchanged findings/technical evidence; no rescan or verification.
+- Preserves the existing seven signed acceptance cases and strict default audit assertions.
+  Local targeted/full PostgreSQL regression, quality, Compose/image and cleanup passed as
+  recorded in the active plan; independent review, both final-head CI suites, guarded merge
+  and exact-main CI remain gates.
+- Independent review found three medium guard gaps in the first frozen candidate, not runtime
+  defects. The bounded test-only repair distinguishes strictly newer/equal-time evidence, allows
+  exact fixture audit deltas, and requires complete no-change state on failed admission; negative
+  regressions require rejection of the injected effects. Fresh repaired validation passed all
+  3,330 backend tests, including 478 PostgreSQL cases without skips; exact repair review and
+  delivery/main-CI gates remain required.
+- No application, schema, API, authentication, scanner credential, dependency, frontend or CI
+  change. 8B3.3/8C--8E and whole Sprint 8 remain incomplete; no live operation is authorized.
+
 <a name="sprint-8b31--local-integrated-offline-acceptance-candidate-not-accepted"></a>
 
 ### Sprint 8B3.1 — accepted integrated offline tests

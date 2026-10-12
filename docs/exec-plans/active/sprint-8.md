@@ -1742,7 +1742,7 @@ This table is the current bounded status, consistent with ROADMAP.
 | Bounded acceptance slice | Status | Scope |
 | --- | --- | --- |
 | 8B3.1 | COMPLETE | Accepted integrated signed HTTP, migrated database, offline worker/closed adapter and authorized READ/replay tests through PR #61 |
-| 8B3.2 | PLANNED | Combined deterministic fault/race/recovery acceptance |
+| 8B3.2 | IN PROGRESS | Test-only combined deterministic fault/race/recovery acceptance; not yet accepted |
 | 8B3.3 | PLANNED | Installed-image/separate-process/security acceptance and 8B closeout |
 
 The user requested continued goal work under standing accepted-design workflow authority.
@@ -1841,3 +1841,242 @@ Only this receipt is appended after the full frozen validation; README, test sou
 independent review, both final-head CI suites, guarded merge and exact-main CI remain required
 before 8B3.2 advances. The native Firefox/picker limitations and failed receipts remain retained;
 no new reviewer, runtime behavior, later slice, live operation or Sprint 9+ work started.
+
+### Accepted 8B3.1 documentary reconciliation — 2026-10-11
+
+The existing reviewer returned REVIEW_PASS for final head
+`e64ccd1d3cb44b9c325c7b3ca667a7a2b115fb43`, tree
+`1d713ea298359373f5ff20c851b2b89198d7ba45`, with no HIGH/MEDIUM/LOW findings. Fresh independent
+98 contracts, Ruff/419-file formatting, whitespace, current-owner guards and retained anchors
+passed. Local full/image results above are carried evidence, not an independent full rerun.
+
+Both final-head first-attempt CI runs passed: push
+[38192513354](https://github.com/jnc247s/cloud-security-automation/actions/runs/38192513354)
+(job 114628098118, backend 1470.80s) and PR
+[38192586748](https://github.com/jnc247s/cloud-security-automation/actions/runs/38192586748)
+(job 114628324883, backend 1230.88s). The PR's actual synthetic checkout was
+`63a02045867550d468778aba02c48867099aedd6`, with the reviewed tree and parents accepted main
+`eea2f0c48a72cd14c0184a332f535ef315855b86` plus final head `e64ccd1`. Complete primary logs,
+not check summaries alone, prove 3,274 backend cases with 19 existing SQLite warnings, all
+448 PostgreSQL cases/24 files without skips, 133 frontend tests/seven files, and 74 browser
+journeys (37 Chromium/37 Firefox, one worker, zero retries), quality/image/cleanup and all
+18 successful job steps. The native push watch exited 1 on a TCP connection timeout while
+browser coverage was pending; the same underlying run completed SUCCESS on attempt 1. This
+was a watch transport interruption, not a failed CI test, rerun or waived acceptance defect.
+
+After fresh CLEAN/MERGEABLE/head/base and both success checks, the ordinary expected-head guarded
+merge preserved the reviewed tree and branches. [PR #62](https://github.com/jnc247s/cloud-security-automation/pull/62)
+merged at `01db441ddeee8466e068b30f0547f29a3906f4e7` on 2026-10-12T02:09:16Z (Chicago 2026-10-11),
+with parents `eea2f0c` and `e64ccd1`. Exact-main
+[CI 38194672821](https://github.com/jnc247s/cloud-security-automation/actions/runs/38194672821)
+(job 114634610935, backend 931.15s) passed the same complete counts and all 18 steps on attempt 1,
+at that exact merge/tree/parent pair. No CI rerun, forced merge, branch/worktree deletion or
+optional public-comment retry was performed. These gates supersede preparation-time pending
+statements without erasing failed receipts. Runtime `7a36ddde`, migration 0009 and accepted
+design are unchanged; enabled process, physical isolation, deployment, operator migration and
+live IdP/AWS/IAM/secret/production operations remain unproved and unauthorized.
+
+### 8B3.2 analysis preflight — 2026-10-11
+
+Only after PR #62 exact-main acceptance, clean local main was ordinarily fast-forwarded to
+`01db441d` and scoped branch `codex/sprint-8b32-preflight` created. All prior 70 local branches,
+three worktrees and unrelated parent skill files are preserved; the single new branch makes 71.
+The [8B3.2 preflight](../../sprint-8b32-preflight.md) maps signed routes and callers, approval/
+admission/history services, driver/adapter, coordination/audit persistence, evidence/findings,
+existing signed/seeded fault tests and deterministic test seams.
+
+Its test-only matrix covers pre-intent authority/evidence failures, competing/reclaimed owners,
+real PostgreSQL expiry/governance/revocation lock waits, actual one-attempt ambiguous transport,
+death/result-persistence uncertainty, late receipt and read-only restart, global readback limits,
+sticky target/actual capacity retention, and signed READ/replay/denial with immutable history.
+Existing seven signed journeys and all protected tests remain strict. Shared domain clock,
+explicit revocation audit accounting and separate lock-holder transactions avoid test-only
+authentication bypass, relaxed assertions or false transaction proof. No runtime, schema,
+credential, endpoint, dependency, CI or frontend change is predicted.
+
+No new design decision is identified. Standing accepted-design authority permits the bounded
+test implementation after the recorded analysis; any required new design still stops for approval.
+This checkpoint contains analysis/owner documentation only, not implemented fault tests or fresh
+whole-slice acceptance. 8B3.2 remains PLANNED until implementation begins; 8B3.3/8C--8E and Sprint
+9+ have not started. Whole Sprint 8 remains active and incomplete. Targeted documentation checks
+are followed by targeted/new plus full PostgreSQL regression, exact existing-reviewer review,
+both final-head CI runs, guarded ordinary merge and exact-main CI for implementation acceptance.
+
+### 8B3.2 test-only implementation entry — 2026-10-11
+
+The recorded preflight identifies no new design choice. Under standing accepted-design workflow
+authority, 8B3.2 is now IN PROGRESS for the complete bounded matrix, not accepted or COMPLETE.
+Its analysis-only checkpoint passed 17 targeted current-status contracts in 0.25s, Ruff lint,
+420-file formatting and whitespace; the existing nonfatal native Python launcher location warning
+remains. These are documentation checks only, not fault/runtime/full-regression acceptance.
+The current status table, ROADMAP, README and their status guard are updated atomically at entry.
+Implement only test helpers/wrappers and owning receipts; preserve existing strict assertions.
+Runtime/schema/API/authentication/credentials/scanner behavior remain unchanged. No 8B3.3,
+8C--8E, live operation or Sprint 9+ work starts. Full-slice acceptance still requires every
+preflight family and all targeted/full/integration/review/CI/merge/main gates.
+
+### 8B3.2 local fault candidate and targeted checks — 2026-10-11
+
+The test-only candidate adds `tests/worker_fault_http.py` and thin API/PostgreSQL wrappers.
+It creates all human authority/revocation via signed production-mode HTTP, shares only domain
+time through the existing constructor clock, and retains real JWT verification, worker SQL,
+ECS-only factory, SDK serialization/transport/parsing and public READ/replay. Every transport
+is intercepted; unexpected destinations/operations/attempts and host AWS files fail. Existing
+seven signed cases remain unchanged. The shared history assertion retains its exact two-audit
+default and accepts an explicit third REVOKE audit only with exact actor/content validation.
+
+New combined cases cover expiry/revocation/governance/newer evidence, read failures/budget,
+changed preconditions, one SDK/wire enable for timeout/503/malformed/invalid XML, death before/
+inside dispatch, acknowledgment rollback/lost committed return, late dispatch/receipt, fenced
+reclaim, global readback poll/window limits, post-intent revocation and actual 32-slot capacity.
+The PostgreSQL wrapper additionally has real competing-claim and expiry/governance/signed-revoke
+Resource lock barriers after the adapter read returns. No external test lock spans worker AWS I/O.
+All relevant phases retain signed READ/list/replay/denial, paired audit/private-field checks and
+full protected persistence comparisons. Deliberate offline evidence/governance fixture work is
+separate from worker effects. No runtime/schema/API/security/credential/default change is made.
+
+Initial targeted runs stopped on new harness errors: nonexistent audit `created_at` (1 failed),
+worker-only `polls` accessed on v1 admission (16 passed/1 failed in 32.30s), and the capacity
+test's incorrect `error` envelope instead of accepted `detail` (20 passed/1 failed in 40.42s).
+Each was corrected in test code without weakening assertions or changing runtime; no failed
+receipt is waived. Exact owned temporary SQLite paths were removed after every run.
+
+Fresh corrected targeted validation passed 46 cases in 71.87s: all 22 new SQLite fault cases,
+the seven protected signed-worker cases and 17 current-status contracts. Ruff lint, 423-file
+formatting and whitespace passed. Native launcher location warnings remain nonfatal and are
+not runtime repairs. All 489 other tracked hashes, 71 branch refs, three worktrees and the three
+unrelated parent skill hashes are preserved; no temporary task SQLite directories remain.
+These results do not prove new PostgreSQL races or complete regression. Fresh targeted/full
+disposable-PostgreSQL, Compose/image, independent review, both final-head CI, ordinary guarded
+merge and exact-main gates remain pending. 8B3.2/8B3/Sprint 8 remain IN PROGRESS, not accepted;
+8B3.3/8C--8E and Sprint 9+ have not started. No enabled-process, physical-isolation, deployment,
+operator migration or live AWS/IdP/IAM/secret/production authority is inferred.
+
+### 8B3.2 fresh local full validation — 2026-10-11
+
+The unchanged validator ran against its own loopback/tmpfs PostgreSQL 16 and an explicit,
+freshly generated TEST_DATABASE_URL, never an operator database. Targeted new/affected signed
+API/PostgreSQL/worker/SDK/authorization/history/contracts passed all 363 cases in 363.74s,
+then Ruff lint/423-file formatting passed. Complete `python -m pytest` passed all 3,323 cases
+in 1582.87s with no skips. All 474 PostgreSQL cases across 25 files passed; each protected
+24-file/448-case count matches accepted PR #61, with 26 new combined fault/race cases added.
+The 49 additional collected cases are 22 new SQLite journeys, 26 new PostgreSQL journeys and
+one automatic Markdown-link check for the new preflight. The 19 existing warnings remain
+SQLite datetime-adapter deprecations, not new faults or waived assertions.
+
+Whitespace, quiet Compose and the fresh image build passed; validator/wrapper exit was 0.
+The exact owned database and temporary subtree were removed; read-only follow-up found zero
+validation-labeled containers and no task SQLite/validation temporary directories. All eleven
+candidate hashes and 487 other tracked hashes matched before/after the frozen run. Fresh remote
+main remains accepted `01db441d`; all 71 local branch refs, three worktrees and three unrelated
+parent skill hashes are preserved. No user data, branch, worktree or operator database was removed.
+
+Actual immutable image
+`sha256:47b00d9a5a7d0fb0852adfff53ad78278c25ca70bd32bc91bf776d68dcfae500`
+contains exact README SHA-256
+`70a338da970fa813dc9d914189ce5f19cfa1c59344080fead127f8ae3da5d57d`.
+Networkless, read-only, unprivileged ephemeral probes without host mounts, credentials or
+database verified Python 3.12.15, boto3/botocore 1.43.111 and WORKER_DISABLED/exit 0. These are
+packaged-version/README/default-off checks, not enabled separate-process, physical isolation,
+deployment, operator migration, attributed verification or live AWS/IdP/IAM/secret evidence.
+No manifest, application, schema, API, authentication, credential, frontend or CI source changed.
+
+Only owning result receipts are reconciled after this frozen run; tested source and README stay
+unchanged. Final documentation/quality/whitespace checks, exact-commit existing-reviewer review,
+both final-head CI suites including frontend/browser regression, guarded ordinary merge and
+exact-main CI remain required. 8B3.2/8B3/Sprint 8 remain IN PROGRESS, not accepted/COMPLETE;
+8B3.3/8C--8E and Sprint 9+ have not started. Native Firefox launch and the local picker/navigation
+limitations remain retained, and optional public-comment retry is not authorized or performed.
+
+### 8B3.2 failed independent review and bounded test repair — 2026-10-12
+
+The scoped eleven-file candidate was frozen at `1f40aa9a4cb92a4a231ff84116bc90139f110260`,
+tree `6b54c192b99c6b43e93357977bb71915eb0a551f`, sole parent accepted `01db441d`.
+Final receipt checks passed 99 contracts in 2.80s, Ruff/423-file formatting and whitespace;
+the known nonfatal native launcher warning remains. Commit/index/worktree were clean; all
+other 70 refs, three worktrees and unrelated parent skills were preserved. It was not published.
+
+The existing independent reviewer returned REVIEW_FAIL with three MEDIUM validation defects:
+the newer-assessment case actually persisted equal-time evidence, PostgreSQL governance audit
+rebaselining after worker completion absorbed unrelated effects, and capacity rebaselining after
+denial absorbed original-finding timestamp/unrelated audit changes. These are test-guard defects,
+not production/runtime defects or a new architectural decision. No acceptance gate is waived.
+
+Independent ordinary checks passed 255 cases in 67.32s (22 new SQLite faults, seven protected
+signed cases, 127 SDK cases, 99 contracts), plus all 33 PostgreSQL cases in 178.36s (26 new and
+seven protected) on the reviewer's sole loopback/tmpfs PostgreSQL 16.15. Ruff/423-file formatting,
+committed whitespace and historical-plan preservation passed. Root's full 3,323/474-PG and
+image results above are carried, not independently rerun; normal passes do not close the findings.
+
+Three negative in-process probes independently confirmed false positives: equal-time-only
+detection still passed the supposed newer case (1.51s); an original-finding last_detected_at
+change plus unrelated SCAN_STARTED at the 503 capacity boundary still passed (14.78s); an
+unrelated worker SCAN_STARTED at governance NO_WRITE still passed (3.99s). These expose guard
+failures, not additional acceptance passes. Each probe emitted one already-imported AnyIO rewrite
+warning, distinct from normal acceptance warnings. All eleven/487 fingerprints, normalized blobs,
+71 refs, three worktrees and parent skill hashes stayed unchanged. The exact reviewer-owned
+database and both UUID temporary subtrees were removed; no user resource was deleted.
+
+Standing accepted-design workflow authority covers this bounded test-only correction: prove
+strictly newer persisted timestamps and exact STALE_TARGET while preserving a distinct equal-time
+case; extend the original governance audit baseline with only its two known fixture additions;
+compare complete before/after admission state so failed admission permits no change; separate
+trusted source fixture deltas from signed RPC effects; and add explicit negative guard regressions.
+Do not alter accepted services, authentication, schema, actions, credentials, recovery or success.
+
+Fresh targeted, Ruff/format, complete disposable-PostgreSQL, Compose/image and exact repair review
+are required before publication. Retain the failed candidate/probe receipts and use a new logical
+repair commit without amend/reset/discard. 8B3.2/8B3/8B/Sprint 8 remain IN PROGRESS, not accepted;
+8B3.3/8C--8E and Sprint 9+ have not started. No new reviewer, live operation, deployment, operator
+migration, optional public-comment retry or production authority is granted by the repair.
+
+The first repair-focused SQLite run stopped at a new exact-delta test assumption (1 failed in
+1.99s): execution admission stores idempotency in its execution row, not another proposal/
+approval request-ledger row. Source inspection confirmed the accepted behavior; the guard now
+requires exactly two authority ledger additions and the distinct execution/journal additions,
+without weakening any invariant or changing runtime. Its exact owned UUID temporary subtree
+was removed. Fresh corrected checks passed 131 cases in 95.59s: 25 new/repaired SQLite cases,
+seven protected signed journeys and 99 contracts. This includes genuinely newer/equal-time
+cases and regressions requiring rejection of weakened detection and injected denial effects.
+New PostgreSQL governance/audit and matching negative regressions remain unvalidated here;
+fresh targeted/full PostgreSQL, quality, Compose/image and exact repair review are still required.
+
+### 8B3.2 corrected full validation — 2026-10-12
+
+The same fresh validator completed without restart against its sole loopback/tmpfs PostgreSQL 16,
+with its own explicit TEST_DATABASE_URL and isolated SQLite paths, never an operator database.
+The repaired focused selection passed 370 cases in 462.65s, followed by Ruff lint and 423-file
+formatting. Complete pytest passed all 3,330 cases in 1680.03s without skips. The 19 warnings
+remain the existing SQLite datetime-adapter deprecations; no failure or assertion was waived.
+
+All 478 PostgreSQL cases across 25 files passed. Each protected 24-file/448-case count matches
+accepted PR #61; the new fault file contributes 30. The new SQLite file contributes 25, and the
+new preflight contributes one Markdown-link case: 56 additional cases over accepted 3,274.
+These include five explicit negative guard regressions across SQLite/PostgreSQL. Strictly newer
+and distinct equal-time evidence, exact governance fixture additions and complete failed-admission
+state checks passed; independent review must still confirm the three MEDIUM findings are closed.
+
+Whitespace, quiet Compose and the fresh image build passed; validator/wrapper exit was 0.
+The exact owned database and UUID temporary subtree were removed. Read-only follow-up found
+zero validation-labeled containers and no owned SQLite/validation temporary directories. All
+eleven frozen candidate hashes and 487 other tracked hashes matched before/after the full run.
+All 71 expected local branch refs, three worktrees and unrelated parent skills were preserved;
+fresh remote main remains accepted `01db441d`, with no existing PR for this candidate branch.
+No user data, branch, worktree or operator database was removed.
+
+The actual immutable fresh image is
+`sha256:b40eedba19687b1e6bbb447ead69a47dbd51b76fae5c579a68378cd343534486`.
+Networkless, read-only, unprivileged ephemeral probes without host mounts, credentials or database
+verified Python 3.12.15, boto3/botocore 1.43.111, exact packaged README SHA-256
+`70a338da970fa813dc9d914189ce5f19cfa1c59344080fead127f8ae3da5d57d`, and WORKER_DISABLED/exit 0.
+These do not prove enabled separate-process or physical isolation, deployment, operator migration,
+attributed verification, or live AWS/IdP/IAM/secret behavior. Runtime, migration 0009, interfaces,
+authentication, scanner credentials, dependency manifests, frontend and CI source stay unchanged.
+
+Only owning result receipts change after this frozen run; tested source and README stay unchanged.
+Final contracts/quality/whitespace, a new logical repair commit and exact existing-reviewer review,
+both final-head CI suites including frontend/browser regression, ordinary guarded merge and exact
+main CI remain required. Retain the failed candidate and all diagnostic receipts without amend,
+reset or discard. 8B3.2/8B3/8B/Sprint 8 remain IN PROGRESS, not accepted or COMPLETE; 8B3.3/8C--8E
+and Sprint 9+ remain unstarted. Native Firefox launch and local picker/navigation limits remain;
+no optional public-comment retry, live operation or production authorization is inferred.

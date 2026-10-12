@@ -42,7 +42,7 @@ both final-head CI runs and green
 [exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
-8B3.2/8B3.3 and 8C--8E remain PLANNED. No live operation is authorized,
+8B3.2 is IN PROGRESS; 8B3.3 and 8C--8E remain PLANNED. No live operation is authorized,
 and architecture/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
