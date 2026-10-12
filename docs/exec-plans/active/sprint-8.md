@@ -1742,7 +1742,7 @@ This table is the current bounded status, consistent with ROADMAP.
 | Bounded acceptance slice | Status | Scope |
 | --- | --- | --- |
 | 8B3.1 | COMPLETE | Accepted integrated signed HTTP, migrated database, offline worker/closed adapter and authorized READ/replay tests through PR #61 |
-| 8B3.2 | IN PROGRESS | Test-only combined deterministic fault/race/recovery acceptance; not yet accepted |
+| 8B3.2 | COMPLETE | Accepted combined signed fault/race/recovery tests through PR #63 and test-only repair PR #64 |
 | 8B3.3 | PLANNED | Installed-image/separate-process/security acceptance and 8B closeout |
 
 The user requested continued goal work under standing accepted-design workflow authority.
@@ -2278,3 +2278,101 @@ necessary replacement reviewer (the old reviewer is unavailable), both candidate
 ordinary merge and exact-main CI remain required. Source diagnostics/normal passing unit tests
 are evidence for the LOW repair, not an independent closure verdict. 8B3.2/8B3/8B/Sprint 8 remain
 IN PROGRESS; 8B3.3/8C--8E stay PLANNED and Sprint 9+ unstarted. No live operation is authorized.
+
+### 8B3.2 accepted combined fault tests and cleanup repair — 2026-10-12
+
+The complete bounded [fault/recovery matrix](../../sprint-8b32-preflight.md) is accepted through
+PR #63 and its browser-test/cleanup repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64).
+This supersedes the prior current-state pending gates, not dated preparation predictions or
+failed receipts. **8B3.2 is COMPLETE** as test-only acceptance; 8B3/8B/Sprint 8 remain IN PROGRESS.
+8B3.3/8C--8E remain PLANNED and Sprint 9+ is unstarted. Runtime baseline `7a36ddde`, accepted
+migration `20261008_0009`, catalog/profile defaults and all operator boundaries are unchanged.
+
+The corrected signed fault suite received exact-head REVIEW_PASS at `0f34006`; its source is
+unchanged by the browser repair. The one necessary replacement reviewer returned immutable-head
+REVIEW_PASS at `34a40d5ef36432d3105187c792d3e972e4321098`, tree
+`6c5638db7ec1230653d332ba334c73e06897b6f7`, parent `59bb9c9b`, with no actionable findings.
+All three original MEDIUM guard findings remain closed; the preliminary LOW primary-error
+masking issue is independently closed. The reviewer ran six cleanup unit cases in 1.94s and
+four affected browser journeys in 15.0s, using the immutable pinned image and unchanged browser
+configuration, one worker/zero retries/no skips. Typecheck/lint/build passed. The reviewer also
+audited the root's complete full-run hashes, all 3,330 backend markers and all 76 browser rows;
+that is an independent log audit, not another independently executed full backend suite.
+Independent targeted-log SHA-256 is `ee5ed31265320133591651ef3f42a2807d699d438dc463ad75030e26d10d3834`.
+
+Both first-attempt repair-head CI runs passed. The PR tested synthetic merge `37a9aa10817c3d54879d2874e5e660a1d99e7a98`,
+with exactly the reviewed tree and parents `59bb9c9b`/`34a40d5`. Fresh PR/head/base/check/settings
+guards preceded the ordinary exact-head merge, without admin bypass, force push or branch deletion.
+The delivered merge `9c3df3256f81edf85a262b55b949c38b43d6d226` has that same tree and those
+parents; first-attempt exact-main CI passed. Complete provider logs, checkout SHAs, individual
+backend/browser cases and all terminal quality/image/cleanup steps were audited.
+
+| Verified first-attempt CI | Backend result | Other complete gates |
+| --- | --- | --- |
+| [Push 38290690632](https://github.com/jnc247s/cloud-security-automation/actions/runs/38290690632) | 3,330 passed / 19 existing warnings / 1636.47s | All 478 PostgreSQL cases in 25 files, no skips; 139 frontend cases/eight files; 76 browser journeys (38 Chromium/38 Firefox), one worker/zero retries; Ruff/423-file formatting, image/cleanup and all 18 steps |
+| [PR 38290762618](https://github.com/jnc247s/cloud-security-automation/actions/runs/38290762618) | 3,330 passed / 19 existing warnings / 1569.16s | Same complete gates |
+| [Exact main 38294459508](https://github.com/jnc247s/cloud-security-automation/actions/runs/38294459508) at 9c3df32 | 3,330 passed / 19 existing warnings / 1835.07s | Same complete gates |
+
+The protected 24-file/448-case PostgreSQL counts match, plus 30 fault/race cases. The 19 backend
+warnings are the existing SQLite datetime-adapter deprecations; none were suppressed. All seven
+approved fault families are covered, with signed authority/denial/replay, actual one-send ceilings,
+durable intent and paired audit, conservative recovery, strict evidence/governance/capacity guards
+and unchanged findings/technical data. Passing receipts do not waive failed main `59bb9c9b`.
+Its artifact-free Firefox cause remains unconfirmed; the separately demonstrated pagination
+layout/pointer race remains unfixed for 8D, alongside the untriaged scan-picker/navigation report.
+The interrupted old native result remains unverified. No live or physical isolation, enabled
+installed-process, deployment, operator migration or rescan-attribution proof is inferred.
+
+### 8B3.2 documentary reconciliation entry — 2026-10-12
+
+Only after successful exact-main audit, clean local main was normally fast-forwarded from
+`01db441d` to `9c3df32`, then `codex/sprint-8b32-closeout` was created for five owning Markdown
+files and the matching current-status contract. The prior 72 branches are preserved, with only
+the accepted main advance and one new scoped branch; all three worktrees and unrelated parent
+skill files are preserved and excluded. No application, schema, credential, API, authentication,
+frontend, dependency or CI change belongs to this reconciliation. Historical headings/receipts
+remain addressable; only current status and acceptance context change.
+
+Targeted contracts, Ruff/format/whitespace, fresh full disposable-PostgreSQL regression,
+Compose/image, immutable-head independent review, both first-attempt candidate CI runs, ordinary
+guarded merge and green exact-main CI remain required for this closeout before 8B3.3 preflight.
+The Sprint 8 plan remains active; Sprint 8/8B/8B3 stay IN PROGRESS. No 8B3.3/8C--8E implementation,
+live AWS/IdP/IAM/secrets, operator database, deployment, production operation or Sprint 9+ work
+is started or authorized here.
+
+### 8B3.2 documentary closeout local validation — 2026-10-12
+
+The frozen six-path reconciliation passed 99 targeted contracts in 0.43s, Ruff and 423-file
+formatting, then all 3,330 backend cases in 1623.43s with 19 existing SQLite datetime-adapter
+warnings and no skips. The complete saved primary log accounts for all 150 test files and
+all 478 PostgreSQL cases across 25 files; every protected 24-file/448-case count matches, plus
+the 30 fault/race cases. Whitespace, Compose configuration and fresh image build passed.
+The unchanged validation runner exited 0, removed only its owned disposable database and retained
+its final success marker. Primary-log SHA-256 is `adab60548c273bf7e52778c006e3b64d7c2b6d12b6564273dc09b5949ededdb2`.
+
+The same native interpreter reports Python 3.14.5 and boto3/botocore 1.43.87; the full-run header
+records pytest 9.1.1/AnyIO 4.14.2. The separately built immutable image
+`sha256:25e16176c7e431792d6f1cac197a8046bd07dcaea0aabbcf361f6c104a68df15` resolved
+Python 3.12.15 and boto3/botocore 1.43.112 within unchanged dependency ranges. Non-root UID 100,
+networkless, read-only probes without mounts, credentials or database verified the built-in
+encryption/key/STS output-model shapes, packaged README SHA-256
+`ef1fac350bd2a826c2669ced864d1b481a7bf3eb7b17a1028ac209f853aebc19`, and
+WORKER_DISABLED/exit 0. Model/default-off probes are not a full regression under the image's
+resolved SDK, enabled installed-worker/process proof, physical isolation or live operation.
+Final-head CI still must run the full backend/client/browser/image pipeline in its own environment.
+
+All 500 frozen file hashes, 73 branch refs, three worktrees and three parent skill hashes matched
+before/after validation. The two unrelated stopped containers and pre-existing networks remained
+preserved; no test database or probe container remained. Only this result receipt changes after
+the run; tested source and packaged README stay frozen. No user data or branch/worktree was removed.
+
+Final receipt contracts/quality/whitespace, a logical scoped commit, immutable-head independent
+review, both first-attempt candidate CI runs, ordinary guarded merge and green exact-main CI
+remain required for documentary acceptance before 8B3.3 preflight. No reviewer clearance,
+publication, merge or next-slice work is inferred from these local passes. Sprint 8 remains active
+and IN PROGRESS; later slices and live/production operations remain separately gated.
+
+Final receipt checks passed 99 contracts in 2.68s, Ruff/423-file formatting and whitespace.
+The existing native launcher warning about the installed Python-core location remained visible;
+the interpreter and all checks completed successfully. No warning, assertion, skip or security
+boundary was suppressed. Only the active-plan result receipt differs from the full-run freeze.

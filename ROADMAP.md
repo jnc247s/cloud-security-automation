@@ -15,9 +15,25 @@ Accepted migration head is `20261008_0009`; updated execution-history readers re
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
 **8B3 is IN PROGRESS**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-8B3.2 is IN PROGRESS; 8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted. The active plan records the exact acceptance
+**8B3.2 is COMPLETE**; 8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted.
+The active plan records the exact acceptance
 receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
 Existing branches, worktrees and unrelated skills are preserved.
+
+Accepted 8B3.2 test baseline: `9c3df3256f81edf85a262b55b949c38b43d6d226`
+([PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64), following PR #63;
+exact merged-main [CI 38294459508](https://github.com/jnc247s/cloud-security-automation/actions/runs/38294459508)
+passed). Exact repair-head REVIEW_PASS at `34a40d5`, both first-attempt candidate CI runs,
+guarded ordinary merge and exact-main CI passed with reviewed tree `6c5638db` unchanged.
+Each CI run passed 3,330 backend tests, all 478 PostgreSQL cases across 25 files without skips,
+139 frontend tests/eight files, all 76 browser journeys (38 Chromium/38 Firefox, zero retries),
+quality/image/cleanup and all 18 job steps. The three MEDIUM fault-test guard findings and LOW
+cleanup-masking finding are independently closed. Historical failures remain unwaived; the
+artifact-free old main Firefox cause is unconfirmed and the demonstrated application layout race
+is unfixed. Runtime baseline `7a36ddde`, migration 0009, scanner credentials, interfaces and
+finding/technical lifecycles are unchanged. This accepts combined offline fault/recovery tests,
+not enabled installed-process proof, rescan attribution, deployment or a live operation.
+Owning documentation/current-status reconciliation retains its own required gates before 8B3.3.
 
 Prior accepted 8B2 documentary baseline: `04803adbb8baf825ec62f19c5b2bea015f907277` (PR #60;
 exact merged-main [CI 38171117595](https://github.com/jnc247s/cloud-security-automation/actions/runs/38171117595)
@@ -48,6 +64,9 @@ Each CI run passed 3,274 backend tests, all 448 PostgreSQL cases across 24 files
 133 frontend tests and 74 browser journeys, quality/image/cleanup and all 18 job steps.
 The active plan preserves the failed review/formatting receipts and the push watch's transport-only
 interruption; the underlying first-attempt CI succeeded without a rerun or test waiver.
+
+The following historical 8B3.2 preparation and failed-main checkpoints predate PR #64 acceptance;
+their pending states and failed receipts are retained, not current acceptance status.
 
 The [8B3.2 analysis preflight](docs/sprint-8b32-preflight.md) recommends bounded test-only signed
 fault/race/recovery composition under standing accepted-design authority. Its analysis starts
