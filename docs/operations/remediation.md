@@ -230,3 +230,19 @@ and enabled installed-image/separate-process acceptance are subsequent bounded 8
 deployment, physical credential isolation, attributed verification, automatic incident recovery,
 operator migration or live execution proof. The API/dashboard/scanner behavior and all operator
 authorization boundaries above remain unchanged. ROADMAP owns current status.
+
+## Local fault and recovery test candidate 8B3.2
+
+The [8B3.2 preflight](../sprint-8b32-preflight.md) bounds the next test-only slice to combined
+signed authority, unchanged database/worker/adapter behavior, deterministic faults and authorized
+history. Its local candidate intercepts metadata and every real STS/EC2 transport, counts actual
+enable sends as well as SDK invocations, and exercises PostgreSQL ownership/lock races. No AWS,
+ECS metadata service, operator database, credential issuance or production system is contacted.
+
+Tests preserve the intent cutoff and uncertain-effect quarantine after crashes, late receipts,
+true observations and grant expiry. Read-only recovery retains global budgets/window and target/
+capacity ownership; a conclusive acknowledgment durably committed before a lost return remains
+ACKNOWLEDGED and unverified. Neither result verifies the control or resolves a finding. These
+are local test candidates, not accepted whole-slice, enabled-process or deployment evidence.
+The active plan records exact fresh validation and remaining review/delivery gates; ROADMAP
+continues to own status. No operator procedure or authorization boundary above changes.
