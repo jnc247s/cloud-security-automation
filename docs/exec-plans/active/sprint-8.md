@@ -1782,3 +1782,62 @@ matched before/after full validation, prior to this receipt-only append. Validat
 freeze the exact scoped commit for the existing reviewer and resolve findings before both
 final-head CI runs, guarded ordinary merge and exact-main acceptance of this reconciliation.
 No new reviewer, next-slice implementation, live/production operation or Sprint 9+ work started.
+
+### 8B3.1 documentary review correction — 2026-10-11
+
+The existing reviewer returned REVIEW_FAIL for frozen closeout head
+`82868fce811cdf6774f4256cdc9dfdddacdae81a`, tree
+`74cab3547e46481415704c350ad37ba9f8ab3470`, with one LOW current-owner reconciliation gap:
+README still called 8B3 PLANNED while ROADMAP and the active current-status table correctly
+recorded it IN PROGRESS and 8B3.1 COMPLETE. The independent six-path review otherwise passed
+98 contracts in 2.68s, Ruff/419-file formatting, committed whitespace and fragment checks.
+All six candidate/488 protected hashes, clean checkout, 70 branch refs, three worktrees and
+three unrelated parent skill hashes were preserved. The nonfatal Python launcher location
+warning remains; full regression, provider CI and image results were carried evidence, not
+independently rerun. This failed receipt is retained, not waived or called REVIEW_PASS.
+
+The bounded repair adds README as a seventh scoped path: six Markdown files and the current-status
+contract. Its current summary now records accepted PR #61 and the remaining planned slices;
+its remediation documentation/structure labels now reflect accepted default-off worker code.
+The contract additionally checks that current README status agrees with ROADMAP and this plan.
+This is accepted-design documentation/test reconciliation, not runtime, schema, API, authentication,
+credential, frontend, CI or later-slice implementation. Historical predictions and prior receipts
+remain unchanged. Because README is package/image input, fresh targeted/full disposable-PostgreSQL
+regression, quality, Compose, rebuilt-image/installed-version/default-off probes and exact-head
+independent review are required before publication. Both final-head CI runs, guarded ordinary
+merge and exact-main CI remain acceptance gates. Scanner credentials remain read-only;
+ACK/readback is not PASS, verification or finding resolution. No enabled-process, physical
+isolation, deployment, operator migration or live operation is proved or authorized by this repair.
+
+The first fresh repair validator passed 98 focused contracts in 0.38s and Ruff lint, then stopped
+at formatting: the new README-status assertion required Ruff's parenthesized expression layout
+(one file would be reformatted, 418 already formatted). Full regression, Compose and image gates
+did not run, so no full success is claimed. Validator/wrapper returned 1 and removed only their
+exact owned test database and TEMP. The assertion was reformatted without weakening its checks;
+fresh validation is required on the corrected candidate. No operator database or user file changed.
+
+### Corrected 8B3.1 documentary repair validation — 2026-10-11
+
+After the formatting correction, the unchanged validator passed fresh targeted 98 contracts
+in 0.39s, Ruff/419-file formatting and all 3,274 regression tests in 1363.14s, with no skips.
+All 448 PostgreSQL cases across 24 files passed; file-by-file counts match accepted PR #61,
+including its seven signed HTTP/database/offline-worker journeys. The 19 existing warnings are
+SQLite datetime-adapter deprecations. Whitespace, quiet Compose and the fresh image rebuild
+passed; validator/wrapper exit was 0. Its exact owned database and TEMP were removed.
+Read-only follow-up confirmed both failed/successful owned TEMP paths absent and zero labeled
+validation containers. All seven candidate/487 protected hashes, 70 branch refs, three worktrees
+and three unrelated parent skill hashes matched before/after; no user resource was removed.
+
+The actual immutable rebuilt image
+`sha256:51e6b9d682481bf9adeef0ca2e1e208126fcab1b3a17d28dc8c088e291109a42`
+contains the exact corrected README SHA-256
+`9831026f3d53663601921f2ac1b91b81555ded2956c9139e28fd80c78950192b`.
+Networkless, read-only ephemeral probes without host mounts, credentials or a database verified
+Python 3.12.15, boto3/botocore 1.43.111 and WORKER_DISABLED/exit 0. Dependencies resolved within
+unchanged declared ranges; no manifest was changed. These are installed-version/README/default-off
+checks, not enabled separate-process, physical-isolation, live-provider or deployment proof.
+Only this receipt is appended after the full frozen validation; README, test source and all
+487 protected files remain unchanged. Final receipt contracts/quality/whitespace, exact-head
+independent review, both final-head CI suites, guarded merge and exact-main CI remain required
+before 8B3.2 advances. The native Firefox/picker limitations and failed receipts remain retained;
+no new reviewer, runtime behavior, later slice, live operation or Sprint 9+ work started.

@@ -39,7 +39,7 @@ The active plan retains the local 491-case focused/3,274-case full results, hist
 independent review receipts and installed-image/default-off limits. Runtime baseline `7a36ddde`,
 migration 0009, interfaces, authentication, scanner credentials and accepted design are unchanged.
 
-The owning acceptance reconciliation is bounded to five Markdown files and the current-status
+The owning acceptance reconciliation is bounded to six Markdown files and the current-status
 contract on `codex/sprint-8b31-closeout`. Its fresh validation, exact review, both final-head CI
 runs, guarded ordinary merge and exact-main CI must pass before 8B3.2 advances. This documentary
 preparation does not complete 8B3, 8B or Sprint 8, authorize a live operation, or start 8C--8E/9+.
