@@ -42,7 +42,7 @@ both final-head CI runs and green
 [exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
-8B3.2 is COMPLETE; 8B3.3 and 8C--8E remain PLANNED. Combined signed fault/race/recovery
+8B3.2 is COMPLETE; 8B3.3 is IN PROGRESS and 8C--8E remain PLANNED. Combined signed fault/race/recovery
 tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
 and its test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
 at `9c3df3256f81edf85a262b55b949c38b43d6d226`, after exact repair-head REVIEW_PASS,
