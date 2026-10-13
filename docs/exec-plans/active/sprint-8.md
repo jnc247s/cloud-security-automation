@@ -20,7 +20,7 @@ workflow, but never implicitly approves architecture/design decisions or live op
 | Slice | Outcome | Status |
 | --- | --- | --- |
 | 8A | Durable proposals, approvals/rejections/revocation and authenticated API | COMPLETE |
-| 8B | Isolated single-action worker, fresh preconditions, recovery | IN PROGRESS |
+| 8B | Isolated single-action worker, fresh preconditions, recovery | COMPLETE |
 | 8C | Linked exact-policy read-only verification scan | PLANNED |
 | 8D | Authenticated dashboard workflow | PLANNED |
 | 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |
@@ -673,7 +673,7 @@ independent review when the completed 8B1 candidate is ready; no delegation is s
 | --- | --- | --- |
 | 8B1 | COMPLETE | Durable EXECUTE admission, immutable event journal, target/capacity coordination, READ APIs, additive migration, security/concurrency/history tests |
 | 8B2 | COMPLETE | Isolated disabled single-action AWS worker and fresh checks/dispatch/recovery, after accepted 8B1 |
-| 8B3 | IN PROGRESS | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
+| 8B3 | COMPLETE | Integrated offline fault/security/container acceptance and 8B closeout, after accepted 8B2 |
 
 8B1 starts on `codex/sprint-8b1-execution-authority` at accepted `24dbda3`, with remote main
 reverified exact and the four owned analysis Markdown changes retained. The analysis branch,
@@ -1743,7 +1743,7 @@ This table is the current bounded status, consistent with ROADMAP.
 | --- | --- | --- |
 | 8B3.1 | COMPLETE | Accepted integrated signed HTTP, migrated database, offline worker/closed adapter and authorized READ/replay tests through PR #61 |
 | 8B3.2 | COMPLETE | Accepted combined signed fault/race/recovery tests through PR #63 and test-only repair PR #64 |
-| 8B3.3 | IN PROGRESS | Installed-image/separate-process/security acceptance and 8B closeout |
+| 8B3.3 | COMPLETE | Installed-image/separate-process/security acceptance and 8B closeout |
 
 The user requested continued goal work under standing accepted-design workflow authority.
 Clean accepted main was ordinarily fast-forwarded to eea2f0c only after exact-main CI passed,
@@ -2838,3 +2838,172 @@ the approved handler, distinct authority, bounded global budgets and sticky quar
 unchanged. No live AWS/IdP/IAM/secrets, operator database, deployment, rescan/UI implementation
 or Sprint 9+ work starts. Verification and document-writing skills guided the end-to-end gate
 and the evidence-qualified receipt while preserving repository history and identifiers.
+
+### 8B3.3 independent review and exact-main acceptance — 2026-10-13
+
+The existing authorized reviewer returned REVIEW_PASS, no findings, for immutable test head
+`5909ffdd21489e709918d89ca952c6df8cdac1ef`, tree
+`08bcaae8d3c5ab9a50e7d1dcffc0a5b0a28c2ed4`, parent `489b047562005a766734e9b571f7e307f8506102`.
+Independent checks passed 217 private guards/contracts in 2.80s and seven selected installed
+process cases in 73.18s, with 112 intentionally deselected, no skips or warnings. Those seven
+cover three signed key-context acknowledgments, packaged API startup, disarmed interception,
+timeout recovery and post-intent death. Ruff/429-file formatting, whitespace, exact collection,
+full 139 frontend cases/eight files and all 76 unique browser results also passed independently.
+The reviewer did not independently rerun the entire native regression; its unavailable complete
+native per-file primary log remains a local evidence limit. Complete provider primary audits
+below independently retain every backend/PostgreSQL/browser result, not just global summaries.
+All 506 tracked hashes, 74 branch refs, three worktrees and three parent skill files were preserved
+during review, with no tracked/index/ref/publication writes; owned review resources were removed.
+
+Both first-attempt final-head candidate runs passed complete primary audits:
+
+| Gate | Run / job | Actual checkout | Complete backend duration |
+| --- | --- | --- | --- |
+| Feature push | [38341868908](https://github.com/jnc247s/cloud-security-automation/actions/runs/38341868908) / 115114449456 | `5909ffdd` | 2537.79s |
+| Pull request | [38342075419](https://github.com/jnc247s/cloud-security-automation/actions/runs/38342075419) / 115115079493 | Synthetic `d7ecd746`, tree `08bcaae8`, parents `489b0475` + `5909ffdd` | 1795.42s |
+| Exact merged main | [38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358) / 115127490368 | `d3380402`, same reviewed tree | 2890.11s |
+
+Each audit retained all 3,567 passing cases across 152 backend files, all 597 PostgreSQL cases
+across 26 files, the 19 existing SQLite datetime-adapter warnings, all 139 frontend cases/eight
+files, and all 76 unique consecutively numbered browser results: 38 Chromium, 38 Firefox,
+one worker, zero retries/skips/non-pass markers. All 18 job steps, Ruff/429-file formatting,
+type/lint/build, image and cleanup passed. Checkout/tree/parents were verified from provider
+metadata and primary logs. No rerun, weakened assertion, skip, dependency pin or protection bypass.
+
+The PR connector rejected creation with integration HTTP 403; the already authorized CLI then
+created [PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66) without changing
+credentials or permissions. This was an API integration failure, not a policy denial. A premerge
+read-only query initially used an unsupported field; the corrected query verified ordinary merge
+commits allowed and automatic branch deletion disabled. No previously denied optional comment
+was retried. Ordinary merge guarded by exact head `5909ffdd` completed at 2026-10-13T04:20:59Z,
+producing `d338040260de3954065a46041118504134bc320c` with parents `489b0475` + `5909ffdd` and
+unchanged reviewed tree. The remote feature branch was preserved. Exact-main CI then passed;
+its complete audit and current remote tip were verified at 2026-10-13T05:14:19Z.
+
+### 8B documentary closeout preparation — 2026-10-13
+
+Only after exact-main acceptance, clean local main was normally fast-forwarded from `489b0475`
+to `d3380402`, then scoped branch `codex/sprint-8b33-closeout` was created. All existing branches,
+three worktrees and unrelated parent skills were preserved; the branch count is now 75.
+The initial patch was rejected for a mismatched receipt context and made no edits; no user change
+was discarded. The bounded closeout updates nine owning Markdown files and the current-stage
+contract atomically, preserving historical predictions, anchors, failures and their original limits.
+It records 8B3.3/8B3/8B COMPLETE as offline code/test acceptance, not deployment or live authority.
+This closeout candidate still requires targeted contracts, Ruff/formatting, complete fresh
+disposable-PostgreSQL regression, Compose/image, relevant frontend/browser checks, exact independent
+review, both final-head CI audits, ordinary expected-head guarded merge and complete exact-main CI
+before 8C preflight. No next-slice implementation begins from an unaccepted documentary candidate.
+
+Application/runtime/schema/API/authentication/dependencies/frontend/IAM/CI and scanner access are
+unchanged. Accepted runtime remains `7a36ddde`, migration `20261008_0009`, opt-in catalog `0.13.0`,
+default `0.2.1` and profile `1.0.0`. Three distinct human authorities and separate worker service
+identity remain enforced; worker/admission stay default off. Synthetic installed-process proofs
+do not establish physical ECS task/host/network/IAM isolation or distinct physical humans.
+Intent is the cancellation cutoff; no AWS CAS/hard cancellation, post-intent resend, TTL unlock,
+quarantine clearing, rollback or incident-force endpoint is added. Readback is not causation,
+key/workload usability, attributed verification, technical PASS or finding resolution.
+Historical native/browser failures retain their unconfirmed causes; demonstrated layout/pointer
+and reported scan-picker/back-navigation limitations remain for 8D preflight. Documentary work
+does not repair them. Sprint 8 remains IN PROGRESS; 8C--8E are required and PLANNED. The plan stays
+active. No Sprint 9+, live AWS/IdP/IAM/secrets, operator database, deployment or production operation.
+
+### 8B closeout targeted correction — 2026-10-13
+
+The initial targeted run failed three owner-opening checks, with 97 passed in 10.31s: changing
+ROADMAP's established baseline label and leaving the architecture/security/threat openings on
+the runtime-only baseline broke their existing consistency contract. No full or quality gate ran
+past that failed boundary. The correction preserves the original contract and baseline label,
+updates all three openings to accepted test main `d3380402`, and explicitly retains unchanged
+runtime `7a36ddde`. No assertion, runtime, interface or acceptance requirement is weakened.
+Fresh targeted checks and all remaining closeout gates precede acceptance.
+
+The corrected targeted run passed all 100 contracts in 2.74s; Ruff, 429-file formatting and
+whitespace passed. Before full validation, all ten owned/496 other tracked hashes, 75 refs,
+three worktrees and three parent skills matched the frozen candidate/baseline. The first full
+runner stopped before any test result, exit 1, and removed only its own TEMP. Docker had become
+unavailable after the initial successful inventory: the CLI reported the desktop engine stopped
+and WSL docker-desktop stopped despite the desktop application still running. A normal start
+reported already running; the supported detached graceful restart then reported Starting Docker
+Desktop. No Docker reset, WSL-wide shutdown, container/volume pruning, data deletion or config
+change was used. This failed setup is not a regression pass or a diagnosis of why Docker stopped;
+fresh engine inventory and full validation remain required.
+
+### 8B closeout unavailable native result and durable logging — 2026-10-13
+
+After Docker recovery, fresh focused validation passed all 100 contracts in 0.37s, Ruff/429-file
+formatting passed and full regression collected 3,567 cases. The pinned Linux frontend gate
+independently passed type/lint/build, all 139 units/eight files and all 76 unique consecutive
+browser journeys (38 per project, one worker/zero retries/skips), exit 0. All 247 selected current
+application/frontend/Alembic/browser-fixture hashes matched the immutable image before reuse;
+its owned database/network were removed. Its complete per-case audit was observed; the saved
+aggregate remains recorded, with raw-retention limits qualified in the final receipt below.
+
+The user's resumed Continue found observation cell 526 missing and native session 71244 unknown.
+Read-only host checks found no validation process, owned validation/process/browser containers
+or networks, or its owned TEMP; the two unrelated stopped containers were preserved. The old
+native run is no longer live, but its terminal result was not retained: neither cleanup nor
+partial passing output proves full success. Completion is unverified, not accepted or relabeled
+as a diagnosed test failure. No concurrent run was restarted solely from an observation timeout.
+
+A private ignored PowerShell transcript wrapper records terminal/cleanup classifications while
+invoking the existing isolated-environment wrapper and unchanged repository
+validator. It refuses log/TEMP collisions, pins the local Docker endpoint, removes only its exact
+validated owned TEMP, and preserves native failure when secondary cleanup fails. It supplies no
+new production mode, dependency, retry, auth override or test waiver. A fresh full gate is required
+because the prior handle is missing and actual work stopped without a verifiable terminal result.
+The receipt is frozen before new targeted/full checks; frontend/browser acceptance is carried only
+for its unchanged fingerprint-matched sources, not as proof of backend completion. Review,
+candidate CI, guarded merge and exact-main acceptance still precede 8C preflight.
+
+### 8B closeout complete local validation and review preparation — 2026-10-13
+
+The fresh isolated wrapper passed 100 focused contracts in 0.38s, Ruff and 429-file formatting,
+then complete native regression: all 3,567 cases in 2705.23s with only the 19 existing SQLite
+datetime-adapter warnings. Exact current collection confirms 152 files and all 597 PostgreSQL
+cases/26 files. Collection's first JSON report parser encountered the nonfatal native launcher
+location warning; a corrected bounded report parse retained the warning and confirmed the same
+scope without changing tests. Collection is not execution. Complete primary execution audit
+now matches every expected file count, all 597 PostgreSQL passes, all 119 process-file cases and
+all 117 private guards, with zero non-pass/skip/failure markers and one matching full footer.
+The private audit parser's missing-file, skip, duplicate-footer and unexpected-file probes are
+synthetic guard tests, not application acceptance evidence.
+
+Whitespace, quiet Compose and the exact image build passed. Native, cleanup and wrapper terminal
+exits are all 0. PowerShell's transcript retained terminal/cleanup classifications but not the
+child's direct native console stream; exact raw chunks were therefore saved separately as
+consecutive JSON records, preserving partial-line boundaries. All 23 chunks and the transcript
+end marker remain on disk. The earlier unavailable session remains unverified, not retrospectively
+accepted or diagnosed by this new pass. No test, retry, timeout, assertion, dependency or runtime
+configuration was weakened.
+
+All 506 frozen tracked hashes, 75 refs, three worktrees and three parent skill hashes matched
+after the full gate. The wrapper TEMP, validation database and all process/browser/probe-owned
+containers/networks were absent; both unrelated stopped containers and their network remained.
+The exact newly built image is `sha256:b51af62369de7d1fd611d76158e27d430bd8acf2831e90d52cab76c5a1236741`.
+Network-disabled/read-only/non-root probes recorded Python 3.12.15, boto3/botocore 1.43.112,
+SQLAlchemy 2.1.4, psycopg 3.3.6, UID 100 and WORKER_DISABLED/exit 0. These actual image versions
+are not interchangeable with native Python 3.14.5 or the older pinned browser environment.
+
+The preceding closeout frontend gate passed all 139 units/eight files and all 76 unique browser
+journeys, one worker/zero retries/skips, after matching 247 source hashes. Its complete per-case
+audit was observed and its aggregate saved. Resumed input cleared the in-memory raw local browser
+log; raw retention of that particular closeout run is now unproven. The earlier complete pinned
+browser primary log remains on disk for identical application/frontend/Alembic/browser-fixture
+sources. Independent review may carry that explicitly unchanged-source evidence, not describe it
+as a fresh rerun. Both upcoming candidate CI audits and exact-main CI must independently retain
+all backend/PostgreSQL/frontend/browser primary results for this closeout candidate.
+
+After full validation, only accepted-state prose/receipt corrections change: the 8A architecture
+tail and T20 residual now distinguish their original slice from accepted default-off 8B worker
+code, rather than incorrectly call the worker future/unimplemented. No application, test body,
+API/schema/security boundary, SDK, frontend, IAM or CI source changes after the full gate.
+Fresh targeted contracts, Ruff/formatting and whitespace validate final prose, then freeze one
+logical ten-path exact commit for the existing authorized reviewer. Findings, both final-head CI,
+ordinary guarded merge and complete exact-main remain gates before 8C preflight. Sprint 8 stays
+IN PROGRESS; 8C--8E remain required and PLANNED. Physical isolation, live providers, key/workload
+compatibility, production, historical native/browser causes and dashboard interaction limits remain
+unvalidated/unfixed as recorded. No live AWS/IdP/IAM/secrets, operator database, deployment or 9+.
+
+Final prose follow-up passed 100 contracts in 2.66s, Ruff/429-file formatting and whitespace.
+Repeat the same lightweight checks after this receipt before freezing the scoped commit; full
+tested application/test source remains unchanged and both upcoming candidate CI gates remain full.

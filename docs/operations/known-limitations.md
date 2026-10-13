@@ -1,6 +1,7 @@
 # Current known limitations
 
 This register records accepted Sprints 0--7 and accepted Sprint 8A/8B1/8B2 implementation reality,
+with 8B3 offline installed-process/security acceptance through PR #66 and exact-main CI 38346013358,
 including the shared evidence graph, evidence producers, opt-in production controls and disabled/
 undeployed isolated worker code. These items are
 not silently repaired by documentation work.
@@ -125,6 +126,18 @@ unimplemented. Native Windows Firefox launch and local scan-picker/back-navigati
 limitations, not fixes claimed by this slice. New enum/event versions require client coordination;
 new code's execution-history service requires 0009 schema and never auto-migrates. Backups, rollout,
 production PostgreSQL grants and offline/populated downgrade procedures remain separately gated.
+
+8B3's installed-process tests corroborate signed authority, restricted test-container runtime,
+installed source/version identity, closed synthetic transport, independent committed intent/audit
+and lock availability, conservative fresh-process recovery and packaged API no-writer startup.
+They do not close any physical ECS/task/host/network/IAM isolation or live-provider limitation
+above. Test interception is not a production mode, scanner privilege expansion or operator
+enablement. The current migration, strict-client event compatibility and schema-before-code
+requirements remain. Complete provider primary audits retain all 3,567 backend cases, including
+597 PostgreSQL cases without skips, and all 76 browser journeys; incomplete local primary-log
+retention and historical failed receipts retain their original limits, not inferred causes.
+The owning-document closeout remains separately gated before 8C preflight; whole Sprint 8 is
+incomplete until verification, dashboard workflow and whole-sprint acceptance succeed.
 
 ### Governance category transition — ACCEPTED 6G
 

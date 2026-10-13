@@ -3,22 +3,41 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-12
+Last verified: 2026-10-13
 Current accepted implementation baseline: `main` at
-`7a36ddde20aafc60712b38165acd25460418ab92` (isolated-worker PR #59; exact merged-main
-[CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
-passed). Sprints 0--7, 8A, 8B1 and 8B2 are COMPLETE; Sprint 8/8B remain IN PROGRESS.
+`d338040260de3954065a46041118504134bc320c` ([PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66);
+exact merged-main [CI 38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358)
+passed). PR #66 adds tests only; runtime baseline remains
+`7a36ddde20aafc60712b38165acd25460418ab92` (PR #59).
+Sprints 0--7 and 8A are COMPLETE; **8B is COMPLETE** as offline-accepted code and tests,
+not deployed or authorized for live execution. Sprint 8 remains IN PROGRESS.
 **8B2 is COMPLETE** as separately launched, disabled-by-default, offline-validated worker code.
 The user approved ECS task-role-only credentials for its initial implementation on 2026-10-08;
 static keys, profiles, shared host roles, custom credential endpoints and fallback are excluded.
 Accepted migration head is `20261008_0009`; updated execution-history readers require it even
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
-**8B3 is IN PROGRESS**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-**8B3.2 is COMPLETE**; **8B3.3 is IN PROGRESS**; 8C--8E remain PLANNED; Sprint 9+ is unstarted.
-The active plan records the exact acceptance
-receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
+**8B3 is COMPLETE**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
+**8B3.2 is COMPLETE**; **8B3.3 is COMPLETE**; 8C--8E remain PLANNED; Sprint 9+ is unstarted.
+The active plan records exact test acceptance and this bounded documentary closeout's own
+validation/review/delivery gates. No 8C preflight advances until those closeout gates pass.
 Existing branches, worktrees and unrelated skills are preserved.
+
+Accepted installed-process/security test baseline: `d338040260de3954065a46041118504134bc320c`.
+Exact-head REVIEW_PASS at `5909ffdd`, both first-attempt candidate CI runs, ordinary guarded
+merge and complete first-attempt exact-main CI passed with reviewed tree `08bcaae8` unchanged.
+Each CI run passed all 3,567 backend cases/152 files, all 597 PostgreSQL cases/26 files without
+skips, 139 frontend cases/eight files, all 76 unique browser journeys (38 per project, one worker,
+zero retries) and all 18 quality/image/cleanup steps. Installed-image tests verify signed three-human
+authority, separate process/source identity, committed intent/audit, transaction closure, restricted
+test containers, closed synthetic transport, negative configuration/credential paths and fresh-process
+recovery. The 119-case integration file includes parent-only negatives and packaged API startup;
+it is not 119 worker journeys. Physical ECS/IAM/network isolation, key/workload compatibility,
+live providers, production and attributed verification remain unvalidated. Historical failures
+and the unfixed dashboard interaction limitations remain recorded, not diagnosed by later passes.
+
+The following 8B3.1/8B3.2 acceptance and preparation checkpoints retain their original scope;
+their pending states are historical, not current 8B status.
 
 Accepted 8B3.2 test baseline: `9c3df3256f81edf85a262b55b949c38b43d6d226`
 ([PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64), following PR #63;
@@ -48,7 +67,7 @@ test-only installed-image/separate-process/security slice, starting with the sig
 journey. No new product design choice is identified; standing accepted-design workflow applies.
 8B3.3 remains PLANNED at analysis; no implementation, live operation or 8C--8E/9+ work starts here.
 
-Subsequent 8B3.3 test-only implementation is IN PROGRESS under standing accepted-design
+At the subsequent preparation checkpoint, 8B3.3 test-only implementation was IN PROGRESS under standing accepted-design
 authority and the completed preflight. The full installed-process/security/recovery matrix and
 all local/review/delivery/exact-main gates remain required; no partial journey is acceptance.
 Runtime, migration 0009, scanner credentials, findings and technical results are unchanged.

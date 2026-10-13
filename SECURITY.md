@@ -1,9 +1,10 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7 and
-Sprint 8A/8B1/8B2 boundaries below. The accepted implementation `main` baseline is
-`7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59; exact-commit independent review,
-both final-head first-attempt CI and exact main CI 37864100728 passed).
+Sprint 8A/8B1/8B2 boundaries and 8B3 offline acceptance below. The accepted implementation
+`main` baseline is `d338040260de3954065a46041118504134bc320c` (test-only PR #66;
+exact-head independent review, both first-attempt candidate CI audits and exact-main CI
+38346013358 passed). Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
 That baseline includes the versioned assessment
@@ -534,6 +535,17 @@ exact evidence and documentary/later-slice gates. No live or production operatio
 authorized. Current execution-history readers require 0009 even with the worker disabled; schema/
 application maintenance, strict v1/v2-event and phase clients, and deployment isolation remain
 separately coordinated boundaries, not automatic migrations or operational approval.
+
+### Installed-process security acceptance
+
+PR #66 and exact-main CI 38346013358 accept offline installed-process tests, not live operation.
+Tests independently prove installed source/SDK identity, restricted non-root/read-only test
+containers, no-new-privileges, narrow mounts, closed synthetic transport, forbidden credential/
+endpoint sources, suppressed worker output, committed intent/audit and transaction closure.
+Packaged API startup cannot construct the writer. Synthetic transport interception is test-only;
+no production override or scanner write path is added. Physical ECS/task/host/network/IAM isolation,
+role governance, key/workload compatibility and live-provider validation remain separately required.
+Unknown effects still hold quarantine/reservations; readback does not verify or resolve findings.
 
 ## Production authorization
 
