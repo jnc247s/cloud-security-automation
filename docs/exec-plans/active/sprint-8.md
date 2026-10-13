@@ -2847,8 +2847,10 @@ The existing authorized reviewer returned REVIEW_PASS, no findings, for immutabl
 Independent checks passed 217 private guards/contracts in 2.80s and seven selected installed
 process cases in 73.18s, with 112 intentionally deselected, no skips or warnings. Those seven
 cover three signed key-context acknowledgments, packaged API startup, disarmed interception,
-timeout recovery and post-intent death. Ruff/429-file formatting, whitespace, exact collection,
-full 139 frontend cases/eight files and all 76 unique browser results also passed independently.
+timeout recovery and post-intent death. Ruff/429-file formatting, whitespace and exact collection
+also passed independently. The reviewer independently audited the retained primary log for all
+139 frontend cases/eight files and all 76 unique browser results; it did not execute a fresh
+frontend/browser rerun. Those results are explicitly carried unchanged-source evidence.
 The reviewer did not independently rerun the entire native regression; its unavailable complete
 native per-file primary log remains a local evidence limit. Complete provider primary audits
 below independently retain every backend/PostgreSQL/browser result, not just global summaries.
@@ -3007,3 +3009,26 @@ unvalidated/unfixed as recorded. No live AWS/IdP/IAM/secrets, operator database,
 Final prose follow-up passed 100 contracts in 2.66s, Ruff/429-file formatting and whitespace.
 Repeat the same lightweight checks after this receipt before freezing the scoped commit; full
 tested application/test source remains unchanged and both upcoming candidate CI gates remain full.
+
+### 8B closeout independent review correction — 2026-10-13
+
+Exact candidate `bcf2a47519d3cf132a9c2045fe4b3a064bd4efd2`, tree
+`5f6507994bd5fe2c0bc81690235407a5467eda11`, received REVIEW_FAIL with one LOW finding and no
+other actionable findings: the earlier 8B3.3 receipt's phrase "also passed independently" could
+misrepresent an independent frontend/browser primary-log audit as a fresh independent execution.
+The correction explicitly distinguishes executed 217 guards/contracts and seven process cases
+from audited/carried 139-unit/76-browser evidence. It changes only this receipt, not tests or code.
+The failed verdict is retained; exact corrected-head follow-up is still required before publication.
+
+Independent closeout checks passed 100 contracts in 3.03s, Ruff/429-file formatting and committed
+whitespace, with no skips or pytest warnings; the existing native launcher warning stayed visible.
+All 20 pre-existing explicit anchors remain and the new acceptance link resolves. The reviewer
+independently concatenated all 23 raw chunks and verified every expected count: 3,567 passes/152
+files, all 597 PostgreSQL cases/26 files, 119 process-file cases and 117 guards, zero non-pass
+markers, one 2705.23s footer and 19 existing SQLite warnings, plus exit-zero cleanup/terminal
+receipts. Only the three recorded prose files differed after full validation; all other 503 hashes
+and every test body matched. Before/after checks preserved all 506 hashes, index entries, 75 refs,
+three worktrees and three parent skills. No tracked/index/ref/publication/live-operation writes.
+Fresh targeted/quality/whitespace checks precede a normal receipt-only correction commit and
+reused exact-head review. Both candidate CI audits, guarded ordinary merge and exact-main remain
+required; Sprint 8 is not complete and 8C--8E/9+ work remains unstarted.
