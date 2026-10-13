@@ -6,6 +6,30 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8C1 linked verification candidate — in progress
+
+- Approved R1--R3 design adds manual current-EXECUTE exact-policy read-only scans after normal
+  ACKNOWLEDGED history, independent default-off account/Region enablement, immutable audited
+  requests and separate sealed VERIFIED/NOT_VERIFIED/INCONCLUSIVE receipts.
+- Candidate migration `20261013_0010`, three explicit attempts/one active, actor/key replay,
+  before-collection scanner identity checks and atomic result/failure/receipt persistence.
+  Scanner credentials, worker/quarantine semantics, technical results and findings stay separate.
+- Not accepted or deployed: integration/full/security/review/delivery gates remain pending.
+  Dashboard/general scan-start work remains 8D; Sprint 9+ and live operations are unstarted.
+
+### Sprint 8B documentary closeout
+
+- Accepted through [PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67) at
+  `771d630c`, exact corrected-head REVIEW_PASS at `098111b7`, both first-attempt candidate
+  primary audits, ordinary guarded merge and complete
+  [exact-main CI 38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289).
+  Each run passed 3,567 backend cases (597 PostgreSQL, no skips), 139 frontend cases,
+  76 unique browser journeys and all 18 quality/image/cleanup steps. The LOW attribution
+  finding is independently closed; original failed receipts remain preserved.
+- Reconciles owning documents/current-stage contracts only. Runtime `7a36ddde`, migration
+  0009, interfaces, scanner permissions and default-off worker boundaries remain unchanged.
+  Sprint 8 stays IN PROGRESS; 8C--8E remain required and PLANNED. No live-operation authority.
+
 ### Sprint 8B3.3 — accepted installed process and security tests
 
 - Accepted through [PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66) at

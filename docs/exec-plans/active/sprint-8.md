@@ -21,7 +21,7 @@ workflow, but never implicitly approves architecture/design decisions or live op
 | --- | --- | --- |
 | 8A | Durable proposals, approvals/rejections/revocation and authenticated API | COMPLETE |
 | 8B | Isolated single-action worker, fresh preconditions, recovery | COMPLETE |
-| 8C | Linked exact-policy read-only verification scan | PLANNED |
+| 8C | Linked exact-policy read-only verification scan | IN PROGRESS |
 | 8D | Authenticated dashboard workflow | PLANNED |
 | 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |
 
@@ -3032,3 +3032,352 @@ three worktrees and three parent skills. No tracked/index/ref/publication/live-o
 Fresh targeted/quality/whitespace checks precede a normal receipt-only correction commit and
 reused exact-head review. Both candidate CI audits, guarded ordinary merge and exact-main remain
 required; Sprint 8 is not complete and 8C--8E/9+ work remains unstarted.
+
+### 8B documentary closeout acceptance and 8C analysis entry — 2026-10-13
+
+The preceding documentary candidate is accepted through
+[PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67), ordinarily merged at
+`771d630c9385c1155f981bd47e18d43e87fb2290`. This supersedes its pending gates, not original
+predictions, failed receipts, evidence limits or unfixed dashboard behavior. Sprint 8 stays
+IN PROGRESS; 8C--8E remain required and PLANNED, and this plan stays active.
+
+The existing authorized reviewer returned exact corrected-head REVIEW_PASS for
+`098111b701827f10b062a06a6a57042a59408a59`, tree `87080be23d635b926191965874b3a3d45fbd50e2`,
+parent failed-review `bcf2a475`: no actionable findings; the LOW attribution finding is closed.
+Independent follow-up executed 100 contracts in 2.68s, Ruff/429-file formatting and whitespace.
+It carried its previous full backend primary audit and unchanged-source frontend/browser log
+audit; neither full suite was independently rerun. Root's receipt-only correction passed 100
+contracts in 2.89s and quality/whitespace, with no application/test-body change after full validation.
+
+Fresh provider primary logs were audited in full for every expected file and browser identity:
+
+| Event | First-attempt run | Job | Actual checkout | Backend seconds |
+| --- | --- | --- | --- | --- |
+| Feature push | [38415227815](https://github.com/jnc247s/cloud-security-automation/actions/runs/38415227815) | 115357775212 | `098111b701827f10b062a06a6a57042a59408a59` | 2741.96 |
+| PR | [38415312678](https://github.com/jnc247s/cloud-security-automation/actions/runs/38415312678) | 115358080137 | `2008cf97ff4bf388b4f14c4565f1c48aabe6a7ca` | 2794.91 |
+| Exact merged main | [38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289) | 115385169957 | `771d630c9385c1155f981bd47e18d43e87fb2290` | 2820.45 |
+
+Each passed all 3,567 backend cases/152 files, including all 597 PostgreSQL cases/26 files,
+119 process-file cases and 117 guards, no non-pass/skip markers and one full footer with only
+19 existing SQLite warnings. Each passed 139 frontend cases/eight files, all 76 unique consecutive
+browser results (38 Chromium/38 Firefox, one worker/zero retries), and all 18 quality/image/
+cleanup steps. Exact collection is not substituted for execution; aggregate green is not
+substituted for per-file/per-case primary evidence. Complete provider logs/audits are retained
+in the private task evidence directory.
+
+Both the PR synthetic checkout and ordinary merge retain reviewed tree `87080be2` and exactly
+parents `[d338040260de3954065a46041118504134bc320c, 098111b701827f10b062a06a6a57042a59408a59]`.
+The ordinary merge completed at 15:33:13 UTC with explicit expected-head guard, unchanged base
+and clean PR state, no admin/force/protection bypass or branch deletion. Complete exact-main
+audit passed at 16:25:43 UTC. No old CI was rerun or failed evidence waived.
+
+Clean local main then normally fast-forwarded to the accepted merge; scoped
+`codex/sprint-8c-preflight` was created. All 76 local branches (75 preserved plus this one),
+three worktrees and three parent skills remain. Runtime `7a36ddde`, migration
+`20261008_0009`, catalogs/profiles, API/authorization, read-only scanner credentials,
+worker/quarantine semantics and finding/technical lifecycles are unchanged. Physical isolation,
+live providers, key/workload compatibility, production and historical/dashboard limitations
+remain unvalidated/unfixed as recorded. No live AWS/IdP/IAM/secrets, operator database,
+deployment, production or Sprint 9+ operation occurred.
+
+The [8C analysis-only preflight](../../sprint-8c-preflight.md) proposes a complete bounded linked
+verification slice followed by fault/recovery/compatibility acceptance. Its R1 initiation/
+eligibility, R2 exact-scope/verdict and R3 receipt/retry choices require explicit user decisions.
+No approved 8C execution predictions, code, migration, new route, reviewer or publication begins
+from these proposals. The standing workflow resumes implementation only within an approved
+design; 8D/8E remain required afterward.
+
+The first analysis-document readiness run passed 100 and failed one existing historical-CI
+reference assertion in 8.58s after the baseline header moved to PR #67. Restoring the explicit
+PR #66 CI 38346013358 citation preserves its separate implementation receipt and the unchanged
+assertion. No quality/full gate ran past that failed boundary; fresh checks are required at
+this correction checkpoint. Initial whitespace checking also found one extra EOF blank line,
+removed before the targeted run. No code, migration or test assertion was changed or waived.
+
+Corrected analysis-document checks passed all 101 contracts in 2.73s, including the new Markdown
+link case, Ruff lint, 430-file formatting and whitespace. The existing native launcher warning
+remained visible; no pytest warnings/skips. All 498 protected tracked hashes, unchanged index,
+76 local refs, three worktrees and three parent skill hashes match the frozen preflight baseline.
+Remote main still matches `771d630c`. These are preflight-document checks, not an 8C runtime or
+fresh complete regression acceptance claim. No application/test body, schema, API, credential,
+worker, CI, policy or frontend source changed. R1--R3 remain unapproved; implementation and all
+new-slice full/integration/security/review/delivery gates remain future required work.
+
+### Approved 8C predictions
+
+On 2026-10-13 the user replied **Approve and continue** to the recommended R1--R3 package.
+This supersedes the preceding pending-decision checkpoint, not its original analysis or receipts.
+8C/8C1 are IN PROGRESS; 8C2 and 8D/8E remain PLANNED. Standing routine implementation,
+validation, existing independent review and guarded delivery approval applies within this design.
+No live operation or later-sprint authority is added.
+
+- R1: manual current EXECUTE requests by any EXECUTE principal, normal ACKNOWLEDGED only;
+  separately default-off explicit account/Region verification scope. Preserve three-human write
+  authority and read-only scanner credentials. Later original expiry/revocation/staleness is not
+  a reason to deny observation of an acknowledged write; quarantine is never cleared.
+- R2: a new full-original-scope scan under the complete retained profile, artifacts, catalog and
+  control. Verify STS account and provider Region before collection, then independently check
+  bundle identity before persistence. A separate versioned receipt is VERIFIED only for complete,
+  strictly later exact-target EC2-004 PASS with complete unchanged present/expected-absent KMS
+  context. Equally valid FAIL is NOT_VERIFIED; other states/context drift are INCONCLUSIVE.
+  Unchanged normal finding reconciliation may legitimately differ from this historical verdict.
+- R3: immutable audited requests/new-scan links and sealed terminal receipts; three explicit
+  accepted attempts per execution, one active. Actor/operation UUID replay returns the original
+  attempt without submission or renewed authority; changed input conflicts. No automatic
+  post-terminal attempt. RUNNING startup recovery reuses the same scan ID and read-only contract.
+
+8C1 implements the complete vertical path before delivery. Add generic
+`POST /api/v1/remediation-executions/{execution_id}/verifications` (EXECUTE, reason-only body,
+UUID Idempotency-Key), and READ list/detail at `/api/v1/remediation-verifications` with optional
+execution filter. New responses carry immutable request, linked scan ID, and optional terminal
+receipt; old scan/remediation/worker bodies and enums remain unchanged. Use a new contract version
+`1.0.0` and additive migration `20261013_0010`; never rewrite 0001--0009 or old journal/audit bytes.
+
+A separate singleton verification coordination guard serializes admission and terminal writes.
+Lock order is verification guard -> Scan -> Resource -> Finding; execution/proposal/history reads
+take no write locks. Never acquire execution/authority locks after scan/history locks. Commit
+intent/link/RUNNING identity and full attributed start/request audit before executor submission.
+Scan terminal result or failure and receipt/audit commit together. No SQL transaction crosses
+provider construction, STS, collection or submission. READ rejects pending caller changes before
+SQL, suppresses autoflush, preserves transaction ownership and never seals a receipt on demand.
+
+Required 8C1 gates: focused strict contract and postcondition tests; authorized signed API;
+disposable PostgreSQL admission/replay/bounds/atomicity/recovery; populated 0009 upgrade and
+immutable/cross-reference/pre-DDL whole-path downgrade guards; retained-policy/scanner/worker
+regressions; Ruff lint/format; complete pytest with all PostgreSQL cases; Compose/image/startup/
+OpenAPI; relevant unchanged browser regression; existing exact-head independent review; both
+candidate CI, ordinary expected-head guarded merge and full exact-main CI. No partial admission
+is released before identity and atomic terminalization safeguards are complete.
+
+8C2 then deepens integrated race/fault/restart, deployment-policy and historical-scope compatibility
+acceptance against the implemented path before 8C is COMPLETE. Browser/BFF mutations and the
+reported general scan-start/picker/back-navigation behavior remain 8D, not silently included here.
+
+### 8C1 local implementation checkpoint — 2026-10-13, not accepted
+
+Implemented the approved single-action linked-verification candidate on preserved scoped branch
+`codex/sprint-8c-preflight`, HEAD still accepted `771d630c`. New closed contracts/ORM and additive
+0010 protect request/scan links, terminal receipts and paired audit. The generic bearer APIs are
+independently default-off/scoped. The existing scanner checks expected identity before collection;
+normal persistence independently checks intent and atomically seals result/failure receipts.
+Legacy interfaces/constructor/executor methods, worker/quarantine behavior, controls/profiles,
+scanner credentials and finding/technical lifecycles remain unchanged. No partial release.
+
+The immutable SCAN_STARTED audit marker distinguishes linked scans without altering old Scan
+columns/DTOs; unlinked scans retain old-schema behavior. A missing/tampered trusted binding
+fails closed before AWS; if it cannot support a trusted terminal receipt, RUNNING/active history
+remains for separately reviewed maintenance. READ never repairs it. New public audit types are
+additive; strict clients enumerating all audit types must account for verification events.
+The separate guard serializes short admission/terminal transactions, not external reads. Whole-
+path migration checks acquire verification -> admission -> scan/resource/finding/history -> audit
+locks before DDL, including existing writers; no lower-lock inversion is introduced.
+
+First focused gate failed one admission test after five passes (8.97s): request referenced an
+audit UUID before its default had been generated. Explicit audit-phase flushes corrected the
+implementation; insertion guards and assertions were unchanged. Corrected gate passed all 25
+cases in 45.95s, including SQLite upgrade/downgrade/autogeneration schema drift checks.
+The first signed-API selection encountered one native temporary-directory setup error (7.90s).
+An owned workspace-TEMP rerun yielded no retained terminal test result and was interrupted;
+it is not a passing or diagnosed application failure. An escalated diagnostic then exposed the
+offline scanner fixture forcing development auth while inheriting production/dashboard settings:
+one failure in 2.11s, followed by another dashboard-setting conflict in 2.08s. The fixture now
+copies the API's validated settings; signed production authentication and negative assertions
+remain active. No result was relabeled or assertion/security boundary weakened.
+
+Corrected signed API, new migration, old scanner/migration/worker and status tests passed all 92
+cases in 53.45s with only 19 existing SQLite datetime-adapter warnings. Expanded verification
+tests passed 30 cases in 32.59s. Owner-document/contracts plus signed API/verification/migration
+selection passed all 147 in 51.21s. Ruff lint/442-file formatting and whitespace passed. Later
+independent-result-account and PostgreSQL history-guard cases still require their first execution.
+No PostgreSQL/full/image/browser acceptance, independent review or delivery is claimed yet.
+The planned disposable database/full acceptance gate is next; preserve both unrelated stopped
+containers, all branches/worktrees and parent skills. 8C2/8D/8E remain required and PLANNED.
+No live AWS/IdP/IAM/secrets, operator database, deployment, production or Sprint 9+ action occurred.
+
+### 8C1 first PostgreSQL gate and local tool correction — 2026-10-13
+
+The first validator passed all 76 focused cases in 157.29s, including all 29 new PostgreSQL cases.
+It then stopped before frontend checks/full regression because the local pnpm default had become
+11.25.0 while the unchanged frontend contract requires 11.19.0. Validator exit was 1 and its exact
+disposable PostgreSQL container was removed; this is not full acceptance. Existing containers,
+global tools, application dependencies and pin assertions were not changed or weakened.
+An ignored workspace-owned tool directory now supplies pnpm 11.19.0; Node remains the required
+24.19.0. Package scripts were disabled during its one-package installation.
+
+Lock-order inspection found that the new immutable audit lookup could precede the verification
+guard's schema-maintenance relation lock. The correction reads the guard relation first without
+a row lock, then performs marker/history reads; linked terminal writes still acquire the guard
+row before Scan/Resource/Finding. Ordinary writers remain mutually parallel. Older schemas skip
+both new guard and marker lookup, retaining accepted paths. Executor preparation and new READ
+routes enter this same relation-order fence before scan/history reads. This is a short SQL-only
+schema fence, never an AWS/transaction crossover or a new worker reservation.
+Two disposable-PostgreSQL concurrent downgrade/terminalization tests are added for ordinary and
+linked scans. Fresh focused/full/quality/browser/image/review/delivery gates remain required for
+this correction. The prior frozen hash receipt covers the pre-correction candidate, not these
+new source bytes. Current acceptance is still pending; no 8C2/later-sprint/live operation starts.
+
+The schema-fence follow-up passed 203 focused cases in 69.15s, including legacy ordinary scan,
+metadata-only READ/evidence/governance fixtures, scanner contracts, new verification and migration,
+signed API and repository documentation contracts. No warning/skip footer. A metadata-only test
+schema need not seed the new singleton to use ordinary scans; linked requests/reads still require
+the singleton, and migration 0010 seeds/protects it. This preserves the accepted constructor/test
+contracts without weakening verification coordination. Ruff/442-file format and whitespace remain
+required on the refreshed candidate; fresh PostgreSQL concurrency/full/browser/image gates follow.
+
+### 8C1 browser environment and unavailable-scanner replay — 2026-10-13
+
+The corrected native validator passed all 78 focused cases in 169.96s, including 31 PostgreSQL
+cases and both ordinary/linked concurrent downgrade fences. Pinned Node 24.19.0/pnpm 11.19.0
+passed frontend typecheck/lint, all 139 units/eight files and build. Chromium passed 38 journeys;
+all 38 native Firefox cases failed before navigation with `browserType.launch: spawn UNKNOWN`.
+Validator exit was 1; exact disposable PostgreSQL cleanup succeeded. Full backend/quality/image
+steps after the browser boundary did not run. The large native primary chunk was truncated;
+aggregate counts/footer are retained, not a complete independent per-case primary audit.
+
+A source-matched Linux test image uses the existing pinned tooling substrate `aad7a3f3`, Node
+24.19.0/pnpm 11.19.0/Python 3.12.3 and a 519-file tracked/task-owned archive; no host credentials
+or untracked parent skills. Artifact `e261a289` completed despite loss of the build tool handle;
+image inspection and exact runtime/test source probes confirm the completed artifact, not a
+retained CLI exit. Its isolated non-root full browser run passed 72 and failed four Firefox
+journeys with intercepted-channel `NS_BINDING_ABORTED` errors during login/navigation. Exact
+owned internal network/database cleanup succeeded. This is not acceptance or evidence of a
+specific application cause; assertions, headers, pins, retry count and browser configuration
+remain unchanged. Browser environment diagnosis and full backend gates remain required.
+
+A new signed API assertion confirmed another replay defect: unconditional executor dependency
+returned 503 when a current EXECUTE caller replayed an accepted request while the scanner was
+unavailable (one failure in 2.32s). The route now supplies its managed executor without admitting
+work; the service checks availability only after authorized replay lookup. New unavailable
+requests reject before persistence with fixed `remediation_verification_executor_unavailable`;
+replay returns original history without submission. The unchanged new assertions then passed
+one signed API case in 2.51s. This repair needs fresh PostgreSQL/full/review/delivery validation;
+previous full-source freezes predate it. No later-sprint or live operation is authorized or started.
+
+### 8C1 headed browser gate and legacy synchronization follow-up — 2026-10-13
+
+The same pinned Linux image's first failed Firefox journey passed under Xvfb headed mode
+(one case, 12.0s); the full headed gate then passed 139 units/eight files and all 76 journeys
+(38 Chromium/38 Firefox, one worker/zero retries, 1.9m). Typecheck/lint/build and exact owned
+database/network cleanup passed. Every application header, browser preference, assertion and
+dependency pin stayed unchanged. This is an environment-specific local pass, not proof of the
+cause of either earlier failure. Its second primary output chunk was truncated: 57 per-case rows
+and the complete 76-pass footer are retained, not a complete per-case local primary audit. Both
+candidate CI and exact-main must independently retain complete primary evidence.
+
+The independent backend lane passed fresh 78 focused cases in 166.84s, Ruff/442-file formatting,
+then started the complete 3,646-case/156-file regression (628 PostgreSQL/27 files). It reported an
+execution-admission PostgreSQL failure. The lane was interrupted at 9%, exit 1; no complete
+result or acceptance is claimed. Inspection found the final legacy downgrade synchronization
+still waited for the old first admission-guard table lock. 0010 now fences with verification guard
+first, so the writer paused waiting for an observer that could not yet be reached. Matching old
+authority/graph test observers had the same obsolete prefix. All three now observe the actual
+first verification-guard lock; wait bounds and no-DDL/no-partial-effect assertions are unchanged.
+Fresh targeted execution is required to confirm the diagnosis, then complete regression.
+
+Interrupting bypassed validator's normal finally cleanup. The exact owned database
+`cloudsec-validation-1ef1c970608c4320b9b6c31cb06dd4f9` was verified against its equal ownership
+label, creation nine seconds before the first primary chunk and tmpfs-only data, then removed.
+Its synthetic test data is disposable/re-creatable. Both unrelated stopped containers and the
+unrelated running budget-test container were preserved; no user database or volume was touched.
+The new full gate will retain direct native output durably as well as tool chunks. No assertion,
+test, timeout, auth, SDK pin or security boundary is waived; C1 acceptance/review/delivery remains
+pending and 8C2/8D/8E remain required. No live or later-sprint operation occurred.
+
+### 8C1 complete failed regression and additive schema expectation repair
+
+The next native validator passed 81 focused cases in 184.02s, including all three corrected
+legacy downgrade synchronization observers and all 31 verification PostgreSQL cases. Ruff lint
+and 442-file formatting passed. Its complete regression executed all 3,646 cases/156 files,
+including all 628 PostgreSQL cases/27 files, and finished with **3,644 passed, two failed**,
+19 existing SQLite adapter warnings, in 3,507.19s. Exit was 1. Compose/image gates after pytest
+did not run. The direct durable primary log retains both full traces despite truncation of the
+terminal tool-output chunk; this is a complete failed execution, never an acceptance receipt.
+
+Both failures were the shared unresolved-region migration upgrade-retry expectation, on SQLite
+and PostgreSQL. Injected-transition rollback, original-row equality and schema drift checks had
+passed; the exact added-table assertion omitted the new verification guard, requests and receipts.
+The test now enumerates those three additive tables, requires request/receipt tables to be empty,
+and checks the exact singleton seed row for both coordination guards. Historical migrations,
+transition injection, history equality, empty-table assertions and rollback checks are unchanged.
+The correction requires focused validation and a fresh complete run before review or delivery.
+
+All 519 source hashes matched the frozen input before the repair. Normal cleanup removed both
+owned disposable validation/process databases; independent name checks confirmed their absence
+and preservation of the unrelated stopped database and welcome container. All 76 branches,
+three worktrees and three unrelated skill hashes remained intact. No files were staged; the raw
+index hash differed from the preflight snapshot, but staged-content comparison remained empty.
+No implementation acceptance, image/startup claim, independent review, commit, publication,
+merge, 8C2/8D/8E implementation, live operation or later-sprint work is inferred from this run.
+
+### 8C1 local validation receipt
+
+The corrected candidate passed the complete local backend gate, exit 0, with direct primary
+output retained. This supersedes the preceding pending-local-validation checkpoint, not its
+failed receipts or original predictions. 8C1/Sprint 8 remain IN PROGRESS and unaccepted.
+
+| Gate | Exact result |
+| --- | --- |
+| Expanded focused selection | 101 passed in 212.75s; no warnings or skips |
+| Ruff lint and format | Passed; 442 files already formatted |
+| Complete pytest | 3,646 passed in 3,412.83s; no skips; 19 existing SQLite adapter warnings |
+| Executed scope audit | All 156 files match the exact collection; all 628 PostgreSQL cases/27 files; no non-pass markers, one complete footer |
+| Whitespace and Compose configuration | Passed; no Compose service started |
+| Runtime image build | Passed; immutable image `sha256:9f2d8f7a25dce141d0ed1877ae8c2311025509e06951498012892b188a87bbed` |
+| Built-image source and startup | All 207 application/Alembic hashes match; fresh SQLite upgrade to 0010, actual server startup, health/readiness, three new bearer-protected OpenAPI routes, both admission and verification default-off |
+| Cleanup and preservation | Owned validation/process databases absent; unrelated stopped containers, 76 branches, three worktrees and three parent skill hashes preserved; no staged changes at audit |
+
+The exact focused selection extends the preceding 81-case set with the complete SQLite and
+PostgreSQL unresolved-region migration files. Thus both repaired upgrade-retry cases and all
+five PostgreSQL writer-exclusion repetitions run before full regression. Historical transition
+checks, fault injection and history/guard-seed equality remain strict. All 519 source hashes
+matched the frozen full-run input before this receipt; subsequent changes here are documentation
+only and require fresh contract/quality/whitespace checks before a scoped commit.
+
+Local backend gates used Python 3.14.5 and an explicitly disposable loopback/tmpfs PostgreSQL
+16 database. The actual runtime image used Python 3.12.15, non-root `app`, read-only rootfs,
+dropped capabilities, no-new-privileges, no network or host mounts, and its own disposable tmpfs
+SQLite database. No AWS credential/provider or user/operator database was used by the image smoke.
+Image export reused matching build cache; its emitted manifest digest and inspected image ID
+agree. Native exit 0 proves the silent whitespace/Compose gates preceded successful build and
+normal cleanup. No old CLI failure or partial primary output is relabeled as success.
+
+The unchanged frontend retains its separately qualified local result: 139 units/eight files
+and all 76 journeys under Xvfb headed mode, with no assertion/header/pin/retry changes. Only
+57 per-case rows plus the complete footer were retained, so this is not a complete local primary
+case audit. Native Firefox launch and four Linux headless failures remain historical with
+unproven causes. Both candidate CI and exact-main must independently retain/audit the complete
+139/76 scope in the unchanged configured CI mode; local headed-mode success cannot substitute.
+
+Next gates are frozen exact-commit independent review, any required bounded repairs, ordinary
+publication and both candidate primary CI audits, expected-head guarded merge, then complete
+exact-main primary audit. The reviewed/merged source tree must match. 8C2 deep acceptance and
+8D/8E remain required afterward. No live AWS/IdP/IAM/secrets, operator migration, deployment,
+production or Sprint 9+ operation is authorized or performed.
+
+### 8C1 independent review correction
+
+Independent review of commit `213422201444d3a00f5734f0004bf3e77d30297e`, tree
+`4f7442178a427bc2564e64b1d84f098200e5088b`, returned REVIEW_FAIL with one LOW documentary
+finding. README's current status still described pending design decisions and unimplemented linked
+verification, contradicting the approved R1--R3 design and implemented-but-unaccepted 8C1 candidate.
+The current paragraph now distinguishes the historical preflight, approved design, unaccepted
+candidate and unimplemented UI. Original predictions and all failed validation receipts remain.
+No additional correctness, security or data-integrity finding was identified across the 44 paths.
+
+The reviewer independently passed 64 verification/service/migration/signed-API/status cases in
+53.04s, 101 repository contract/link cases in 0.37s, and 31 fresh disposable PostgreSQL cases in
+109.26s, with no pytest warnings or skips. Ruff, 442-file formatting and committed whitespace
+passed. Independent audit, not a rerun, confirmed the complete local 3,646-case/156-file primary,
+all 628 PostgreSQL cases/27 files, 119 installed-process and 117 guard cases, matching per-file
+counts, one 3,412.83s footer and 19 existing SQLite warnings. All 207 image-source hashes matched;
+only ROADMAP/active-plan prose differed from the full-run freeze at review entry.
+
+The first restricted review selection had no terminal result; the first internal-network database
+setup ran no tests. Neither is counted as passing. Owned database/network and ephemeral review
+directory cleanup passed; ignored primary logs remain. All 519 tracked hashes/index entries,
+147 existing refs (76 branches), three worktrees and three parent skills were preserved during
+review. The correction changes only README and this receipt; fresh contract/quality/whitespace
+checks and exact corrected-commit review remain required before publication. The qualified local
+browser evidence is unchanged; both complete candidate CI audits, ordinary guarded merge and
+exact-main CI remain required. 8C1/Sprint 8 remain IN PROGRESS and unaccepted; 8C2/8D/8E, operator
+migration, deployment, live providers and Sprint 9+ were not started.

@@ -2,9 +2,10 @@
 
 This document defines permanent repository security rules for accepted Sprints 0--7 and
 Sprint 8A/8B1/8B2 boundaries and 8B3 offline acceptance below. The accepted implementation
-`main` baseline is `d338040260de3954065a46041118504134bc320c` (test-only PR #66;
+`main` baseline is `771d630c9385c1155f981bd47e18d43e87fb2290` (documentary PR #67;
 exact-head independent review, both first-attempt candidate CI audits and exact-main CI
-38346013358 passed). Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 PR #59).
+38423060289 passed). Installed-process test implementation remains `d3380402` (PR #66).
+Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
 That baseline includes the versioned assessment
@@ -546,6 +547,29 @@ Packaged API startup cannot construct the writer. Synthetic transport intercepti
 no production override or scanner write path is added. Physical ECS/task/host/network/IAM isolation,
 role governance, key/workload compatibility and live-provider validation remain separately required.
 Unknown effects still hold quarantine/reservations; readback does not verify or resolve findings.
+
+## Approved 8C1 verification candidate boundary
+
+Manual verification requires current EXECUTE but grants no AWS write and does not alter original
+three-human separation. Normal ACKNOWLEDGED is eligible; quarantine, including a late receipt,
+is not. Independent default-off account/Region configuration never falls back to scanner/writer
+scope. Only the scanner's existing read-only credential chain is used. Verify STS account/Region
+before collecting unrelated facts and independently enforce exact intent before result persistence.
+
+Requests bind complete verified issuer/subject/roles/capability, a bounded reason and exact
+historical authority/policy. UUID replay is actor/verification scoped across executions and checks
+current capability. Protected immutable request/receipt/audit history, three explicit attempts,
+one active scan and atomic terminalization prevent duplicate admission or fabricated success.
+No SQL lock crosses provider I/O or submission. Reads reject pending caller writes before SQL,
+suppress autoflush and cannot repair/seal history. Corrupt retained history fails closed and may
+require separately authorized maintenance rather than fabricated terminal receipts.
+
+Verification is independent of execution, finding and technical status. Complete later PASS
+with unchanged complete KMS context is a historical VERIFIED observation, not evidence of worker
+causation, existing-volume encryption, usable key access or lasting state. KMS drift can remain
+INCONCLUSIVE even when unchanged technical policy legitimately resolves the finding. Full-scope
+scans may affect other findings normally. Candidate validation/review/delivery remains pending;
+no operator migration, credential, IAM, live-provider or production authority is granted.
 
 ## Production authorization
 

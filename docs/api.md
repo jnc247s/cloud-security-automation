@@ -327,8 +327,57 @@ CLAIMED/WRITE_INTENT/QUARANTINED retain the reservation. NO_WRITE releases only 
 ownership; normal ACKNOWLEDGED means a completed call with durable receipt and releases ordinary
 ownership, not verification. A late acknowledgment/true observation never clears quarantine or
 its reservation/capacity. READ remains non-mutating and may show expiry/revocation after intent.
-Neither acknowledgment nor desired readback sets technical PASS or resolves findings; 8C rescan
-and 8D dashboard mutation remain unimplemented. The scanner still uses read-only credentials.
+Neither acknowledgment nor desired readback sets technical PASS or resolves findings. The approved
+8C1 candidate below adds a separate read-only rescan contract; 8D dashboard mutation remains
+unimplemented. The scanner still uses read-only credentials.
+
+## Linked remediation verification 8C1 candidate
+
+This feature-branch interface is implemented for validation, not accepted-main or enabled behavior.
+It requires candidate migration `20261013_0010`. Scanner credentials remain read-only; no caller
+write identity, arbitrary AWS action, profile override or existing-scan attachment is accepted.
+
+| Route | Capability | Contract |
+| --- | --- | --- |
+| `POST /api/v1/remediation-executions/{execution_id}/verifications` | EXECUTE | Reason-only strict body; required UUID `Idempotency-Key`; 202 new, 200 identical authorized replay |
+| `GET /api/v1/remediation-verifications` | READ | Optional execution UUID; standard bounded offset pagination |
+| `GET /api/v1/remediation-verifications/{verification_id}` | READ | Immutable request/new-scan binding and optional sealed terminal receipt |
+
+Reasons are nonblank after trimming, at most 2,000 characters. Request scope comes solely from
+validated normal ACKNOWLEDGED history under independent default-off explicit account/Region
+enablement. Any current EXECUTE principal may request observation; original write-authority
+separation remains unchanged. Expiry/revocation/staleness of the original grant is not renewed or
+used to deny checking the acknowledged operation. Quarantine/late acknowledgment is ineligible.
+
+`VerificationView` contains `content`, `verification_sha256`, `request_audit_event_id`, nullable
+`receipt`, `receipt_sha256` and `receipt_audit_event_id`. Version 1.0.0 content binds exact
+execution/acknowledgment/baseline, new scan ID, attempt ordinal, account/Region, original complete
+profile/catalog/scope, verified actor/key/reason and time. No credentials/private worker coordinate
+is exposed. Receipt binds that request digest, exact terminal scan/result/inventory, outcome/reason
+and optional target snapshot/assessment/control/encryption/KMS proof IDs/digests/observation time.
+
+Outcomes are a separate closed vocabulary: VERIFIED for complete strictly later EC2-004 PASS with
+unchanged complete KMS context; NOT_VERIFIED for equally proven FAIL; INCONCLUSIVE otherwise.
+Reasons are `POSTCONDITION_PASS`, `POSTCONDITION_FAIL`, `SCAN_INCOMPLETE`,
+`PROVENANCE_UNAVAILABLE`, `OBSERVATION_NOT_LATER`, or `KMS_CONTEXT_CHANGED`.
+Other controls may FAIL. Technical results/findings follow unchanged normal scan policy and may
+differ from the verification verdict. A receipt is historical, not causal or perpetual assurance.
+
+Actor/verification-operation/key replay is scoped across executions; changed normalized input
+returns `remediation_idempotency_conflict` (409). Replay rechecks current EXECUTE, returns the
+original attempt including failure, and never submits/requeues/renews authority. Three accepted
+attempts per execution and one active are enforced. Rejected admissions consume none; accepted
+submission failures count. A new explicit key may request the next attempt after terminalization.
+
+Fixed new errors: `remediation_verification_disabled` and
+`remediation_verification_executor_unavailable` (503; new admission only),
+`remediation_verification_scope_conflict`, `remediation_verification_ineligible`,
+`remediation_verification_active`, `remediation_verification_limit` (409). Existing sanitized
+authorization/provenance/state/database errors remain. `verification_submission_failed` (503)
+returns durable `verification_id` and `scan_id`; result/receipt failure is atomic when trusted
+history permits sealing. Unknown completion requires replaying the same key, not a new request.
+Corrupt history fails closed; READ cannot finalize or repair it. Successful responses and
+verification service/submission errors use `Cache-Control: no-store`.
 
 ## Filtering and pagination
 
@@ -346,6 +395,7 @@ and 8D dashboard mutation remain unimplemented. The scanner still uses read-only
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
 | remediations (accepted 8A) | `finding_id`, `account_id` (12 digits) |
 | remediation-executions (accepted 8B1) | `proposal_id` UUID |
+| remediation-verifications (8C1 candidate) | `execution_id` UUID |
 
 Accepted 6G adds the public control category `governance`. Existing category values, response
 shapes, capabilities and generic control filtering are unchanged. The category migration and

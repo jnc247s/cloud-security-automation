@@ -43,7 +43,9 @@ both final-head CI runs and green
 [exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
-8B3.2 is COMPLETE; 8B3.3 is COMPLETE and 8C--8E remain PLANNED. Combined signed fault/race/recovery
+8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is IN PROGRESS and 8D/8E remain PLANNED.
+The recommended linked-verification R1--R3 design is approved; 8C1 implementation is not yet accepted.
+Combined signed fault/race/recovery
 tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
 and its test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
 at `9c3df3256f81edf85a262b55b949c38b43d6d226`, after exact repair-head REVIEW_PASS,
@@ -64,8 +66,13 @@ Each CI run passed 3,567 backend cases (597 PostgreSQL, no skips), 139 frontend 
 closed synthetic transport, committed intent/audit, restricted test runtime and recovery are
 verified offline; deployed task/IAM/network isolation, live providers and production are not.
 Readback remains unverified; finding and technical-result lifecycles are separate. Runtime and
-migration 0009 are unchanged. The active plan records this documentary closeout's own gates
-before 8C preflight; linked verification and UI mutation remain unimplemented.
+migration 0009 are unchanged. The documentary closeout is accepted through
+[PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67) at `771d630c`, with
+exact-head REVIEW_PASS, both full first-attempt candidate audits and complete
+[exact-main CI 38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289).
+The [8C preflight](docs/sprint-8c-preflight.md) records the original analysis; its recommended
+R1--R3 design is now approved. Linked verification is implemented on the 8C1 candidate branch
+but remains unaccepted; review and delivery gates remain required. UI mutation remains unimplemented.
 Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.

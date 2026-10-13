@@ -279,7 +279,10 @@ The 119-case integration file includes eight parent-only snapshot negatives and 
 it is not 119 enabled-worker journeys. All retained signed fault/race/recovery tests also ran.
 
 This completes offline 8B acceptance, not deployment or live authorization. The owning-document
-closeout has its own validation/review/delivery gates before 8C preflight. Worker/admission stay
+closeout passed its review/candidate/guarded-merge/exact-main gates through
+[PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67) at `771d630c`, exact-main
+CI 38423060289. The [8C preflight](../sprint-8c-preflight.md) R1--R3 recommendations were approved
+on 2026-10-13; linked verification is an unaccepted candidate below. Worker/admission stay
 default off; scanner permissions and migration 0009/schema-before-code are unchanged. Test-container
 restrictions do not establish physical ECS/task/host/network/IAM separation or distinct physical
 humans. Key/workload compatibility, live providers, operator maintenance and production remain
@@ -287,3 +290,33 @@ separately gated. Acknowledgment/readback is not causation, attributed verificat
 or finding resolution. No incident force-clear, TTL release, rollback, rescan or browser mutation
 is supplied. Historical failures and unfixed dashboard interaction limits remain in the active plan
 and [limitation register](known-limitations.md); passing Linux/installed-process tests do not fix them.
+
+## Linked verification 8C1 candidate
+
+Use the generic bearer [verification API](../api.md#linked-remediation-verification-8c1-candidate)
+for a new read-only full-original-scope scan after normal ACKNOWLEDGED history. The unaccepted
+candidate requires migration `20261013_0010`; operator database maintenance is separately
+authorized and never automatic from code acceptance. `/ready` remains connectivity-only.
+
+`REMEDIATION_VERIFICATION_ENABLED` defaults false. Enabling requires explicit
+`REMEDIATION_VERIFICATION_ACCOUNT_ID` and `REMEDIATION_VERIFICATION_REGION`, not scanner/writer
+scope fallback. The same scope guard applies before collection on RUNNING recovery. Compose
+defaults, scanner permissions and writer isolation are unchanged; no live scope is enabled here.
+The caller sends only a bounded reason and UUID Idempotency-Key, never credentials/policy/scan ID.
+Persisted requested services must match one of the executor's four retained complete-scope
+generations; unsupported/ad-hoc scopes fail closed before provider construction.
+
+Poll READ detail for a sealed receipt. VERIFIED requires complete strictly later EC2-004 PASS
+and unchanged complete present/absent KMS context. NOT_VERIFIED requires equally proven FAIL;
+partial/failed/unavailable evidence or context drift is INCONCLUSIVE. Technical results and
+finding status stay independent; full-scope normal scans may change other findings. This is
+historical observation, not worker causation, key usability or existing-volume assurance.
+
+Three explicit accepted attempts and one active scan per execution are allowed. Replay requires
+current EXECUTE, returns the same attempt including failure and never submits again. Accepted
+submission failures count. After a terminal attempt, use a new explicit request/key only within
+the bound. On uncertain response/commit, replay the original key. Startup recovery reuses the
+same durable RUNNING scan ID/policy; read-only collection may repeat, never the remediation write.
+No automatic post-terminal scan or quarantine release exists. Corrupt history/linkage fails
+closed; when it cannot support a trusted failure receipt, RUNNING/active state remains for
+separately reviewed maintenance. Never delete/rewrite history, force-clear or fabricate a receipt.

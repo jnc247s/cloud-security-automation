@@ -378,7 +378,7 @@ def test_execution_writer_is_excluded_before_any_downgrade_ddl(postgres_engine, 
 
             @event.listens_for(connection, "before_cursor_execute")
             def observe(_conn, _cursor, sql, *_args):
-                if sql.startswith("LOCK TABLE remediation_admission_guard, scans, resources"):
+                if sql.startswith("LOCK TABLE remediation_verification_guard"):
                     attempted.set()
                 if sql.lstrip().upper().startswith(("ALTER", "CREATE", "DROP")):
                     ddl.append(sql)

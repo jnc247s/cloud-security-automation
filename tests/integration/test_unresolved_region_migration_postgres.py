@@ -88,8 +88,8 @@ def test_writer_is_serialized_before_downgrade_preflight(postgres_engine, _attem
                     .startswith(("CREATE ", "ALTER ", "DROP ", "TRUNCATE "))
                 ):
                     ddl.append(statement)
-                # The new 0008 guard is first on the complete downgrade path.
-                if statement.startswith("LOCK TABLE remediation_admission_guard, scans, resources"):
+                # The verification guard is first on the complete downgrade path.
+                if statement.startswith("LOCK TABLE remediation_verification_guard"):
                     lock_attempted.set()
                 if statement.startswith("LOCK TABLE scans, scan_scope_manifests, resources"):
                     # Earlier guards have serialized the writer and hold parent locks.
@@ -97,7 +97,7 @@ def test_writer_is_serialized_before_downgrade_preflight(postgres_engine, _attem
                     # with the guard by acquiring graph/parent locks in reverse order.
                     assert ddl == [] and baselines == []
                     baselines.append(state_on_connection(connection))
-                    assert baselines[0]["revision"] == "20261008_0009"
+                    assert baselines[0]["revision"] == "20261013_0010"
                     assert any(
                         json.loads(row)["scan_id"] == str(bundle["snapshot"].scan_id)
                         for row in baselines[0]["rows"]["scans"]
