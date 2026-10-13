@@ -1743,7 +1743,7 @@ This table is the current bounded status, consistent with ROADMAP.
 | --- | --- | --- |
 | 8B3.1 | COMPLETE | Accepted integrated signed HTTP, migrated database, offline worker/closed adapter and authorized READ/replay tests through PR #61 |
 | 8B3.2 | COMPLETE | Accepted combined signed fault/race/recovery tests through PR #63 and test-only repair PR #64 |
-| 8B3.3 | PLANNED | Installed-image/separate-process/security acceptance and 8B closeout |
+| 8B3.3 | IN PROGRESS | Installed-image/separate-process/security acceptance and 8B closeout |
 
 The user requested continued goal work under standing accepted-design workflow authority.
 Clean accepted main was ordinarily fast-forwarded to eea2f0c only after exact-main CI passed,
@@ -2376,3 +2376,465 @@ Final receipt checks passed 99 contracts in 2.68s, Ruff/423-file formatting and 
 The existing native launcher warning about the installed Python-core location remained visible;
 the interpreter and all checks completed successfully. No warning, assertion, skip or security
 boundary was suppressed. Only the active-plan result receipt differs from the full-run freeze.
+
+### 8B3.2 documentary acceptance and 8B3.3 analysis entry — 2026-10-12
+
+The six-path documentary head `a050d70859be73320de2967fc1f9048422160e79`, tree
+`b6d202329f11dbc76b02db72fb3a00c7083126bb`, received immutable-head REVIEW_PASS from the
+existing reviewer with no actionable findings. Independent receipt checks passed 99 contracts
+in 2.70s, Ruff/423-file formatting and whitespace; the complete local and prior repair/provider
+logs were independently audited, not independently rerun as full backend suites.
+Independent check-log SHA-256 is `ba442be889b79c664c418c9d412d28b117a87f46a804d30e24746a9ac52182ae`.
+
+Both first-attempt candidate CI runs passed complete primary-log audits. The PR tested synthetic
+merge `427a45f63e5f6aa9dce3154f6a74bb8ef61ad00e` with exactly the reviewed tree and parents
+`9c3df3256f81edf85a262b55b949c38b43d6d226`/`a050d70`. Fresh exact head/base/check/settings and
+preservation guards preceded ordinary [PR #65](https://github.com/jnc247s/cloud-security-automation/pull/65)
+merge, without admin bypass, force push or branch deletion. Delivered merge
+`489b047562005a766734e9b571f7e307f8506102` retains that same tree and parents; its first-attempt
+exact-main CI passed and every individual backend/browser marker plus all 18 steps was audited.
+
+| First-attempt CI | Backend complete result | Other complete gates |
+| --- | --- | --- |
+| [Push 38304816695](https://github.com/jnc247s/cloud-security-automation/actions/runs/38304816695) | 3,330 passed / 19 existing SQLite warnings / 1807.35s | All 478 PostgreSQL cases/25 files, no skips; 139 frontend cases/eight files; 76 unique browser indices, 38 Chromium/38 Firefox, one worker/zero retries; Ruff/423-file formatting, image/cleanup and all 18 steps |
+| [PR 38305061535](https://github.com/jnc247s/cloud-security-automation/actions/runs/38305061535) | 3,330 passed / 19 existing warnings / 1580.96s | Same complete gates |
+| [Exact main 38308762804](https://github.com/jnc247s/cloud-security-automation/actions/runs/38308762804) at 489b047 | 3,330 passed / 19 existing warnings / 1755.33s | Same complete gates |
+
+All protected 24-file/448-case PostgreSQL counts match, plus 30 fault cases. Main's installed
+CI interpreter was Python 3.12.15 with boto3/botocore 1.43.112; its actual built image is
+`sha256:aacc010f98320d350518470d1d36cdef145767f3a842bae9152dd314e07635f3`.
+Host CI regression and image build are not an enabled installed-process run or physical/live
+isolation proof. The existing native SDK/environment distinction, launcher warning, unconfirmed
+old Firefox cause, unfixed application layout race, untriaged picker/navigation report and old
+interrupted native result remain unchanged. No failure or scope limitation is waived.
+
+The first precommit freshness check had stopped before tests/staging/commit when read-only Git
+transport reset. Normal provider API freshness proved the same base before the successful scoped
+guarded commit; no full regression was restarted. One later MCP push-job status poll failed in
+transport; re-polling that same handle confirmed terminal success. Neither observation failure
+restarted/re-ran CI, and no optional denied public-comment retry was performed.
+
+Only after complete exact-main acceptance, clean local main was normally fast-forwarded from
+`9c3df32` to `489b047`, then `codex/sprint-8b33-preflight` was created for analysis. All 500
+starting tracked hashes matched; 72 non-main branches and all three worktrees/parent skill hashes
+were preserved. The only local ref changes are the accepted main advance and one new branch,
+bringing the total to 74. Parent status remains only unrelated untracked `.agents/`, excluded.
+
+The [8B3.3 preflight](../../sprint-8b33-preflight.md) inspects installed CLI/settings, real exclusive
+provider/SDK, guard-first SQL/audit, signed HTTP helpers/callers, prior fault guards, complete
+protected-state comparison, packaging/Compose, existing validation ownership and operator limits.
+Recommend one complete test-only installed-image/separate-process/security acceptance slice.
+First implement narrow owned test resources and the signed installed-process success/no-write
+journey; then complete source/scope/configuration/leakage negatives and fresh-process conservative
+recovery before whole-8B acceptance. Existing 8B3 scope already permits a mounted transport harness
+before the unchanged module entrypoint; no production test mode, endpoint or packaging change.
+No new product architecture/design decision is identified. Standing routine authority covers
+accepted-design implementation; any required new boundary/policy/topology still needs approval.
+
+Only ROADMAP, this active plan and the new preflight change at this analysis checkpoint.
+8B3.3 remains PLANNED until test implementation begins; 8B3/8B/Sprint 8 remain IN PROGRESS.
+No runtime/test/schema/API/credential/CI/frontend change, enabled worker, database/container
+provisioning, new reviewer, commit/publication or later-slice work is performed by this analysis.
+Physical/live IdP/AWS/IAM/secret isolation, deployment, operator migration and production operation
+remain unproved and unauthorized. 8C--8E remain required and Sprint 9+ unstarted.
+
+### 8B3.3 analysis validation — 2026-10-12
+
+The three-path analysis passed 100 contracts in 2.92s, Ruff lint, 424-file formatting and
+tracked/new-Markdown whitespace checks. The new preflight adds one automatically parametrized
+documentation-link case in `test_markdown_links.py`; the 99 baseline contracts remain intact.
+Formatting includes Markdown: verbose discovery confirms the new preflight path, explaining
+423 -> 424 without a Python-source addition. All 370 lint-enumerated paths belong to the starting
+baseline, including project metadata. The existing native Python launcher-location warning stayed
+visible; every check exited successfully, with no skip, assertion or warning suppression.
+
+Only a newly owned UUID analysis TEMP subtree was removed after resolved-path boundary checks;
+cleanup preserves any primary validation failure. No database, container, image, application or
+browser acceptance ran in this analysis. Those remain mandatory implementation gates, not implied
+by baseline PR #65 success or lightweight document checks. The documentation skill keeps accepted
+receipts separate from predictions/proof limits; PostgreSQL guidance keeps the proposed process
+probes outside short consistently ordered worker transactions, without changing accepted intent.
+
+### 8B3.3 test-only execution plan and implementation entry — 2026-10-12
+
+The user requested continued full Sprint 8 goal work under standing routine authority. The
+completed [8B3.3 preflight](../../sprint-8b33-preflight.md) identifies no new product design
+decision. Fresh provider metadata reverified remote main `489b047` and its completed first-attempt
+exact-main CI 38308762804 before implementation. Reuse `codex/sprint-8b33-preflight`, preserving
+the three owned analysis Markdown changes, all existing branches/worktrees and parent skills.
+8B3.3 is now IN PROGRESS, not accepted; 8B3/8B/Sprint 8 remain IN PROGRESS. The dated analysis
+PLANNED checkpoint remains historical. README/current progress-contract callers update atomically.
+
+Predictions for the one complete bounded slice:
+
+- Add private UUID-owned Docker resource/process helpers, a narrowly mounted test-only harness,
+  migrated disposable PostgreSQL and ordinary integration/guard tests. No production packaging,
+  dependency, CI, application, schema or operator configuration change is planned.
+- Start with ownership/cleanup guard regressions and the signed HTTP -> own migrated database ->
+  unchanged installed module/real exclusive adapter/closed synthetic transport -> signed READ
+  success and no-write journeys. Keep all seven existing key/precondition cases and strict
+  identity, digest, audit, protected-table and no-start assertions.
+- Complete every preflight source/scope/configuration/leakage family and separate-process
+  unknown-effect recovery. Count real enable transports, prove committed intent and free SQL locks,
+  validate installed source/runtime, fail on unarmed/unexpected/unused transport and corroborate
+  process reports through independent retained history. Do not replace worker/auth/persistence.
+- Use only exact owned internal-network/tmpfs database/worker resources, environment-only temporary
+  passwords and narrow read-only harness/scenario mounts. Never use host networking, Docker-socket/
+  host-credential mounts, arbitrary operator URLs or broader credentials. Preserve primary failures
+  through cleanup; cleanup-only failure is not success.
+- Run targeted new/affected tests, Ruff/format, complete configured PostgreSQL regression, exact
+  image/Compose, full pinned frontend/browser gates, immutable-commit independent review, both
+  first-attempt candidate CI runs, ordinary guarded merge and complete exact-main CI before 8B
+  closeout or 8C preflight. Derive expanded counts from actual collection and full primary logs.
+
+Only test/progress changes are authorized here. No new handler, production test mode, endpoint,
+rescan, dashboard mutation, live AWS/IdP/IAM/secrets, deployment, operator migration or production
+operation is authorized. Stop for any new architectural/design decision. A first passing helper
+or process journey does not complete 8B3.3, 8B or Sprint 8; 8C--8E remain required and Sprint 9+
+unstarted. Reuse the existing reviewer only after the complete candidate is frozen.
+
+### 8B3.3 resource and mounted-harness construction checkpoint — 2026-10-12
+
+Three private test files now implement the owned runtime, mounted transport observer and 49
+resource/cleanup/environment guard cases. The controller verifies a local Linux Docker endpoint,
+pins it across later environment changes, rejects remote/ambiguous targets, verifies exact names
+and labels before removal, derives URLs only for its live owned schemas and keeps passwords out
+of argv. Cleanup-only failure fails; body/start failures retain their original exception even if
+cleanup or warning emission also fails. No Docker/database/image/process was provisioned yet.
+
+The mounted harness invokes the unchanged installed module, uses the real adapter/SDK and
+intercepts synthetic transport. It checks mandatory installed-source hashes, non-root runtime,
+fixed clients/models/retries, independent six-coordinate PostgreSQL NOWAIT probes and committed
+paired intent before enable, strict operation queues and sanitized output/proof separation.
+Its process invocation helper accepts only owned URLs, narrow mounts and closed test inputs.
+This is constructed code, not an executed installed-process acceptance result: the signed parent
+journey, complete process/security/recovery matrix and whole acceptance remain pending.
+
+The first focused run ended 11 failed/130 passed in 8.50s: an accidental indentation edit placed
+URL parsing after a raise, so string endpoint guards raised UnboundLocalError. Correcting that
+helper and adding endpoint/context negatives passed 148 in 2.78s. Initial harness lint correctly
+found one import-order and seven long-line errors; they were repaired without rule suppression.
+After endpoint pinning, current focused checks passed all 149 in 2.79s (49 new resource guards
+plus 100 contracts), followed by Ruff/427-file formatting and whitespace. The existing native
+launcher-location warning remains visible. No valid test/assertion was removed or relaxed.
+
+No complete fresh regression, PostgreSQL/process/image/browser acceptance, independent review,
+commit/publication/merge or 8B closeout is claimed. Runtime/schema/API/credentials/frontend/CI
+are unchanged. This checkpoint does not shrink the preflight matrix or complete 8B3.3/Sprint 8;
+standing workflow continues with the signed installed-process integration. All later-stage/live/
+operator boundaries and historical UI/provider limitations remain unchanged.
+
+### 8B3.3 initial process journeys and failed native regression — 2026-10-12
+
+The signed parent now composes the real HTTP authority, its own migrated schema, unchanged
+installed module and real exclusive SDK adapter, synthetic transport, independent committed-intent/
+six-lock probes and authorized history/replay checks. All seven retained success/no-write key
+contexts ran in fresh non-root containers; no live credentials or AWS operation were used.
+
+The first process-focused attempt failed before any worker ran: 149 checks passed, seven setup
+errors and one warning in 37.45s. The tested local Docker engine did not expose the PostgreSQL
+loopback port on the internal-only network. A separate credential-free, owned probe confirmed
+empty effective port bindings despite the requested loopback mapping. Its first cleanup guard
+failed; fresh exact-name/JSON-label inspection then permitted removal of only that probe container
+and network. This is not a general Docker regression claim or a passing process receipt.
+The same attempt exposed Windows cp1252 decoding of captured Docker output. The private helper
+now explicitly decodes UTF-8. Only its test database joins the ordinary bridge for loopback
+publishing and the owned internal network under alias `pg`; worker containers remain internal-only.
+This material test-topology difference supersedes the predicted internal-only database, not any
+production topology, provider endpoint or credential boundary. Two permanent guards retain both
+repairs. A standalone guard attempt passed 150 but had one setup error in 8.79s because the shared
+pytest temporary directory was inaccessible; fresh workspace-owned TEMP/TMP was used thereafter.
+
+The second unchanged validation attempt passed all 158 focused checks in 51.34s: 100 contracts,
+51 resource guards and seven installed-process journeys. Ruff and 429-file formatting passed.
+Its full run collected 3,389 tests and again passed all seven process journeys, then terminated
+at 90% with a Windows native access violation while garbage-collecting during
+`test_changed_precondition_never_dispatches_or_claims_success`. There is no full-suite summary,
+warning total or successful full/image/Compose gate; validator exit was 1 and its outer disposable
+database cleanup completed. The crashed pytest session did not run its process-fixture teardown.
+Fresh exact-name/ownership-label checks authorized removal of only its remaining tmpfs database
+and private network; unrelated stopped containers were preserved. Test data in these throwaway
+resources is discarded; no operator database, persistent volume or user resource is removed.
+
+Native versions were Python 3.14.5, Pydantic 2.13.5/core 2.46.5 and pytest 9.1.1. The underlying
+crash cause is unconfirmed. An isolated diagnostic initially stopped in conftest because its
+launcher incorrectly supplied `AUTH_MODE=dev`; correcting only the launcher to the accepted
+`development` value ran all 34 original worker-service tests successfully in 37.09s. This neither
+repairs nor waives the full-run crash. No dependency pin, garbage-collection suppression, test
+skip or application/assertion change is introduced. Complete fresh validation remains required.
+
+All ten owned source hashes remained frozen throughout the failed full run; 496 other baseline
+tracked hashes, all 74 branch refs, three worktrees and three parent skill hashes were reverified
+unchanged afterward. The private parent proof validator is subsequently being strengthened with
+closed fields, strict types, fixed output, installed-source/path identity and independently
+cross-checked operation/write/intent counts plus permanent negative guards. These test-only
+changes require new validation and do not accept a self-reported process success.
+
+8B3.3/8B3/8B/Sprint 8 remain IN PROGRESS. The full preflight source/configuration/identity/leakage/
+fresh-process recovery/packaging matrix, complete local/frontend/browser gates, exact independent
+review, candidate CI, ordinary guarded merge and exact-main CI remain pending. No reviewer,
+commit, publication, 8C--8E implementation, Sprint 9+ or live/operator operation is started here.
+
+### 8B3.3 process report guards and source negatives — 2026-10-12
+
+The parent now rejects open/incomplete report fields, boolean or malformed counters/identity,
+unapproved output, mismatched installed fingerprints/paths, unpaired lock probes, unexpected wire
+sequences and inconsistent SDK-enable/wire-enable/committed-intent counts. Thirty permanent
+negative/acceptance guards complement the original 51 resource guards. All 181 guard/contract
+checks passed in 3.08s, then Ruff found two overlong fixed help strings. Splitting those literal
+strings without changing their bytes passed all 181 again in 3.16s, Ruff, 429-file formatting
+and whitespace. Complete collection found 3,498 cases in 1.81s; collection is not execution.
+
+The installed-process wrapper now includes 79 additional cases alongside the retained seven:
+all 21 forbidden source/endpoint/CA/model variables with empty and synthetic nonempty values,
+ten missing/malformed relative metadata paths, malformed/unavailable metadata, wrong/incomplete
+identity, incomplete/permanent/transient read failures, missing/malformed/scope-conflicting
+configuration, invalid arguments, help and default-off scanner/application fallback traps.
+Each case obtains its own signed admitted grant and owned schema; a terminal no-write result is
+not reused to manufacture later source coverage. Exact history, blockers, retained technical/
+finding state and independent transport counts remain required. These 86 process cases are
+constructed, not yet validated together at this checkpoint.
+
+The private orchestrator permits removal of its worker database environment field for the
+missing-setting case, but accepts no caller-selected PostgreSQL target: only its derived live
+schema or the two existing safe invalid URL sentinels. The signed parent can supply explicit
+CLI arguments for cutoff tests; the production entrypoint is unchanged. Missing identity is a
+synthetic wire response consumed by the unchanged SDK/adapter, not a replacement worker.
+All changes remain test-only. No schema/dependency/authentication/runtime/frontend/CI change,
+review clearance, commit or delivery is claimed. Next run these targeted process cases against
+fresh disposable PostgreSQL, then finish the remaining strict pre-construction/.env/host-file
+and independent-runtime/recovery/packaging families before the complete acceptance gates.
+The failed native full regression remains unwaived and its cause unconfirmed. Sprint 8 remains
+active/incomplete; 8C--8E remain required later, and Sprint 9+ and live operations are unstarted.
+
+### 8B3.3 source and configuration process validation — 2026-10-12
+
+The expanded focused run passed all 267 checks in 534.71s: all 86 installed-process journeys,
+81 resource/report guards and 100 contracts. The real integration-enablement URL belonged to
+a fresh owned outer PostgreSQL stack; the process fixture created a separate owned stack and
+one migrated schema/signed grant per case. Neither reused an operator URL or a previous terminal
+grant. Parent report guards, exact blockers, independent SQL/intent probes, signed history,
+technical/finding preservation and all transport assertions passed. This is targeted evidence,
+not a full regression or whole 8B3.3 acceptance receipt.
+
+The wrapper exited 0 after cleanup. A fresh Docker label inventory found no owned process
+containers/networks remaining and both unrelated stopped containers preserved. All ten frozen
+owned hashes, 496 other baseline hashes, 74 branch refs, three worktrees and three parent skill
+hashes matched afterward. The owned image retained its immutable identity, non-root `app` user
+and default API command; test helpers remain outside production packaging.
+
+A subsequent credential-free, networkless owned probe verified the Docker metadata needed for
+independent launch checks: the narrow bind reports its exact native source, read-only access and
+private propagation; capability drop, no-new-privileges and tmpfs settings match the requested
+restrictions. `docker start --attach` and retained container state both report deliberate exit 47.
+Exact owned probe cleanup completed. No database, credential or application worker was involved.
+
+Next test-only additions inspect exact image/user/entrypoint, read-only/no-privilege/internal-network/
+mount restrictions before process launch, then independently inspect its terminal exit state.
+They observe real engine construction, forbid application/scanner settings and AWS host-file/
+dotenv reads, check effective process privileges and suppress post-entrypoint dependency errors.
+Only one explicitly selected, synthetic, read-only `.env` file may be added for its three ignored-
+file cases; no host credential store or application/SDK source is mounted. Worker behavior,
+credential sources, SQL ordering and intent-before-dispatch remain unchanged. Permanent negative
+guards and fresh process validation are required for these additions.
+
+The separate-process unknown-effect/death, persisted budget/window, sticky target/capacity and
+whole protected-coordination/recovery/packaging families still remain, followed by complete
+local/frontend/browser validation and every independent-review/delivery/exact-main gate.
+The failed native full run is not waived or repaired by this pass. 8B3.3/Sprint 8 remain incomplete;
+no 8C--8E/9+ implementation, reviewer, commit, publication, live or operator operation starts here.
+
+### 8B3.3 independent runtime and construction guards — 2026-10-12
+
+The private controller now creates without launching, verifies exact owned Docker metadata and
+its owned internal network, attaches once, cross-checks terminal container state and removes the
+exact worker in a primary-preserving cleanup path. Only immutable owned image identity, the
+existing `app` user, unchanged mounted entrypoint, read-only root, no added capabilities,
+no-new-privileges, unpublished ports and exact selected read-only private binds are accepted.
+The validator rejects even broader caller-supplied expected networks/mount sets.
+
+The mounted observer still calls the real installed entrypoint/engine/SDK. It counts real engine
+construction, forbids application/scanner settings and AWS host-file/`.env` reads, verifies
+effective no-new-privileges/zero capabilities and checks suppressed dependency ERROR output even
+after help/default-off/error cutoffs. It does not change HOME, copy real credential stores or
+replace authorization, worker decisions, SDK methods/parsers or database persistence. Three added
+synthetic `.env` cases exercise ignored-file behavior with default-off, missing-database and
+enabled settings; source, engine and history checks update atomically across private callers.
+
+The first new guard/contract check passed all 208 in 3.34s, followed by Ruff/429-file formatting,
+whitespace and 3,528-case collection. Six extra broader-expected-target regressions then passed
+all 214 in 3.10s with Ruff/429-file formatting and whitespace; collection found 3,534 in 1.78s.
+The 114 private guards and 100
+contracts are targeted evidence; the modified 89-case process matrix has not run at this
+checkpoint and still requires fresh validation. The previous 267-case pass applies only to its
+frozen prior helper sources. No production source, schema, dependency, API or credential boundary
+changes. Fresh recovery/packaging coverage, complete regression/frontend/browser gates and all
+independent review/delivery/exact-main gates remain required before accepting 8B3.3 or Sprint 8.
+
+### 8B3.3 runtime process validation and recovery construction — 2026-10-12
+
+The strengthened frozen helper passed all 303 focused checks in 595.11s: all 89 process
+journeys, 114 private guards and 100 contracts. Independent Docker restriction/terminal-state
+checks, effective process privileges, exact engine counts, application/host-file/`.env` tripwires,
+post-entrypoint dependency-error suppression, real worker/SDK, committed intent/free locks and
+signed history assertions all passed. Wrapper exit was 0 after cleanup; fresh label inventory
+found no owned containers/networks and preserved both unrelated stopped containers. All ten
+owned/496 other baseline hashes, 74 refs, three worktrees and three parent skill hashes matched.
+This is focused evidence, not full regression, packaging, review or whole-sprint acceptance.
+
+Nine additional process scenarios now cover uncertain timeout/503/incomplete/malformed receipts,
+owned death at committed intent, fresh read-only recovery, readback deaths consuming the durable
+global budget, an expired original observation window, real pre-intent lease expiry/reclaim and
+global three-read exhaustion, and sticky quarantine target/global capacity. The real 30-second
+lease/window is exercised with bounded waits; no persisted clock/grant/budget is rewritten.
+The target conflict uses a newly approved proposal for the same target: a second execution of
+the same proposal would test the separate one-execution invariant, not reservation retention.
+Capacity remains the accepted 32; additional evidence uses normal offline scan persistence and
+every proposal, independent approval and admission uses signed human HTTP.
+
+The parent reuses only the accepted pure authority/evidence/unrelated-audit guards from
+`SignedFaultJourney`, not its worker runner, transport, clock or authentication replacements.
+Initial and additional authority changes are checked before extending expectations. New own-
+coordination checks require immutable authority/guard rows, retained journal bytes, exact target
+ownership, no stray private claims, generation/lease/intent consistency and declared global
+readback counts. Unknown-effect recovery must retain its grant and fencing identity and never
+send enable again; observation does not clear quarantine or change findings/technical results.
+
+All 214 existing guard/contract checks passed in 3.06s, followed by two import-order lint failures.
+Correcting only imports passed the same 214 in 3.07s, Ruff/429-file formatting and whitespace.
+The changed signed parent/recovery scenarios have not yet executed at this construction checkpoint;
+fresh targeted process validation and remaining negative-guard/packaging/full acceptance gates
+are required. No accepted production source, schema, credential, API, policy, retry or release
+semantics changes. The native full-run crash remains unwaived/unconfirmed. Sprint 8 stays active;
+8C--8E remain required later, and no reviewer/delivery, Sprint 9+ or live/operator operation begins.
+
+### 8B3.3 focused recovery validation — 2026-10-12
+
+All 312 focused checks passed in 875.79s: 98 installed-process scenarios, 114 private guards and
+100 contracts. The four ambiguous receipt variants, deliberate post-intent death, persisted
+readback budget across dying fresh processes, expired observation window, real pre-intent lease/
+reclaim/read-budget limits and sticky target/32-slot capacity passed. Every process retained the
+real installed worker/SDK, narrow owned resources, independent committed-intent/lock probes and
+signed authority/history checks. The strengthened immutable authority, old journal, exact target,
+private claim/generation/lease/intent/readback and declared unrelated-audit guards also passed.
+No simulated observation verified remediation or rewrote findings/technical results.
+
+The wrapper exited 0 after exact owned cleanup. Fresh Docker inventories found no owned process
+containers/networks; both unrelated stopped containers remained. All ten frozen owned source
+hashes, 496 other baseline hashes, 74 branch refs, three worktrees and three parent skill hashes
+matched afterward. Collection was 3,543 at construction; this is not a complete regression receipt.
+
+Permanent negative cases for the strengthened parent coordination/audit and strict transport
+guards, independent installed-version/packaging/default-API/no-start evidence, the remaining
+matrix audit, affected old regressions, complete backend/PostgreSQL/Compose/image and pinned
+frontend/browser validation still precede exact independent review and every candidate/guarded-
+merge/exact-main delivery gate. Production image dependencies do not include the development
+`httpx`/TestClient extra; packaged smoke tests must use its actual installed runtime rather than
+silently adding test dependencies to the released image. Existing startup tests and caller
+search show no worker launch path, but source searches alone are not installed-startup proof.
+
+The earlier Windows native full regression remains failed/unwaived with cause unconfirmed;
+neither this targeted pass nor a future Linux pass is described as its fix. 8B3.3/8B/Sprint 8
+remain incomplete; 8C--8E remain required later. No production/runtime/schema/authentication/
+credential/dependency change, reviewer, commit/publication, Sprint 9+ or live operation occurs.
+
+### 8B3.3 negative guards and packaged startup — 2026-10-12
+
+Twenty permanent integration negatives now reject missing/stray immutable authority, guard,
+journal, target and claim snapshots; corrupt claim identity/generation/lease/intent/budget fields;
+unused/wrong transport queues; and a deliberately disarmed interceptor. The disarmed case installs
+a deny-all transport and fails before the entrypoint; it never restores real network access.
+All malformed snapshots are in-memory test inputs, with the real database required unchanged.
+
+The narrowly mounted harness adds a private API-startup branch, not a production test mode.
+It uses installed Uvicorn and proxy-free loopback HTTP without adding development dependencies,
+verifies health/readiness/database/OpenAPI bearer declarations, and prohibits worker construction
+or write-identity creation before importing the real API module. The parent checks the immutable
+image's accepted default API command and user, exact restricted container metadata, all persisted
+values, queued-grant history and zero provider/writer calls. The source manifest now includes
+five API/database/scanner startup files alongside the nine worker files. API test configuration
+is closed, explicit local/test-only and derived from the same owned migrated schema.
+
+The first packaged probe failed one test in 12.52s at the proof boundary. One bounded diagnostic
+failed in 12.11s with fixed POST_ENTRYPOINT_DIAGNOSTIC: the harness incorrectly applied the
+dedicated worker's synthetic ERROR suppression probe to normal API logging. Restricting that
+probe to worker mode retained every worker assertion and the API empty-stderr/no-dispatch checks.
+A new unit mock initially replaced the root logger through pytest's own logging hooks, causing
+a cascading TypeError without a trustworthy summary; restoring it inside a scoped context fixed
+only the test. Fresh checks passed 216 in 4.30s with Ruff/429-file formatting and whitespace.
+
+The first corrected API probe still failed one in 11.80s with fixed UNEXPECTED_CHILD_STDERR.
+The remaining harness setup forced worker DEBUG logging before API configuration. Its API
+branch now starts at the explicitly configured CRITICAL level, while worker mode retains DEBUG
+injection and the unchanged worker's suppression contract. Permanent guards cover both
+boundaries. No application logger, production dependency, assertion, authorization or handler
+was weakened or changed. Fresh guards/contracts passed all 217 in 4.32s, with Ruff/429-file
+formatting and whitespace.
+
+Corrected packaged startup and all twenty negatives passed: 21 passed, 98 deliberately
+deselected in 128.83s. The wrapper exited 0 after cleanup; fresh inventories found no owned
+containers/networks and both unrelated stopped containers preserved. All ten owned/496 other
+baseline hashes, 74 refs, three worktrees and three parent skill hashes matched afterward.
+This targeted selection is not a whole 119-scenario matrix or full regression receipt. Complete
+new/affected old targeted checks, regression/PostgreSQL/Compose/image, pinned frontend/browsers,
+exact independent review and every delivery/exact-main gate remain before acceptance. The
+earlier Windows native crash and historical browser failures remain unwaived; no later sprint,
+live operation, reviewer, commit or publication is started by this checkpoint.
+
+### 8B3.3 complete local validation — 2026-10-12
+
+The unchanged validation runner completed the new and affected old focused checks: 615 passed
+in 1354.00s. Ruff passed, 429 files passed formatting, and complete native regression passed
+all 3,567 cases in 2765.97s with the 19 existing SQLite datetime-adapter deprecation warnings.
+Whitespace, quiet Compose validation and the exact production-image build passed; the wrapper
+exited 0 after removing its disposable database. Independent collection confirms 152 backend
+files and all 597 PostgreSQL cases across 26 files, with no skipped cases in the full result.
+The new integration file has 119 cases, including eight parent-only malformed-snapshot negatives
+and packaged API startup; this does not mean 119 worker entrypoint journeys. All 117 private
+guard cases and 100 contracts also ran. The entire new matrix and affected retained signed
+fault/recovery, worker, authorization, startup and migration tests are covered, not a selected
+success subset. No production application, interface, schema, credential or dependency changes.
+
+Fresh inventories after backend validation found no owned containers or networks. All ten
+frozen owned hashes, 496 other baseline hashes, 74 branch refs, three worktrees and three parent
+skill hashes matched. Both unrelated baseline containers remained. The earlier native access
+violation retains its failed receipt and unconfirmed cause: this fresh native pass is not its
+diagnosis or a claim of repair, and no dependency pin, GC workaround, skip or assertion waiver
+was added.
+
+Network-disabled, read-only probes recorded actual installed metadata. The current validation
+image uses Python 3.12.15, boto3/botocore 1.43.112 and non-root `app` UID 100; the pinned browser
+image uses Python 3.12.3, boto3/botocore 1.43.111 and non-root `pwuser` UID 1001. Both report
+SQLAlchemy 2.1.4 and psycopg 3.3.6. These are separate environments, not native SDK 1.43.87 or
+interchangeable version evidence. The validation image is `sha256:68941cb9d083b4b64550264c9bf19befef968e62a35015c248989fd9c81dd693`;
+the existing pinned browser image is `sha256:aad7a3f33abd1eecef2f95c6d95b477b7b778318e0142073c9e4c07cf97c4349`.
+A network-disabled source probe matched all 247 current application, frontend, migration and
+browser-fixture files before reuse. Its initial PowerShell report incorrectly used `true`
+instead of `$true`; correcting only report formatting produced the complete matching receipt.
+No application or tested source was edited, and every probe removed its own container.
+
+The approved pinned Linux browser runner passed typecheck, lint, all 139 frontend tests/eight
+files, build and all 76 Chromium/Firefox journeys. Node 24.19.0 and pnpm 11.19.0 were observed.
+The first passing run's repetitive informational output exceeded one console chunk; a second
+fresh owned run on the same frozen source retained complete primary per-case results. Only
+repetitive already-sanitized informational display was filtered; no application logger, test,
+timeout, retry, browser flag or assertion changed. Both runs exited 0 and reported 76 passed
+in 1.7m. The second audit retained all 76 unique, consecutively numbered results, 38 per browser,
+one worker and zero retries/skips, along with all eight frontend file counts. Controlled signed
+login, bearer API, disposable PostgreSQL, scan/evidence/NIST rendering, expiry and logout passed.
+The accepted cleanup helper's six permanent unit cases remained in the full frontend gate.
+
+Fresh post-browser inventories found no owned validation/process/browser/probe resources or
+networks. The two unrelated baseline containers were preserved; a newly present unrelated
+application-test container was also left untouched. The old artifact-free main Firefox cause
+remains unconfirmed, the demonstrated layout/pointer race remains unfixed and the original
+scan-picker/back-navigation report remains for 8D. Linux browser passes do not repair them.
+
+The complete local gates precede exact-candidate independent review, both final-head candidate
+CI audits, ordinary expected-head guarded merge, exact-main CI and 8B closeout. This receipt
+does not accept 8B3.3/8B3/8B or complete Sprint 8. The worker remains default-off, scanner
+credentials read-only and finding/technical/remediation lifecycles separate; migration 0009,
+the approved handler, distinct authority, bounded global budgets and sticky quarantine are
+unchanged. No live AWS/IdP/IAM/secrets, operator database, deployment, rescan/UI implementation
+or Sprint 9+ work starts. Verification and document-writing skills guided the end-to-end gate
+and the evidence-qualified receipt while preserving repository history and identifiers.

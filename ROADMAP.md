@@ -15,7 +15,7 @@ Accepted migration head is `20261008_0009`; updated execution-history readers re
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
 **8B3 is IN PROGRESS**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-**8B3.2 is COMPLETE**; 8B3.3 and 8C--8E remain PLANNED; Sprint 9+ is unstarted.
+**8B3.2 is COMPLETE**; **8B3.3 is IN PROGRESS**; 8C--8E remain PLANNED; Sprint 9+ is unstarted.
 The active plan records the exact acceptance
 receipts and the bounded documentary reconciliation's entry gates before 8B3 advances.
 Existing branches, worktrees and unrelated skills are preserved.
@@ -34,6 +34,25 @@ is unfixed. Runtime baseline `7a36ddde`, migration 0009, scanner credentials, in
 finding/technical lifecycles are unchanged. This accepts combined offline fault/recovery tests,
 not enabled installed-process proof, rescan attribution, deployment or a live operation.
 Owning documentation/current-status reconciliation retains its own required gates before 8B3.3.
+
+Accepted 8B3.2 documentary baseline: `489b047562005a766734e9b571f7e307f8506102`
+([PR #65](https://github.com/jnc247s/cloud-security-automation/pull/65);
+exact first-attempt [main CI 38308762804](https://github.com/jnc247s/cloud-security-automation/actions/runs/38308762804)
+passed). Immutable-head REVIEW_PASS at `a050d70`, both candidate CI audits, ordinary guarded merge
+and complete exact-main audit passed with tree `b6d20232` unchanged. Each CI run passed 3,330
+backend cases, all 478 PostgreSQL cases/25 files without skips, 139 frontend cases/eight files,
+76 browser journeys (38 per project, one worker/zero retries) and all 18 quality/image/cleanup
+steps. This closes the preceding documentary entry gates, not historical failures or residual
+limits. The scoped [8B3.3 analysis preflight](docs/sprint-8b33-preflight.md) recommends one complete
+test-only installed-image/separate-process/security slice, starting with the signed process
+journey. No new product design choice is identified; standing accepted-design workflow applies.
+8B3.3 remains PLANNED at analysis; no implementation, live operation or 8C--8E/9+ work starts here.
+
+Subsequent 8B3.3 test-only implementation is IN PROGRESS under standing accepted-design
+authority and the completed preflight. The full installed-process/security/recovery matrix and
+all local/review/delivery/exact-main gates remain required; no partial journey is acceptance.
+Runtime, migration 0009, scanner credentials, findings and technical results are unchanged.
+No live operation, rescan/UI implementation, deployment or Sprint 9+ work is authorized.
 
 Prior accepted 8B2 documentary baseline: `04803adbb8baf825ec62f19c5b2bea015f907277` (PR #60;
 exact merged-main [CI 38171117595](https://github.com/jnc247s/cloud-security-automation/actions/runs/38171117595)
