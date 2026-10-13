@@ -27,6 +27,11 @@ from app.models.remediation_execution import (
     RemediationTargetReservation,
     RemediationWorkerClaim,
 )
+from app.models.remediation_verification import (
+    RemediationVerification,
+    RemediationVerificationGuard,
+    RemediationVerificationReceipt,
+)
 from app.models.resource import Resource, ResourceSnapshot
 from app.models.scan import Scan, ScanScopeManifest
 
@@ -53,6 +58,9 @@ __all__ = [
     "RemediationExecutionEvent",
     "RemediationTargetReservation",
     "RemediationWorkerClaim",
+    "RemediationVerification",
+    "RemediationVerificationGuard",
+    "RemediationVerificationReceipt",
     "ResourceRelationshipObservation",
     "ResourceSnapshot",
     "Scan",

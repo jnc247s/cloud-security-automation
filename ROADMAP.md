@@ -5,9 +5,10 @@ prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-13
 Current accepted implementation baseline: `main` at
-`d338040260de3954065a46041118504134bc320c` ([PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66);
-exact merged-main [CI 38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358)
-passed). PR #66 adds tests only; runtime baseline remains
+`771d630c9385c1155f981bd47e18d43e87fb2290` ([PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67);
+exact merged-main [CI 38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289)
+passed). PR #67 changes documentation/current-stage contracts only; installed-process test
+implementation remains `d3380402` (PR #66), and runtime baseline remains
 `7a36ddde20aafc60712b38165acd25460418ab92` (PR #59).
 Sprints 0--7 and 8A are COMPLETE; **8B is COMPLETE** as offline-accepted code and tests,
 not deployed or authorized for live execution. Sprint 8 remains IN PROGRESS.
@@ -18,14 +19,27 @@ Accepted migration head is `20261008_0009`; updated execution-history readers re
 with the worker disabled. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
 **8B3 is COMPLETE**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-**8B3.2 is COMPLETE**; **8B3.3 is COMPLETE**; 8C--8E remain PLANNED; Sprint 9+ is unstarted.
-The active plan records exact test acceptance and this bounded documentary closeout's own
-validation/review/delivery gates. No 8C preflight advances until those closeout gates pass.
+**8B3.2 is COMPLETE**; **8B3.3 is COMPLETE**; **8C is IN PROGRESS**; 8D/8E remain PLANNED;
+Sprint 9+ is unstarted.
+The 8B documentary closeout passed exact corrected-head REVIEW_PASS at `098111b7`, both
+first-attempt candidate primary audits, ordinary guarded merge and complete exact-main audit,
+with reviewed tree `87080be2` unchanged. All three runs passed the full 3,567/597/139/76 scope
+and all 18 quality/image/cleanup steps; the failed LOW review remains historical and closed.
+The user approved the recommended R1--R3 package on 2026-10-13 and requested continuation.
+The scoped [8C preflight](docs/sprint-8c-preflight.md) and approved predictions in the
+[active plan](docs/exec-plans/active/sprint-8.md#approved-8c-predictions) govern 8C1 implementation.
+8C1 is IN PROGRESS; 8C2 acceptance remains PLANNED. No 8C code is accepted or deployed yet.
+The corrected local 8C1 gate passed 101 focused checks and all 3,646 regression cases, including
+628 PostgreSQL cases/27 files, lint/format/Compose/image and isolated built-image startup checks.
+Exact-commit independent review, both candidate CI audits, guarded merge and exact-main CI remain
+required. The active plan retains all failed runs and the qualified headed-browser primary limit.
 Existing branches, worktrees and unrelated skills are preserved.
 
 Accepted installed-process/security test baseline: `d338040260de3954065a46041118504134bc320c`.
 Exact-head REVIEW_PASS at `5909ffdd`, both first-attempt candidate CI runs, ordinary guarded
-merge and complete first-attempt exact-main CI passed with reviewed tree `08bcaae8` unchanged.
+merge and complete first-attempt exact-main
+[CI 38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358)
+passed with reviewed tree `08bcaae8` unchanged.
 Each CI run passed all 3,567 backend cases/152 files, all 597 PostgreSQL cases/26 files without
 skips, 139 frontend cases/eight files, all 76 unique browser journeys (38 per project, one worker,
 zero retries) and all 18 quality/image/cleanup steps. Installed-image tests verify signed three-human

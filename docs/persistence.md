@@ -1,5 +1,28 @@
 # Persistence and assessment history
 
+## Linked verification 8C1 candidate
+
+The approved feature-branch candidate adds migration `20261013_0010` after immutable 0009.
+It introduces an independent singleton verification guard, protected immutable request/new-scan
+links and terminal receipts with paired audit and restrictive indexed foreign keys. Original
+migrations, journal bytes, scan schemas and finding/assessment enums are unchanged.
+
+Guard-first admission enforces actor/operation/key replay, three accepted attempts and one active
+scan per execution. Intent, exact retained-policy RUNNING scan and full attributed request/start
+audit commit before executor submission. Terminal result/failure and sealed receipt/audit commit
+in the normal persistence transaction. Lock order is verification guard -> Scan -> Resource ->
+Finding; original authority/execution history is read without write locks. No SQL transaction
+crosses external I/O. READ rejects pending caller writes and never creates receipts.
+
+Populated 0009 upgrade retains every old row. Whole-path downgrade refuses retained verification
+requests/receipts or either new audit type before any DDL; offline crossing requires an online
+history check. PostgreSQL excludes writers in the same consistent parent order. Do not erase
+history or bypass protections to force rollback. Candidate validation/review/delivery is pending;
+code acceptance will not authorize operator or production migration. See
+[operations](operations/remediation.md#linked-verification-8c1-candidate).
+
+## Accepted history
+
 Accepted Sprint 7 reads this retained history through generic services and the real bearer/READ
 API. The optional 7C `scan_id` resource-history filter reuses the existing unique index;
 omitting it preserves the accepted contract. The browser never reads PostgreSQL directly.

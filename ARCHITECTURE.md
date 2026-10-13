@@ -2,10 +2,13 @@
 
 This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions,
 with 8B3 offline acceptance below. The accepted implementation baseline is `main` commit
-`d338040260de3954065a46041118504134bc320c` (test-only PR #66; exact-head independent review,
-both first-attempt candidate CI audits and exact-main CI 38346013358 passed).
+`771d630c9385c1155f981bd47e18d43e87fb2290` (documentary PR #67; exact-head independent review,
+both first-attempt candidate CI audits and exact-main CI 38423060289 passed).
+Installed-process test implementation remains `d3380402` (PR #66).
 Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
+The approved 8C1 candidate below adds linked read-only verification on a feature branch;
+its integration/full/review/delivery gates are pending, not a new accepted-main baseline.
 That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
@@ -778,8 +781,33 @@ workload-role configuration remain deployment responsibilities.
   Production setup remains unimplemented.
 - No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
   authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
-  No public worker launch, linked exact-policy verification or remediation dashboard mutation
-  exists yet. Code acceptance grants no live AWS/IAM/secret/production authority.
+  No public worker launch, accepted linked exact-policy verification or remediation dashboard
+  mutation exists yet. Code acceptance grants no live AWS/IAM/secret/production authority.
+
+## Approved 8C1 linked verification candidate
+
+An independent default-off scope admits manual current EXECUTE requests for normal ACKNOWLEDGED
+executions only. Immutable request content binds validated original authority/acknowledgment,
+full retained profile/catalog/artifacts and original service/collector scope to a new RUNNING scan.
+Current proposal expiry, revocation or staleness does not renew a write or prevent observation.
+The existing read-only executor verifies expected provider Region and STS account before collecting
+facts; persistence independently checks the result identity and exact policy before writing.
+
+The separate verification guard is acquired before Scan -> Resource -> Finding locks. It owns no
+worker reservation or credential. No transaction spans provider construction, STS, collection or
+submission. Result/failure, immutable versioned verification receipt and paired audit commit
+together. Original collectors, rules, technical results and finding reconciliation are unchanged.
+
+VERIFIED requires complete strictly later EC2-004 PASS and complete unchanged KMS context.
+Equally proven FAIL is NOT_VERIFIED; partial/failed/unproven results or changed KMS context are
+INCONCLUSIVE. Technical PASS may resolve a finding while verification is INCONCLUSIVE. Receipts
+are historical observations, not causal attribution or proof of lasting state/key usability.
+Three explicit attempts and one active scan per execution are enforced; authorized actor/key
+replay never resubmits. Startup recovery reuses the same durable RUNNING read-only scan identity.
+READ preserves caller transactions and never seals history. Corrupt authority/link history fails
+closed; if it cannot support a trusted receipt, the attempt remains active for reviewed maintenance.
+See [API](docs/api.md#linked-remediation-verification-8c1-candidate) and
+[operations](docs/operations/remediation.md#linked-verification-8c1-candidate).
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

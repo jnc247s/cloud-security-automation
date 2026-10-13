@@ -9,7 +9,25 @@ from app.services.errors import (
     RemediationError,
     TechnicalPostureProvenanceError,
 )
+from app.services.remediation_verification_service import VerificationSubmissionError
 from app.services.scan_service import ScanSubmissionError
+
+
+async def verification_submission_error_handler(
+    _request: Request, error: VerificationSubmissionError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        headers={"Cache-Control": "no-store"},
+        content={
+            "detail": {
+                "code": "verification_submission_failed",
+                "message": "The verification was recorded but could not be submitted.",
+                "verification_id": str(error.verification_id),
+                "scan_id": str(error.scan_id),
+            },
+        },
+    )
 
 
 async def assessment_profile_conflict_handler(

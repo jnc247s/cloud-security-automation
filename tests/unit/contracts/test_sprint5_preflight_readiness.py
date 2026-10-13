@@ -451,14 +451,17 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "8B is COMPLETE and 8B3 is COMPLETE" in readme_status
     assert "8B3.1 is COMPLETE" in readme_status
-    assert "8B3.2 is COMPLETE; 8B3.3 is COMPLETE and 8C--8E remain PLANNED" in readme_status
+    assert "8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is IN PROGRESS" in readme_status
+    assert "8D/8E remain PLANNED" in readme_status
     assert "8B3 is IN PROGRESS" not in readme_status
     assert "8B3.3 is IN PROGRESS" not in readme_status
     assert "Sprint 8 remains IN PROGRESS" in readme_status
     assert "8B3.2 is IN PROGRESS" not in readme_status
     assert "8B3.2/8B3.3 and 8C--8E remain PLANNED" not in readme_status
     assert "8B3 and 8C--8E remain PLANNED" not in readme_status
-    assert "| 8C | Linked exact-policy read-only verification scan | PLANNED |" in sprint8
+    assert "| 8C | Linked exact-policy read-only verification scan | IN PROGRESS |" in sprint8
+    assert "### Approved 8C predictions" in sprint8
+    assert "**8C is IN PROGRESS**" in roadmap
     assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8
     assert (
         "| 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |" in sprint8

@@ -220,7 +220,7 @@ def test_postgres_worker_audit_alone_refuses_whole_path(postgres_engine, kind, d
         with pytest.raises(CommandError, match="blocked before revision 20261008_0009"):
             command.downgrade(migration_config(connection), destination)
         assert inspect(connection).get_table_names() == before
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261008_0009"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261013_0010"
         assert connection.scalar(text("SELECT COUNT(*) FROM audit_events")) == 1
 
 
@@ -240,7 +240,7 @@ def test_worker_writer_finishes_before_downgrade_preflight_checks_history(
         return value
 
     def capture(_connection, _cursor, sql, *_args):
-        if sql.startswith("LOCK TABLE remediation_admission_guard"):
+        if sql.startswith("LOCK TABLE remediation_verification_guard"):
             downgrade_waiting.set()
 
     def downgrade():
@@ -259,7 +259,7 @@ def test_worker_writer_finishes_before_downgrade_preflight_checks_history(
             assert columns() == before_columns
             assert (
                 connection.scalar(text("SELECT version_num FROM alembic_version"))
-                == "20261008_0009"
+                == "20261013_0010"
             )
             assert connection.scalar(text("SELECT COUNT(*) FROM remediation_worker_claims")) == 1
 

@@ -217,15 +217,17 @@ def exercise_failed_transition(engine, config_factory, direction):
             "remediation_admission_guard",
             "remediation_target_reservations",
             "remediation_worker_claims",
+            "remediation_verification_guard",
+            "remediation_verifications",
+            "remediation_verification_receipts",
         }
         if direction == "upgrade"
         else set()
     )
-    assert all(after_rows[table] == [] for table in added_tables - {"remediation_admission_guard"})
-    if "remediation_admission_guard" in added_tables:
-        assert after_rows["remediation_admission_guard"] == [
-            json.dumps({"guard_id": 1}, sort_keys=True)
-        ]
+    seeded_guards = {"remediation_admission_guard", "remediation_verification_guard"}
+    assert all(after_rows[table] == [] for table in added_tables - seeded_guards)
+    for guard in added_tables & seeded_guards:
+        assert after_rows[guard] == [json.dumps({"guard_id": 1}, sort_keys=True)]
 
 
 def exercise_constraint(engine):

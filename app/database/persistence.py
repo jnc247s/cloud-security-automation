@@ -382,6 +382,26 @@ def persist_scan_result(
         raise ScanPersistenceError("scan timestamps must enclose the observation time")
     if not scanner_version.strip() or not actor_type.strip() or not actor_id.strip():
         raise ScanPersistenceError("scanner version and audit actor must not be blank")
+    from app.services.remediation_verification_service import load_link, seal_receipt
+
+    # Verification coordination precedes Scan -> Resource -> Finding locks. Ordinary
+    # scans have no immutable marker and keep their previous schema/behavior contract.
+    verification = load_link(session, snapshot.scan_id, lock=True)
+    if verification is not None:
+        intent = verification[1]
+        if (
+            snapshot.account_id != intent.account_id
+            or snapshot.requested_region != intent.region
+            or tuple(scope.requested_services) != intent.requested_services
+            or tuple(scope.requested_collectors) != intent.requested_collectors
+            or set(scope.resource_types) != set(intent.resource_types)
+            or scope.requested_regions != (intent.region,)
+            or profile.profile_id != intent.profile_id
+            or profile.version != intent.profile_version
+            or profile.calculate_content_checksum() != intent.profile_sha256
+            or control_catalog_sha256(catalog) != intent.catalog_sha256
+        ):
+            raise ScanPersistenceError("verification result does not match its retained intent")
     targets = _validate_bundle(snapshot, scope, profile, catalog, assessments)
     input_inventory_sha256 = inventory_sha256(snapshot)
     assessment_documents = []
@@ -418,6 +438,7 @@ def persist_scan_result(
     if existing is not None:
         if existing.status is not ScanStatus.RUNNING:
             if existing.result_checksum == result_checksum:
+                seal_receipt(session, verification)
                 return existing
             raise ScanPersistenceError("scan ID already exists with different content")
         _validate_pending_scan(
@@ -608,6 +629,7 @@ def persist_scan_result(
     scan.completed_at = completed_at
     scan.result_checksum = result_checksum
     session.flush()
+    seal_receipt(session, verification)
     return scan
 
 
@@ -633,10 +655,14 @@ def fail_pending_scan(
         raise ScanPersistenceError("failure details and audit actor must not be blank")
     if len(failure_code) > 64 or len(failure_message) > 256:
         raise ScanPersistenceError("failure details exceed their safe response bounds")
+    from app.services.remediation_verification_service import load_link, seal_receipt
+
+    verification = load_link(session, scan_id, lock=True)
     scan = session.scalar(select(Scan).where(Scan.scan_id == scan_id).with_for_update())
     if scan is None:
         raise ScanPersistenceError("pending scan does not exist")
     if scan.status is not ScanStatus.RUNNING:
+        seal_receipt(session, verification)
         return scan
     if completed_at < _utc(scan.started_at):
         raise ScanPersistenceError("scan completion cannot precede its start")
@@ -668,6 +694,7 @@ def fail_pending_scan(
     scan.completed_at = completed_at
     scan.result_checksum = checksum
     session.flush()
+    seal_receipt(session, verification)
     return scan
 
 

@@ -267,6 +267,9 @@ class InProcessScanExecutor:
 
     def _execute(self, scan_id: UUID) -> None:
         with self._session_factory() as session:
+            from app.services.remediation_verification_service import load_link
+
+            verification = load_link(session, scan_id)
             scan = session.get(Scan, scan_id)
             if scan is None or scan.status is not ScanStatus.RUNNING:
                 return
@@ -295,10 +298,24 @@ class InProcessScanExecutor:
                     raise ValueError("unsupported enabled controls")
             except (ValueError, CatalogPersistenceError) as error:
                 raise ScanPersistenceError("pending scan catalog provenance is invalid") from error
+            if verification is not None:
+                intent = verification[1]
+                allowed = self._settings.remediation_verification
+                if not allowed.enabled or (allowed.account_id, allowed.region) != (
+                    intent.account_id,
+                    intent.region,
+                ):
+                    raise ScanPersistenceError(
+                        "linked verification scanner scope is disabled or mismatched"
+                    )
 
         requested_collectors, resource_types = _execution_scope_for(requested_services)
 
         provider = self._provider_factory(region)
+        if verification is not None and (
+            provider.region_name != intent.region or provider.account_id != intent.account_id
+        ):
+            raise ScanPersistenceError("linked verification scanner identity does not match")
         snapshot = InventoryService(
             provider,
             include_access_analyzer="access-analyzer" in requested_services,

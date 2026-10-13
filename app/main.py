@@ -13,6 +13,7 @@ from app.api.errors import (
     remediation_error_handler,
     scan_submission_error_handler,
     technical_posture_provenance_handler,
+    verification_submission_error_handler,
 )
 from app.api.router import api_router
 from app.config import get_settings
@@ -23,6 +24,7 @@ from app.services.errors import (
     RemediationError,
     TechnicalPostureProvenanceError,
 )
+from app.services.remediation_verification_service import VerificationSubmissionError
 from app.services.scan_executor import InProcessScanExecutor, ScanExecutor
 from app.services.scan_service import ScanSubmissionError
 
@@ -69,6 +71,9 @@ def create_app(
     application.add_exception_handler(EntityNotFoundError, entity_not_found_handler)
     application.add_exception_handler(RemediationError, remediation_error_handler)
     application.add_exception_handler(ScanSubmissionError, scan_submission_error_handler)
+    application.add_exception_handler(
+        VerificationSubmissionError, verification_submission_error_handler
+    )
     application.add_exception_handler(
         TechnicalPostureProvenanceError, technical_posture_provenance_handler
     )

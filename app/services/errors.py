@@ -22,6 +22,27 @@ class RemediationError(RuntimeError):
     """Closed, sanitized errors; never retain SQL, credentials or evidence in messages."""
 
     RESPONSES = {
+        "remediation_verification_disabled": (503, "Verification admission is disabled."),
+        "remediation_verification_executor_unavailable": (
+            503,
+            "The verification scanner is unavailable.",
+        ),
+        "remediation_verification_scope_conflict": (
+            409,
+            "The execution is outside the configured verification scope.",
+        ),
+        "remediation_verification_ineligible": (
+            409,
+            "Only normally acknowledged executions may be verified.",
+        ),
+        "remediation_verification_active": (
+            409,
+            "The execution already has an active verification scan.",
+        ),
+        "remediation_verification_limit": (
+            409,
+            "The execution has exhausted its verification attempts.",
+        ),
         "remediation_execution_disabled": (503, "Execution request admission is disabled."),
         "remediation_execution_capacity": (503, "Execution request capacity is unavailable."),
         "remediation_execution_scope_conflict": (

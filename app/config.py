@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     aws_profile: str | None = None
     remediation_admission_enabled: bool = False
+    remediation_verification_enabled: bool = False
+    remediation_verification_account_id: str | None = Field(default=None, pattern=r"^[0-9]{12}$")
+    remediation_verification_region: str | None = Field(
+        default=None, max_length=64, pattern=r"^[a-z]{2,8}(?:-[a-z0-9]+){1,6}-[0-9]+$"
+    )
     remediation_account_id: str | None = Field(default=None, pattern=r"^[0-9]{12}$")
     remediation_region: str | None = Field(
         default=None, max_length=64, pattern=r"^[a-z]{2,8}(?:-[a-z0-9]+){1,6}-[0-9]+$"
@@ -77,7 +82,18 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_remediation_admission(self):
         _ = self.remediation_admission
+        _ = self.remediation_verification
         return self
+
+    @property
+    def remediation_verification(self):
+        from app.remediation.verification_contracts import VerificationScope
+
+        return VerificationScope(
+            enabled=self.remediation_verification_enabled,
+            account_id=self.remediation_verification_account_id,
+            region=self.remediation_verification_region,
+        )
 
     @field_validator("app_env", "auth_mode", mode="before")
     @classmethod
