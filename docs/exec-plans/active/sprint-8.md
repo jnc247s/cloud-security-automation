@@ -3353,3 +3353,31 @@ publication and both candidate primary CI audits, expected-head guarded merge, t
 exact-main primary audit. The reviewed/merged source tree must match. 8C2 deep acceptance and
 8D/8E remain required afterward. No live AWS/IdP/IAM/secrets, operator migration, deployment,
 production or Sprint 9+ operation is authorized or performed.
+
+### 8C1 independent review correction
+
+Independent review of commit `213422201444d3a00f5734f0004bf3e77d30297e`, tree
+`4f7442178a427bc2564e64b1d84f098200e5088b`, returned REVIEW_FAIL with one LOW documentary
+finding. README's current status still described pending design decisions and unimplemented linked
+verification, contradicting the approved R1--R3 design and implemented-but-unaccepted 8C1 candidate.
+The current paragraph now distinguishes the historical preflight, approved design, unaccepted
+candidate and unimplemented UI. Original predictions and all failed validation receipts remain.
+No additional correctness, security or data-integrity finding was identified across the 44 paths.
+
+The reviewer independently passed 64 verification/service/migration/signed-API/status cases in
+53.04s, 101 repository contract/link cases in 0.37s, and 31 fresh disposable PostgreSQL cases in
+109.26s, with no pytest warnings or skips. Ruff, 442-file formatting and committed whitespace
+passed. Independent audit, not a rerun, confirmed the complete local 3,646-case/156-file primary,
+all 628 PostgreSQL cases/27 files, 119 installed-process and 117 guard cases, matching per-file
+counts, one 3,412.83s footer and 19 existing SQLite warnings. All 207 image-source hashes matched;
+only ROADMAP/active-plan prose differed from the full-run freeze at review entry.
+
+The first restricted review selection had no terminal result; the first internal-network database
+setup ran no tests. Neither is counted as passing. Owned database/network and ephemeral review
+directory cleanup passed; ignored primary logs remain. All 519 tracked hashes/index entries,
+147 existing refs (76 branches), three worktrees and three parent skills were preserved during
+review. The correction changes only README and this receipt; fresh contract/quality/whitespace
+checks and exact corrected-commit review remain required before publication. The qualified local
+browser evidence is unchanged; both complete candidate CI audits, ordinary guarded merge and
+exact-main CI remain required. 8C1/Sprint 8 remain IN PROGRESS and unaccepted; 8C2/8D/8E, operator
+migration, deployment, live providers and Sprint 9+ were not started.

@@ -70,8 +70,9 @@ migration 0009 are unchanged. The documentary closeout is accepted through
 [PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67) at `771d630c`, with
 exact-head REVIEW_PASS, both full first-attempt candidate audits and complete
 [exact-main CI 38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289).
-The [8C preflight](docs/sprint-8c-preflight.md) is analysis only and awaits design decisions;
-linked verification and UI mutation remain unimplemented.
+The [8C preflight](docs/sprint-8c-preflight.md) records the original analysis; its recommended
+R1--R3 design is now approved. Linked verification is implemented on the 8C1 candidate branch
+but remains unaccepted; review and delivery gates remain required. UI mutation remains unimplemented.
 Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
