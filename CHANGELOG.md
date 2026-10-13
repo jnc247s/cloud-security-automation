@@ -6,6 +6,27 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
+### Sprint 8B3.3 — accepted installed process and security tests
+
+- Accepted through [PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66) at
+  `d3380402`, exact-head REVIEW_PASS at `5909ffdd`, both first-attempt candidate CI audits,
+  ordinary guarded merge and complete
+  [exact-main CI 38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358).
+  Each run passed 3,567 backend cases (597 PostgreSQL, no skips), 139 frontend cases,
+  76 browser journeys (38 Chromium/38 Firefox, one worker/zero retries) and all 18 job steps.
+- Adds installed-image/separate-process signed authority journeys, strict synthetic transport,
+  independent committed audit/lock/source/runtime proofs, credential/configuration negatives,
+  fresh-process conservative recovery and packaged API no-writer startup. The 119 integration
+  cases include parent-only proof negatives and API startup, not 119 worker journeys.
+- Closes offline 8B acceptance with owning-document/stage-contract reconciliation; that closeout
+  retains its own gates before 8C preflight. Runtime, schema, API, authentication, dependencies,
+  frontend, scanner privileges and recovery semantics are unchanged. Worker/admission remain
+  default off; no deployed isolation, key/workload compatibility, live-provider or production
+  proof. Acknowledgment/readback remains unverified; finding/technical lifecycles are separate.
+- Historical failures and unfixed dashboard interactions remain recorded. Sprint 8 stays
+  IN PROGRESS; linked verification, browser mutation and whole-sprint acceptance remain 8C--8E.
+  No live operation, IAM/secret/deployment change, operator migration or Sprint 9+ is authorized.
+
 <a name="sprint-8b32--local-fault-and-recovery-test-candidate-not-accepted"></a>
 
 ### Sprint 8B3.2 — accepted combined fault and recovery tests
@@ -19,8 +40,9 @@ record the development history. Sprint state itself is authoritative only in
   cases, all 76 browser journeys and quality/image/cleanup gates. All three MEDIUM fault-test
   guards and the LOW cleanup-masking issue are independently closed.
 - Runtime, schema, API, authentication, scanner credentials and accepted recovery semantics are
-  unchanged. Enabled installed-process acceptance, linked verification, dashboard workflow and
-  whole Sprint 8 remain incomplete; no live operation is authorized.
+  unchanged. At 8B3.2 acceptance, installed-process acceptance remained later; it is now accepted
+  above. Linked verification, dashboard workflow and whole Sprint 8 remain incomplete;
+  no live operation is authorized.
 
 #### Historical preparation and failed validation
 
@@ -81,8 +103,9 @@ not current pending gates or evidence of a repaired application layout.
   quality/image/cleanup gates. The active plan owns detailed acceptance receipts.
 - No application, schema, interface, authentication, scanner credential, dependency, frontend or
   CI change. At 8B3.1 acceptance, combined fault/recovery and enabled separate-process acceptance
-  remained later slices; 8B3.2 is now accepted above. Enabled process acceptance, linked rescan,
-  dashboard and whole Sprint 8 remain incomplete. No live or production operation is authorized.
+  remained later slices; 8B3.2 and installed-process acceptance are now accepted above.
+  Linked rescan, dashboard and whole Sprint 8 remain incomplete. No live or production operation
+  is authorized.
 
 <a name="sprint-8b2--local-isolated-worker-candidate-acceptance-pending"></a>
 

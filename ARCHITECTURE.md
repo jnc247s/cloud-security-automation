@@ -1,9 +1,10 @@
 # Architecture
 
-This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions
-below. The accepted implementation baseline is `main` commit
-`7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59; exact-commit independent review,
-both final-head first-attempt CI runs and exact merged-main CI 37864100728 passed).
+This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions,
+with 8B3 offline acceptance below. The accepted implementation baseline is `main` commit
+`d338040260de3954065a46041118504134bc320c` (test-only PR #66; exact-head independent review,
+both first-attempt candidate CI audits and exact-main CI 38346013358 passed).
+Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
 That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
 6H added acceptance tests and documentation,
@@ -565,8 +566,9 @@ history guards protect the new rows; migration downgrade refuses populated autho
 before any DDL. See [persistence](docs/persistence.md) for the privilege-boundary limitations.
 
 The third distinct execution requester is implemented by accepted 8B1 below, not 8A.
-The isolated worker/write identity, fresh live preconditions, crash recovery and exact-policy
-read-only rescan remain later bounded slices. Stored approval is not permission to call AWS. See
+8A supplies no isolated worker/write identity, fresh live preconditions or crash recovery;
+accepted 8B implements those separate boundaries below. Exact-policy read-only rescan remains
+8C. Stored approval alone is not permission to call AWS. See
 [remediation operations](docs/operations/remediation.md).
 
 <a name="sprint-8b1-execution-admission--approved-local-candidate-pending-acceptance"></a>
@@ -628,6 +630,19 @@ Updated execution-history readers require 0009 even while the worker is disabled
 precede updated code, with separately authorized maintenance and no automatic operator migration.
 Strict READ clients must support retained v1/new v2 events and expanded phases before enablement.
 Current acceptance and later-slice gates remain owned by ROADMAP and the active plan.
+
+### Sprint 8B installed-process acceptance
+
+Test-only 8B3.1--8B3.3 acceptance culminates in PR #66 at `d3380402`, reviewed tree `08bcaae8`
+and complete exact-main CI 38346013358. Fresh installed-image processes exercise signed
+three-human admission, the unchanged worker/SDK, committed intent/audit and independently
+available PostgreSQL locks, negative credential/configuration paths, conservative recovery
+and packaged API startup without writer construction. Transport is synthetic and closed before
+entrypoint invocation; restricted test containers and installed source/version proofs are not
+deployed ECS task/host/network/IAM isolation. Runtime, schema and interfaces are unchanged.
+The worker remains default off; acknowledgment/readback remains unverified and cannot change
+findings or technical results. Linked exact-policy verification and browser mutation remain later
+8C/8D work. See the [operations acceptance boundary](docs/operations/remediation.md#accepted-installed-process-and-security-tests-8b33).
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at
 `/api/v1` and exposes scans, resources/history, assessments/evidence, source outcomes/artifacts,

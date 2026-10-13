@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E/8A/8B1/8B2 remain closed; integrated 8B acceptance is in progress.
+    # Accepted 7A--7E/8A/8B remain closed; verification/UI/whole-sprint gates are pending.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -422,30 +422,39 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "**8A is COMPLETE**" in roadmap
     assert (
-        "| 8B | Isolated single-action worker, fresh preconditions, recovery | IN PROGRESS |"
+        "| 8B | Isolated single-action worker, fresh preconditions, recovery | COMPLETE |"
         in sprint8
     )
+    assert "**8B is COMPLETE**" in roadmap
     assert "| 8B1 | COMPLETE |" in sprint8
     assert "**8B1 is COMPLETE**" in roadmap
     assert "| 8B2 | COMPLETE |" in sprint8
     assert "**8B2 is COMPLETE**" in roadmap
     assert "Accepted migration head is `20261008_0009`" in roadmap
     assert "ECS task-role-only credentials" in sprint8
-    assert "| 8B3 | IN PROGRESS |" in sprint8
-    assert "**8B3 is IN PROGRESS**" in roadmap
-    current_8b3 = sprint8.rsplit("### Current 8B3 acceptance status", 1)[1]
+    assert "| 8B3 | COMPLETE |" in sprint8
+    assert "**8B3 is COMPLETE**" in roadmap
+    current_8b3 = sprint8.rsplit("### Current 8B3 acceptance status", 1)[1].split(
+        "\n\nThe user requested", 1
+    )[0]
     assert "| 8B3.1 | COMPLETE |" in current_8b3
     assert "**8B3.1 is COMPLETE**" in roadmap
     assert "| 8B3.2 | COMPLETE |" in current_8b3
     assert "**8B3.2 is COMPLETE**" in roadmap
-    assert "| 8B3.3 | IN PROGRESS |" in current_8b3
-    assert "**8B3.3 is IN PROGRESS**" in roadmap
+    assert "| 8B3.3 | COMPLETE |" in current_8b3
+    assert "IN PROGRESS" not in current_8b3
+    assert "**8B3.3 is COMPLETE**" in roadmap
+    assert "`d338040260de3954065a46041118504134bc320c`" in roadmap
+    assert "CI 38346013358" in roadmap
     readme_status = (
         _read(ROOT / "README.md").split("## Status\n", 1)[1].split("Latest opt-in catalog", 1)[0]
     )
-    assert "8B3 is IN PROGRESS" in readme_status
+    assert "8B is COMPLETE and 8B3 is COMPLETE" in readme_status
     assert "8B3.1 is COMPLETE" in readme_status
-    assert "8B3.2 is COMPLETE; 8B3.3 is IN PROGRESS and 8C--8E remain PLANNED" in readme_status
+    assert "8B3.2 is COMPLETE; 8B3.3 is COMPLETE and 8C--8E remain PLANNED" in readme_status
+    assert "8B3 is IN PROGRESS" not in readme_status
+    assert "8B3.3 is IN PROGRESS" not in readme_status
+    assert "Sprint 8 remains IN PROGRESS" in readme_status
     assert "8B3.2 is IN PROGRESS" not in readme_status
     assert "8B3.2/8B3.3 and 8C--8E remain PLANNED" not in readme_status
     assert "8B3 and 8C--8E remain PLANNED" not in readme_status

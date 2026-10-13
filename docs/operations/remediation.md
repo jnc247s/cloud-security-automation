@@ -117,8 +117,8 @@ documentary prerequisite with exact merged-main CI 37706030374 at
 permission. Remaining slices need their own required
 review/delivery/acceptance. The active plan records
 standing approval for routine Sprint 8 workflow; architectural/design decisions and live operations are
-not pre-approved. Integrated 8B acceptance, rescan, UI and whole-Sprint-8 acceptance remain later
-bounded slices; no later sprint is started here.
+not pre-approved. Integrated 8B offline acceptance is recorded below; rescan, UI and whole-Sprint-8
+acceptance remain later bounded slices. No later sprint is started here.
 
 <a name="approved-local-8b1-admission--pending-acceptance"></a>
 
@@ -170,7 +170,8 @@ production work is authorized.
 
 The disabled-by-default one-job entry point is `python -m app.remediation.worker UUID`. It is
 never started by API, scanner or Compose startup. A default-off invocation exits with
-`WORKER_DISABLED` before database/credential lookup. Tests use fakes/Stubber only. Do not enable
+`WORKER_DISABLED` before database/credential lookup. Offline tests use synthetic metadata and
+SDK responses; installed-process tests intercept all transport before the real entrypoint. Do not enable
 the process or run a live job under implementation, test, CI or merge approval.
 
 After separate operational approval, the isolated process requires environment-only
@@ -204,7 +205,8 @@ does not clear quarantine. No repeat enable, lease/TTL release, force-clear API,
 manual finding resolution or rescan is provided. Separately authorized incident recovery must prove
 the old worker cannot resume and reconcile effect before any forward repair/release is designed.
 Preserve history and obtain approval; do not create another proposal to bypass a held target.
-8B3 whole-worker acceptance, 8C exact-policy read-only verification, 8D UI and 8E remain later gates.
+8B3 offline installed-worker acceptance is recorded below; 8C exact-policy read-only verification,
+8D UI and 8E remain later gates.
 
 <a name="integrated-offline-acceptance-candidate-8b31"></a>
 
@@ -254,5 +256,34 @@ passed. Each final run passed 3,330 backend tests (all 478 PostgreSQL cases with
 139 frontend cases, all 76 browser journeys and quality/image/cleanup gates. The original failed
 main Firefox cause remains unconfirmed; application layout is unchanged and its demonstrated
 pointer-interaction race remains for 8D. The active plan retains failures, exact acceptance and
-the documentary closeout's separate gates before 8B3.3. ROADMAP owns status.
+the preceding documentary closeout's separate gates before 8B3.3, now accepted below. ROADMAP owns status.
 No operator procedure, authorization boundary, scanner privilege or runtime behavior above changes.
+
+## Accepted installed process and security tests 8B3.3
+
+[PR #66](https://github.com/jnc247s/cloud-security-automation/pull/66) merged at
+`d338040260de3954065a46041118504134bc320c`, preserving reviewed tree `08bcaae8`, after exact-head
+REVIEW_PASS and both first-attempt candidate CI audits. Complete first-attempt
+[exact-main CI 38346013358](https://github.com/jnc247s/cloud-security-automation/actions/runs/38346013358)
+passed. Each run passed all 3,567 backend cases/152 files (597 PostgreSQL cases/26 files, no skips),
+139 frontend cases/eight files, all 76 browser journeys and all 18 quality/image/cleanup steps.
+
+Fresh restricted test containers run the unchanged installed worker and real SDK with synthetic
+temporary credentials and intercepted metadata/STS/EC2 transport. Tests bind signed three-human
+authority and public history to independent database/lock/commit probes, exact source fingerprints,
+actual installed versions, non-root/read-only/no-new-privileges runtime and narrow mounts.
+Configuration/credential-source, identity, transport and proof negatives fail closed; fresh-process
+crash/uncertain-effect recovery never resends enable or renews global read budgets/window.
+Packaged API startup preserves queued history and cannot construct/dispatch the writer.
+The 119-case integration file includes eight parent-only snapshot negatives and API startup;
+it is not 119 enabled-worker journeys. All retained signed fault/race/recovery tests also ran.
+
+This completes offline 8B acceptance, not deployment or live authorization. The owning-document
+closeout has its own validation/review/delivery gates before 8C preflight. Worker/admission stay
+default off; scanner permissions and migration 0009/schema-before-code are unchanged. Test-container
+restrictions do not establish physical ECS/task/host/network/IAM separation or distinct physical
+humans. Key/workload compatibility, live providers, operator maintenance and production remain
+separately gated. Acknowledgment/readback is not causation, attributed verification, technical PASS
+or finding resolution. No incident force-clear, TTL release, rollback, rescan or browser mutation
+is supplied. Historical failures and unfixed dashboard interaction limits remain in the active plan
+and [limitation register](known-limitations.md); passing Linux/installed-process tests do not fix them.

@@ -1,16 +1,17 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7 and accepted 8A/8B1/8B2 boundaries
-Accepted implementation baseline: `main` commit `7a36ddde20aafc60712b38165acd25460418ab92`
-(8B2 worker PR #59; exact-commit review and both final-head first-attempt CI runs passed)
-Last reconciled: 2026-10-08; exact merged-main CI 37864100728 passed
+Status: living model for accepted Sprints 0--7, 8A/8B1/8B2 and offline 8B3 acceptance
+Accepted implementation baseline: `main` commit `d338040260de3954065a46041118504134bc320c`
+(test-only PR #66; exact-head review and both first-attempt candidate CI audits passed)
+Last reconciled: 2026-10-13; complete exact-main CI 38346013358 passed
+Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59).
 Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
 test-launch isolation repair change no application runtime or security boundary. Original
 navigation/security assertions, COOP and other headers, dependencies, timeouts and zero retries
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
-and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B1/8B2 scope are owned
+and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B scope are owned
 by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
 policy verification and dashboard mutation remain unimplemented, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
@@ -264,7 +265,7 @@ and runtime workload identity are supplied by the deployment environment.
 | T17 | Browser token/code theft, XSS and evidence caching | High | Accepted 7B: opaque HttpOnly host-only cookies; server-only tokens; scoped CSP/no-store/no-referrer including unexpected 500s; text-only metadata rendering; clean callback redirect and error-path access-log query removal; identity-client debug redaction; no Web Storage/offline cache/third-party assets | Controlled-issuer acceptance only; live setup unvalidated. HttpOnly does not prevent malicious same-origin scripts making reads. Ingress must also omit callback queries; process memory and browser extensions remain trusted |
 | T18 | Login CSRF, code/session substitution and logout bypass | High | Accepted 7B: exact trusted origin, safely bounded ASCII CSRF/state, browser-bound one-time state/nonce/S256 PKCE; library ID-token verification plus real access-token verification; rotated opaque session; expiry and server-side logout | Controlled-issuer acceptance only; live setup unvalidated. Dashboard logout does not revoke the provider's login or issued token; short token lifetimes and live provider policy remain operator duties |
 | T19 | BFF confused deputy, session exhaustion and stale UI identity | High | Accepted 7B/7C: explicit typed bounded scan/report/investigation GET allowlist through real READ dependencies; mandatory expected public session context; credential-free ephemeral cross-tab clearing; no upstream/header/method injection; 100 pending/1,000 session caps; 15-minute idle/60-minute absolute/token expiry; final in-flight read check and frontend abort/generation guards | Controlled-issuer acceptance only; live setup unvalidated. Single process only, restart requires login, no distributed session store/rate limit/tenant isolation. Every reader still sees the same trusted organization's data; same-origin scripts/extensions remain trusted |
-| T20 | Remediation intent substitution, self-approval, stale authority or duplicate decisions | High | Accepted 8A: closed single-action inputs, immutable digest-bound provenance/KMS context, full verified identity separation without ADMIN bypass, 24-hour lifetime, any newer/equal target-control assessment and append-only finding-history governance invalidation, terminal decisions/revocation, capability-checked idempotency and atomic locked audit writes; READ rejects pending caller changes before SQL and suppresses autoflush | Initial review's two MEDIUM governance/caller-ownership defects are independently closed; exact-commit REVIEW_PASS and all PR #53 delivery/main-CI gates passed. IdP roles cannot establish distinct physical humans; no per-actor quotas/tenant policy. Stored checks are not live AWS checks. Accepted 8B1 adds database admission only; no AWS dispatch, write identity, worker recovery or verification scan exists yet |
+| T20 | Remediation intent substitution, self-approval, stale authority or duplicate decisions | High | Accepted 8A: closed single-action inputs, immutable digest-bound provenance/KMS context, full verified identity separation without ADMIN bypass, 24-hour lifetime, any newer/equal target-control assessment and append-only finding-history governance invalidation, terminal decisions/revocation, capability-checked idempotency and atomic locked audit writes; READ rejects pending caller changes before SQL and suppresses autoflush | Initial review's two MEDIUM governance/caller-ownership defects are independently closed; exact-commit REVIEW_PASS and all PR #53 delivery/main-CI gates passed. IdP roles cannot establish distinct physical humans; no per-actor quotas/tenant policy. Stored checks are not live AWS checks. Accepted 8B1 adds database admission; separate accepted default-off 8B2 supplies the worker/write identity/recovery described below. Neither code nor offline tests authorize live dispatch; attributed verification remains 8C |
 
 <a name="approved-local-8b1-admission-boundary--pending-acceptance"></a>
 
@@ -313,14 +314,22 @@ of those AWS paths.
 
 ## Future-boundary threats
 
-Accepted 8A addresses stored proposal/decision threats without AWS writes; see T20 and
-[operations](docs/operations/remediation.md). Execution will introduce live-state races, confused-
-deputy privilege escalation, ambiguous timeout effects and partial-change risks. Later approved
-slices must enforce a third distinct EXECUTE human principal, a separate narrowly scoped service
-write identity and explicit single-action handler, durable intent before a call, bounded retry/
-recovery and linked read-only exact-policy verification. No database lock provides AWS compare-
-and-swap. Finding status and technical results remain separate from all remediation authority and
-execution states; verification must not treat API success or resource absence as technical PASS.
+Accepted 8B offline tests culminate in installed-process/security acceptance through PR #66 and
+exact-main CI 38346013358. They corroborate the controls above using synthetic closed transport,
+independent committed-state/lock probes, installed source identity, restricted test containers,
+negative sources, fresh-process recovery and packaged API no-writer startup. They do not prove
+deployed ECS/task/host/network/IAM isolation, distinct physical humans, live IdP/AWS behavior,
+KMS usability or workload compatibility. Historical failed native/browser causes remain unconfirmed;
+passing later runs are not diagnoses or repairs of those causes or dashboard interaction limits.
+
+Accepted 8A addresses stored proposal/decision threats without AWS writes; accepted default-off
+8B adds third-human admission, separate scoped service identity, a single handler, committed
+intent and bounded conservative recovery. See [operations](docs/operations/remediation.md).
+Live-state races, confused-deputy escalation and ambiguous effects remain operational risks.
+Linked exact-policy read-only verification and its attribution remain future 8C boundaries;
+browser mutation remains 8D. No database lock provides AWS compare-and-swap or hard cancellation.
+Finding status and technical results remain separate from remediation states; verification must
+not treat API success, readback, resource absence or incomplete evidence as technical PASS.
 
 A future investigation agent may initially receive only controlled `READ` and `PROPOSE`
 interfaces. Treat cloud metadata as untrusted prompt content. An agent must not determine
