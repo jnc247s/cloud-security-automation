@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E/8A/8B remain closed; verification/UI/whole-sprint gates are pending.
+    # Accepted 7A--7E/8A/8B/8C1 remain closed; deep verification/UI/whole-sprint are pending.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -430,7 +430,8 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert "**8B1 is COMPLETE**" in roadmap
     assert "| 8B2 | COMPLETE |" in sprint8
     assert "**8B2 is COMPLETE**" in roadmap
-    assert "Accepted migration head is `20261008_0009`" in roadmap
+    assert "Accepted migration head is `20261013_0010`" in roadmap
+    assert "0009 requirement." in roadmap
     assert "ECS task-role-only credentials" in sprint8
     assert "| 8B3 | COMPLETE |" in sprint8
     assert "**8B3 is COMPLETE**" in roadmap
@@ -460,6 +461,17 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert "8B3.2/8B3.3 and 8C--8E remain PLANNED" not in readme_status
     assert "8B3 and 8C--8E remain PLANNED" not in readme_status
     assert "| 8C | Linked exact-policy read-only verification scan | IN PROGRESS |" in sprint8
+    assert "| 8C1 | Complete linked-verification vertical path | COMPLETE |" in sprint8
+    assert (
+        "| 8C2 | Integrated fault/restart, policy and historical-scope acceptance | IN PROGRESS |"
+        in sprint8
+    )
+    assert "**8C1 is COMPLETE**" in roadmap
+    assert "`76e0f7866dddb41d3ccd61913fbbeb36d594808e`" in roadmap
+    assert "CI 38483896952" in roadmap
+    assert "8C1 is COMPLETE" in readme_status
+    assert "**8C2 is IN PROGRESS**" in roadmap
+    assert "8C2 deep acceptance is IN PROGRESS" in readme_status
     assert "### Approved 8C predictions" in sprint8
     assert "**8C is IN PROGRESS**" in roadmap
     assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8

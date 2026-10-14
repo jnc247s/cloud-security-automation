@@ -6,16 +6,33 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8C1 linked verification candidate — in progress
+### Sprint 8C2 integrated verification acceptance candidate
+
+- Adds signed authority, installed write/reader, exact retained-policy, fault/race/restart and
+  immutable receipt acceptance coverage: 68 new PostgreSQL journeys and 40 independent reader
+  harness guards. No scanner write identity, API/schema/default change or operator migration.
+- Repairs a cached RUNNING scan read after an atomic terminal scan/receipt commit. The bounded
+  refresh adds no writes, row locks, caller commit/rollback or changed verdict semantics.
+- Local validation passed 3,755 backend cases (696 PostgreSQL), 139 frontend cases and all 76
+  retained browser journeys. Independent review and complete delivery gates remain pending;
+  this candidate is not accepted on main. Sprint 8 and 8C remain IN PROGRESS.
+
+<a name="sprint-8c1-linked-verification-candidate--in-progress"></a>
+### Sprint 8C1 linked verification
 
 - Approved R1--R3 design adds manual current-EXECUTE exact-policy read-only scans after normal
   ACKNOWLEDGED history, independent default-off account/Region enablement, immutable audited
   requests and separate sealed VERIFIED/NOT_VERIFIED/INCONCLUSIVE receipts.
-- Candidate migration `20261013_0010`, three explicit attempts/one active, actor/key replay,
+- Accepted migration `20261013_0010`, three explicit attempts/one active, actor/key replay,
   before-collection scanner identity checks and atomic result/failure/receipt persistence.
   Scanner credentials, worker/quarantine semantics, technical results and findings stay separate.
-- Not accepted or deployed: integration/full/security/review/delivery gates remain pending.
-  Dashboard/general scan-start work remains 8D; Sprint 9+ and live operations are unstarted.
+- Accepted through [PR #68](https://github.com/jnc247s/cloud-security-automation/pull/68) at
+  `76e0f786`, corrected-head REVIEW_PASS at `bbb0f6a`, both complete first-attempt candidate audits,
+  ordinary guarded merge and complete [exact-main CI 38483896952](https://github.com/jnc247s/cloud-security-automation/actions/runs/38483896952).
+  Every run passed 3,646 backend cases (628 PostgreSQL), 139 frontend cases, 76 browser journeys
+  and all 18 steps without skips/retries. Historical failures and unproven browser causes remain.
+- Default off and undeployed; 8C2 deep acceptance is in progress. Dashboard/general scan-start
+  work remains 8D; Sprint 9+ and live operations are unstarted.
 
 ### Sprint 8B documentary closeout
 

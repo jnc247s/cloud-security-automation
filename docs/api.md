@@ -327,14 +327,15 @@ CLAIMED/WRITE_INTENT/QUARANTINED retain the reservation. NO_WRITE releases only 
 ownership; normal ACKNOWLEDGED means a completed call with durable receipt and releases ordinary
 ownership, not verification. A late acknowledgment/true observation never clears quarantine or
 its reservation/capacity. READ remains non-mutating and may show expiry/revocation after intent.
-Neither acknowledgment nor desired readback sets technical PASS or resolves findings. The approved
-8C1 candidate below adds a separate read-only rescan contract; 8D dashboard mutation remains
+Neither acknowledgment nor desired readback sets technical PASS or resolves findings. Accepted
+8C1 below adds a separate read-only rescan contract; 8D dashboard mutation remains
 unimplemented. The scanner still uses read-only credentials.
 
-## Linked remediation verification 8C1 candidate
+<a name="linked-remediation-verification-8c1-candidate"></a>
+## Linked remediation verification 8C1
 
-This feature-branch interface is implemented for validation, not accepted-main or enabled behavior.
-It requires candidate migration `20261013_0010`. Scanner credentials remain read-only; no caller
+This interface is accepted through PR #68 and complete exact-main CI 38483896952, but remains
+default off and undeployed. It requires migration `20261013_0010`. Scanner credentials remain read-only; no caller
 write identity, arbitrary AWS action, profile override or existing-scan attachment is accepted.
 
 | Route | Capability | Contract |
@@ -395,7 +396,7 @@ verification service/submission errors use `Cache-Control: no-store`.
 | exceptions | `finding_id`, `resource_id`, `control_id`, `status` |
 | remediations (accepted 8A) | `finding_id`, `account_id` (12 digits) |
 | remediation-executions (accepted 8B1) | `proposal_id` UUID |
-| remediation-verifications (8C1 candidate) | `execution_id` UUID |
+| remediation-verifications (accepted 8C1) | `execution_id` UUID |
 
 Accepted 6G adds the public control category `governance`. Existing category values, response
 shapes, capabilities and generic control filtering are unchanged. The category migration and

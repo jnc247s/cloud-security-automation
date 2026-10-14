@@ -1,11 +1,11 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7, 8A/8B1/8B2 and offline 8B3 acceptance
-Accepted implementation baseline: `main` commit `771d630c9385c1155f981bd47e18d43e87fb2290`
-(documentary PR #67; exact-head review and both first-attempt candidate CI audits passed)
-Last reconciled: 2026-10-13; complete exact-main CI 38423060289 passed
+Status: living model for accepted Sprints 0--7, 8A/8B and default-off 8C1
+Accepted implementation baseline: `main` commit `76e0f7866dddb41d3ccd61913fbbeb36d594808e`
+(PR #68; corrected-head REVIEW_PASS and both first-attempt candidate primary audits passed)
+Last reconciled: 2026-10-14 UTC; complete exact-main CI 38483896952 passed
 Installed-process test implementation remains `d3380402` (PR #66).
-Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59).
+Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
 
 7E whole-sprint acceptance is COMPLETE; combined tests/documentation and a bounded Firefox
@@ -14,8 +14,8 @@ navigation/security assertions, COOP and other headers, dependencies, timeouts a
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
 and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B scope are owned
 by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
-policy verification has an approved unaccepted 8C1 candidate; dashboard mutation remains
-unimplemented, and residual risks remain open.
+policy verification is offline-accepted in default-off 8C1. 8C2 deep acceptance is in progress;
+dashboard mutation remains unimplemented, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
 ## Scope and security objectives
@@ -328,7 +328,7 @@ Accepted 8A addresses stored proposal/decision threats without AWS writes; accep
 8B adds third-human admission, separate scoped service identity, a single handler, committed
 intent and bounded conservative recovery. See [operations](docs/operations/remediation.md).
 Live-state races, confused-deputy escalation and ambiguous effects remain operational risks.
-Linked exact-policy read-only verification has the approved unaccepted 8C1 boundary below;
+Linked exact-policy read-only verification has the accepted default-off 8C1 boundary below;
 browser mutation remains 8D. No database lock provides AWS compare-and-swap or hard cancellation.
 Finding status and technical results remain separate from remediation states; verification must
 not treat API success, readback, resource absence or incomplete evidence as technical PASS.
@@ -337,15 +337,17 @@ A future investigation agent may initially receive only controlled `READ` and `P
 interfaces. Treat cloud metadata as untrusted prompt content. An agent must not determine
 technical results, official mappings, evidence sufficiency, authorization, or remediation success.
 
-## Approved 8C1 candidate threats
+<a name="approved-8c1-candidate-threats"></a>
+## Accepted 8C1 threats and controls
 
-The unaccepted linked-verification candidate addresses wrong scanner identity before collection,
+The accepted linked-verification path addresses wrong scanner identity before collection,
 policy/target/acknowledgment substitution, stale/equal observation, fabricated success from partial
 evidence, changed KMS context, duplicate admission and receipt/result split commits. Closed inputs,
 validated retained authority and exact policy/scope, pre-collection identity checks, independent
 bundle checks, protected paired request/receipt audit, bounded actor/key replay and guard-first
-atomic terminalization provide the intended mitigations. Required PostgreSQL, fault/recovery,
-full regression, independent review and delivery gates remain pending.
+atomic terminalization provide the intended mitigations. Required 8C1 PostgreSQL, regression,
+independent review and delivery gates passed. Separate 8C2 integrated fault/restart,
+deployment-policy and historical-scope acceptance is in progress, not yet accepted.
 
 Residuals include privileged INSERT/schema control, eventual consistency, observation races,
 noncausal attribution, full-scope read cost and normal effects on other findings, single-process

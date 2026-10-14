@@ -282,20 +282,24 @@ This completes offline 8B acceptance, not deployment or live authorization. The 
 closeout passed its review/candidate/guarded-merge/exact-main gates through
 [PR #67](https://github.com/jnc247s/cloud-security-automation/pull/67) at `771d630c`, exact-main
 CI 38423060289. The [8C preflight](../sprint-8c-preflight.md) R1--R3 recommendations were approved
-on 2026-10-13; linked verification is an unaccepted candidate below. Worker/admission stay
-default off; scanner permissions and migration 0009/schema-before-code are unchanged. Test-container
+on 2026-10-13; linked verification is now accepted in default-off 8C1 below. Worker/admission stay
+default off; scanner permissions are unchanged. Migration 0010 is now the accepted head;
+existing execution-history compatibility remains as documented for 0009. Test-container
 restrictions do not establish physical ECS/task/host/network/IAM separation or distinct physical
 humans. Key/workload compatibility, live providers, operator maintenance and production remain
 separately gated. Acknowledgment/readback is not causation, attributed verification, technical PASS
-or finding resolution. No incident force-clear, TTL release, rollback, rescan or browser mutation
-is supplied. Historical failures and unfixed dashboard interaction limits remain in the active plan
+or finding resolution. 8B supplies no incident force-clear, TTL release, rollback or rescan;
+8C1 now supplies the separate read-only verification scan, not browser mutation.
+Historical failures and unfixed dashboard interaction limits remain in the active plan
 and [limitation register](known-limitations.md); passing Linux/installed-process tests do not fix them.
 
-## Linked verification 8C1 candidate
+<a name="linked-verification-8c1-candidate"></a>
+## Linked verification 8C1
 
 Use the generic bearer [verification API](../api.md#linked-remediation-verification-8c1-candidate)
-for a new read-only full-original-scope scan after normal ACKNOWLEDGED history. The unaccepted
-candidate requires migration `20261013_0010`; operator database maintenance is separately
+for a new read-only full-original-scope scan after normal ACKNOWLEDGED history. Accepted through
+PR #68 and complete exact-main CI 38483896952, it remains default off and undeployed. It requires
+migration `20261013_0010`; operator database maintenance is separately
 authorized and never automatic from code acceptance. `/ready` remains connectivity-only.
 
 `REMEDIATION_VERIFICATION_ENABLED` defaults false. Enabling requires explicit

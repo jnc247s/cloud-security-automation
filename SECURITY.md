@@ -1,11 +1,11 @@
 # Security policy and engineering boundaries
 
-This document defines permanent repository security rules for accepted Sprints 0--7 and
-Sprint 8A/8B1/8B2 boundaries and 8B3 offline acceptance below. The accepted implementation
-`main` baseline is `771d630c9385c1155f981bd47e18d43e87fb2290` (documentary PR #67;
-exact-head independent review, both first-attempt candidate CI audits and exact-main CI
-38423060289 passed). Installed-process test implementation remains `d3380402` (PR #66).
-Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 PR #59).
+This document defines permanent repository security rules for accepted Sprints 0--7,
+Sprint 8A/8B and default-off 8C1. The accepted implementation
+`main` baseline is `76e0f7866dddb41d3ccd61913fbbeb36d594808e` (PR #68;
+corrected-head REVIEW_PASS, both first-attempt candidate primary audits and complete exact-main CI
+38483896952 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
+Standalone write-worker code remains unchanged since `7a36ddde` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
 That baseline includes the versioned assessment
@@ -548,7 +548,8 @@ no production override or scanner write path is added. Physical ECS/task/host/ne
 role governance, key/workload compatibility and live-provider validation remain separately required.
 Unknown effects still hold quarantine/reservations; readback does not verify or resolve findings.
 
-## Approved 8C1 verification candidate boundary
+<a name="approved-8c1-verification-candidate-boundary"></a>
+## Accepted 8C1 verification boundary
 
 Manual verification requires current EXECUTE but grants no AWS write and does not alter original
 three-human separation. Normal ACKNOWLEDGED is eligible; quarantine, including a late receipt,
@@ -568,8 +569,9 @@ Verification is independent of execution, finding and technical status. Complete
 with unchanged complete KMS context is a historical VERIFIED observation, not evidence of worker
 causation, existing-volume encryption, usable key access or lasting state. KMS drift can remain
 INCONCLUSIVE even when unchanged technical policy legitimately resolves the finding. Full-scope
-scans may affect other findings normally. Candidate validation/review/delivery remains pending;
-no operator migration, credential, IAM, live-provider or production authority is granted.
+scans may affect other findings normally. 8C1 validation/review/delivery passed; separate 8C2
+test-only deep acceptance is in progress. No operator migration, credential, IAM, live-provider or
+production authority is granted.
 
 ## Production authorization
 

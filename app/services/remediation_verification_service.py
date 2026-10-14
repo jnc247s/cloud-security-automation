@@ -271,6 +271,12 @@ class RemediationVerificationService:
             if scan.status is not ScanStatus.RUNNING:
                 raise RemediationError("remediation_provenance_conflict")
             return None, None, None
+        # READ COMMITTED can load RUNNING, then observe the writer's atomic receipt
+        # commit in a later statement. The receipt anchors a committed terminal scan;
+        # refresh that mutable row without locks, writes or changing caller ownership.
+        # A genuinely inconsistent retained RUNNING row still fails build_receipt below.
+        if scan.status is ScanStatus.RUNNING:
+            self.session.refresh(scan)
         try:
             receipt = VerificationReceipt.model_validate(receipt_row.content)
             expected = build_receipt(self.session, row, content, proposal, scan)

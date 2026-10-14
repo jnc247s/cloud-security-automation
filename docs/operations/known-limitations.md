@@ -38,9 +38,10 @@ live provider/production validation remain absent.
 
 8A adds proposal/decision/idempotency history, paired audit and bearer APIs, not execution or a
 dashboard workflow. It is accepted through PR #53 with exact-commit REVIEW_PASS, both final-head
-CI and green exact main CI 37693245169. No write credentials, worker, live AWS checks, recovery
-attempts, linked rescan or
-automatic finding resolution are implemented. See [remediation operations](remediation.md).
+CI and green exact main CI 37693245169. 8A itself supplies no write credentials, worker, live AWS
+checks, recovery attempts or linked rescan. Later accepted 8B supplies its separate worker;
+accepted 8C1 supplies linked read-only verification, not direct finding edits or live authority.
+See [remediation operations](remediation.md).
 
 Three distinct verified issuer/subject identities are the approved end-state human separation;
 8A enforces proposer versus initial approver/rejector, including ADMIN; accepted 8B1 adds the third
@@ -121,8 +122,9 @@ requests and holds reservation/capacity; incident recovery needs separate human 
 proof of quiescence/effect, with no force-clear endpoint or compensating disable.
 
 EC2 readback proves neither causation nor key/workload usability. Durable three-poll/thirty-second
-reads are unverified; 8C exact-policy rescan, 8D mutation UI and whole-Sprint-8 acceptance remain
-unimplemented. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
+reads remain unverified within worker history. Accepted default-off 8C1 now provides a separate
+exact-policy rescan and sealed historical verdict; 8C2 deep acceptance, 8D mutation UI and
+whole-Sprint-8 acceptance remain pending. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
 limitations, not fixes claimed by this slice. New enum/event versions require client coordination;
 new code's execution-history service requires 0009 schema and never auto-migrates. Backups, rollout,
 production PostgreSQL grants and offline/populated downgrade procedures remain separately gated.
@@ -136,8 +138,26 @@ enablement. The current migration, strict-client event compatibility and schema-
 requirements remain. Complete provider primary audits retain all 3,567 backend cases, including
 597 PostgreSQL cases without skips, and all 76 browser journeys; incomplete local primary-log
 retention and historical failed receipts retain their original limits, not inferred causes.
-The owning-document closeout remains separately gated before 8C preflight; whole Sprint 8 is
-incomplete until verification, dashboard workflow and whole-sprint acceptance succeed.
+The owning-document closeout passed through PR #67 and exact-main CI 38423060289. Whole Sprint 8
+is incomplete until 8C2 deep acceptance, dashboard workflow and whole-sprint acceptance succeed.
+
+### Accepted linked verification 8C1 — MEDIUM
+
+PR #68 and complete exact-main CI 38483896952 accept the default-off linked-verification path,
+not deployment or live-provider validation. New verification history requires migration 0010;
+operator maintenance is separately authorized and never automatic. Manual current EXECUTE admits
+normal ACKNOWLEDGED history only, with three explicit attempts and one active scan. Authorized
+actor/key replay returns original history without submission; READ cannot repair or seal it.
+
+The scan uses full retained policy and service/collector scope with independent before-collection
+and before-persistence identity checks. Its historical verdict remains separate from technical
+results and findings. Eventual consistency, observation races, noncausal attribution, key/workload
+usability and full-scope read cost remain limits. Technical PASS with changed KMS context may
+resolve the finding while verification stays INCONCLUSIVE. Corrupt history may leave RUNNING
+capacity held for separately reviewed maintenance. No quarantine release or another write follows
+from a receipt. Single-process recovery remains the existing executor boundary; deep integrated
+fault/restart, deployment-policy and historical-scope acceptance is still 8C2, not already proved
+by aggregate green counts. The user's dashboard report remains untriaged for 8D.
 
 ### Governance category transition — ACCEPTED 6G
 
@@ -400,8 +420,9 @@ must not infer reverse edges or treat an unresolved target reference as an obser
 
 Capacity is two workers and 32 outstanding scans per process. Recovery queries persisted
 `RUNNING` work at startup and drains the discovered backlog, but there is no periodic recovery,
-claim lease, heartbeat, request quota, per-user rate limit, cancellation, timeout, or caller
-idempotency key. Multiple API processes can perform duplicate AWS work and have independent
+claim lease, heartbeat, request quota, per-user rate limit, cancellation or timeout. Ordinary
+scan creation has no caller idempotency key; accepted 8C1 adds scoped replay only for its separate
+verification request. Multiple API processes can perform duplicate AWS work and have independent
 capacity limits.
 
 Run one API process. Before horizontal scaling, implement a durable ownership/lease-capable
@@ -528,5 +549,6 @@ global IdP logout, account/tenant isolation or validated production Cognito tena
 There is no production Terraform deployment, finding/exception mutation API, generic distributed
 worker, multi-account orchestration or AI runtime. Accepted 8A/B1 human authority/admission and
 accepted isolated worker code in 8B2 add no browser mutations; the worker remains disabled and
-undeployed. Public worker launch, linked exact-policy verification and remediation UI remain
-later slices. Their absence is roadmap scope, not an incomplete Sprint 4 implementation.
+undeployed. Accepted default-off 8C1 adds linked exact-policy verification; 8C2 deep acceptance
+remains pending. Public worker launch and remediation UI remain later scope. These limits do not
+make the accepted Sprint 4 implementation incomplete.

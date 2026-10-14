@@ -113,7 +113,9 @@ class ControlledIssuer:
 
 
 @contextmanager
-def dashboard_client(engine, monkeypatch, tmp_path, *, raise_server_exceptions=True):
+def dashboard_client(
+    engine, monkeypatch, tmp_path, *, raise_server_exceptions=True, executor_factory=None
+):
     static = tmp_path / "static"
     static.mkdir()
     (static / "assets").mkdir()
@@ -156,7 +158,7 @@ def dashboard_client(engine, monkeypatch, tmp_path, *, raise_server_exceptions=T
     monkeypatch.setattr(boto3.session.Session, "client", forbidden)
     get_settings.cache_clear()
     _oidc_backend.cache_clear()
-    executor = RecordingExecutor()
+    executor = (executor_factory or RecordingExecutor)()
     try:
         application = create_app(executor_factory=lambda: executor)
         assert application.dependency_overrides == {}
