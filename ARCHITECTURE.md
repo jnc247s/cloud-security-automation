@@ -1,14 +1,13 @@
 # Architecture
 
-This document describes accepted Sprints 0--7 and the accepted Sprint 8A/8B1/8B2 extensions,
-with 8B3 offline acceptance below. The accepted implementation baseline is `main` commit
-`771d630c9385c1155f981bd47e18d43e87fb2290` (documentary PR #67; exact-head independent review,
-both first-attempt candidate CI audits and exact-main CI 38423060289 passed).
+This document describes accepted Sprints 0--7, Sprint 8A/8B and the default-off 8C1 extension.
+The accepted implementation baseline is `main` commit
+`76e0f7866dddb41d3ccd61913fbbeb36d594808e` (PR #68; corrected-head independent REVIEW_PASS,
+both first-attempt candidate primary audits and complete exact-main CI 38483896952 passed).
 Installed-process test implementation remains `d3380402` (PR #66).
-Runtime remains `7a36ddde20aafc60712b38165acd25460418ab92` (8B2 worker PR #59).
+Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
-The approved 8C1 candidate below adds linked read-only verification on a feature branch;
-its integration/full/review/delivery gates are pending, not a new accepted-main baseline.
+Accepted 8C1 below adds linked read-only verification; 8C2 test-only deep acceptance is in progress.
 That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
@@ -290,7 +289,8 @@ does not call `metadata.create_all()`. Revisions are linear:
     -> 20261001_0006  additive governance category (accepted predecessor)
     -> 20261006_0007  append-only remediation authority (accepted predecessor)
     -> 20261007_0008  execution admission and journal (accepted predecessor)
-    -> 20261008_0009  private worker coordination/versioned journal (accepted head)
+    -> 20261008_0009  private worker coordination/versioned journal (accepted predecessor)
+    -> 20261013_0010  immutable linked verification/coordination (accepted head)
 ```
 
 The established revisions remain unchanged. The Alembic execution environment preflights any
@@ -644,8 +644,9 @@ and packaged API startup without writer construction. Transport is synthetic and
 entrypoint invocation; restricted test containers and installed source/version proofs are not
 deployed ECS task/host/network/IAM isolation. Runtime, schema and interfaces are unchanged.
 The worker remains default off; acknowledgment/readback remains unverified and cannot change
-findings or technical results. Linked exact-policy verification and browser mutation remain later
-8C/8D work. See the [operations acceptance boundary](docs/operations/remediation.md#accepted-installed-process-and-security-tests-8b33).
+findings or technical results. Separate accepted 8C1 now supplies linked exact-policy verification;
+8C2 deep acceptance is in progress; 8D browser mutation remains planned. See the
+[operations acceptance boundary](docs/operations/remediation.md#accepted-installed-process-and-security-tests-8b33).
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at
 `/api/v1` and exposes scans, resources/history, assessments/evidence, source outcomes/artifacts,
@@ -781,10 +782,11 @@ workload-role configuration remain deployment responsibilities.
   Production setup remains unimplemented.
 - No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
   authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
-  No public worker launch, accepted linked exact-policy verification or remediation dashboard
-  mutation exists yet. Code acceptance grants no live AWS/IAM/secret/production authority.
+  Accepted 8C1 adds default-off linked exact-policy verification. No public worker launch or
+  remediation dashboard mutation exists. Code acceptance grants no live AWS/IAM/secret/production authority.
 
-## Approved 8C1 linked verification candidate
+<a name="approved-8c1-linked-verification-candidate"></a>
+## Accepted 8C1 linked verification
 
 An independent default-off scope admits manual current EXECUTE requests for normal ACKNOWLEDGED
 executions only. Immutable request content binds validated original authority/acknowledgment,
@@ -808,6 +810,12 @@ READ preserves caller transactions and never seals history. Corrupt authority/li
 closed; if it cannot support a trusted receipt, the attempt remains active for reviewed maintenance.
 See [API](docs/api.md#linked-remediation-verification-8c1-candidate) and
 [operations](docs/operations/remediation.md#linked-verification-8c1-candidate).
+
+Local 8C2 repair candidate: after a sealed receipt becomes visible, reread a cached RUNNING scan
+before validating terminal proof. PostgreSQL READ COMMITTED can otherwise combine an earlier
+RUNNING observation with the later atomic scan/receipt commit. The refresh is read-only and adds
+no row lock, transaction ownership change or historical repair; genuine inconsistent retained
+state still fails closed. Full candidate acceptance/review/delivery is pending.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

@@ -1,8 +1,9 @@
 # Persistence and assessment history
 
-## Linked verification 8C1 candidate
+<a name="linked-verification-8c1-candidate"></a>
+## Linked verification 8C1
 
-The approved feature-branch candidate adds migration `20261013_0010` after immutable 0009.
+Accepted 8C1 adds migration `20261013_0010` after immutable 0009, now the accepted head.
 It introduces an independent singleton verification guard, protected immutable request/new-scan
 links and terminal receipts with paired audit and restrictive indexed foreign keys. Original
 migrations, journal bytes, scan schemas and finding/assessment enums are unchanged.
@@ -17,9 +18,15 @@ crosses external I/O. READ rejects pending caller writes and never creates recei
 Populated 0009 upgrade retains every old row. Whole-path downgrade refuses retained verification
 requests/receipts or either new audit type before any DDL; offline crossing requires an online
 history check. PostgreSQL excludes writers in the same consistent parent order. Do not erase
-history or bypass protections to force rollback. Candidate validation/review/delivery is pending;
-code acceptance will not authorize operator or production migration. See
+history or bypass protections to force rollback. 8C1 validation/review/delivery passed through
+PR #68 and complete exact-main CI 38483896952. Code acceptance does not authorize operator or
+production migration. Separate test-only 8C2 deep acceptance is in progress. See
 [operations](operations/remediation.md#linked-verification-8c1-candidate).
+
+The local 8C2 coherence repair reloads a cached RUNNING scan if its terminal receipt is already
+visible. This handles a READ-COMMITTED statement interleaving, not a split writer commit. It does
+not write/seal history, acquire row locks, commit/roll back caller work or bypass proof/audit
+validation. Populated history and migration 0010 are unchanged; full candidate acceptance is pending.
 
 ## Accepted history
 
@@ -35,7 +42,7 @@ See the [7E evidence matrix](sprint-7e-acceptance.md) for proof and validation l
 Accepted Sprint 8A adds accepted-baseline head `20261006_0007` below, through PR #53 with
 exact-commit independent review, both final-head CI and green exact main CI 37693245169.
 Accepted 8B1 added predecessor `20261007_0008` below through PR #55 with exact-commit REVIEW_PASS,
-both final-head CI and exact main CI 37726113041. Accepted 8B2 adds current head `20261008_0009`
+both final-head CI and exact main CI 37726113041. Accepted 8B2 added then-head `20261008_0009`
 through PR #59 with exact-commit REVIEW_PASS, both final-head first-attempt CI runs and exact main
 CI 37864100728. Current authorization/status belongs to ROADMAP and the active Sprint 8 plan;
 this is not authorization to migrate a deployed database.

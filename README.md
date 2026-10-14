@@ -12,7 +12,8 @@ provide certification or claim organization-wide NIST compliance.
 Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
 Sprint 8 is IN PROGRESS; 8A's proposal/approval foundation is COMPLETE through
 [PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Accepted 8B2 now adds the
-isolated worker described below; linked verification scans and UI mutations remain unimplemented.
+isolated worker described below. Default-off linked verification is accepted in 8C1; UI mutations
+remain unimplemented.
 The 8A implementation checkpoint was
 `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with green
 [exact merged-main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169).
@@ -32,7 +33,7 @@ passed. 8B1 adds default-off third-human execution admission/history only, not A
 `7a36ddde20aafc60712b38165acd25460418ab92`, with independent REVIEW_PASS, both final-head CI runs
 and [exact merged-main CI 37864100728](https://github.com/jnc247s/cloud-security-automation/actions/runs/37864100728)
 passed: 3,254 backend tests (441 PostgreSQL, no skips), 133 frontend units, all 74 Chromium/Firefox
-journeys and quality/image/cleanup gates. Accepted migration head is `20261008_0009`; new
+journeys and quality/image/cleanup gates. The 8B2 migration head was `20261008_0009`; new
 execution-history code requires that schema even while the worker is disabled. The active plan
 records the bounded documentary closeout's entry gates before the next slice advances.
 Sprint 8 remains IN PROGRESS; 8B is COMPLETE and 8B3 is COMPLETE as offline code/test acceptance.
@@ -44,7 +45,7 @@ both final-head CI runs and green
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
 8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is IN PROGRESS and 8D/8E remain PLANNED.
-The recommended linked-verification R1--R3 design is approved; 8C1 implementation is not yet accepted.
+The approved R1--R3 linked-verification path is accepted in 8C1; 8C2 deep acceptance is IN PROGRESS.
 Combined signed fault/race/recovery
 tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
 and its test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
@@ -71,8 +72,13 @@ migration 0009 are unchanged. The documentary closeout is accepted through
 exact-head REVIEW_PASS, both full first-attempt candidate audits and complete
 [exact-main CI 38423060289](https://github.com/jnc247s/cloud-security-automation/actions/runs/38423060289).
 The [8C preflight](docs/sprint-8c-preflight.md) records the original analysis; its recommended
-R1--R3 design is now approved. Linked verification is implemented on the 8C1 candidate branch
-but remains unaccepted; review and delivery gates remain required. UI mutation remains unimplemented.
+R1--R3 design is now approved. 8C1 is COMPLETE through
+[PR #68](https://github.com/jnc247s/cloud-security-automation/pull/68) at `76e0f786`, after
+corrected-head REVIEW_PASS, both complete candidate primary audits, ordinary guarded merge and
+[exact-main CI 38483896952](https://github.com/jnc247s/cloud-security-automation/actions/runs/38483896952).
+Each run passed 3,646 backend cases (628 PostgreSQL), 139 frontend cases, all 76 browser journeys
+and all 18 quality/image/cleanup steps without skips or retries. Accepted migration head is
+`20261013_0010`; operator migrations and live enablement are not automatic. UI mutation remains unimplemented.
 Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.
@@ -469,11 +475,14 @@ apply current migrations only to an explicitly authorized environment. See
 [persistence recovery guidance](docs/operations/known-limitations.md#unresolved-regional-relationship-persistence--repaired).
 Accepted 6G adds `20261001_0006` for the governance category; it was the head after Sprint 7.
 Accepted 8A added `20261006_0007`; accepted 8B1 added `20261007_0008` for database admission/
-journal. Accepted 8B2 adds current head `20261008_0009` for private worker coordination/versioned
+journal. Accepted 8B2 added `20261008_0009` for private worker coordination/versioned
 service history. Apply that schema before updated execution-history code even with the worker
 disabled; coordinate strict v1/v2-event and phase clients before worker enablement. Migrate only
 an explicitly authorized environment; no operator database is auto-migrated. Populated downgrade
-across each authority/worker boundary is blocked before DDL. Code acceptance is not deployment.
+across each authority/worker boundary is blocked before DDL. Accepted 8C1 adds current head
+`20261013_0010` for immutable linked verification and its coordination guard; verification history
+requires this schema even with new admission disabled. Its populated downgrade is blocked before
+DDL. Code acceptance is not deployment.
 
 When `ASSESSMENT_PROFILE_FILE` is unset, the service retains the legacy-compatible default catalog
 `0.2.1`. In file mode, a protected local envelope selects an exact registered catalog and contains
