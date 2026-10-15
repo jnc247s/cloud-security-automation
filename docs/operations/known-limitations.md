@@ -20,6 +20,14 @@ See [dashboard operation](dashboard.md),
 [completed Sprint 7 plan](../exec-plans/completed/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
+The approved 8D1 candidate adds READ-only remediation history, explicit selection clearing/focus
+return and stable selection controls above changing history. Its fresh browser/PostgreSQL/image,
+full-regression, independent-review and delivery gates remain pending. The original operator
+build/data/cause and earlier Firefox/navigation failures are not diagnosed by local units. Browser
+mutations/recovery remain unimplemented in 8D2; ordinary Start scan remains excluded. The six GETs
+retain the existing one-process, single-trust-domain/READ boundary, not tenant isolation. History
+display limits do not bound upstream payloads or independently verify hashes without source bytes.
+
 Accepted 7C provides read-only exact-scan investigation. Its bounded lists and display
 limits do not bound existing resource-history hydration or unpaginated finding detail payloads.
 Current operational pages can drift; server response time labels exception eligibility at that
@@ -123,8 +131,8 @@ proof of quiescence/effect, with no force-clear endpoint or compensating disable
 
 EC2 readback proves neither causation nor key/workload usability. Durable three-poll/thirty-second
 reads remain unverified within worker history. Accepted default-off 8C1 now provides a separate
-exact-policy rescan and sealed historical verdict; 8C2 deep acceptance, 8D mutation UI and
-whole-Sprint-8 acceptance remain pending. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
+exact-policy rescan and sealed historical verdict, with integrated 8C2 deep acceptance complete;
+8D mutation UI and whole-Sprint-8 acceptance remain pending. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
 limitations, not fixes claimed by this slice. New enum/event versions require client coordination;
 new code's execution-history service requires 0009 schema and never auto-migrates. Backups, rollout,
 production PostgreSQL grants and offline/populated downgrade procedures remain separately gated.
@@ -139,7 +147,7 @@ requirements remain. Complete provider primary audits retain all 3,567 backend c
 597 PostgreSQL cases without skips, and all 76 browser journeys; incomplete local primary-log
 retention and historical failed receipts retain their original limits, not inferred causes.
 The owning-document closeout passed through PR #67 and exact-main CI 38423060289. Whole Sprint 8
-is incomplete until 8C2 deep acceptance, dashboard workflow and whole-sprint acceptance succeed.
+is incomplete until dashboard workflow and whole-sprint acceptance succeed.
 
 ### Accepted linked verification 8C1 — MEDIUM
 
@@ -155,9 +163,12 @@ results and findings. Eventual consistency, observation races, noncausal attribu
 usability and full-scope read cost remain limits. Technical PASS with changed KMS context may
 resolve the finding while verification stays INCONCLUSIVE. Corrupt history may leave RUNNING
 capacity held for separately reviewed maintenance. No quarantine release or another write follows
-from a receipt. Single-process recovery remains the existing executor boundary; deep integrated
-fault/restart, deployment-policy and historical-scope acceptance is still 8C2, not already proved
-by aggregate green counts. The user's dashboard report remains untriaged for 8D.
+from a receipt. Single-process recovery remains the existing executor boundary. PR #69 and
+complete exact-main CI 38523209002 accept 8C2's signed/managed/installed fault/restart matrix,
+all four retained policy generations, terminal commits and coherent receipt reads. This adds
+offline evidence, not distributed recovery, physical deployed isolation or live-provider proof.
+Current full browser proof does not diagnose historical failures. The user's dashboard report
+remains untriaged for 8D.
 
 ### Governance category transition — ACCEPTED 6G
 
@@ -550,5 +561,6 @@ There is no production Terraform deployment, finding/exception mutation API, gen
 worker, multi-account orchestration or AI runtime. Accepted 8A/B1 human authority/admission and
 accepted isolated worker code in 8B2 add no browser mutations; the worker remains disabled and
 undeployed. Accepted default-off 8C1 adds linked exact-policy verification; 8C2 deep acceptance
-remains pending. Public worker launch and remediation UI remain later scope. These limits do not
+is complete. Remediation UI remains later scope; deployed worker operation remains separately
+authorized. These limits do not
 make the accepted Sprint 4 implementation incomplete.

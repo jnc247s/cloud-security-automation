@@ -1,13 +1,13 @@
 # Architecture
 
-This document describes accepted Sprints 0--7, Sprint 8A/8B and the default-off 8C1 extension.
+This document describes accepted Sprints 0--7, Sprint 8A/8B and default-off 8C verification.
 The accepted implementation baseline is `main` commit
-`76e0f7866dddb41d3ccd61913fbbeb36d594808e` (PR #68; corrected-head independent REVIEW_PASS,
-both first-attempt candidate primary audits and complete exact-main CI 38483896952 passed).
-Installed-process test implementation remains `d3380402` (PR #66).
+`599e155090b654f09987f3d48e8c431b116ba7c4` (PR #69; exact-commit independent REVIEW_PASS,
+both first-attempt candidate primary audits and complete exact-main CI 38523209002 passed).
+Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
-Accepted 8C1 below adds linked read-only verification; 8C2 test-only deep acceptance is in progress.
+Accepted 8C1 adds linked read-only verification; 8C2 adds integrated acceptance and coherent reads.
 That baseline includes the Sprint 5 evidence expansion and all Sprint 6 controls.
 6H added acceptance tests and documentation,
 not application behavior. 7A adds exact-scan READ reporting; independent review and merged-main
@@ -645,7 +645,7 @@ entrypoint invocation; restricted test containers and installed source/version p
 deployed ECS task/host/network/IAM isolation. Runtime, schema and interfaces are unchanged.
 The worker remains default off; acknowledgment/readback remains unverified and cannot change
 findings or technical results. Separate accepted 8C1 now supplies linked exact-policy verification;
-8C2 deep acceptance is in progress; 8D browser mutation remains planned. See the
+8C2 deep acceptance is complete; 8D browser mutation remains planned. See the
 [operations acceptance boundary](docs/operations/remediation.md#accepted-installed-process-and-security-tests-8b33).
 
 Health and readiness remain unversioned and unauthenticated. The authenticated interface lives at
@@ -762,6 +762,17 @@ independent review, both final-head CI runs, guarded ordinary merge and merged-m
 
 ## Runtime and deployment
 
+The approved 8D1 candidate extends the existing READ adapter with proposal, execution and
+verification list/detail GETs. React mounts history on demand from an exact assessment/finding,
+checks immutable selection/policy and cross-history IDs, and explicitly labels other occurrences
+instead of substituting the latest. Closed display guards support v1 human/v2 worker journals
+and sealed verification receipts; they do not evaluate controls, authorize actions or verify
+digests without source bytes. Approval/current blockers, execution/reservation, verification,
+technical results and current finding handling remain distinct. Scan selection gains explicit
+clearing/focus return and stable controls above the changing list. No schema/default, credentials,
+worker, platform, dependencies or browser writes change. 8D1 acceptance gates remain pending;
+approved 8D2 preparation/confirmation/recovery is not implemented by this READ-only slice.
+
 Local Compose starts PostgreSQL 16, runs `alembic upgrade head` as a one-shot service, then starts
 one API process. API and database ports bind to loopback by default. `/ready` verifies database
 connectivity with `SELECT 1`; it does not verify migration head. Compose does not mount host AWS
@@ -811,11 +822,13 @@ closed; if it cannot support a trusted receipt, the attempt remains active for r
 See [API](docs/api.md#linked-remediation-verification-8c1-candidate) and
 [operations](docs/operations/remediation.md#linked-verification-8c1-candidate).
 
-Local 8C2 repair candidate: after a sealed receipt becomes visible, reread a cached RUNNING scan
+Accepted 8C2 coherence repair: after a sealed receipt becomes visible, reread a cached RUNNING scan
 before validating terminal proof. PostgreSQL READ COMMITTED can otherwise combine an earlier
 RUNNING observation with the later atomic scan/receipt commit. The refresh is read-only and adds
 no row lock, transaction ownership change or historical repair; genuine inconsistent retained
-state still fails closed. Full candidate acceptance/review/delivery is pending.
+state still fails closed. Integrated signed/managed/installed acceptance, exact-commit review,
+both candidate primary audits and exact-main CI passed through PR #69. Original test-only
+predictions and this bounded implemented difference remain recorded in the active plan.
 
 Operational detail and required follow-up are recorded in
 `docs/operations/known-limitations.md` and `ROADMAP.md`.

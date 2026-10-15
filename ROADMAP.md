@@ -3,11 +3,11 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-14 UTC
+Last verified: 2026-10-15 UTC
 Current accepted implementation baseline: `main` at
-`76e0f7866dddb41d3ccd61913fbbeb36d594808e` ([PR #68](https://github.com/jnc247s/cloud-security-automation/pull/68);
-complete exact-main [CI 38483896952](https://github.com/jnc247s/cloud-security-automation/actions/runs/38483896952)
-passed). This adds accepted 8C1 linked read-only verification. The standalone write-worker code
+`599e155090b654f09987f3d48e8c431b116ba7c4` ([PR #69](https://github.com/jnc247s/cloud-security-automation/pull/69);
+complete exact-main [CI 38523209002](https://github.com/jnc247s/cloud-security-automation/actions/runs/38523209002)
+passed). This includes accepted 8C1 verification and 8C2 integrated acceptance/coherent reads. The standalone write-worker code
 remains unchanged since `7a36ddde` (PR #59); installed-process worker-test baseline remains
 `d3380402` (PR #66). Physical deployment and live-provider validation remain unperformed.
 Sprints 0--7 and 8A are COMPLETE; **8B is COMPLETE** as offline-accepted code and tests,
@@ -20,7 +20,7 @@ verification admission disabled. Existing execution-history readers retain their
 0009 requirement. No operator database is migrated automatically or by code acceptance.
 No role creation, deployment, live AWS/remediation or production operation is authorized.
 **8B3 is COMPLETE**; test-only integrated acceptance slice **8B3.1 is COMPLETE**;
-**8B3.2 is COMPLETE**; **8B3.3 is COMPLETE**; **8C is IN PROGRESS**; 8D/8E remain PLANNED;
+**8B3.2 is COMPLETE**; **8B3.3 is COMPLETE**; **8C is COMPLETE**; 8D is IN PROGRESS; 8E remains PLANNED;
 Sprint 9+ is unstarted.
 The 8B documentary closeout passed exact corrected-head REVIEW_PASS at `098111b7`, both
 first-attempt candidate primary audits, ordinary guarded merge and complete exact-main audit,
@@ -29,7 +29,9 @@ and all 18 quality/image/cleanup steps; the failed LOW review remains historical
 The user approved the recommended R1--R3 package on 2026-10-13 and requested continuation.
 The scoped [8C preflight](docs/sprint-8c-preflight.md) and approved predictions in the
 [active plan](docs/exec-plans/active/sprint-8.md#approved-8c-predictions) govern 8C1 implementation.
-**8C1 is COMPLETE** as default-off, offline-accepted code; **8C2 is IN PROGRESS**.
+**8C1 is COMPLETE** as default-off, offline-accepted code; **8C2 is COMPLETE**.
+The accepted 8C1 milestone remains `76e0f7866dddb41d3ccd61913fbbeb36d594808e` through PR #68,
+with complete exact-main [CI 38483896952](https://github.com/jnc247s/cloud-security-automation/actions/runs/38483896952) passed.
 Corrected-head REVIEW_PASS at `bbb0f6a` closed the LOW README finding. Both first-attempt
 candidate primary audits passed, followed by ordinary expected-head guarded merge and complete
 exact-main audit, with reviewed tree `6d263beaa6b0d8533c002e8a11050110cb89d624` unchanged.
@@ -37,8 +39,43 @@ Each CI run passed all 3,646 backend cases/156 files, 628 PostgreSQL cases/27 fi
 139 frontend cases/eight files, all 76 browser journeys (38 per project, one worker/zero retries)
 and all 18 quality/image/cleanup steps. Local focused/full/Compose/image/startup gates also passed.
 The active plan retains all failed runs, the qualified local headed-browser primary limit and
-unproven earlier browser causes. 8C is not COMPLETE until the separate 8C2 acceptance succeeds.
+unproven earlier browser causes. The separate 8C2 acceptance below completes 8C, not Sprint 8.
 Existing branches, worktrees and unrelated skills are preserved.
+
+8C2 passed exact-commit REVIEW_PASS at `d7d421eaf8afd06c474b210c4ff776339c471f01`, both complete
+first-attempt candidate primary audits and an ordinary expected-head guarded merge through PR #69.
+Complete exact-main CI 38523209002 passed with reviewed tree
+`6cc196972e4d236a93bcf58d9b081bbff01c8854` unchanged and exactly the accepted C1/feature parents.
+Every run covered all 3,755 backend cases/163 files, 696 PostgreSQL cases/33 files without skips,
+139 frontend cases/eight files, all 76 browser journeys (38 per project, one worker/zero retries),
+all 18 quality/image/cleanup steps and the same 19 existing SQLite warnings. Independent review
+also executed 142 guards/contracts and 29 PostgreSQL/installed cases, without warnings/skips.
+The accepted bounded READ-COMMITTED repair rereads cached RUNNING scan state after a sealed
+receipt becomes visible; no writes, row locks, caller commit/rollback, API/schema/default or
+authority change was introduced. Scanner credentials and finding/technical/remediation lifecycles
+remain separate. The user dashboard report, physical deployment and live-provider limits remain.
+
+The following 8C2 preparation checkpoints retain their original predictions and pending gates;
+the accepted status above supersedes those historical states. 8D needs a separate preflight and
+approval of any new architectural/design choices; Sprint 8 still requires 8D and 8E.
+
+The user reviewed the [8D design](docs/sprint-8d-preflight.md) and requested “Continue and
+implement” on 2026-10-14, approving D1--D3 and the sequential execution plan. 8D is IN PROGRESS,
+starting with 8D1 READ history/navigation. 8D2 adds the independently opt-in typed prepare/submit
+workflow and bounded same-session recovery; 8D3 requires integrated UI acceptance. Ordinary
+browser Start scan remains excluded. The [active plan](docs/exec-plans/active/sprint-8.md#approved-8d-predictions)
+owns approved detail. No slice is accepted yet; 8E remains PLANNED and Sprint 8 incomplete.
+
+The 8D1 candidate passed complete local regression on 2026-10-15: 3,812 backend cases/164 files,
+including all 696 PostgreSQL cases/33 files without skips, with the same 19 existing SQLite
+warnings. Pinned frontend type/lint/build and 208 cases/10 files passed. Complete browser
+recheck passed all 88 journeys (44 per project, one worker, zero retries/skips), preserving
+all 76 accepted journeys and adding 12 history/navigation cases. The first browser run failed
+on session recovery after a 401; its cause remains unconfirmed, and later isolated/full passes
+do not diagnose it. Compose/image/startup/default-off checks and owned cleanup passed. All 539
+frozen source paths matched before receipt edits. Exact-commit independent review, complete
+candidate CI audits, guarded merge and exact-main audit remain required before 8D2; 8D1 is not
+accepted. No browser mutation, operator migration, live-provider or later-sprint work occurred.
 
 The scoped [8C2 analysis preflight](docs/sprint-8c2-preflight.md) recommends one complete test-only
 integrated acceptance slice, starting with signed authority -> installed offline worker -> real

@@ -7,8 +7,9 @@ main CI 37726113041. It is not a deployment or live-operation authorization. ROA
 [API contract](../api.md), [persistence](../persistence.md), SECURITY and THREAT_MODEL.
 
 The 8B2 section below describes accepted code through PR #59 and exact main CI 37864100728,
-not deployment behavior or live authorization. Accepted head is `20261008_0009`; current
-execution-history readers require it even while the worker is disabled. Apply schema before
+not deployment behavior or live authorization. The 8B2 migration was `20261008_0009`;
+execution-history readers still require it even while the worker is disabled. Current accepted
+head is `20261013_0010` for 8C verification history. Apply schema before
 updated code only under separately authorized maintenance; no operator database is auto-migrated.
 
 ## Implemented boundary
@@ -298,7 +299,8 @@ and [limitation register](known-limitations.md); passing Linux/installed-process
 
 Use the generic bearer [verification API](../api.md#linked-remediation-verification-8c1-candidate)
 for a new read-only full-original-scope scan after normal ACKNOWLEDGED history. Accepted through
-PR #68 and complete exact-main CI 38483896952, it remains default off and undeployed. It requires
+PR #68 and complete exact-main CI 38483896952, with integrated 8C2 acceptance/coherent receipt
+reads accepted through PR #69 and exact-main CI 38523209002, it remains default off and undeployed. It requires
 migration `20261013_0010`; operator database maintenance is separately
 authorized and never automatic from code acceptance. `/ready` remains connectivity-only.
 
@@ -324,3 +326,10 @@ same durable RUNNING scan ID/policy; read-only collection may repeat, never the 
 No automatic post-terminal scan or quarantine release exists. Corrupt history/linkage fails
 closed; when it cannot support a trusted failure receipt, RUNNING/active state remains for
 separately reviewed maintenance. Never delete/rewrite history, force-clear or fabricate a receipt.
+
+8C2's signed full-path, real managed reader, installed reader-only SDK chain, all four retained
+policy generations, terminal commit faults and fresh-process recovery passed offline acceptance.
+The receipt reader refreshes cached RUNNING scan state when a terminal receipt becomes visible;
+it does not write, lock, commit/roll back caller work or relax proof/audit validation. This
+acceptance does not enable a scope, create credentials, migrate an operator database or prove
+deployed ECS/IAM/network isolation. 8D browser workflow and 8E whole-sprint acceptance remain.

@@ -1,10 +1,10 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7, 8A/8B and default-off 8C1
-Accepted implementation baseline: `main` commit `76e0f7866dddb41d3ccd61913fbbeb36d594808e`
-(PR #68; corrected-head REVIEW_PASS and both first-attempt candidate primary audits passed)
-Last reconciled: 2026-10-14 UTC; complete exact-main CI 38483896952 passed
-Installed-process test implementation remains `d3380402` (PR #66).
+Status: living model for accepted Sprints 0--7, 8A/8B and default-off 8C
+Accepted implementation baseline: `main` commit `599e155090b654f09987f3d48e8c431b116ba7c4`
+(PR #69; exact-commit REVIEW_PASS and both first-attempt candidate primary audits passed)
+Last reconciled: 2026-10-14 UTC; complete exact-main CI 38523209002 passed
+Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
 
@@ -14,7 +14,7 @@ navigation/security assertions, COOP and other headers, dependencies, timeouts a
 remain unchanged. Exact-head independent review, both final-head CI runs, guarded ordinary merge
 and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B scope are owned
 by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
-policy verification is offline-accepted in default-off 8C1. 8C2 deep acceptance is in progress;
+policy verification and 8C2 deep acceptance are offline-accepted in default-off 8C;
 dashboard mutation remains unimplemented, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
@@ -88,7 +88,8 @@ identity, and policy implementation, and the merged fact-only 5D IAM Access Anal
 production deployment, Terraform infrastructure or AI agent is implemented. Accepted 8A/B1
 govern human proposal/approval/execution-admission authority; accepted 8B2 adds separate default-off
 single-action worker code, not live execution or deployment proof. No public worker-launch
-endpoint, linked exact-policy verification or remediation UI is implemented. The opt-in 7B
+endpoint or remediation UI is implemented. Accepted default-off 8C supplies linked exact-policy
+read-only verification, without live-provider or deployment validation. The opt-in 7B
 frontend/session boundary below is accepted code, not a production
 deployment or live-provider validation. The merged 5E and 5F producers collect facts only; accepted opt-in 6E evaluators
 consume the 5E facts, while accepted 6F evaluates retained CloudTrail evidence.
@@ -346,8 +347,10 @@ evidence, changed KMS context, duplicate admission and receipt/result split comm
 validated retained authority and exact policy/scope, pre-collection identity checks, independent
 bundle checks, protected paired request/receipt audit, bounded actor/key replay and guard-first
 atomic terminalization provide the intended mitigations. Required 8C1 PostgreSQL, regression,
-independent review and delivery gates passed. Separate 8C2 integrated fault/restart,
-deployment-policy and historical-scope acceptance is in progress, not yet accepted.
+independent review and delivery gates passed. Integrated 8C2 fault/restart, deployment-policy,
+all four retained scopes and installed-reader acceptance also passed through PR #69. A
+READ-COMMITTED cached RUNNING/visible terminal-receipt mismatch was repaired by a read-only
+refresh without weakening retained proof/audit validation or caller transaction ownership.
 
 Residuals include privileged INSERT/schema control, eventual consistency, observation races,
 noncausal attribution, full-scope read cost and normal effects on other findings, single-process
@@ -357,6 +360,18 @@ verified accounts/roles cannot prove distinct physical humans; physical credenti
 live-provider/key/workload compatibility and production validation remain separately authorized.
 
 ## Required review triggers
+
+The approved 8D1 READ candidate adds sensitive proposal/decision, execution and verification
+history through fixed typed BFF routes. Confused-deputy forwarding is constrained by existing
+fresh bearer/READ, origin/context and final session checks; mutations/arbitrary targets stay
+absent. Selection, issuer/session replacement and refresh unmount or ignore superseded reads.
+Closed version/scalar and immutable cross-record bindings reject false approval/verification
+displays. QUARANTINED remains unknown effect even after late ACK/readback. Current validity is
+server-derived alongside historical approval, not a browser grant. Bounded disclosures/rows do
+not limit upstream detail payloads, add tenancy or prove digests/physical humans. Navigation and
+native-pointer settlement need fresh two-browser evidence; the original operator build/data and
+earlier failures are not diagnosed by this candidate. 8D2 mutations/recovery remain unimplemented,
+and 8D1 validation/review/delivery are pending. No live provider operation is authorized.
 
 Update this model when authentication, role/capability mappings, object scope, API exposure, AWS
 permissions, collected evidence, persistence, audit, executor topology, deployment, dashboard,

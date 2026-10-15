@@ -70,7 +70,7 @@ from app.database.session import engine
 from app.main import create_app
 from app.models.enums import ExceptionStatus, FindingStatus
 from app.models.exception import FindingException
-from app.models.finding import Finding
+from app.models.finding import Finding, FindingOccurrence
 from app.schemas.inventory import CollectionStatus
 from app.schemas.scan import ScanCreateRequest
 from app.services.scan_service import ScanService
@@ -79,6 +79,7 @@ from tests.sprint6_fixtures import sprint6_bundle
 from tests.unit.database.factories import scan_bundle
 from tests.unit.services.test_scan_service import RecordingExecutor
 from tests.unit.services.test_technical_posture_service import persist
+from tests.verification_fixtures import VerificationHarness
 
 
 def forbidden(*_args, **_kwargs):
@@ -90,6 +91,11 @@ boto3.session.Session.client = forbidden
 config = Config("alembic.ini")
 config.attributes["database_url"] = test_database
 command.upgrade(config, "head")
+# Seed the real authority/journal/verification services before legacy histories can make
+# that retained baseline stale. Provider I/O is offline; browser access remains signed READ.
+remediation_harness = VerificationHarness(engine)
+remediation_verification = remediation_harness.request().value
+remediation_harness.run(remediation_verification.content.scan_id)
 with Session(engine) as db:
     for identifier, status in (
         ("11111111-1111-1111-1111-111111111111", CollectionStatus.SUCCEEDED),
@@ -129,7 +135,14 @@ with Session(engine) as db:
         ("77777777-7777-7777-7777-777777777777", {"public_ssh": None}),
     ):
         persist(db, scan_bundle(scan_id=UUID(identifier), **options))
-    finding = db.scalars(select(Finding).where(Finding.status == FindingStatus.RESOLVED)).one()
+    finding = db.scalars(
+        select(Finding)
+        .join(FindingOccurrence)
+        .where(
+            Finding.status == FindingStatus.RESOLVED,
+            FindingOccurrence.scan_id == UUID("11111111-1111-1111-1111-111111111111"),
+        )
+    ).one()
     finding.status = FindingStatus.ACCEPTED_RISK
     finding.resolved_at = None
     now = datetime.now(UTC)

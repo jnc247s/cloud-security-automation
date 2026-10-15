@@ -15,9 +15,10 @@ export function ScanShell({ onError, context }: { onError: (error: Error) => voi
   const [listError, setListError] = useState('');
   const [reportError, setReportError] = useState('');
   const errors = useRef(onError);
+  const selectionInput = useRef<HTMLInputElement>(null);
   useEffect(() => { errors.current = onError; }, [onError]);
   useEffect(() => {
-    function pop() { const id = selection(); setSelected(id); setInput(id); }
+    function pop() { const id = selection(); setSelected(id); setInput(id); if (!id) selectionInput.current?.focus(); }
     window.addEventListener('popstate', pop);
     return () => window.removeEventListener('popstate', pop);
   }, []);
@@ -52,6 +53,7 @@ export function ScanShell({ onError, context }: { onError: (error: Error) => voi
     window.history.pushState(null, '', url);
   }
   function submit(event: FormEvent) { event.preventDefault(); select(input.trim().toLowerCase()); }
+  function backToSelection() { select(''); selectionInput.current?.focus(); }
   const visiblePage = page?.offset === offset ? page.value : null;
   const visible = report?.id === selected ? report.value : null;
 
@@ -59,22 +61,25 @@ export function ScanShell({ onError, context }: { onError: (error: Error) => voi
     <section aria-labelledby="history"><h2 id="history">Scan history</h2>
       <p>Pages are bounded and may change while new scans arrive. Select one exact scan.</p>
       <button onClick={() => { setPage(null); setReport(null); setRevision(v => v + 1); }}>Refresh</button>
+      <form onSubmit={submit}><label htmlFor="scan-id">Open scan by UUID</label>
+        <input ref={selectionInput} id="scan-id" value={input} onChange={e => setInput(e.target.value)} maxLength={64} spellCheck={false} />
+        <button type="submit">Open scan</button></form>
+      <nav aria-label="Scan history pages"><button disabled={offset === 0}
+        onClick={() => setOffset(v => Math.max(0, v - 25))}>Previous page</button>
+        <button disabled={!visiblePage || offset + 25 >= visiblePage.total}
+          onClick={() => setOffset(v => v + 25)}>Next page</button></nav>
       {listError ? <p role="alert">{listError}</p> : !visiblePage ? <p role="status">Loading scan history…</p>
-        : visiblePage.items.length === 0 ? <p>No scans on this page.</p> : <ul className="scans">
+        : visiblePage.items.length === 0 ? <><p>No scans on this page.</p>
+          <p>{offset > 0 ? 'Try Previous page or Refresh; this page may be beyond the current history.'
+            : 'No saved scans were returned. An authorized operator can start a scan through the existing API; this dashboard does not start scans.'}</p></> : <ul className="scans">
           {visiblePage.items.map(scan => <li key={scan.scan_id}>
             <button aria-pressed={selected === scan.scan_id} onClick={() => select(scan.scan_id)}>
               <span className="mono">{scan.scan_id}</span><span>{scan.status} · {scan.aws_account_id ?? 'Account not yet verified'}</span>
               <span>{scan.started_at}</span>
             </button></li>)}</ul>}
-      <nav aria-label="Scan history pages"><button disabled={offset === 0}
-        onClick={() => setOffset(v => Math.max(0, v - 25))}>Previous page</button>
-        <button disabled={!visiblePage || offset + 25 >= visiblePage.total}
-          onClick={() => setOffset(v => v + 25)}>Next page</button></nav>
-      <form onSubmit={submit}><label htmlFor="scan-id">Open scan by UUID</label>
-        <input id="scan-id" value={input} onChange={e => setInput(e.target.value)} maxLength={64} spellCheck={false} />
-        <button type="submit">Open scan</button></form>
     </section>
     <section aria-labelledby="selected"><h2 id="selected">Selected scan</h2>
+      {selected ? <button onClick={backToSelection}>Back to scan selection</button> : null}
       {!selected ? <p>Select a scan to view its exact scope and report availability.</p>
         : !isUUID(selected) ? <p role="alert">A valid scan UUID is required.</p>
         : reportError ? <p role="alert">{reportError}</p>

@@ -20,13 +20,14 @@ requests/receipts or either new audit type before any DDL; offline crossing requ
 history check. PostgreSQL excludes writers in the same consistent parent order. Do not erase
 history or bypass protections to force rollback. 8C1 validation/review/delivery passed through
 PR #68 and complete exact-main CI 38483896952. Code acceptance does not authorize operator or
-production migration. Separate test-only 8C2 deep acceptance is in progress. See
+production migration. Integrated 8C2 acceptance passed through PR #69 and exact-main CI 38523209002. See
 [operations](operations/remediation.md#linked-verification-8c1-candidate).
 
-The local 8C2 coherence repair reloads a cached RUNNING scan if its terminal receipt is already
+The accepted 8C2 coherence repair reloads a cached RUNNING scan if its terminal receipt is already
 visible. This handles a READ-COMMITTED statement interleaving, not a split writer commit. It does
 not write/seal history, acquire row locks, commit/roll back caller work or bypass proof/audit
-validation. Populated history and migration 0010 are unchanged; full candidate acceptance is pending.
+validation. Populated history and migration 0010 are unchanged. Integrated PostgreSQL/installed
+recovery, both read interleavings, full regression, independent review and delivery gates passed.
 
 ## Accepted history
 
@@ -618,7 +619,7 @@ Old populated-0007 downgrade protections still apply. Do not delete history or b
 ## Migrations and startup
 
 The initial canonical revision is `20260903_0001`; the accepted repository head is
-`20261008_0009`, following unchanged predecessors 0008, 0007 and 0006. Apply only in an explicitly
+`20261013_0010`, following unchanged predecessors 0009, 0008, 0007 and 0006. Apply only in an explicitly
 authorized environment, never infer deployed state. All schema
 changes belong in reviewed Alembic revisions; application startup does not call
 `metadata.create_all()`.
