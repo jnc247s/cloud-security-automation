@@ -75,3 +75,30 @@ def test_disabled_dashboard_preserves_default_api_configuration():
         _env_file=None, app_env="test", auth_mode="development", dashboard_enabled=False
     )
     assert not settings.dashboard_enabled and settings.oidc_roles_claim == "roles"
+    assert not settings.dashboard_remediation_enabled
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_browser_remediation_opt_in_is_independent_from_backend_write_and_scan_flags(enabled):
+    settings = Settings(**values(dashboard_remediation_enabled=enabled))
+    assert settings.dashboard_remediation_enabled is enabled
+    assert not settings.remediation_admission_enabled
+    assert not settings.remediation_verification_enabled
+    assert settings.remediation_account_id is None and settings.remediation_region is None
+
+
+@pytest.mark.parametrize("auth_mode", ["oidc", "development"])
+def test_remediation_cannot_enable_a_disabled_dashboard_or_development_fallback(auth_mode):
+    with pytest.raises(ValidationError):
+        Settings(
+            **values(
+                app_env="test",
+                auth_mode=auth_mode,
+                dashboard_enabled=False,
+                dashboard_remediation_enabled=True,
+            )
+        )
+    with pytest.raises(ValidationError):
+        Settings(
+            **values(app_env="test", auth_mode="development", dashboard_remediation_enabled=True)
+        )

@@ -9,6 +9,11 @@ h2 { font-size: 1.25rem; }
 .identity { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; overflow-wrap: anywhere; }
 .notice { background: #e9f0f7; border-left: 4px solid #315b80; padding: 12px 16px; }
 button, input, select { font: inherit; }
+textarea { font: inherit; width: 100%; padding: 8px; resize: vertical; border: 1px solid #617786; border-radius: 4px; }
+.remediation-workflow { margin: 20px 0; overflow-wrap: anywhere; }
+.prepared-operation { border-top: 1px solid #d4dde5; margin-top: 20px; padding-top: 16px; }
+.prepared-operation input[type="checkbox"] { width: auto; margin-right: 8px; }
+.remediation-form { padding: 16px; border-left: 3px solid #315b80; }
 button { cursor: pointer; padding: 8px 14px; background: white; border: 1px solid #315b80; border-radius: 4px; color: #173b5e; }
 button:hover { background: #e9f0f7; }
 button:disabled { cursor: default; opacity: .55; }

@@ -29,6 +29,22 @@ not write/seal history, acquire row locks, commit/roll back caller work or bypas
 validation. Populated history and migration 0010 are unchanged. Integrated PostgreSQL/installed
 recovery, both read interleavings, full regression, independent review and delivery gates passed.
 
+Accepted 8D1 exposes proposal, execution and verification history through six fixed dashboard
+GETs and the existing bearer/READ services. It adds no schema, migration, transaction ownership
+or direct browser database access. Its full PostgreSQL/browser/review/delivery gates passed
+through PR #70 and complete exact-main CI 38794113567; migration head remains 0010.
+
+Local 8D2 coordination is process/session memory, not a persisted request ledger or new grant.
+Only the existing bearer services create authoritative proposals/decisions/admission/verification
+and paired audits/idempotency records. No schema or migration changes. Confirmed browser
+references are checked against immutable READ history; changing phase/blockers/receipts are not
+used as immutable equality. Expiry/logout/process loss never rewrites domain history, releases
+a reservation or proves no effect. After coordination loss, manual history reconciliation is
+required before any replacement intent. Local UI coordination adds no persistence. The signed
+90-journey browser suite passed against disposable PostgreSQL. A test-only fixture uses unique
+UUID-derived schemas and verifies exact ownership before cleanup, without changing application
+migrations or operator schemas. Complete 8D2 acceptance remains pending.
+
 ## Accepted history
 
 Accepted Sprint 7 reads this retained history through generic services and the real bearer/READ

@@ -6,7 +6,27 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8D1 remediation history candidate
+### Sprint 8D2 local candidate
+
+- Adds independently default-off typed preparation/confirmation and bounded same-session
+  coordination, fresh verified issuer/feature hints and immutable READ reference confirmation.
+- Preserves same actor/key/body on explicit retry and keeps unknown forwarded effects
+  unconfirmed, including accepted verification submission failures. No scanner/worker authority,
+  domain API/schema/migration, live operation or ordinary browser Start scan change.
+- Adds guarded same-session UI recovery and all five manual action forms, separate frozen-input
+  review/confirmation and explicit original-key retry. Missing hints preserve READ-only behavior;
+  logout/401 clears private data without a cancellation claim. No Web Storage or automatic POST.
+- Expanded server checks passed 490 cases, including 18 disposable PostgreSQL journeys. Local
+  frontend type/lint/build and 289 unit cases passed. All 90 signed browser journeys passed,
+  preserving 88 accepted journeys and adding two isolated three-human workflows. Ten additional
+  adverse API/database cases passed, including five on PostgreSQL. Complete local regression
+  passed 4,007 cases/169 files, including 714 PostgreSQL cases/34 files without skips. Its 22
+  warnings are 19 existing SQLite warnings plus three JUnit-report compatibility warnings from
+  existing record_property tests. Ruff, Compose/image/startup/default-off and owned cleanup
+  passed. Independent review and delivery remain pending; 8D2 is not accepted.
+
+<a name="sprint-8d1-remediation-history-candidate"></a>
+### Sprint 8D1 remediation history
 
 - Adds six fixed authenticated dashboard history reads and on-demand, runtime-validated
   proposal/decision, human/worker execution and verification views with separate statuses.
@@ -15,7 +35,13 @@ record the development history. Sprint state itself is authoritative only in
 - Complete local regression passed 3,812 backend cases (696 PostgreSQL), 208 frontend cases
   and all 88 browser journeys on recheck, plus quality/Compose/image/startup/default-off gates.
   The first browser run's session-recovery timeout remains retained with cause unconfirmed.
-  Exact-commit review and delivery remain pending. No browser mutation, schema, capability,
+  Accepted through [PR #70](https://github.com/jnc247s/cloud-security-automation/pull/70) at
+  `d6a37658`, corrected-head REVIEW_PASS at `f2a83bb`, both complete first-attempt candidate
+  audits, ordinary guarded merge and complete
+  [exact-main CI 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567).
+  Each CI run passed 3,812 backend cases (696 PostgreSQL), 208 frontend cases, all 88 browser
+  journeys and all 18 quality/image/cleanup steps without skips/retries. The LOW API wording
+  finding is independently closed; original failed receipts remain. No browser mutation, schema, capability,
   credentials, worker launch, live AWS or production change.
 
 <a name="sprint-8c2-integrated-verification-acceptance-candidate"></a>

@@ -1,10 +1,10 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7,
-Sprint 8A/8B and default-off 8C. The accepted implementation
-`main` baseline is `599e155090b654f09987f3d48e8c431b116ba7c4` (PR #69;
+Sprint 8A/8B, default-off 8C and 8D1 READ history. The accepted implementation
+`main` baseline is `d6a37658f2d34f94d26a475d91b95ef7a511d940` (PR #70;
 exact-commit REVIEW_PASS, both first-attempt candidate primary audits and complete exact-main CI
-38523209002 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
+38794113567 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
@@ -577,7 +577,7 @@ credential, IAM, live-provider or production authority is granted.
 
 ## Production authorization
 
-The approved 8D1 dashboard candidate permits only six additional typed remediation-history GETs
+Accepted 8D1 permits only six additional typed remediation-history GETs
 through the same exact-origin/session/context and real bearer/READ boundary. Unknown/duplicate
 queries and invalid IDs fail before forwarding; no browser URL/method/credentials can be selected.
 Final logout/expiry rejection and secured no-store errors remain. Client schemas and immutable
@@ -587,6 +587,31 @@ Quarantine, admission/ACK and verification/finding/technical status stay separat
 mutation, worker launch, AWS/DB shortcut, new role, configuration flag or bootstrap identity hint
 is implemented in 8D1; the separately approved 8D2 boundary still requires its implementation and
 acceptance gates. Existing trust-domain/process/physical-isolation and live-operation limits apply.
+
+The local, unaccepted 8D2 server candidate independently gates preparation/submission behind
+`DASHBOARD_REMEDIATION_ENABLED=false`. True requires the enabled OIDC dashboard, not development
+authentication. Fresh verified principal/capabilities replace cached role hints as the write
+check; the bearer API authorizes again. Browser-selected URLs/methods/keys/credentials/scope,
+duplicate security headers/JSON keys, invalid Unicode, coercive/extra fields and bodies over
+12 KiB are rejected. Exact Origin/same-origin fetch-site, CSRF and session context are mandatory
+for mutations; session-bound coordination reads require current READ and context.
+
+Server UUID/body/actor coordination is bounded, non-authorizing and nonrenewing. An atomic
+in-flight claim precedes dispatch; only explicit same-key/body/actor retries are possible.
+No raw upstream body is reflected/cached. Confirmed references require immutable READ binding;
+verification submission-failure IDs may already name an accepted attempt, never a VERIFIED
+verdict. Unknown forwarded effects remain unconfirmed; a later denial/expiry is not cancellation.
+Session loss clears coordination and private responses, requiring manual history reconciliation.
+Scanner credentials, separate worker authority, production boundaries and migration 0010 are
+unchanged. The local UI now requires guarded issuer/feature/session hints, closed response/
+immutable bindings and explicit review/confirmation. Missing hints preserve READ-only behavior;
+unknown fields/scalars/states cannot authorize or imply execution success. No Web Storage,
+provider token, browser-selected key or automatic submission is added. Lost responses keep
+browser uncertainty separate from last server state/attempt counts. Session 401/logout clears
+private data and late results cannot restore it. A public reconciliation warning survives sign-out.
+The local 90-journey signed browser suite passed, including three distinct verified humans and
+same-session recovery without automatic mutation. Whole-slice acceptance remains pending; the
+8D1 receipts do not accept this new boundary or authorize live execution.
 
 Writing code or configuration never authorizes execution against production. Explicit human
 authorization is required for production deployment, Terraform apply, destructive AWS action,

@@ -20,13 +20,23 @@ See [dashboard operation](dashboard.md),
 [completed Sprint 7 plan](../exec-plans/completed/sprint-7.md).
 `ROADMAP.md` owns project status; security consequences belong in `THREAT_MODEL.md`.
 
-The approved 8D1 candidate adds READ-only remediation history, explicit selection clearing/focus
+Accepted 8D1 adds READ-only remediation history, explicit selection clearing/focus
 return and stable selection controls above changing history. Its fresh browser/PostgreSQL/image,
-full-regression, independent-review and delivery gates remain pending. The original operator
-build/data/cause and earlier Firefox/navigation failures are not diagnosed by local units. Browser
-mutations/recovery remain unimplemented in 8D2; ordinary Start scan remains excluded. The six GETs
+full-regression, independent-review and delivery gates passed through PR #70 and exact-main CI
+38794113567. The original operator build/data/cause and earlier Firefox/navigation failures
+are not diagnosed by later passing tests. Browser
+mutations/recovery now have a local unaccepted 8D2 server/UI candidate. All 90 signed browser
+journeys and complete 4,007-case local regression passed; independent review and whole-slice
+delivery remain required. The new
+verification UI test confirms an accepted request, not a completed rescan or VERIFIED receipt.
+Installed-worker/managed-reader UI acceptance remains 8D3. Ordinary Start scan remains excluded. The six GETs
 retain the existing one-process, single-trust-domain/READ boundary, not tenant isolation. History
 display limits do not bound upstream payloads or independently verify hashes without source bytes.
+
+8D2 coordination is ephemeral and session-bound, at most 16 entries/session and 256 globally.
+Expired/uncertain entries are not evicted to make room. Process/session loss requires manual
+immutable-history reconciliation, not automatic replacement. No durable cross-process browser
+recovery, distributed store, public worker launcher or production authority is added.
 
 Accepted 7C provides read-only exact-scan investigation. Its bounded lists and display
 limits do not bound existing resource-history hydration or unpaginated finding detail payloads.

@@ -25,6 +25,9 @@ workflow, but never implicitly approves architecture/design decisions or live op
 | 8C1 | Complete linked-verification vertical path | COMPLETE |
 | 8C2 | Integrated fault/restart, policy and historical-scope acceptance | COMPLETE |
 | 8D | Authenticated dashboard workflow | IN PROGRESS |
+| 8D1 | READ remediation history and bounded scan navigation | COMPLETE |
+| 8D2 | Default-off manual preparation, confirmation and session recovery | IN PROGRESS |
+| 8D3 | Integrated adverse UI/installed-worker/read-only verification acceptance | PLANNED |
 | 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |
 
 Only one slice advances at a time after required review/publication/merge and green exact
@@ -4009,3 +4012,323 @@ allows only CHANGELOG, ROADMAP, this plan and the reviewed API prose correction 
 all runtime, tests, frontend, migrations and configuration bytes remain unchanged. The original
 freeze and primary logs are retained. A separate logical repair commit preserves the reviewed
 implementation commit; exact corrected-head review and all delivery gates remain pending.
+
+### Accepted 8D1 history and navigation 2026-10-15
+
+**8D1 is COMPLETE** through [PR #70](https://github.com/jnc247s/cloud-security-automation/pull/70)
+at `d6a37658f2d34f94d26a475d91b95ef7a511d940`. This supersedes the historical pending checkpoints
+above, not their predictions or unsuccessful receipts. Sprint 8/8D stay IN PROGRESS; 8D2/8D3
+and 8E remain PLANNED. Ordinary Start scan remains excluded.
+
+The existing reviewer returned exact corrected-head REVIEW_PASS with no remaining findings at
+`f2a83bbaca888aa761f9578cdd72fa5ca0348a75`, tree `f7c399635740c0e39f7cf0bd4488c6ff1c8be806`.
+The LOW API overview finding is independently closed. The separate prose/receipt repair commit
+preserves implementation commit `62a5468`. Fresh follow-up execution passed 103 owner contracts
+in 0.67s without warnings/skips, Ruff, 456-file formatting and correction/full-slice whitespace.
+The previous 273 backend/208 frontend executions and independently audited full local primaries
+remain distinct from this bounded follow-up; the original REVIEW_FAIL is retained.
+
+Both complete first-attempt candidate primary audits passed, followed by ordinary expected-head
+guarded merge and complete exact-main audit. Actual checkouts, reviewed tree and exact parents
+were verified, not inferred from green statuses. Each run passed 3,812 backend cases/164 files,
+including all 696 PostgreSQL cases/33 files without skips, 208 frontend cases/10 files, all 88
+browser identities (44 Chromium/44 Firefox, one worker, zero retries/skips), quality/build/image
+and all 18 successful job/cleanup steps. The 19 SQLite datetime-adapter warnings match the
+accepted baseline's message, source and migration-test group. The inherited setup-node punycode
+deprecation warning also predates this slice; no warning was suppressed.
+
+- [Push 38784762889](https://github.com/jnc247s/cloud-security-automation/actions/runs/38784762889),
+  job `116593797858`: checkout `f2a83bb`, parent `62a5468`; backend 3663.56s;
+  primary SHA-256 `0c1cab47b5e690d731beef94fd99a22cfbc25abfe28cf50226aad25cd08bce6a`.
+- [PR 38784800990](https://github.com/jnc247s/cloud-security-automation/actions/runs/38784800990),
+  job `116593925808`: synthetic checkout `901a644`, parents `[599e155, f2a83bb]`; backend 2601.86s;
+  primary SHA-256 `00db460372df5f2f24bfeaa9f46b2cac070c34a593e5c7e6e7e7848d2d81b330`.
+- [Exact main 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567),
+  job `116625912908`: checkout `d6a3765`, parents `[599e155, f2a83bb]`; backend 3266.04s;
+  primary SHA-256 `c5dd633a9a92f4e3a6a38151da895b984dee9f80e317824b0aa0f12fe92606f6`.
+
+Every tree equals `f7c399635740c0e39f7cf0bd4488c6ff1c8be806`. The early completed-PR primary
+was retained separately and matches the paired audit hash. One read-only observer ended on a
+TLS handshake timeout; direct reads confirmed the original CI run, and only the observer was
+restored. No CI rerun, new attempt or test restart followed that observation failure.
+
+The first local browser run remains 18 passed/one session-recovery timeout/69 not run/one
+secondary error. Its cause is unconfirmed; isolated/full rechecks and three green CI runs do
+not diagnose it or prove a repair. No assertion, timeout, retry or security header was weakened.
+The original operator build/data/cause and physical/live-provider limitations remain.
+
+At delivery, the 539-file freeze matched except the four explicit owner receipt/API prose
+changes; runtime/tests/frontend/migrations/configuration were unchanged. All 78 existing
+branches, three worktrees and three parent skill hashes were preserved; the remote feature
+branch remains. There was no force/admin bypass, branch deletion, operator migration, live AWS,
+IAM/secret change, deployment, production operation or Sprint 9+ work. Scanner read-only access,
+separate worker authority and finding/technical/remediation lifecycles remain intact; head is 0010.
+
+Clean local main was normally fast-forwarded to the audited merge, then scoped branch
+`codex/sprint-8d2-preflight` began owner reconciliation and analysis within the approved D1--D3
+package. All existing branches/worktrees remain, plus that one new branch. 8D2 application code
+has not started. Its contract/caller/test analysis precedes implementation; unresolved new
+architecture/design decisions still require the user. This parent plan stays active until 8E.
+
+The first owner-reconciliation check passed 102 cases and failed the accepted-history contract:
+moving the current baseline removed ROADMAP's sole full 8C2 merge SHA. The C2 acceptance paragraph
+now retains that exact historical milestone; the assertion is preserved. No runtime, schema,
+API, dependency, credentials or D2 implementation changes accompany this owner correction.
+Fresh owner/quality/whitespace validation is required before the next implementation step.
+
+### 8D2 analysis and implementation entry 2026-10-15
+
+The [scoped 8D2 preflight](../../sprint-8d2-preflight.md) maps the existing session, signed
+identity, typed bearer mutations, immutable history, verification submission-failure, frontend
+and browser-test contracts. It recommends coordination/store/config tests first, then fixed
+adapters, all five manual forms and the signed three-human path. These remain work units of
+one complete 8D2 slice, followed by all review/delivery gates; they do not narrow the goal.
+No new architecture/design choice was identified within approved D1--D3. Standing approval and
+the user's continuation authorize beginning that bounded implementation.
+
+Fresh preflight selection passed 295 existing backend cases in 122.77s without warnings/skips;
+the durable primary records owned tmpfs database cleanup. After the native observation handle
+was unavailable, the complete saved primary was reconciled without restarting the run. All 539
+source paths/hashes were independently verified unchanged. This is not new 8D2 functionality,
+full regression or a fresh frontend/browser run. The earlier 102-pass/one-failure owner result
+remains historical; the preserved-history correction subsequently passed all 103 owner tests.
+
+The first implementation work unit adds non-authorizing frozen coordination, session-bound
+atomic transitions/capacity/expiry tests and the independent default-off setting. No API domain,
+schema, role, worker, scanner, credential, live operation or later-sprint change is authorized.
+8D2 must remain unaccepted until the whole slice passes its gates; 8D3 and 8E remain required.
+
+### Local 8D2 server work units 2026-10-15 not accepted
+
+Implemented frozen typed preparation, bounded session-owned coordination and the independent
+default-off flag, followed by fixed prepare/submit/GET-recovery adapters that re-enter existing
+bearer APIs. Bootstrap adds fresh verified issuer/roles and a non-authorizing remediation hint.
+The accepted two-value Dashboard session interface remains; write checks do not use cached role
+hints. No bearer/domain model, enum, service, role map, ORM, migration, worker or scanner change.
+
+Preparation is five-minute/session-bound, 16/session and 256 total. An atomic claim precedes
+dispatch; locks never span HTTP/authentication. Explicit retries reuse actor/key/body and do not
+renew domain authority. Closed 12 KiB JSON/header/origin/fetch-site/CSRF/context checks reject
+injection and sanitized errors never echo input/upstream content. Normal and submission-failed
+verification references require bound READ history; changing phase/blockers/receipts are not
+immutable comparisons. History 401 revokes the session; late results cannot recreate it.
+Forwarded loss/expiry/denial stays uncertain without a replacement intent or cancellation claim.
+
+Validation history is retained rather than rewritten:
+
+- Initial coordination/config tests: 124 passed in 0.48s. Initial lint found 13 long test lines
+  and two unformatted test files; ordinary formatting corrected them without assertion changes.
+- Broader owner/config run: 264 passed/one failure because the progress assertion still expected
+  PLANNED after implementation began. Its exact expected top-level status is now IN PROGRESS;
+  original approved-prediction assertions remain. Corrected run: 265 passed in 1.26s; Ruff lint,
+  459-file formatting and whitespace passed.
+- Initial signed adapter run: 39 passed/one failure in 29.24s. The new test attempted another
+  login while already authenticated. It now performs the required real logout before sign-in;
+  production authentication and existing assertions were not weakened.
+- Expanded signed five-operation coverage then passed 45 cases in 37.20s, including three
+  distinct identities, no ADMIN self-approval, exact history, same-key committed-response-loss
+  recovery and accepted verification submission-failure references. Source freeze: 545 paths.
+- After adding malformed/cross-bound reference and history-401 protection plus PostgreSQL
+  acceptance, the combined selection passed **458 cases in 219.31s**, including all **13 new
+  PostgreSQL journeys**, without warnings/skips. Retained dashboard/investigation/remediation
+  APIs, security/config/contracts also passed. Owned temporary tmpfs cleanup and all 546 frozen
+  source paths/hashes passed before subsequent owner/validation-environment edits.
+
+The legacy browser fixture and validation runner explicitly keep the new flag false, independent
+of the caller's opt-in. Owning API, architecture, security/threat, persistence, operations and
+status documents distinguish this local candidate from accepted 8D1. Documentation edits retain
+original predictions and failures; the documentation skill guided that surgical reconciliation.
+Environment guidance kept credentials server-side and validation configuration separate; no
+environment pull, operator env-file/credential edit or platform migration occurred.
+
+Frontend forms/recovery, opt-in isolated browser fixture, additional adversarial API tests and
+complete 8D2 regression/frontend/browser/image gates remain. Then exact-commit independent
+review with the existing reviewer, candidate primary audits, guarded merge and exact-main audit
+are required before 8D3. These server work units do not complete 8D2/8D/Sprint 8 or the goal.
+All changes are local/uncommitted on the scoped branch; no reviewer, publication, merge, operator
+migration, live AWS/IdP/IAM/secret/deployment/production or later-sprint operation occurred.
+
+Post-owner checks passed 266 coordination/config/validation-environment/owner cases in 1.35s,
+Ruff lint, 464-file formatting and whitespace. An earlier post-owner selection passed 265 in
+1.31s before explicitly including the new validation-environment test; it is not counted as
+coverage of that new test. Compose schema passed with isolated process defaults and an explicit
+NUL env-file; no service started. The full image/startup and complete regression/browser gates
+remain pending. All runtime dashboard and signed API/PostgreSQL test bytes still match the
+458-case freeze; subsequent changes are owner prose/example comments, explicit legacy-test/
+validation flag isolation and its new unit test. All 79 branches, three worktrees and three
+unrelated parent skill hashes are preserved. No tracked files are staged or committed.
+
+### Local 8D2 manual UI work unit 2026-10-15 not accepted
+
+Implemented dedicated closed operation clients and authenticated hint guards without widening
+the existing login/logout or READ clients. Missing issuer/feature hints preserve legacy READ-only
+behavior. Provided malformed metadata and unsupported/coercive/extra operation fields fail
+closed. Fixed same-origin endpoints carry only CSRF/context and typed input; the server supplies
+the UUID key. Immutable response comparisons bind actor, body, IDs and nonrenewing deadline.
+Reason normalization matches the accepted Python strip behavior, including Unicode differences
+from JavaScript trim. Frontend role/pair checks are affordances; BFF/API authority remains final.
+
+The session-level workflow recovers with GET only on mount/reload, exposes manual refresh, and
+requires review of plain frozen target/input/actor/risk/digest fields plus a separate checkbox/
+submission. Same-target unresolved intents cannot silently acquire a replacement key. Lost
+responses retain browser uncertainty separately from server state/attempt count. Generation
+guards ignore superseded reads; missing/regressed same-session records stop new preparation.
+No POST occurs in an effect or automatic retry. Logout/401/unmount immediately clears private
+coordination and ignores late responses; a public reconciliation warning survives sign-out.
+No Web Storage, bearer token, generic POST, worker launcher or ordinary Start scan is added.
+
+All five action forms are connected to exact retained history: completed EC2-004 FAIL proposal;
+different-pair approval/rejection; any-APPROVE revocation including the proposer; third-pair
+admission only without an existing execution; normal-ACK linked verification with active/three-
+attempt limits. Stale rejection remains available while approval is blocked. Expired/revoked
+write authority does not hide normal-ACK observation; quarantine/late ACK is never eligible.
+Confirmed requests refresh READ history only, not another mutation. Existing finding, technical,
+approval, execution/reservation and verification labels remain separate. The variable operation
+panel stays below scan selection, with a header jump link and explicit focus on new preparation.
+
+React quality guidance kept mutation logic in event handlers, bounded session-local state,
+primitive recovery dependencies, cleanup/generation guards and native labeled keyboard forms.
+No framework, dependency, backend/domain schema, migration, scanner or worker changes occurred.
+The documentation workflow reconciled current owner claims while retaining predictions/failures.
+
+Exact local frontend validation used existing Node 24.19.0 and pnpm 11.19.0, without installs:
+
+- First targeted client run: 73 cases/two files passed in 24.44s. Typecheck then failed on the
+  deliberate extra-field test's direct union cast. The test now explicitly crosses an unknown
+  input boundary; its rejection assertion and production validation remain intact.
+- After adding UI tests, targeted 75 cases passed in 3.26s; typecheck/lint, all 287 cases/12 files
+  in 9.13s and build in 560ms passed. This was a frontend unit/build check, not a signed browser run.
+- After layout/retained-control and App logout/401 tests were added, targeted 75 cases passed
+  in 3.30s; typecheck caught two unsupported Testing Library selector options. Anchored exact-name
+  matchers corrected these new tests without reducing their assertions.
+- Corrected current run: targeted **75 cases/two files in 3.16s**, typecheck and lint passed;
+  complete frontend units **289 cases/13 files in 8.88s**, followed by typecheck/build in **142ms**.
+  All 208 accepted frontend cases remain, plus 81 new client/workflow/App cases. No skips,
+  dependency update or weakened auth/security/timeout/retry behavior.
+
+New tests cover explicit preparation versus confirmation, original-key uncertain retry, strict
+roles/identity/hints/versions/scalars, Unicode/size/date bounds, same-session StrictMode recovery
+without POST, superseded/missing recovery, private logout/401/unmount clearing, no self-approval/
+admission bypass, proposer revocation, stale rejection and normal-ACK verification affordances.
+These are mocked client transports, not proof of the complete signed browser/API/database story.
+
+The full-story verification skill identified the next required boundary: a separately isolated,
+opt-in browser fixture must prove native signed three-human actions through the BFF, real bearer
+APIs and disposable PostgreSQL while preserving all 88 accepted default-off browser journeys.
+Existing global fixture histories must not be reordered by new proposals. Browser protocol/
+runtime proof, additional adversarial server tests, full backend/all-PostgreSQL regression,
+image/startup/default-off proof, independent review and delivery gates remain. 8D3 still requires
+the genuine installed offline worker and managed reader/full adverse UI matrix; 8E still closes
+the whole sprint. No reviewer, commit, push, PR, merge, operator migration, live-provider/
+IdP/IAM/secret/deployment/production or later-sprint operation occurred. The full goal stays active.
+
+### Local 8D2 signed browser and adverse API validation 2026-10-15 not accepted
+
+This checkpoint supersedes the pending signed-browser statements in the preceding local work
+units, not their predictions or failure history. 8D2 remains IN PROGRESS; 8D3/8E remain required.
+
+Added a test-only flag-enabled process with a real controlled OIDC issuer, three separate
+browser contexts and genuine bearer API authorization against disposable PostgreSQL. Each new
+journey owns a UUID-derived schema, guarded by an explicit loopback test-database check and
+ownership marker; short DDL transactions end before HTTP. Only its owned child/schema is
+removed. The existing default-off fixture, source history and 88 accepted journeys are unchanged.
+Environment and PostgreSQL guidance kept secrets server-side, isolated test configuration and
+short database transactions; no operator env-file, credential, schema or privilege was changed.
+
+The native workflow prepares a proposal, reloads and recovers the same UUID, separately confirms,
+uses a second human for approval and a third for QUEUED execution admission, then requests
+verification of a separately seeded normal-ACK execution and revokes approval. Typed immutable
+READ bindings, distinct actor pairs, exact POST counts, no Web Storage and logout clearing pass.
+The recording executor proves request admission only: no installed worker or actual rescan runs,
+no VERIFIED verdict is claimed, and revocation does not cancel the queued execution.
+
+Validation history:
+
+- The schema helper initially passed 20 cases/failed one malformed-URL case in 0.87s. Catching
+  SQLAlchemy's URL exception with a sanitized error corrected it: 21 passed in 0.10s. Initial
+  formatting/import-order errors were corrected normally. Three new TypeScript unsafe-finally
+  errors were fixed by reusing the accepted primary-error-preserving cleanup helper.
+- The first focused browser run failed after proposal, approval, admission and verification
+  request confirmation: Chromium one failure, Firefox not run, plus a secondary cleanup error.
+  The new test waited for nested verification history after the confirmation READ refresh had
+  reset execution selection. It now explicitly reopens the exact execution before its exact
+  verification. No application code, assertion, test timeout or retry policy changed. The
+  secondary error's cause remains unconfirmed; the first-page snapshot does not prove the failed
+  requester page's state. The complete failed primary and synthetic error context are retained.
+- Corrected focused browser run: two passed in 35.0s (Chromium 6.2s, Firefox 9.7s). Complete suite:
+  **90 passed in 2.6 minutes**, 45 per project, one worker, zero retries/skips, unchanged 30-second
+  test timeout. All 90 file/line/column/title/project identities matched current collection.
+  All 559 frozen source paths/hashes and owned process/database/network cleanup passed. The new
+  fixture has its own setup/teardown budget, separate from the unchanged test timeout.
+- Five new adverse API cases are mirrored on PostgreSQL: concurrent submit while a committed
+  response is held; logout before that response returns; real timeout after commit followed by
+  explicit identical retry; fresh capability loss before uncertain retry; capacity rejection
+  without eviction or dispatch. Initial new-test expectations omitted stored actor roles/
+  capability (two passed/one failed in 4.60s), expected 201 rather than replay 200 (four passed/
+  one failed in 7.58s), and used roles instead of the existing Principal.role_names field (three
+  passed/one failed in 5.99s, 65 deselected). Those test-only corrections preserve full assertions
+  and accepted application behavior. Corrected selection: **10 passed in 16.83s**, including all
+  five PostgreSQL cases, 65 deselected, no warnings/skips; exact owned tmpfs cleanup and all 559
+  source hashes passed. Deselection is a focused selection, not a complete regression claim.
+
+The verification skill required the real browser-to-database story. The documentation skill
+guided surgical current-owner updates while preserving historical predictions and failures.
+Complete backend/all-PostgreSQL, current frontend, image/startup/default-off validation and exact-
+commit independent review/delivery gates remain. No reviewer, commit, push, PR, merge, operator
+migration, live AWS/IdP/IAM/secret/deployment/production or later-sprint operation occurred.
+
+### Local 8D2 complete regression and runtime checks 2026-10-15 not accepted
+
+All local 8D2 validation gates passed before independent review. This checkpoint supersedes
+earlier pending local-validation statements, not their predictions or failed receipts. 8D2
+remains IN PROGRESS; exact-commit review, both complete candidate primary audits, ordinary guarded
+merge and exact-main audit remain required. 8D3/8E and the full Sprint 8 goal remain incomplete.
+
+- Expanded server/API/security/config/contract selection: **490 unique cases passed in 298.49s**,
+  including all **18 new PostgreSQL journeys**, without warnings/skips. Exact source freeze and
+  owned tmpfs cleanup passed. The original 458-case receipt remains historical.
+- Current pinned Node 24.19.0/pnpm 11.19.0 frontend: targeted 75 cases in 3.83s, typecheck/lint,
+  all **289 cases/13 files in 10.75s** and build in 151ms passed. Runtime-expanded collection
+  independently confirms 289 cases; the 99 static definitions are not the expanded case count.
+  Supplementary collection initially failed on sandbox TEMP access; using the same explicit
+  owned workspace TEMP/TMP as the accepted frontend runner corrected collection without changing
+  application/test source or assertions.
+- Ruff lint, **467-file** formatting and whitespace passed. Compose schema, default-off flags
+  and loopback bindings passed using an explicit NUL env-file without starting operator services.
+  The actual application Dockerfile built successfully. Offline non-root Python 3.12.15 image
+  smoke verified **214 current application/Alembic/frontend hashes**, fresh disposable tmpfs
+  migration **20261013_0010**, health/readiness, all five protected bearer POSTs, default-off
+  dashboard mutation 404 and production refusal of development authentication. No host port,
+  operator database, provider token or AWS credential was supplied.
+- Complete backend regression: **4,007 passed/169 files in 4320.91s**, including **714 PostgreSQL
+  cases/34 files**, zero failures/errors/skips. JUnit also records 4,007 cases with no nonpasses.
+  The **22 warnings** are exactly the **19 existing SQLite datetime-adapter warnings** plus three
+  JUnit xunit2/record_property compatibility warnings: the existing investigation-index test and
+  both representative aggregate-plan sizes. Installed pytest source and the complete warning
+  inventory confirm the instrumentation cause. No assertion, warning filter, test, configuration
+  or production behavior was weakened; ordinary CI without JUnit still expects the existing 19.
+- Independent full-primary audit matched all 4,007 unique semantic case identities to current
+  collection. Only the one existing collection-time UUID4 parameter uses its source-proven,
+  closed normalization; eight closed identity guards passed. All **559 source paths/hashes**,
+  branch/head and exact owned cleanup passed before these receipt-only owner edits. The 90-case
+  browser proof still covers unchanged application/UI/browser/harness bytes; later changes were
+  two additional API/database test files and current-owner prose, not runtime behavior.
+
+Private CI-primary validation was updated to the independently collected 4,007/714/289/90 scope
+and all 18 quality/image/cleanup steps. Twenty synthetic rejection checks passed; these are
+auditor tests, not actual candidate/main CI acceptance. Local full-primary SHA-256 is
+`ac72c26ced8f4642fed619b5f75be85c8f0cef0d98dc1c7224da5385130461e0`.
+The expanded-selection primary is
+`9bc0f961d000539a83c0cc288932567c2139b113b7e0d4bfb0b9ba17ac136485`;
+the complete browser primary is
+`be6fac429853f62c094aec5c09c21e7b9ef7cfb2bcee28f9fa3ef39329f94367`.
+
+Accepted remote main still equals `d6a37658f2d34f94d26a475d91b95ef7a511d940`. The scoped candidate
+remains local/uncommitted at this checkpoint. All 79 branches, three worktrees and three unrelated
+parent skill hashes are preserved. No reviewer, publication, merge, operator migration, live
+AWS/IdP/IAM/secret/deployment/production or later-sprint operation occurred. The verification and
+documentation skills guided full-story coverage and qualified receipts without changing design.
+
+Post-receipt checks passed 287 coordination/configuration/environment/owner cases in 1.49s,
+Ruff lint, 467-file formatting and whitespace. Exactly seven current-owner receipt files changed
+since full regression; all validated runtime, UI, browser harness and test bytes remain unchanged.
