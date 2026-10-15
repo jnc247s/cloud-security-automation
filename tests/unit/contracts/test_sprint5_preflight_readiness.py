@@ -410,7 +410,7 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert executable_ids.isdisjoint({"GOV-001", "LOG-002", "LOG-003", "LOG-004"})
     assert "| Sprint 5 | AWS Evidence Expansion | **COMPLETE** |" in roadmap
     assert "| Sprint 6 | Production Security Controls | **COMPLETE** |" in roadmap
-    # Accepted 7A--7E/8A/8B/8C1 remain closed; deep verification/UI/whole-sprint are pending.
+    # Accepted 7A--7E/8A/8B/8C remain closed; dashboard/whole-sprint are pending.
     assert "| Sprint 7 | Dashboard / NIST Technical Posture | **COMPLETE** |" in roadmap
     assert "| Sprint 8 | Human-Approved Remediation | **IN PROGRESS** |" in roadmap
     sprint7 = _read(ROOT / "docs/exec-plans/completed/sprint-7.md")
@@ -452,29 +452,38 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     )
     assert "8B is COMPLETE and 8B3 is COMPLETE" in readme_status
     assert "8B3.1 is COMPLETE" in readme_status
-    assert "8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is IN PROGRESS" in readme_status
-    assert "8D/8E remain PLANNED" in readme_status
+    assert "8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is COMPLETE" in readme_status
+    assert "8D is IN PROGRESS; 8E remains PLANNED" in readme_status
+    assert "Browser writes/recovery belong to 8D2" in readme_status
     assert "8B3 is IN PROGRESS" not in readme_status
     assert "8B3.3 is IN PROGRESS" not in readme_status
     assert "Sprint 8 remains IN PROGRESS" in readme_status
     assert "8B3.2 is IN PROGRESS" not in readme_status
     assert "8B3.2/8B3.3 and 8C--8E remain PLANNED" not in readme_status
     assert "8B3 and 8C--8E remain PLANNED" not in readme_status
-    assert "| 8C | Linked exact-policy read-only verification scan | IN PROGRESS |" in sprint8
+    assert "| 8C | Linked exact-policy read-only verification scan | COMPLETE |" in sprint8
     assert "| 8C1 | Complete linked-verification vertical path | COMPLETE |" in sprint8
     assert (
-        "| 8C2 | Integrated fault/restart, policy and historical-scope acceptance | IN PROGRESS |"
+        "| 8C2 | Integrated fault/restart, policy and historical-scope acceptance | COMPLETE |"
         in sprint8
     )
     assert "**8C1 is COMPLETE**" in roadmap
     assert "`76e0f7866dddb41d3ccd61913fbbeb36d594808e`" in roadmap
     assert "CI 38483896952" in roadmap
     assert "8C1 is COMPLETE" in readme_status
-    assert "**8C2 is IN PROGRESS**" in roadmap
-    assert "8C2 deep acceptance is IN PROGRESS" in readme_status
+    assert "**8C2 is COMPLETE**" in roadmap
+    assert "8C2 deep acceptance is COMPLETE" in readme_status
+    assert "`599e155090b654f09987f3d48e8c431b116ba7c4`" in roadmap
+    assert "CI 38523209002" in roadmap
+    assert "### Accepted 8C2 integrated verification acceptance" in sprint8
+    assert "8C2 is COMPLETE" in readme_status
     assert "### Approved 8C predictions" in sprint8
-    assert "**8C is IN PROGRESS**" in roadmap
-    assert "| 8D | Authenticated dashboard workflow | PLANNED |" in sprint8
+    assert "**8C is COMPLETE**" in roadmap
+    assert "| 8D | Authenticated dashboard workflow | IN PROGRESS |" in sprint8
+    assert "## Approved 8D predictions" in sprint8
+    assert "**8D1 IN PROGRESS:**" in sprint8
+    assert "**8D2 PLANNED:**" in sprint8 and "**8D3 PLANNED:**" in sprint8
+    assert "Ordinary Start scan remains excluded" in sprint8
     assert (
         "| 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |" in sprint8
     )

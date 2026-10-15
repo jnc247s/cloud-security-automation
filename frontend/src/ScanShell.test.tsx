@@ -5,6 +5,34 @@ import type { Posture } from './api';
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/dashboard/'); });
 describe('read-only selection lifecycle', () => {
+  it('explicit Back clears selection, returns focus and keeps controls before changing history', async () => {
+    const id = '11111111-1111-1111-1111-111111111111';
+    window.history.replaceState(null, '', `/dashboard/?scan=${id}&other=preserved`);
+    let resolve!: (response: Response) => void;
+    const fetch = vi.fn((url: string) => url.includes(`/scans/${id}`)
+      ? new Promise<Response>(done => { resolve = done; })
+      : Promise.resolve(new Response(JSON.stringify({ items: [], total: 0, limit: 25, offset: 0 }))));
+    vi.stubGlobal('fetch', fetch); render(<ScanShell context={'A'.repeat(43)} onError={() => undefined} />);
+    await screen.findByText('No scans on this page.');
+    const input = screen.getByLabelText('Open scan by UUID');
+    expect(input.compareDocumentPosition(screen.getByText('No scans on this page.')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to scan selection' }));
+    expect(input).toHaveFocus(); expect(input).toHaveValue('');
+    expect(new URLSearchParams(window.location.search).has('scan')).toBe(false);
+    expect(new URLSearchParams(window.location.search).get('other')).toBe('preserved');
+    await act(async () => resolve(new Response('{}')));
+    expect(screen.queryByText('Loading selected scan…')).not.toBeInTheDocument();
+    expect(screen.getByText(/Select a scan to view/)).toBeInTheDocument();
+  });
+  it('browser Back restores a deep-link selection without making selection choose latest', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [], total: 0, limit: 25, offset: 0 }))));
+    render(<ScanShell context={'A'.repeat(43)} onError={() => undefined} />);
+    await screen.findByText('No scans on this page.');
+    window.history.replaceState(null, '', '/dashboard/?scan=11111111-1111-1111-1111-111111111111');
+    fireEvent.popState(window);
+    expect(screen.getByLabelText('Open scan by UUID')).toHaveValue('11111111-1111-1111-1111-111111111111');
+    expect(screen.getByRole('button', { name: 'Back to scan selection' })).toBeInTheDocument();
+  });
   it('renders hostile metadata as text and unavailable counts never become a passing result', () => {
     const hostile = '<img src=x onerror=alert(1)>';
     const report: Posture = {

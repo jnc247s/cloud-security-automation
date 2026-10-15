@@ -4,6 +4,7 @@ import { assessmentBound, eligibility, exceptionPage, findingPage, isAssessmentD
   type Assessment, type Citation, type Endpoint, type Finding, type Outcome, type Relationship, type Scope } from './investigation-api';
 import { Metadata, mismatch, Paging, Payload, ReadState } from './InvestigationUI';
 import { useInvestigationRead, type ReadProps } from './useInvestigationRead';
+import { RemediationHistory } from './RemediationHistory';
 
 export interface GraphSelection { kind: 'source-outcomes' | 'relationships'; id: string;
   citation?: Citation; outcome?: Outcome; relationship?: Relationship; provenance?: Relationship['provenance'] }
@@ -52,6 +53,7 @@ function BoundAssessment({ value, scope, readProps, selectGraph }: { value: impo
   scope: Scope; readProps: ReadProps; selectGraph: SelectGraph }) {
   const control = useInvestigationRead(`api/controls/${value.control_id}`, isControl, readProps);
   const [operational, setOperational] = useState(false);
+  const [remediation, setRemediation] = useState(false);
   const versions = control.data?.value.versions.filter(v => v.control_version_id === value.control_version_id);
   const version = versions?.[0];
   const definition = scope.controls.find(c => c.control_version_id === value.control_version_id && c.control_id === value.control_id);
@@ -91,6 +93,8 @@ function BoundAssessment({ value, scope, readProps, selectGraph }: { value: impo
     <Payload value={value.framework_mappings} label="Retained mapping provenance (not a NIST result)" />
     <button onClick={() => setOperational(v => !v)} aria-expanded={operational}>Current findings and exceptions</button>
     {operational ? <Operational key={value.assessment_id} assessment={value} readProps={readProps} /> : null}
+    <button onClick={() => setRemediation(v => !v)} aria-expanded={remediation}>Remediation history for this finding</button>
+    {remediation ? <RemediationHistory anchor={{ assessment: value, scope }} readProps={readProps} /> : null}
   </>;
 }
 

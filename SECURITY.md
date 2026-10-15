@@ -1,10 +1,10 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7,
-Sprint 8A/8B and default-off 8C1. The accepted implementation
-`main` baseline is `76e0f7866dddb41d3ccd61913fbbeb36d594808e` (PR #68;
-corrected-head REVIEW_PASS, both first-attempt candidate primary audits and complete exact-main CI
-38483896952 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
+Sprint 8A/8B and default-off 8C. The accepted implementation
+`main` baseline is `599e155090b654f09987f3d48e8c431b116ba7c4` (PR #69;
+exact-commit REVIEW_PASS, both first-attempt candidate primary audits and complete exact-main CI
+38523209002 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
@@ -569,11 +569,24 @@ Verification is independent of execution, finding and technical status. Complete
 with unchanged complete KMS context is a historical VERIFIED observation, not evidence of worker
 causation, existing-volume encryption, usable key access or lasting state. KMS drift can remain
 INCONCLUSIVE even when unchanged technical policy legitimately resolves the finding. Full-scope
-scans may affect other findings normally. 8C1 validation/review/delivery passed; separate 8C2
-test-only deep acceptance is in progress. No operator migration, credential, IAM, live-provider or
-production authority is granted.
+scans may affect other findings normally. 8C1 and integrated 8C2 acceptance/review/delivery passed.
+8C2's bounded receipt-read refresh adds no writes, locks, caller commit/rollback or proof/audit
+bypass. Signed authority, all four retained scopes, installed reader credentials and recovery
+were validated offline; this does not prove physical deployment isolation. No operator migration,
+credential, IAM, live-provider or production authority is granted.
 
 ## Production authorization
+
+The approved 8D1 dashboard candidate permits only six additional typed remediation-history GETs
+through the same exact-origin/session/context and real bearer/READ boundary. Unknown/duplicate
+queries and invalid IDs fail before forwarding; no browser URL/method/credentials can be selected.
+Final logout/expiry rejection and secured no-store errors remain. Client schemas and immutable
+ID/policy bindings prevent misleading display, not authorization or independent cryptographic
+proof. Current validity uses server timestamps/reasons, never browser time or approval alone.
+Quarantine, admission/ACK and verification/finding/technical status stay separate. No browser
+mutation, worker launch, AWS/DB shortcut, new role, configuration flag or bootstrap identity hint
+is implemented in 8D1; the separately approved 8D2 boundary still requires its implementation and
+acceptance gates. Existing trust-domain/process/physical-isolation and live-operation limits apply.
 
 Writing code or configuration never authorizes execution against production. Explicit human
 authorization is required for production deployment, Terraform apply, destructive AWS action,

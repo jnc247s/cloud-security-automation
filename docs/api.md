@@ -177,11 +177,16 @@ accepted deployment assumption is one trusted security domain.
 | `EXECUTE` | `POST /api/v1/remediations/{proposal_id}/executions` | Record a third-human request only (accepted 8B1) |
 | `READ` | `GET /api/v1/remediation-executions` | List requests and derived validity (accepted 8B1) |
 | `READ` | `GET /api/v1/remediation-executions/{execution_id}` | Read request, journal and reservation state (accepted 8B1) |
+| `EXECUTE` | `POST /api/v1/remediation-executions/{execution_id}/verifications` | Request one linked full-retained-policy read-only scan (accepted 8C1) |
+| `READ` | `GET /api/v1/remediation-verifications` | List immutable verification attempts (accepted 8C1) |
+| `READ` | `GET /api/v1/remediation-verifications/{verification_id}` | Read request and optional sealed historical receipt (accepted 8C1) |
 
-There is no exception-detail route, audit route, finding/exception mutation, rescan/retry,
+There is no exception-detail route, audit route, finding/exception mutation, generic scan retry,
 cancellation, proposal withdrawal, AWS remediation dispatch or arbitrary AWS-call endpoint.
-`AuditService` is an internal service boundary only. The dashboard BFF allowlist is unchanged and
-does not proxy these new authority routes; dashboard cookies never authenticate `/api/v1`.
+The scoped manual linked-verification rescan is described below; it does not retry an AWS write.
+`AuditService` is an internal service boundary only. The dashboard BFF does not proxy the POST
+operations above. The approved 8D1 READ candidate below adds six fixed remediation-history GETs;
+dashboard cookies never authenticate `/api/v1`.
 
 <a name="sprint-8a-proposal-and-decision-contract--local-pending-acceptance"></a>
 
@@ -334,8 +339,9 @@ unimplemented. The scanner still uses read-only credentials.
 <a name="linked-remediation-verification-8c1-candidate"></a>
 ## Linked remediation verification 8C1
 
-This interface is accepted through PR #68 and complete exact-main CI 38483896952, but remains
-default off and undeployed. It requires migration `20261013_0010`. Scanner credentials remain read-only; no caller
+This interface is accepted through PR #68 and complete exact-main CI 38483896952; integrated
+8C2 acceptance and coherent receipt reads passed through PR #69 and exact-main CI 38523209002.
+It remains default off and undeployed. It requires migration `20261013_0010`. Scanner credentials remain read-only; no caller
 write identity, arbitrary AWS action, profile override or existing-scan attachment is accepted.
 
 | Route | Capability | Contract |
@@ -743,6 +749,34 @@ It is metadata, not authority, a transaction timestamp, active-ID computation ti
 state. Error/nonoperational responses do not carry it; `/api/v1` response bodies/headers are unchanged.
 The UI displays stored status separately from eligibility at this reference and fails unavailable
 for missing/invalid times. Technical four-state results never change with operational handling.
+
+### Sprint 8D1 remediation history READ candidate
+
+The approved 8D1 implementation adds only the following BFF GET allowlist entries. Its
+validation/review/delivery gates remain pending. All use the existing enabled OIDC dashboard,
+opaque session, matching public context, exact origin, real bearer/READ enforcement and final
+logout/expiry check. Lists default to 25, permit 1..100 and nonnegative offset, reject duplicate
+or unknown queries, and return unchanged upstream JSON/status. Detail IDs are UUIDs with no
+queries. Responses/errors retain no-store and scoped security headers. No new bootstrap field,
+capability, `/api/v1` schema or mutation adapter is added in this slice.
+
+| Path after /dashboard/api/ | List filters beyond limit/offset |
+| --- | --- |
+| remediations | finding_id UUID, account_id 12 digits |
+| remediations/{proposal_id} | none; detail only |
+| remediation-executions | proposal_id UUID |
+| remediation-executions/{execution_id} | none; detail only |
+| remediation-verifications | execution_id UUID |
+| remediation-verifications/{verification_id} | none; detail only |
+
+Remediation validity uses existing `validity_checked_at` body fields rather than the operational
+`X-Dashboard-Read-At` header; immutable receipt/history reads do not invent one. Independent reads
+are not an atomic mixed report. Unknown versions, coercive scalars and inconsistent nested IDs
+must not render success. Historical approval, current blockers, v1 human/v2 worker phase and
+reservation, verification verdict, technical result and current finding disposition stay separate.
+These filters and client bindings do not add tenant isolation. Details remain potentially large;
+bounded display is not a network-payload bound. Every browser mutation/worker-launch/scan-start
+path remains unavailable; the approved 8D2 prepared-operation contract is not implemented yet.
 
 ### 7D client-only NIST context — accepted
 

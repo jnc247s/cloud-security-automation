@@ -44,8 +44,12 @@ both final-head CI runs and green
 [exact merged-main CI 38185057377](https://github.com/jnc247s/cloud-security-automation/actions/runs/38185057377).
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
-8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is IN PROGRESS and 8D/8E remain PLANNED.
-The approved R1--R3 linked-verification path is accepted in 8C1; 8C2 deep acceptance is IN PROGRESS.
+8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is COMPLETE. 8D is IN PROGRESS; 8E remains PLANNED.
+The user approved the [8D design](docs/sprint-8d-preflight.md). Its first candidate adds
+read-only remediation history and explicit Back to scan selection/focus return with stable
+controls; validation/review/delivery remain pending. Browser writes/recovery belong to 8D2;
+ordinary Start scan remains excluded. No live AWS, worker operation or later sprint is authorized.
+The approved R1--R3 linked-verification path is accepted in 8C1; 8C2 deep acceptance is COMPLETE.
 Combined signed fault/race/recovery
 tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
 and its test-only repair [PR #64](https://github.com/jnc247s/cloud-security-automation/pull/64)
@@ -79,6 +83,16 @@ corrected-head REVIEW_PASS, both complete candidate primary audits, ordinary gua
 Each run passed 3,646 backend cases (628 PostgreSQL), 139 frontend cases, all 76 browser journeys
 and all 18 quality/image/cleanup steps without skips or retries. Accepted migration head is
 `20261013_0010`; operator migrations and live enablement are not automatic. UI mutation remains unimplemented.
+8C2 is COMPLETE through [PR #69](https://github.com/jnc247s/cloud-security-automation/pull/69) at
+`599e155090b654f09987f3d48e8c431b116ba7c4`, with exact-commit REVIEW_PASS, both complete
+first-attempt candidate audits, ordinary guarded merge and
+[exact-main CI 38523209002](https://github.com/jnc247s/cloud-security-automation/actions/runs/38523209002).
+Each run passed 3,755 backend cases/163 files (696 PostgreSQL cases/33 files, no skips), 139
+frontend cases, all 76 browser journeys and all 18 quality/image/cleanup steps. Its bounded
+read-only coherence repair adds no API/schema/authority change; scanner credentials remain
+read-only. Historical failures, undeployed/live-provider limits and the user's untriaged
+scan-picker/back-navigation report remain. Dashboard workflow and whole-sprint acceptance are
+still required; no general scan-start browser action is added by this slice.
 Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.

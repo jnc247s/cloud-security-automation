@@ -16,6 +16,7 @@ from starlette.staticfiles import StaticFiles
 from app.config import Settings
 from app.dashboard.investigation_routes import install_investigation
 from app.dashboard.oidc import OIDCClient
+from app.dashboard.remediation_routes import install_remediation_reads
 from app.dashboard.store import BrowserSession, CapacityError, SessionStore, matches_opaque
 from app.security.authentication import AuthenticationError, get_authentication_backend
 
@@ -241,6 +242,7 @@ def install_dashboard(application, settings: Settings) -> None:
         return await boundary.read(request, f"/api/v1/scans/{scan_id}/technical-posture")
 
     install_investigation(router, boundary)
+    install_remediation_reads(router, boundary)
 
     static = Path(settings.dashboard_static_dir).resolve()
     if not (static / "index.html").is_file() or not (static / "assets").is_dir():

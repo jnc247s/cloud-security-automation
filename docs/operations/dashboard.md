@@ -13,13 +13,37 @@ The documentary closeout is accepted through
 both green final-head CI runs and green
 [final main CI](https://github.com/jnc247s/cloud-security-automation/actions/runs/37268875724).
 All 7A--7E states are COMPLETE and the plan is archived. Sprint 8 was NEXT at that closeout;
-it is now IN PROGRESS with accepted 8A bearer proposal/decision APIs through PR #53.
-The dashboard remains READ-only and does not proxy those routes; execution, verification scans
-and browser mutations remain later bounded slices under the active Sprint 8 plan.
+it is now IN PROGRESS with accepted 8A/8B/8C backend authority, isolated worker and linked
+verification through PR #69 and complete exact-main CI 38523209002. Those backend capabilities
+remain default off where configured and grant no live-operation or deployment authority.
+The accepted baseline dashboard remains READ-only. The approved 8D1 candidate adds six typed
+remediation history GETs and the navigation changes below; validation/review/delivery remain
+pending. The user approved D1--D3 after the separate 8D preflight. Browser mutations/recovery
+belong to 8D2 and remain unimplemented. No public worker-launch route or general scan-start
+browser action exists.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
 ## Configuration and startup
+
+The 8D1 candidate changes no configuration/default or schema. Open an exact retained assessment,
+then select **Remediation history for this finding**. EC2-004 history lists proposals for the
+bound finding; a proposal from another occurrence is explicitly labeled, never substituted for
+the selected assessment. Details load on demand: proposal/decision, execution journal, then
+verification intent/receipt. Lists default to 25 and cap at 100 through the existing READ adapter.
+Unsupported versions/identities fail closed. This is not browser mutation or worker operation.
+
+Historical approval and current server-derived blockers are separate. Execution admission/ACK
+is not verification. VERIFICATION may remain INCONCLUSIVE despite technical PASS; finding handling
+remains a separate current view. Validity timestamps describe separate reads, not a frozen mixed
+report or a browser-computed grant. Displayed digests are provenance references, not independent
+verification of absent source bytes. Quarantine/late ACK never authorizes resend or verification.
+
+Use **Back to scan selection** to clear the report and return focus to the UUID input. Selection
+and page controls remain above the changing history list. Browser Back/deep links and the current
+history offset remain intact; the latest scan is never selected automatically. An empty page
+does not prove an empty database. No saved scans returned at offset zero directs the operator
+to the existing EXECUTE-only bearer scan API, without automatically creating or retrying a scan.
 
 Defaults are unchanged: `DASHBOARD_ENABLED=false` adds no dashboard routes or session handling.
 When enabled, set these through trusted operator configuration, never browser input:
