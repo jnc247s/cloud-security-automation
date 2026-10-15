@@ -3978,3 +3978,34 @@ formatting and whitespace passed. Hash/path comparison confirms that only CHANGE
 and this plan differ from the full-run freeze. Every runtime/test/migration/configuration and
 frontend byte remains unchanged. This is ready for scoped commit and exact-commit review,
 not publication or slice acceptance before the remaining gates pass.
+
+### 8D1 independent review and owner correction 2026-10-15
+
+Exact-commit independent review returned **REVIEW_FAIL with one LOW documentation finding** at
+`62a54680a712b27712571ba25ea003f8f03973bf`, tree
+`036b47ff9fd9b020a5bdf12a1f8a1a8a6a6d1a2f`. The API overview incorrectly said the BFF allowlist
+was unchanged and proxied none of the remediation routes, contradicting the six new READs and
+its own 8D1 section. No additional correctness, security or compatibility finding was identified
+across the 27-path candidate. The original failed verdict remains historical, not replaced by
+the correction's self-checks.
+
+Fresh independent execution passed 273 API/security/owner cases in 130.05s and 208 frontend
+cases/10 files in 6.43s, without warnings/skips; typecheck/lint/build, Ruff, 456-file formatting
+and whitespace passed. The reviewer independently audited, rather than reran, all 3,812 backend
+primary identities/164 files including 696 PostgreSQL cases/33 files and all 88 browser identities.
+Both primary hashes matched; the one source-proven UUID4 collection label retained its closed
+normalization. The 19 existing SQLite warnings and first failed browser run remain qualified
+as above. Source/index/branch/worktree/parent-skill preservation and exact owned cleanup passed.
+
+The bounded owner correction limits the overview prohibition to the unproxied POST operations,
+names the six candidate history GETs and preserves cookie/bearer separation. Only API prose
+and this review receipt change; runtime/tests/frontend/schema/defaults/credentials do not.
+Owner/quality/fingerprint checks and an exact corrected-commit review remain required before
+publication. 8D1/8D/Sprint 8 remain IN PROGRESS; no 8D2/8D3/8E or later-sprint work starts here.
+
+The owner-only correction passed all 103 contract checks in 0.68s, Ruff lint, 456-file formatting
+and whitespace checks. Exact path/hash comparison against the retained 539-file full-run freeze
+allows only CHANGELOG, ROADMAP, this plan and the reviewed API prose correction to differ;
+all runtime, tests, frontend, migrations and configuration bytes remain unchanged. The original
+freeze and primary logs are retained. A separate logical repair commit preserves the reviewed
+implementation commit; exact corrected-head review and all delivery gates remain pending.

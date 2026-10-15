@@ -184,8 +184,9 @@ accepted deployment assumption is one trusted security domain.
 There is no exception-detail route, audit route, finding/exception mutation, generic scan retry,
 cancellation, proposal withdrawal, AWS remediation dispatch or arbitrary AWS-call endpoint.
 The scoped manual linked-verification rescan is described below; it does not retry an AWS write.
-`AuditService` is an internal service boundary only. The dashboard BFF allowlist is unchanged and
-does not proxy these new authority routes; dashboard cookies never authenticate `/api/v1`.
+`AuditService` is an internal service boundary only. The dashboard BFF does not proxy the POST
+operations above. The approved 8D1 READ candidate below adds six fixed remediation-history GETs;
+dashboard cookies never authenticate `/api/v1`.
 
 <a name="sprint-8a-proposal-and-decision-contract--local-pending-acceptance"></a>
 
