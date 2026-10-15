@@ -4332,3 +4332,32 @@ documentation skills guided full-story coverage and qualified receipts without c
 Post-receipt checks passed 287 coordination/configuration/environment/owner cases in 1.49s,
 Ruff lint, 467-file formatting and whitespace. Exactly seven current-owner receipt files changed
 since full regression; all validated runtime, UI, browser harness and test bytes remain unchanged.
+
+### 8D2 independent review and API overview correction 2026-10-15 not accepted
+
+The existing independent reviewer returned **REVIEW_FAIL** at
+`653e0e9fd077ad335b2fd0c0f7ea2bb86fff9a16`, tree
+`70aa197bf5dde28c340f1fb77c688ceb97ffe539`, with one **LOW** documentation finding. The API overview
+unqualifiedly said the BFF did not proxy the listed POSTs, contradicting the explicitly enabled
+8D2 submit path. It now distinguishes accepted 8D1/the generic READ-only adapter from the
+separately opt-in typed routes re-entering only the five remediation POSTs. Generic mutation/
+ordinary scan POST/worker-launch exclusions and cookie/bearer separation remain explicit.
+No runtime, security or compatibility finding was identified across all 47 candidate files.
+This is a documentation-only correction, not an architecture or implementation change.
+
+Independent execution passed **347 cases in 106.21s**, including all **18 new PostgreSQL
+journeys**, without warnings/skips, using the focused owned-database helper and fresh basetemp.
+Pinned frontend verbose tests passed **289 cases/13 files in 10.54s**, plus typecheck/lint/build;
+Ruff lint, 467-file formatting, committed whitespace and fresh complete collection passed.
+The reviewer independently matched all 4,007 backend primary/JUnit/collection cases and all
+90 unique browser identities, qualified the 22 warnings, and verified the complete source
+freezes and seven owner-only differences. Frontend results match collection as a multiset:
+281 distinct displayed names plus eight repeated parameter labels, not 289 unique names.
+Compose/image execution was carried evidence, not independently rerun by the reviewer.
+
+Review preserved all 153 refs including 79 branches, all three worktrees, unrelated parent skill
+hashes, the clean candidate and pre-existing containers/networks. Only reviewer-owned temporary
+database/directories were removed; primary review logs were retained. The original failed review
+and first browser failure/qualified unknown secondary cause remain historical. Corrected-head
+independent REVIEW_PASS, both complete candidate primary audits, guarded merge and complete
+exact-main audit remain required. No publication, live operation or 8D3/8E implementation occurred.
