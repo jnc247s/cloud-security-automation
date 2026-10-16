@@ -59,6 +59,7 @@ def validate(focused: list[str], *, dashboard: bool = False) -> None:
             f"postgresql+psycopg://cloudsec_test:{password}@127.0.0.1:{port}/cloudsec_test"
         )
         env["DASHBOARD_ENABLED"] = "false"
+        env["DASHBOARD_REMEDIATION_ENABLED"] = "false"
         deadline = monotonic() + 60
         while run(
             "docker",

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Metadata, mismatch, Paging, Payload, ReadState } from './InvestigationUI';
 import { useInvestigationRead, type ReadProps } from './useInvestigationRead';
+import { AdmissionAction, ProposalActions, ProposeRemediation, VerificationAction } from './RemediationActions';
+import { useRemediationWorkflow } from './RemediationWorkflow';
 import { exactOccurrence, executionBound, executionPage, isExecution, isProposal, isVerification,
   proposalPage, sameFinding, sameImmutable, verificationBound, verificationPage,
   type Execution, type Proposal, type RemediationAnchor, type Verification } from './remediation-api';
@@ -13,12 +15,14 @@ export function RemediationHistory({ anchor, readProps }: { anchor: RemediationA
   return <ProposalHistory key={`${anchor.assessment.assessment_id}:${readProps.context}`} anchor={anchor} readProps={readProps} />;
 }
 function ProposalHistory({ anchor, readProps }: { anchor: RemediationAnchor; readProps: ReadProps }) {
+  const workflow = useRemediationWorkflow();
   const [offset, setOffset] = useState(0), [selected, setSelected] = useState<Proposal | null>(null), [revision, setRevision] = useState(0);
-  const state = useInvestigationRead(`api/remediations?finding_id=${anchor.assessment.finding_id}&limit=25&offset=${offset}`, proposalPage, readProps, revision);
+  const state = useInvestigationRead(`api/remediations?finding_id=${anchor.assessment.finding_id}&limit=25&offset=${offset}`, proposalPage, readProps, revision + (workflow?.revision ?? 0));
   const page = state.data?.value;
   const bound = page && page.limit === 25 && page.offset === offset && page.items.every(p => sameFinding(p.content, anchor));
   return <section aria-label="Remediation history"><h4>Remediation history</h4>
     <p>Read-only history for this exact finding. Historical approval, current blockers, execution, verification and technical results are separate. No worker is launched here.</p>
+    <ProposeRemediation anchor={anchor} />
     <button onClick={() => { setSelected(null); setRevision(v => v + 1); }}>Refresh remediation history</button>
     <ReadState error={state.error} ready={Boolean(page)} />
     {!state.error && page ? !bound ? <p role="alert">{mismatch}</p> : !page.items.length ? <p>No remediation proposals on this page. Absence of remediation is not PASS or verified.</p>
@@ -32,7 +36,8 @@ function ProposalHistory({ anchor, readProps }: { anchor: RemediationAnchor; rea
   </section>;
 }
 function ProposalDetail({ selected, anchor, readProps }: { selected: Proposal; anchor: RemediationAnchor; readProps: ReadProps }) {
-  const state = useInvestigationRead(`api/remediations/${selected.content.proposal_id}`, isProposal, readProps);
+  const workflow = useRemediationWorkflow();
+  const state = useInvestigationRead(`api/remediations/${selected.content.proposal_id}`, isProposal, readProps, workflow?.revision ?? 0);
   const p = state.data?.value;
   const bound = p && sameImmutable(p.content, selected.content) && p.proposal_sha256 === selected.proposal_sha256 && sameFinding(p.content, anchor);
   return <><ReadState error={state.error} ready={Boolean(p)} />
@@ -50,16 +55,19 @@ function ProposalDetail({ selected, anchor, readProps }: { selected: Proposal; a
       <p>Approval is historical, not proof of execution readiness. Current blockers can differ between reads; no browser clock grants authority.</p>
       <Payload value={p.content.baseline} label="Immutable baseline and source bindings" />
       <Payload value={p.decisions} label="Immutable decisions and verified actor context" />
+      <ProposalActions proposal={p} />
       <ExecutionHistory key={p.content.proposal_id} proposal={p} readProps={readProps} />
     </> : null}</>;
 }
 function ExecutionHistory({ proposal, readProps }: { proposal: Proposal; readProps: ReadProps }) {
+  const workflow = useRemediationWorkflow();
   const [offset, setOffset] = useState(0), [selected, setSelected] = useState<Execution | null>(null);
-  const state = useInvestigationRead(`api/remediation-executions?proposal_id=${proposal.content.proposal_id}&limit=25&offset=${offset}`, executionPage, readProps);
+  const state = useInvestigationRead(`api/remediation-executions?proposal_id=${proposal.content.proposal_id}&limit=25&offset=${offset}`, executionPage, readProps, workflow?.revision ?? 0);
   const page = state.data?.value;
   const bound = page && page.limit === 25 && page.offset === offset && page.items.every(e => executionBound(e, proposal));
   return <section aria-label="Execution admission history"><h5>Execution admission history</h5>
     <p>Admission records a third identity's grant. QUEUED is not an AWS call; ACKNOWLEDGED is not a verification verdict.</p>
+    {bound && !state.error ? <AdmissionAction proposal={proposal} hasExecution={page.total > 0} /> : null}
     <ReadState error={state.error} ready={Boolean(page)} />
     {!state.error && page ? !bound ? <p role="alert">{mismatch}</p> : !page.items.length ? <p>No execution requests on this page.</p>
       : <ul>{page.items.map(e => <li key={e.content.execution_id}><button onClick={() => setSelected(e)}>Open execution {e.content.execution_id}</button> {e.phase}</li>)}</ul> : null}
@@ -69,7 +77,8 @@ function ExecutionHistory({ proposal, readProps }: { proposal: Proposal; readPro
   </section>;
 }
 function ExecutionDetail({ selected, proposal, readProps }: { selected: Execution; proposal: Proposal; readProps: ReadProps }) {
-  const state = useInvestigationRead(`api/remediation-executions/${selected.content.execution_id}`, isExecution, readProps);
+  const workflow = useRemediationWorkflow();
+  const state = useInvestigationRead(`api/remediation-executions/${selected.content.execution_id}`, isExecution, readProps, workflow?.revision ?? 0);
   const e = state.data?.value;
   const bound = e && sameImmutable(e.content, selected.content) && e.execution_sha256 === selected.execution_sha256 && executionBound(e, proposal);
   return <><ReadState error={state.error} ready={Boolean(e)} />
@@ -87,11 +96,13 @@ function ExecutionDetail({ selected, proposal, readProps }: { selected: Executio
     </> : null}</>;
 }
 function VerificationHistory({ execution, readProps }: { execution: Execution; readProps: ReadProps }) {
+  const workflow = useRemediationWorkflow();
   const [offset, setOffset] = useState(0), [selected, setSelected] = useState<Verification | null>(null);
-  const state = useInvestigationRead(`api/remediation-verifications?execution_id=${execution.content.execution_id}&limit=25&offset=${offset}`, verificationPage, readProps);
+  const state = useInvestigationRead(`api/remediation-verifications?execution_id=${execution.content.execution_id}&limit=25&offset=${offset}`, verificationPage, readProps, workflow?.revision ?? 0);
   const page = state.data?.value;
   const bound = page && page.limit === 25 && page.offset === offset && page.items.every(v => verificationBound(v, execution));
   return <section aria-label="Read-only verification history"><h5>Read-only verification history</h5>
+    {bound && !state.error ? <VerificationAction execution={execution} page={page} /> : null}
     <ReadState error={state.error} ready={Boolean(page)} />
     {!state.error && page ? !bound ? <p role="alert">{mismatch}</p> : !page.items.length ? <p>No verification attempts on this page. This is not verified.</p>
       : <ul>{page.items.map(v => <li key={v.content.verification_id}><button onClick={() => setSelected(v)}>Open verification {v.content.verification_id}</button>
@@ -102,7 +113,8 @@ function VerificationHistory({ execution, readProps }: { execution: Execution; r
   </section>;
 }
 function VerificationDetail({ selected, execution, readProps }: { selected: Verification; execution: Execution; readProps: ReadProps }) {
-  const state = useInvestigationRead(`api/remediation-verifications/${selected.content.verification_id}`, isVerification, readProps);
+  const workflow = useRemediationWorkflow();
+  const state = useInvestigationRead(`api/remediation-verifications/${selected.content.verification_id}`, isVerification, readProps, workflow?.revision ?? 0);
   const v = state.data?.value;
   const bound = v && sameImmutable(v.content, selected.content) && v.verification_sha256 === selected.verification_sha256 && verificationBound(v, execution);
   return <><ReadState error={state.error} ready={Boolean(v)} />

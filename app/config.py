@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     dev_identity_subject: str = "local-developer"
     dev_identity_roles: str = "ADMIN"
     dashboard_enabled: bool = False
+    dashboard_remediation_enabled: bool = False
     dashboard_origin: str | None = None
     dashboard_client_id: str | None = None
     dashboard_client_secret: SecretStr | None = None
@@ -255,6 +256,8 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_dashboard_configuration(self) -> "Settings":
         """The opt-in browser boundary never falls back to development authentication."""
+        if self.dashboard_remediation_enabled and not self.dashboard_enabled:
+            raise ValueError("DASHBOARD_REMEDIATION_ENABLED requires an enabled OIDC dashboard")
         if not self.dashboard_enabled:
             return self
         if self.auth_mode != "oidc":

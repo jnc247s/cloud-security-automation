@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { action, APIError, isSession, read, type Session } from './api';
 import { ScanShell } from './ScanShell';
+import { remediationEnabled } from './remediation-operations';
+import { reconciliationNotice, RemediationWorkflow } from './RemediationWorkflow';
 
 export function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [message, setMessage] = useState('Checking sign-in…');
   const [busy, setBusy] = useState(false);
+  const [remediationNotice, setRemediationNotice] = useState(false);
   const generation = useRef(0);
   const channel = useRef<BroadcastChannel | null>(null);
   const currentContext = useRef<string | null | undefined>(undefined);
@@ -24,6 +27,7 @@ export function App() {
         signingOutContext.current = null;
         currentContext.current = value.authenticated ? value.session_context : null;
         setSession(value); setMessage(value.authenticated ? '' : 'Sign in to view scan history.');
+        if (value.authenticated && value.features?.remediation === true) setRemediationNotice(true);
         if (announce) channel.current?.postMessage({ type: 'session', context: currentContext.current });
       }
     } catch (error) {
@@ -124,18 +128,21 @@ export function App() {
 
   return <div className="app">
     <a className="skip" href="#main">Skip to content</a>
-    <header><div><p className="eyebrow">Read-only security console</p>
+    <header><div><p className="eyebrow">{session?.authenticated && remediationEnabled(session) ? 'Human-approved remediation console' : 'Read-only security console'}</p>
       <h1>Cloud Security Control Plane</h1></div>
       {session?.authenticated ? <div className="identity">
         <span>{session.subject} · {session.roles.join(', ')}</span>
+        {remediationEnabled(session) ? <a href="#remediation-operations">Manual operations</a> : null}
         <button onClick={() => { void logout(); }}>Sign out</button>
       </div> : null}
     </header>
     <main id="main"><p className="notice">Technical evidence context, not NIST certification or an organization-wide compliance score.</p>
+      {remediationNotice ? <p className="notice">{reconciliationNotice}</p> : null}
       {message ? <p role="status">{message}</p> : null}
       {new URLSearchParams(window.location.search).get('login') === 'failed' ?
         <p role="alert">Sign-in was not completed. Please try again.</p> : null}
-      {session?.authenticated ? <ScanShell key={session.session_context} context={session.session_context} onError={readError} />
+      {session?.authenticated ? <RemediationWorkflow key={session.session_context} session={session} onError={readError}>
+        <ScanShell context={session.session_context} onError={readError} /></RemediationWorkflow>
         : session ? <button disabled={busy} onClick={() => { void login(); }}>
           {busy ? 'Opening sign-in…' : 'Sign in'}</button>
         : <button onClick={() => { void bootstrap(undefined, true); }}>Retry sign-in check</button>}

@@ -1,12 +1,21 @@
 """Bounded, process-local secrets. A restart deliberately ends all sessions."""
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from hmac import compare_digest
 from secrets import token_urlsafe
 from threading import RLock
 from time import time
+from uuid import UUID, uuid4
 
+from app.dashboard.operations import (
+    OperationExpired,
+    OperationInput,
+    OperationState,
+    OperationUnavailable,
+    PreparedOperation,
+    ResultReference,
+)
 from app.security.authentication import Principal
 
 
@@ -48,12 +57,22 @@ class SessionStore:
         self._lock = RLock()
         self._logins: dict[str, Login] = {}
         self._sessions: dict[str, BrowserSession] = {}
+        self._operations: dict[UUID, PreparedOperation] = {}
 
     def _expire(self) -> None:
         now = self.clock()
         self._logins = {k: v for k, v in self._logins.items() if v.expires > now}
         self._sessions = {
             k: v for k, v in self._sessions.items() if min(v.expires, v.idle_expires) > now
+        }
+        self._operations = {
+            key: (
+                replace(value, state=OperationState.EXPIRED)
+                if value.state == OperationState.PREPARED and value.expires_at <= now
+                else value
+            )
+            for key, value in self._operations.items()
+            if value.session_id in self._sessions
         }
 
     def login(self, browser: str | None = None) -> tuple[str, Login]:
@@ -122,8 +141,99 @@ class SessionStore:
     def revoke(self, identifier: str) -> None:
         with self._lock:
             self._sessions.pop(identifier, None)
+            self._operations = {
+                key: value
+                for key, value in self._operations.items()
+                if value.session_id != identifier
+            }
 
     def clear(self) -> None:
         with self._lock:
             self._sessions.clear()
             self._logins.clear()
+            self._operations.clear()
+
+    def _operation_session(self, identifier: str, actor: Principal) -> BrowserSession:
+        self._expire()
+        session = self._sessions.get(identifier)
+        if not session or (session.principal.issuer, session.principal.subject) != (
+            actor.issuer,
+            actor.subject,
+        ):
+            raise OperationUnavailable
+        return session
+
+    def prepare(
+        self, identifier: str, actor: Principal, operation: OperationInput
+    ) -> PreparedOperation:
+        """Ephemeral coordination only; callers must freshly authorize every request."""
+        with self._lock:
+            session = self._operation_session(identifier, actor)
+            count = sum(value.session_id == identifier for value in self._operations.values())
+            if count >= 16 or len(self._operations) >= 256:
+                raise CapacityError
+            now = self.clock()
+            prepared = PreparedOperation(
+                uuid4(),
+                identifier,
+                (actor.issuer, actor.subject),
+                operation,
+                now,
+                min(now + 300, session.expires, session.idle_expires),
+            )
+            self._operations[prepared.operation_id] = prepared
+            return prepared
+
+    def operations(self, identifier: str, actor: Principal) -> tuple[PreparedOperation, ...]:
+        with self._lock:
+            self._operation_session(identifier, actor)
+            return tuple(
+                value for value in self._operations.values() if value.session_id == identifier
+            )
+
+    def operation(self, identifier: str, actor: Principal, operation_id: UUID) -> PreparedOperation:
+        with self._lock:
+            self._operation_session(identifier, actor)
+            value = self._operations.get(operation_id)
+            if (
+                not value
+                or value.session_id != identifier
+                or value.actor != (actor.issuer, actor.subject)
+            ):
+                raise OperationUnavailable
+            return value
+
+    def claim(
+        self, identifier: str, actor: Principal, operation_id: UUID
+    ) -> tuple[PreparedOperation, bool]:
+        """Claim under one lock, then release it before any network/domain work."""
+        with self._lock:
+            value = self.operation(identifier, actor, operation_id)
+            if value.state in {OperationState.IN_FLIGHT, OperationState.CONFIRMED}:
+                return value, False
+            if value.expires_at <= self.clock():
+                raise OperationExpired
+            claimed = replace(value, state=OperationState.IN_FLIGHT, attempts=value.attempts + 1)
+            self._operations[operation_id] = claimed
+            return claimed, True
+
+    def settle(
+        self,
+        identifier: str,
+        actor: Principal,
+        operation_id: UUID,
+        attempt: int,
+        result: ResultReference | None,
+    ) -> PreparedOperation:
+        """Only validated READ references confirm; all other dispatched outcomes are uncertain."""
+        with self._lock:
+            value = self.operation(identifier, actor, operation_id)
+            if value.state != OperationState.IN_FLIGHT or value.attempts != attempt:
+                return value
+            settled = replace(
+                value,
+                state=OperationState.CONFIRMED if result else OperationState.UNCONFIRMED,
+                result=result,
+            )
+            self._operations[operation_id] = settled
+            return settled

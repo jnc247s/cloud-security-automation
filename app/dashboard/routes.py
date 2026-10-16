@@ -1,4 +1,4 @@
-"""Cookies stop here. A narrow READ adapter still crosses the real bearer API boundary."""
+"""Cookies stop here. Fixed session adapters cross the real bearer API boundary."""
 
 from datetime import UTC, datetime
 from pathlib import Path
@@ -16,9 +16,10 @@ from starlette.staticfiles import StaticFiles
 from app.config import Settings
 from app.dashboard.investigation_routes import install_investigation
 from app.dashboard.oidc import OIDCClient
+from app.dashboard.operation_routes import install_operations
 from app.dashboard.remediation_routes import install_remediation_reads
 from app.dashboard.store import BrowserSession, CapacityError, SessionStore, matches_opaque
-from app.security.authentication import AuthenticationError, get_authentication_backend
+from app.security.authentication import AuthenticationError, Principal, get_authentication_backend
 
 SESSION_COOKIE = "cloudsec_session"
 LOGIN_COOKIE = "cloudsec_login"
@@ -64,19 +65,29 @@ class Dashboard:
         )
 
     async def session(self, request: Request) -> tuple[str, BrowserSession]:
+        identifier, session, _ = await self.verified_session(request)
+        return identifier, session
+
+    async def verified_session(self, request: Request) -> tuple[str, BrowserSession, Principal]:
+        """Return fresh verified identity without changing the accepted two-value READ API."""
         identifier = request.cookies.get(SESSION_COOKIE, "")
         session = self.store.get(identifier, touch=False)
         if session:
             try:
-                await run_in_threadpool(
+                principal = await run_in_threadpool(
                     get_authentication_backend(self.settings).authenticate, session.access_token
                 )
+                if (principal.issuer, principal.subject) != (
+                    session.principal.issuer,
+                    session.principal.subject,
+                ) or self.store.get(identifier, touch=False) is not session:
+                    raise AuthenticationError
             except AuthenticationError:
                 self.store.revoke(identifier)
                 session = None
         if not session:
             raise HTTPException(401, "Dashboard sign-in required")
-        return identifier, session
+        return identifier, session, principal
 
     async def read(
         self, request: Request, path: str, params: dict | None = None, *, operational: bool = False
@@ -122,7 +133,7 @@ def install_dashboard(application, settings: Settings) -> None:
     async def session_status(request: Request, response: Response):
         boundary.origin(request)
         try:
-            _, session = await boundary.session(request)
+            _, session, principal = await boundary.verified_session(request)
         except HTTPException as error:
             if error.status_code != 401:
                 raise
@@ -135,8 +146,10 @@ def install_dashboard(application, settings: Settings) -> None:
             return {"authenticated": False, "csrf_token": login.csrf}
         return {
             "authenticated": True,
-            "subject": session.principal.subject,
-            "roles": sorted(session.principal.role_names),
+            "subject": principal.subject,
+            "roles": sorted(principal.role_names),
+            "issuer": principal.issuer,
+            "features": {"remediation": settings.dashboard_remediation_enabled},
             "csrf_token": session.csrf,
             "session_context": session.context,
             "expires_at": session.expires,
@@ -243,6 +256,8 @@ def install_dashboard(application, settings: Settings) -> None:
 
     install_investigation(router, boundary)
     install_remediation_reads(router, boundary)
+    if settings.dashboard_remediation_enabled:
+        install_operations(router, boundary)
 
     static = Path(settings.dashboard_static_dir).resolve()
     if not (static / "index.html").is_file() or not (static / "assets").is_dir():

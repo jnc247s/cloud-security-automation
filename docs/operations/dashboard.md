@@ -16,17 +16,61 @@ All 7A--7E states are COMPLETE and the plan is archived. Sprint 8 was NEXT at th
 it is now IN PROGRESS with accepted 8A/8B/8C backend authority, isolated worker and linked
 verification through PR #69 and complete exact-main CI 38523209002. Those backend capabilities
 remain default off where configured and grant no live-operation or deployment authority.
-The accepted baseline dashboard remains READ-only. The approved 8D1 candidate adds six typed
-remediation history GETs and the navigation changes below; validation/review/delivery remain
-pending. The user approved D1--D3 after the separate 8D preflight. Browser mutations/recovery
-belong to 8D2 and remain unimplemented. No public worker-launch route or general scan-start
+The accepted baseline dashboard remains READ-only. Accepted 8D1 adds six typed remediation
+history GETs and the navigation changes below, through PR #70 and complete exact-main CI
+38794113567. The user approved D1--D3 after the separate 8D preflight. Browser mutations/recovery
+belong to the local unaccepted 8D2 candidate below. No public worker-launch route or general scan-start
 browser action exists.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
 ## Configuration and startup
 
-The 8D1 candidate changes no configuration/default or schema. Open an exact retained assessment,
+The local 8D2 candidate adds `DASHBOARD_REMEDIATION_ENABLED=false` in Settings, the example and
+Compose. True requires the enabled OIDC dashboard; it does not enable backend execution or
+verification, infer account/Region scope or launch a worker. No operator configuration is
+changed by this implementation. The accepted legacy browser fixture and validation runner
+explicitly keep this new boundary off. The manual UI is locally implemented and all 90 signed
+browser journeys passed. The two new flag-enabled three-human workflows use a separately owned
+test process/schema; they do not reorder accepted fixture history. Full 8D2 acceptance remains
+pending. Verification requests use a recording executor here, not the 8D3 installed-worker/
+managed-reader UI acceptance path.
+
+Authenticated bootstrap adds verified `issuer` and non-authorizing `features.remediation`.
+Closed preparation/confirmation and same-session GET recovery are specified in the
+[API contract](../api.md#sprint-8d2-preparation-boundary-local-candidate). Prepared operations
+expire without renewing authority. After forwarding, timeout, logout or expiry is not
+cancellation; a confirmed request is not worker execution or a verification verdict. Same-session
+reload can recover at most 16 operations; no Web Storage or raw response cache is used. Process
+or session loss requires signing in and manually checking immutable history before a replacement
+intent. An empty new-session list cannot prove the earlier request had no effect.
+
+With the independently enabled candidate, open an exact retained completed EC2-004 FAIL and
+choose **Remediation history for this finding**, then **Prepare proposal** with a reason.
+Preparation moves focus to **Manual remediation operations**; its header link also reaches
+that panel independently of the selected scan/finding. Review the frozen IDs, reason, actor,
+action/risk and available digest/approval references, check the review acknowledgment, then
+choose **Confirm and submit request**. Preparation alone writes no authoritative proposal or grant.
+
+A different APPROVE identity can prepare an approval or rejection from proposal detail. Current
+blockers disable approval but do not hide stale rejection. Any APPROVE identity may prepare
+revocation, including a proposer with that capability. A third distinct EXECUTE identity can
+prepare admission when there is no existing execution. This grants bounded authority to a
+separately operated worker; it does not launch that worker. From normal ACKNOWLEDGED history,
+explicit linked verification may queue a read-only scan. Expired/revoked write authority does
+not itself prevent observation; quarantine/late ACK and attempt/active bounds still apply.
+
+Reload recovers the same-session coordination list with GET only. **Refresh same-session
+operations** never submits. **Explicitly retry original request** retains its ID/body and needs
+another review acknowledgment. Unresolved same-target preparation cannot silently replace a key.
+A missing/regressed recovery response blocks new preparation rather than claiming no effect.
+Browser uncertainty is displayed alongside the last server coordination state, not as an
+invented worker phase or dispatch count. Confirmed requests refresh READ history only; verdicts,
+technical results and finding handling remain separate. Operation content stays below scan
+selection to preserve the existing stable selection controls. These instructions describe the
+local candidate, not accepted deployment or live operation authority.
+
+Accepted 8D1 changes no configuration/default or schema. Open an exact retained assessment,
 then select **Remediation history for this finding**. EC2-004 history lists proposals for the
 bound finding; a proposal from another occurrence is explicitly labeled, never substituted for
 the selected assessment. Details load on demand: proposal/decision, execution journal, then

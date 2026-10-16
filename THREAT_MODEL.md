@@ -1,9 +1,9 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7, 8A/8B and default-off 8C
-Accepted implementation baseline: `main` commit `599e155090b654f09987f3d48e8c431b116ba7c4`
-(PR #69; exact-commit REVIEW_PASS and both first-attempt candidate primary audits passed)
-Last reconciled: 2026-10-14 UTC; complete exact-main CI 38523209002 passed
+Status: living model for accepted Sprints 0--7, 8A/8B, default-off 8C and 8D1 READ history
+Accepted implementation baseline: `main` commit `d6a37658f2d34f94d26a475d91b95ef7a511d940`
+(PR #70; exact-commit REVIEW_PASS and both first-attempt candidate primary audits passed)
+Last reconciled: 2026-10-15 UTC; complete exact-main CI 38794113567 passed
 Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
@@ -361,7 +361,7 @@ live-provider/key/workload compatibility and production validation remain separa
 
 ## Required review triggers
 
-The approved 8D1 READ candidate adds sensitive proposal/decision, execution and verification
+Accepted 8D1 adds sensitive proposal/decision, execution and verification
 history through fixed typed BFF routes. Confused-deputy forwarding is constrained by existing
 fresh bearer/READ, origin/context and final session checks; mutations/arbitrary targets stay
 absent. Selection, issuer/session replacement and refresh unmount or ignore superseded reads.
@@ -369,9 +369,31 @@ Closed version/scalar and immutable cross-record bindings reject false approval/
 displays. QUARANTINED remains unknown effect even after late ACK/readback. Current validity is
 server-derived alongside historical approval, not a browser grant. Bounded disclosures/rows do
 not limit upstream detail payloads, add tenancy or prove digests/physical humans. Navigation and
-native-pointer settlement need fresh two-browser evidence; the original operator build/data and
-earlier failures are not diagnosed by this candidate. 8D2 mutations/recovery remain unimplemented,
-and 8D1 validation/review/delivery are pending. No live provider operation is authorized.
+native-pointer settlement passed fresh two-browser acceptance; the original operator build/data
+and earlier failures are not diagnosed by later passes. 8D2 is the separate local candidate below;
+8D1 validation/review/delivery passed through PR #70 and exact-main CI 38794113567.
+No live provider operation is authorized.
+
+The unaccepted 8D2 server candidate introduces a separately default-off mutation threat surface.
+Fixed typed operations, fresh signed capabilities plus API reauthorization, origin/fetch-site,
+CSRF/context and closed bounded JSON/header checks constrain confused-deputy and injection risk.
+Prepared IDs bind one current session and full issuer/subject pair; cached display roles cannot
+grant authority. Signed JWT validation is not live IdP group introspection or proof of distinct
+physical humans. Same-key/body explicit retry and atomic claims constrain duplicate dispatch.
+Trusted references must match immutable READ history; malformed/cross-bound results remain
+unconfirmed, and history 401 ends the session. Submission-failed verification can already be
+accepted. Expiry, logout, denied retry, aborted fetch and process loss do not prove no prior
+effect. Capacity rejects rather than evicting uncertain work; session loss requires manual
+history checks. Single-process memory has no cross-process recovery or tenant isolation.
+Local guarded frontend forms/recovery are implemented. Legacy/missing hints remain READ-only;
+explicit event handlers prevent effect-driven submission/retry. Review binds fixed inputs and
+server IDs, while unresolved same-target work cannot silently acquire a replacement key.
+Generation-fenced recovery ignores old reads, and missing/regressed same-session records fail
+closed. Logout/401/unmount removes private coordination and ignores late responses, without
+claiming cancellation. Accepted request, current server state and browser uncertainty are
+separate labels. All 90 local signed browser journeys passed, including isolated three-human
+manual workflows. Installed-worker/managed-reader UI acceptance remains 8D3; full 8D2 acceptance
+gates remain pending.
 
 Update this model when authentication, role/capability mappings, object scope, API exposure, AWS
 permissions, collected evidence, persistence, audit, executor topology, deployment, dashboard,

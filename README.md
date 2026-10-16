@@ -12,8 +12,8 @@ provide certification or claim organization-wide NIST compliance.
 Sprints 0 through 7 are COMPLETE and merged; all Sprint 7 slices, 7A--7E, are accepted.
 Sprint 8 is IN PROGRESS; 8A's proposal/approval foundation is COMPLETE through
 [PR #53](https://github.com/jnc247s/cloud-security-automation/pull/53). Accepted 8B2 now adds the
-isolated worker described below. Default-off linked verification is accepted in 8C1; UI mutations
-remain unimplemented.
+isolated worker described below. Default-off linked verification is accepted in 8C1; local 8D2
+manual UI forms/recovery and its server boundary are in progress, not accepted.
 The 8A implementation checkpoint was
 `691d8814c785feafc0d9d3b3b43d7d1af89542a0`, with green
 [exact merged-main CI 37693245169](https://github.com/jnc247s/cloud-security-automation/actions/runs/37693245169).
@@ -45,10 +45,18 @@ both final-head CI runs and green
 This accepts signed-human API -> disposable database -> offline worker/closed AWS adapter ->
 authorized READ/replay tests, not a runtime change, enabled installed-process proof or live operation.
 8B3.2 is COMPLETE; 8B3.3 is COMPLETE; 8C is COMPLETE. 8D is IN PROGRESS; 8E remains PLANNED.
-The user approved the [8D design](docs/sprint-8d-preflight.md). Its first candidate adds
-read-only remediation history and explicit Back to scan selection/focus return with stable
-controls; validation/review/delivery remain pending. Browser writes/recovery belong to 8D2;
+The user approved the [8D design](docs/sprint-8d-preflight.md). 8D1 is COMPLETE through
+[PR #70](https://github.com/jnc247s/cloud-security-automation/pull/70), adding read-only remediation
+history and explicit Back to scan selection/focus return with stable controls. Exact-commit
+review, both candidate audits and complete merged-main CI passed. Browser writes/recovery belong to 8D2;
 ordinary Start scan remains excluded. No live AWS, worker operation or later sprint is authorized.
+The [8D2 preflight](docs/sprint-8d2-preflight.md) governs its bounded local preparation/recovery
+store and separately default-off fixed mutation adapters. Expanded server checks passed 490 cases
+(18 PostgreSQL). Local typed UI/recovery passed 289 unit cases and type/lint/build. Complete signed
+browser proof passed all 90 journeys, including the 88 retained journeys and two new isolated
+three-human workflows. Complete local regression passed 4,007 cases, including all 714 PostgreSQL
+cases without skips; Compose/image/startup/default-off checks also passed. Independent review
+and complete delivery gates remain required; 8D2 is not accepted.
 The approved R1--R3 linked-verification path is accepted in 8C1; 8C2 deep acceptance is COMPLETE.
 Combined signed fault/race/recovery
 tests are accepted through [PR #63](https://github.com/jnc247s/cloud-security-automation/pull/63)
@@ -90,9 +98,17 @@ first-attempt candidate audits, ordinary guarded merge and
 Each run passed 3,755 backend cases/163 files (696 PostgreSQL cases/33 files, no skips), 139
 frontend cases, all 76 browser journeys and all 18 quality/image/cleanup steps. Its bounded
 read-only coherence repair adds no API/schema/authority change; scanner credentials remain
-read-only. Historical failures, undeployed/live-provider limits and the user's untriaged
-scan-picker/back-navigation report remain. Dashboard workflow and whole-sprint acceptance are
-still required; no general scan-start browser action is added by this slice.
+read-only. Historical failures and undeployed/live-provider limits remain. At that checkpoint,
+the user's scan-picker/back-navigation report was untriaged; 8D1's bounded navigation change is
+accepted separately, without establishing the original operator build/data/cause.
+8D1 is accepted at `d6a37658f2d34f94d26a475d91b95ef7a511d940`, after corrected-head REVIEW_PASS,
+both complete first-attempt candidate audits, ordinary guarded merge and
+[exact-main CI 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567).
+Each CI run passed 3,812 backend cases/164 files (696 PostgreSQL cases/33 files), 208 frontend
+cases/10 files, all 88 browser journeys (44 per project, one worker, zero retries/skips) and all
+18 quality/image/cleanup steps. The LOW API wording finding is closed; the first local browser
+timeout remains cause-unconfirmed. 8D2/8D3 and whole-sprint acceptance remain required; no browser
+mutation, general scan-start action, live-provider operation or production deployment is added.
 Sprint 8 remains IN PROGRESS; architectural/design decisions still require approval.
 Latest opt-in catalog `0.13.0` contains all 25
 core controls plus supported legacy `S3-900`; the five-control default remains unchanged.

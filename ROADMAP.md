@@ -5,9 +5,9 @@ prompts, conversations, branch names, and historical planning text.
 
 Last verified: 2026-10-15 UTC
 Current accepted implementation baseline: `main` at
-`599e155090b654f09987f3d48e8c431b116ba7c4` ([PR #69](https://github.com/jnc247s/cloud-security-automation/pull/69);
-complete exact-main [CI 38523209002](https://github.com/jnc247s/cloud-security-automation/actions/runs/38523209002)
-passed). This includes accepted 8C1 verification and 8C2 integrated acceptance/coherent reads. The standalone write-worker code
+`d6a37658f2d34f94d26a475d91b95ef7a511d940` ([PR #70](https://github.com/jnc247s/cloud-security-automation/pull/70);
+complete exact-main [CI 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567)
+passed). This includes accepted 8C verification and 8D1 READ history/navigation. The standalone write-worker code
 remains unchanged since `7a36ddde` (PR #59); installed-process worker-test baseline remains
 `d3380402` (PR #66). Physical deployment and live-provider validation remain unperformed.
 Sprints 0--7 and 8A are COMPLETE; **8B is COMPLETE** as offline-accepted code and tests,
@@ -43,7 +43,8 @@ unproven earlier browser causes. The separate 8C2 acceptance below completes 8C,
 Existing branches, worktrees and unrelated skills are preserved.
 
 8C2 passed exact-commit REVIEW_PASS at `d7d421eaf8afd06c474b210c4ff776339c471f01`, both complete
-first-attempt candidate primary audits and an ordinary expected-head guarded merge through PR #69.
+first-attempt candidate primary audits and an ordinary expected-head guarded merge through PR #69
+at `599e155090b654f09987f3d48e8c431b116ba7c4`.
 Complete exact-main CI 38523209002 passed with reviewed tree
 `6cc196972e4d236a93bcf58d9b081bbff01c8854` unchanged and exactly the accepted C1/feature parents.
 Every run covered all 3,755 backend cases/163 files, 696 PostgreSQL cases/33 files without skips,
@@ -60,11 +61,39 @@ the accepted status above supersedes those historical states. 8D needs a separat
 approval of any new architectural/design choices; Sprint 8 still requires 8D and 8E.
 
 The user reviewed the [8D design](docs/sprint-8d-preflight.md) and requested “Continue and
-implement” on 2026-10-14, approving D1--D3 and the sequential execution plan. 8D is IN PROGRESS,
-starting with 8D1 READ history/navigation. 8D2 adds the independently opt-in typed prepare/submit
+implement” on 2026-10-14, approving D1--D3 and the sequential execution plan. 8D is IN PROGRESS;
+**8D1 is COMPLETE** as accepted READ history/navigation. 8D2 adds the independently opt-in typed prepare/submit
 workflow and bounded same-session recovery; 8D3 requires integrated UI acceptance. Ordinary
 browser Start scan remains excluded. The [active plan](docs/exec-plans/active/sprint-8.md#approved-8d-predictions)
-owns approved detail. No slice is accepted yet; 8E remains PLANNED and Sprint 8 incomplete.
+owns approved detail. **8D2 is IN PROGRESS** following its
+[scoped preflight](docs/sprint-8d2-preflight.md); 8D3 remains PLANNED. The first local work unit
+adds bounded non-authorizing coordination, default-off configuration and fixed signed adapters on
+`codex/sprint-8d2-preflight`, starting from audited clean main. Expanded server validation passed
+490 cases, including 18 PostgreSQL journeys. Typed manual UI forms/recovery are now implemented
+locally, with 289 frontend unit cases and type/lint/build passed. Complete signed browser proof
+passed all 90 journeys (45 per project, one worker, zero retries/skips), preserving the accepted
+88 and adding isolated three-human workflows. Ten new adverse API/database cases also passed,
+including five on PostgreSQL. Complete local regression passed 4,007 cases/169 files, including
+all 714 PostgreSQL cases/34 files without skips. The 22 warnings comprise the 19 existing SQLite
+warnings and three JUnit-report compatibility warnings from existing record_property tests.
+Ruff, current frontend, Compose/image/startup/default-off checks, exact case/source audits and
+owned cleanup passed. Independent review and whole-slice delivery gates remain required;
+this is not accepted 8D2. 8E remains PLANNED and
+Sprint 8 incomplete.
+
+8D1 passed corrected-head independent REVIEW_PASS at `f2a83bbaca888aa761f9578cdd72fa5ca0348a75`,
+both complete first-attempt candidate primary audits, ordinary expected-head guarded merge and
+complete exact-main audit through PR #70. Reviewed tree `f7c399635740c0e39f7cf0bd4488c6ff1c8be806`
+and expected parents `[599e155, f2a83bb]` are preserved. Every CI run passed all 3,812 backend
+cases/164 files, 696 PostgreSQL cases/33 files, 208 frontend cases/10 files, 88 browser journeys
+(44 per project, one worker, zero retries/skips), all 18 quality/image/cleanup steps and the same
+19 existing SQLite warnings. The LOW API overview finding is independently closed; its failed
+review and the unconfirmed first local browser timeout remain historical. Scanner credentials,
+finding/technical/remediation lifecycles and migration 0010 are unchanged. No browser mutation,
+ordinary Start scan, worker launch, operator migration, live-provider or later-sprint operation.
+
+The following 8D1 local checkpoint retains its original pending gates; the accepted status above
+supersedes those historical states, not their failures or original predictions.
 
 The 8D1 candidate passed complete local regression on 2026-10-15: 3,812 backend cases/164 files,
 including all 696 PostgreSQL cases/33 files without skips, with the same 19 existing SQLite

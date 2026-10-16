@@ -1,1 +1,1 @@
-"""Opt-in read-only browser boundary; independent of scanning and assessment."""
+"""Opt-in browser adapters; independently gated remediation never launches a worker."""

@@ -21,6 +21,7 @@ export interface Posture { scan: Detail; availability: 'AVAILABLE' | 'IN_PROGRES
   schema_version: '1.0.0'; interpretation: 'TECHNICAL_CONTEXT_ONLY' }
 export type Session = { authenticated: false; csrf_token: string } | {
   authenticated: true; subject: string; roles: string[]; csrf_token: string;
+  issuer?: string; features?: { remediation: boolean };
   session_context: string; expires_at: number; idle_expires_at: number };
 export const isUUID = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -68,6 +69,9 @@ export function isSession(v: unknown): v is Session {
       && typeof v.session_context === 'string' && /^[A-Za-z0-9_-]{43}$/.test(v.session_context)
       && strings(v.roles) && v.roles.length > 0
       && v.roles.every(role => ['VIEWER', 'ANALYST', 'APPROVER', 'ADMIN'].includes(role))
+      && (!Object.hasOwn(v, 'issuer') || (typeof v.issuer === 'string' && v.issuer.trim().length > 0))
+      && (!Object.hasOwn(v, 'features') || (object(v.features)
+        && Object.keys(v.features).length === 1 && typeof v.features.remediation === 'boolean'))
       && typeof v.expires_at === 'number' && Number.isFinite(v.expires_at)
       && typeof v.idle_expires_at === 'number' && Number.isFinite(v.idle_expires_at)));
 }

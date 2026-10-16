@@ -47,6 +47,7 @@ os.environ.update(
         "OIDC_ALGORITHMS": "RS256",
         "OIDC_ALLOW_INSECURE_HTTP": "true",
         "DASHBOARD_ENABLED": "true",
+        "DASHBOARD_REMEDIATION_ENABLED": "false",
         "DASHBOARD_ORIGIN": ORIGIN,
         "DASHBOARD_CLIENT_ID": "dashboard-test-client",
         "DASHBOARD_CLIENT_SECRET": secret,

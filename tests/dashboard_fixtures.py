@@ -114,7 +114,13 @@ class ControlledIssuer:
 
 @contextmanager
 def dashboard_client(
-    engine, monkeypatch, tmp_path, *, raise_server_exceptions=True, executor_factory=None
+    engine,
+    monkeypatch,
+    tmp_path,
+    *,
+    raise_server_exceptions=True,
+    executor_factory=None,
+    remediation_enabled=False,
 ):
     static = tmp_path / "static"
     static.mkdir()
@@ -134,6 +140,7 @@ def dashboard_client(
         "OIDC_ALLOW_INSECURE_HTTP": "false",
         "DATABASE_URL": "sqlite://",
         "DASHBOARD_ENABLED": "true",
+        "DASHBOARD_REMEDIATION_ENABLED": str(remediation_enabled).lower(),
         "DASHBOARD_ORIGIN": ORIGIN,
         "DASHBOARD_CLIENT_ID": CLIENT_ID,
         "DASHBOARD_CLIENT_SECRET": secrets.token_urlsafe(32),

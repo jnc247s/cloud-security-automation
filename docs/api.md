@@ -184,9 +184,11 @@ accepted deployment assumption is one trusted security domain.
 There is no exception-detail route, audit route, finding/exception mutation, generic scan retry,
 cancellation, proposal withdrawal, AWS remediation dispatch or arbitrary AWS-call endpoint.
 The scoped manual linked-verification rescan is described below; it does not retry an AWS write.
-`AuditService` is an internal service boundary only. The dashboard BFF does not proxy the POST
-operations above. The approved 8D1 READ candidate below adds six fixed remediation-history GETs;
-dashboard cookies never authenticate `/api/v1`.
+`AuditService` is an internal service boundary only. Accepted 8D1 below adds six fixed
+remediation-history GETs; its generic `/dashboard/api` adapter never proxies the POST operations
+above. The separately opt-in 8D2 candidate below adds typed preparation/submit routes that
+re-enter only the five remediation POSTs listed above. It adds no generic mutation proxy,
+ordinary browser scan POST or worker launcher. Dashboard cookies never authenticate `/api/v1`.
 
 <a name="sprint-8a-proposal-and-decision-contract--local-pending-acceptance"></a>
 
@@ -750,10 +752,11 @@ state. Error/nonoperational responses do not carry it; `/api/v1` response bodies
 The UI displays stored status separately from eligibility at this reference and fails unavailable
 for missing/invalid times. Technical four-state results never change with operational handling.
 
-### Sprint 8D1 remediation history READ candidate
+<a name="sprint-8d1-remediation-history-read-candidate"></a>
+### Sprint 8D1 remediation history READ
 
-The approved 8D1 implementation adds only the following BFF GET allowlist entries. Its
-validation/review/delivery gates remain pending. All use the existing enabled OIDC dashboard,
+Accepted 8D1 adds only the following BFF GET allowlist entries, through PR #70 and complete
+exact-main CI 38794113567. All use the existing enabled OIDC dashboard,
 opaque session, matching public context, exact origin, real bearer/READ enforcement and final
 logout/expiry check. Lists default to 25, permit 1..100 and nonnegative offset, reject duplicate
 or unknown queries, and return unchanged upstream JSON/status. Detail IDs are UUIDs with no
@@ -776,7 +779,81 @@ must not render success. Historical approval, current blockers, v1 human/v2 work
 reservation, verification verdict, technical result and current finding disposition stay separate.
 These filters and client bindings do not add tenant isolation. Details remain potentially large;
 bounded display is not a network-payload bound. Every browser mutation/worker-launch/scan-start
-path remains unavailable; the approved 8D2 prepared-operation contract is not implemented yet.
+path remains unavailable in accepted 8D1; the separate local 8D2 candidate follows below.
+
+### Sprint 8D2 preparation boundary local candidate
+
+This local server/UI candidate is not accepted 8D2. All 90 signed browser journeys and complete
+4,007-case local regression passed; independent review and full slice delivery gates remain.
+`DASHBOARD_REMEDIATION_ENABLED` defaults false and requires the enabled OIDC dashboard when true.
+False installs none of these routes. Backend admission/verification flags and scopes remain
+independent; no worker launch or ordinary browser scan POST is added. `/api/v1` stays unchanged.
+
+Authenticated `GET /dashboard/session` now adds verified non-secret `issuer` and
+`features: {"remediation": boolean}`. Subject/roles also come from freshly verified claims.
+These are hints, not authority. Unauthenticated bootstrap adds neither field. Existing clients
+can ignore the additive metadata; new clients must stay READ-only when required hints are absent.
+The local client validates provided hint types, requires both opt-in and verified issuer plus
+bound session metadata for write affordances, and keeps the existing login/logout adapter closed.
+Preparation/submission/recovery use dedicated fixed clients, never a generic mutation path.
+
+| Method and path | Contract |
+| --- | --- |
+| POST /dashboard/api/remediation-operations | Prepare closed versioned input; 201 returns frozen session-bound coordination, not a durable domain grant |
+| GET /dashboard/api/remediation-operations | Current READ/context; closed versioned list of at most 16 operations in this session |
+| GET /dashboard/api/remediation-operations/{operation_id} | Same session/identity/READ; canonical UUID, no queries; unavailable/cross-session IDs return fixed 404 |
+| POST /dashboard/api/remediation-operations/{operation_id}/submit | Explicit confirmation or retry; body must be an empty JSON object, never replacement input; 200 returns coordination state |
+
+All paths reject queries, duplicate security headers and browser Authorization/Idempotency-Key/
+Transfer-Encoding inputs. GETs preserve the existing origin policy and require a freshly verified
+principal with READ and matching `X-Dashboard-Context`. POSTs additionally require exact Origin,
+`Sec-Fetch-Site: same-origin`, session `X-CSRF-Token` and the operation's current capability.
+Bodies must be UTF-8 application/json (optional UTF-8 charset), at most 12 KiB including streaming
+chunks. Duplicate JSON keys, non-finite numbers, invalid Unicode, scalar coercion, unknown
+versions/operations/fields and malformed IDs fail closed without reflecting input.
+
+Preparation has required `schema_version: "1.0.0"`, `operation` and `input`; all operations
+except PROPOSE also require `target_id`. The server supplies the fixed action/version and UUID
+key. Inputs retain existing nonblank reason normalization and 2,000-character bounds:
+
+| Operation | Target | Closed input | Capability and fixed upstream |
+| --- | --- | --- | --- |
+| PROPOSE | none | finding_id UUID, occurrence_id UUID, reason | PROPOSE; POST /api/v1/remediations |
+| DECIDE | proposal UUID | proposal_sha256, decision APPROVE or REJECT, reason | APPROVE; POST /api/v1/remediations/{target}/decisions |
+| REVOKE | proposal UUID | proposal_sha256, approval_decision_id UUID, reason | APPROVE; POST /api/v1/remediations/{target}/revocations |
+| REQUEST_EXECUTION | proposal UUID | proposal_sha256, approval_decision_id UUID, reason | EXECUTE; POST /api/v1/remediations/{target}/executions |
+| REQUEST_VERIFICATION | execution UUID | reason | EXECUTE; POST /api/v1/remediation-executions/{target}/verifications |
+
+Coordination views carry schema_version, server operation_id, operation, nullable target_id,
+frozen normalized upstream input, actor issuer/subject, fixed risk_summary, prepared_at/expires_at
+as epoch seconds, state, attempts and nullable result. Result contains only result_id and nullable
+scan_id, never tokens or raw upstream responses. A decision result_id refers to its decision
+within the target proposal's READ history. Lists contain schema_version and items only.
+
+State is PREPARED, IN_FLIGHT, UNCONFIRMED, CONFIRMED or EXPIRED. A confirmed request has a bound
+immutable history reference, not proof of execution/verification. One atomic in-flight claim
+precedes the fixed call; concurrent submit returns its state without another dispatch. Explicit
+retry of UNCONFIRMED preserves actor/key/body and current authorization. The internal dispatch/
+confirmation wait is bounded to 15 seconds; timeout never establishes no effect. No automatic
+retry or replacement intent occurs. A later denial cannot settle an earlier uncertain commit.
+
+Preparation expires after at most five minutes and the existing session deadline; no touch or
+retry renews it. Expired unused work becomes EXPIRED. Dispatched uncertainty stays UNCONFIRMED,
+and late bound history can confirm an in-flight result. A new dispatch after expiry returns
+fixed 409. Capacity is 16/session and 256 total, with fixed 503 rather than eviction. Session
+expiry/logout/process loss discards coordination, not prior API effects or domain reservations;
+manual immutable-history reconciliation is required before any replacement.
+
+Normal upstream 200/201/202 results are validated and compared with fixed READ history using
+immutable content/IDs/digests, actor pair, reason and key where exposed, not changing phase,
+blockers or receipt. Only the existing closed `verification_submission_failed` 503 shape may
+provide failure references; matching READ execution/verification/scan/actor/key bindings are
+still required. The recorded attempt may already be terminal, never implicitly VERIFIED.
+Malformed/mismatched/missing references remain UNCONFIRMED; upstream bodies are not reflected.
+History 401 revokes the browser session. Final logout/expiry rejection prevents old private
+coordination from returning after session loss. Errors retain no-store/security headers:
+401 session/context, 403 origin/CSRF/security-header/capability rejection, 404 unavailable operation,
+409 preparation expiry, 413 size, 415 media type, 422 closed input and 503 capacity.
 
 ### 7D client-only NIST context — accepted
 

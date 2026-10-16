@@ -1,9 +1,9 @@
 # Architecture
 
-This document describes accepted Sprints 0--7, Sprint 8A/8B and default-off 8C verification.
+This document describes accepted Sprints 0--7, Sprint 8A/8B, default-off 8C verification and 8D1 READ history.
 The accepted implementation baseline is `main` commit
-`599e155090b654f09987f3d48e8c431b116ba7c4` (PR #69; exact-commit independent REVIEW_PASS,
-both first-attempt candidate primary audits and complete exact-main CI 38523209002 passed).
+`d6a37658f2d34f94d26a475d91b95ef7a511d940` (PR #70; exact-commit independent REVIEW_PASS,
+both first-attempt candidate primary audits and complete exact-main CI 38794113567 passed).
 Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
@@ -762,7 +762,7 @@ independent review, both final-head CI runs, guarded ordinary merge and merged-m
 
 ## Runtime and deployment
 
-The approved 8D1 candidate extends the existing READ adapter with proposal, execution and
+Accepted 8D1 extends the existing READ adapter with proposal, execution and
 verification list/detail GETs. React mounts history on demand from an exact assessment/finding,
 checks immutable selection/policy and cross-history IDs, and explicitly labels other occurrences
 instead of substituting the latest. Closed display guards support v1 human/v2 worker journals
@@ -770,8 +770,33 @@ and sealed verification receipts; they do not evaluate controls, authorize actio
 digests without source bytes. Approval/current blockers, execution/reservation, verification,
 technical results and current finding handling remain distinct. Scan selection gains explicit
 clearing/focus return and stable controls above the changing list. No schema/default, credentials,
-worker, platform, dependencies or browser writes change. 8D1 acceptance gates remain pending;
+worker, platform, dependencies or browser writes change. All 8D1 acceptance gates passed;
 approved 8D2 preparation/confirmation/recovery is not implemented by this READ-only slice.
+
+The local 8D2 candidate adds an independent default-off `DASHBOARD_REMEDIATION_ENABLED` boundary
+within this same process. Enabled configuration requires the enabled OIDC dashboard. Closed
+typed prepare/submit routes create a server UUID and frozen body/actor pair, then explicitly
+re-enter one of five existing bearer mutations. Fresh verified identity/capabilities, exact
+origin/fetch-site, CSRF and context are required; UI hints are not authority. No service/SQL
+shortcut, worker launch, scanner identity, domain API/schema or migration changes.
+
+The existing session-store lock protects at most 16 prepared operations/session and 256 total,
+without a lock across authentication/HTTP/domain work. Preparation has a nonrenewing five-minute
+and existing-session deadline. In-flight claims prevent concurrent dispatch; explicit retries
+preserve the same actor/key/body. Trusted references are confirmed through bound READ history,
+not mutable blockers/phase/receipt equality. Uncertain forwarded work stays unconfirmed after
+expiry; logout/process loss ends coordination, not prior effects. No token/raw response/domain
+grant is stored in an operation, and no durable BFF ledger is added. The local React candidate
+now adds closed runtime-validated clients, session-level recovery and all five manual action
+forms. Mutations occur in explicit event handlers only, never effects/reload. Missing opt-in/
+issuer metadata keeps legacy READ behavior; changed sessions unmount private coordination.
+Prepared IDs, immutable body/deadline/actor, risk and digests are reviewed before a separate
+confirmation. Unknown outcomes retain their original key; missing/regressed recovery cannot
+enable replacement work. Independent technical/finding/approval/execution/verification views
+remain. All 90 signed browser journeys passed, including isolated three-human BFF/bearer/API/
+PostgreSQL workflows; installed-worker/managed-reader UI acceptance remains 8D3. Full 8D2 slice
+acceptance is still pending; see
+[8D2 preflight](docs/sprint-8d2-preflight.md).
 
 Local Compose starts PostgreSQL 16, runs `alembic upgrade head` as a one-shot service, then starts
 one API process. API and database ports bind to loopback by default. `/ready` verifies database
@@ -794,7 +819,8 @@ workload-role configuration remain deployment responsibilities.
 - No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
   authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
   Accepted 8C1 adds default-off linked exact-policy verification. No public worker launch or
-  remediation dashboard mutation exists. Code acceptance grants no live AWS/IAM/secret/production authority.
+  accepted remediation dashboard mutation exists. The local 8D2 candidate above is unaccepted.
+  Code acceptance grants no live AWS/IAM/secret/production authority.
 
 <a name="approved-8c1-linked-verification-candidate"></a>
 ## Accepted 8C1 linked verification
