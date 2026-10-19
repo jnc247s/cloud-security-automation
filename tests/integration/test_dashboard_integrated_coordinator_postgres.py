@@ -858,6 +858,7 @@ def test_real_issuer_restart_keeps_same_subject_distinct_through_installed_verif
             "DASHBOARD_INTEGRATED_INSTANCE": instance,
             "DASHBOARD_INTEGRATED_SOURCE": source.model_dump_json(),
             "DASHBOARD_INTEGRATED_SCENARIO": "cross-issuer",
+            "DASHBOARD_INTEGRATED_STATIC_MODE": "api-only",
             "DATABASE_URL": engine.url.render_as_string(hide_password=False),
             "PYTHONUNBUFFERED": "1",
         }
@@ -950,6 +951,9 @@ def test_real_issuer_restart_keeps_same_subject_distinct_through_installed_verif
                 for _ in range(3)
             ]
             initial_status = sign_in(first, ISSUER, "proposer")
+            assert first.get("/dashboard/").text == (
+                "<!doctype html><title>Integrated API-only test assets</title>"
+            )
             prepared, uncertain = operation(
                 first,
                 initial_status,
@@ -982,6 +986,9 @@ def test_real_issuer_restart_keeps_same_subject_distinct_through_installed_verif
             assert parent.handle(restart) == reply and server.current.child is replacement
             assert database_state(engine) == committed
             assert first.get("/dashboard/session").json()["authenticated"] is False
+            assert first.get("/dashboard/").text == (
+                "<!doctype html><title>Integrated API-only test assets</title>"
+            )
             admin = sign_in(first, SECOND_ISSUER, "proposer")
             assert admin["subject"] == initial_status["subject"] == "proposer" and admin[
                 "roles"

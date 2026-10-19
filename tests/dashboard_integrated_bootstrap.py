@@ -2,7 +2,9 @@
 
 import os
 import re
+from contextlib import contextmanager
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +50,37 @@ def identity_issuer(phase, scenario):
     if type(phase) is str and phase == "secondary" and scenario == "cross-issuer":
         return SECOND_ISSUER
     raise ValueError("Invalid integrated authority generation")
+
+
+@contextmanager
+def server_static_assets(instance, mode, scenario):
+    """Only the explicit HTTP-only fixture owns placeholders; browsers require a real build."""
+    require_test_environment(instance)
+    if (
+        type(mode) is not str
+        or mode not in {"browser", "api-only"}
+        or (mode == "api-only" and scenario != "cross-issuer")
+    ):
+        raise ValueError("Invalid integrated static mode")
+    if mode == "browser":
+        yield None
+        return
+    from tests.worker_process_runtime import cleanup_preserving_primary
+
+    owned = TemporaryDirectory(prefix="cloudsec-integrated-api-static-")
+    primary = None
+    try:
+        static = Path(owned.name)
+        (static / "assets").mkdir()
+        (static / "index.html").write_text(
+            "<!doctype html><title>Integrated API-only test assets</title>", encoding="utf-8"
+        )
+        yield static
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        cleanup_preserving_primary(owned.cleanup, primary)
 
 
 def configure(database="sqlite://", *, secret=None, identity_phase="initial", scenario="verified"):

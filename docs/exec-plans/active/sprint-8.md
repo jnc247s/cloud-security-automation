@@ -6914,3 +6914,126 @@ required 8E. No new reviewer, commit, publication, merge, live AWS/IdP/IAM/secre
 deployment/production or later-sprint operation occurred during these local gates. Verification
 guidance kept identity, source and cleanup checks tied to actual execution; documentation
 guidance preserves failure history and distinguishes local validation from acceptance.
+
+### First 8D3 candidate CI and clean source fixture repair
+
+On 2026-10-19, scoped commit `c48d5cc63dc98b0c3ba6e54a9317b495942cec0b`, tree
+`f8c9427e232faf03d6f1cd06fc617be996864e90`, passed exact-commit independent REVIEW_PASS with
+no unresolved findings. All 602 raw committed blobs and working hashes matched the reviewed
+input. Normal publication opened [PR #72](https://github.com/jnc247s/cloud-security-automation/pull/72)
+against accepted `f97cf7bb`; no merge occurred. The ordinary standing workflow approval still
+requires successful exact-head CI and full primary audits, not review alone.
+
+Both first-attempt candidate runs failed the same newly added signed cross-issuer HTTP test at
+its initial server-readiness wait. [Push CI 39217410017](https://github.com/jnc247s/cloud-security-automation/actions/runs/39217410017)
+passed 4,599 cases and failed one in 4084.20s;
+[PR CI 39217414112](https://github.com/jnc247s/cloud-security-automation/actions/runs/39217414112)
+passed 4,599 and failed one in 4194.68s. Each retained the 19 existing SQLite warnings plus one
+secondary owned-process cleanup warning. Frontend/browser/image steps were skipped, not passed.
+Both original watcher processes exited 1; complete direct job logs and metadata are retained.
+Neither failed run was restarted or waived. Their generic child-stopped error did not retain
+the original child exception because stderr is deliberately suppressed.
+
+CI runs backend tests before building dashboard assets. This new HTTP fixture enabled the real
+dashboard with its fixed `frontend/dist` path, so it depended on ignored output left by local
+builds. The unchanged production startup guard rejects absent `index.html`/`assets` before
+readiness. An isolated construction probe reproduced that rejection. Its first sandbox attempt
+also failed temporary-directory cleanup and remains failed history; a second probe without a
+temporary directory exited zero. The exact empty failed-directory target was later already absent;
+no cleanup removal was performed.
+
+A fresh exact-commit 602-file snapshot, with neither built assets nor Node dependencies,
+reproduced the same original signed-test failure before readiness. A separate repaired 602-file
+snapshot passed the entire signed test with no build before or after. Both snapshots and the
+working source remained unchanged, and each run removed only its own disposable database.
+This establishes the missing local-build prerequisite independently of the generic CI error;
+it does not establish unrelated historical browser/runtime causes.
+
+The bounded repair adds a closed test-only static mode. Only the explicitly selected cross-issuer
+HTTP fixture owns fresh temporary placeholder assets, including across the exact authority
+restart. Both generations are asserted to serve that placeholder. Native browser mode continues
+to use the genuine built dashboard; absent assets cannot trigger a fallback. No arbitrary path,
+URL, command or credential is accepted. Explicit test mode and owner checks precede creation;
+unknown modes/scenarios fail closed; normal and exceptional context exits remove the owned assets.
+No production application, API/authentication, worker, schema/migration, dependency, CI order or
+permission changes. Established timeouts, retries and assertions are not weakened or removed.
+New assertions cover the explicitly owned assets. API placeholders do not count as
+browser evidence; genuine installed-worker/managed-reader and independent storage assertions stay.
+
+Thirteen new static-mode guards first failed before the helper existed. After the repair, all
+89 bootstrap/guardian guards passed in 1.55s, with no warnings/skips and unchanged source hashes.
+The previously failing signed PostgreSQL case then passed in 24.45s with no warnings/skips and
+owned cleanup. Its separate clean source-only execution also passed. These are targeted results,
+not a replacement full regression or acceptance. Earlier 4,600-case/170-browser local receipts
+and the passed review describe the preceding candidate; they do not accept this repaired tree.
+
+Final cleanup hardening reuses the existing primary-preserving helper: a cleanup-only failure
+fails the fixture, while a secondary cleanup failure warns without replacing the original error.
+Two additional tests cover both paths; invalid-mode tests also prove no temporary directory is
+created. The final 91 bootstrap/guardian guards pass in 1.48s with no warnings/skips. Ruff lint,
+507-file formatting and whitespace pass. Fresh complete corrected-source gates remain pending.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Next freeze the corrected source/collections,
+run full backend/all PostgreSQL, frontend and every retained/integrated browser journey, quality,
+Compose/image/startup and cleanup gates. Reuse the existing independent reviewer, repair findings,
+make a logical follow-up commit and normally update the existing PR. Require fresh first-attempt
+push/PR primary audits, ordinary expected-head guarded merge and complete exact-main audit before
+8D acceptance and required 8E. No new architecture/design decision is introduced by fixture setup.
+Environment and documentation guidance keep synthetic test scope and failed receipts explicit.
+All branches/worktrees, unrelated skills, stopped resources, backups and primary records remain
+preserved; no live AWS/IdP/IAM/secrets/operator database/deployment/production or later-sprint work.
+
+### Corrected 8D3 complete local validation
+
+On 2026-10-19, the repaired 602-file source freeze passed 4,615 backend cases/185 files in
+4513.66s, including all 784 PostgreSQL cases/35 files. The independent raw collection/JUnit/
+primary audit found no failures, errors, skips, duplicate or missing identities. All original
+4,600 case identities remain, with 15 new static-mode/ownership/cleanup guards. The 22 warnings
+are the same 19 existing SQLite and three JUnit-property warnings. All source hashes remained
+unchanged and the owned disposable tmpfs database was removed.
+
+The same freeze passed all 90 retained and 80 integrated journeys: 85 per browser, one worker,
+zero retries, failures, errors or skips. The retained run took 152.594s. Independent audits
+match every project/file/line/column/full-title identity to the current collection. Each integrated
+journey includes independent committed authority/source, installed-worker/managed-reader or
+precise no-execution proof, verdict/storage checks and exact owned cleanup. The explicit API-only
+placeholder remains separate from genuine browser evidence. Native browser mode used the real
+built bundle throughout, without a missing-assets fallback.
+
+Pinned frontend validation passed all 160 targeted cases in 22.08s and all 295 cases/13 files in
+4.64s, plus typecheck, lint and build. The final 433 security/configuration/owner checks passed
+in 2.51s; the separate final bootstrap/guardian set passed all 91. Ruff lint, 507-file formatting
+and whitespace passed. Fresh Compose schema/default-off/loopback checks started no services.
+The exact application image matched all 214 packaged hashes and passed non-root Python 3.12.15
+startup, health/readiness, migration 20261013_0010, five bearer guards, independent defaults off
+and production refusal of development authentication. Only its owned private SQLite database
+was migrated; the smoke container was removed. No operator database was used.
+
+Final read-only inventory found no matching owned worker, browser, diagnostic or smoke containers,
+networks or host children. The older unmatched stopped database remains exited and unmounted,
+without adoption or deletion. Complete cross-gate checks bind backend, all browser primaries and
+current source to the same 602 hashes, verify frontend/image outcomes and retain every earlier
+failure. The source-only red/green reproduction remains available independently of these full gates.
+
+An initial private failed-CI classifier incorrectly required the successful 18-step metadata
+shape from jobs that stopped at backend tests. Their actual 17-step failure path omits the Node
+post-hook because Node setup was skipped. The failed classifier attempt is retained; the corrected
+failure-history audit confirms both full primaries, exact checkouts, 4,599 backend/783 PostgreSQL
+passes and one PostgreSQL failure. This is not successful acceptance. Successful delivery still
+requires all 18 successful quality/image/cleanup steps. No raw log, testcase, CI run or gate was
+changed to reconcile the classifier. The versioned repaired-candidate auditor passes 34 synthetic
+probes and validates the actual completed local gate inputs; neither is actual remote CI acceptance.
+
+Only ROADMAP, this plan and the acceptance matrix change after this freeze. Application/test bytes
+remain exactly validated. The ScanShell same-ID guard is still the sole production-code delta;
+the fixture repair changes no backend/worker runtime, authentication, API/schema/migration,
+credentials, policy defaults or finding/technical/remediation lifecycles. Post-receipt owner/
+quality checks, an exact three-document delta/preservation audit and a frozen manifest precede
+reuse of the existing independent reviewer. Corrected-source/exact-commit review, a logical
+follow-up commit and normal update to PR #72, both fresh first-attempt candidate primary CI audits,
+ordinary expected-head guarded merge and complete exact-main audit remain required. 8D3/8D/
+Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE. No new design choice, reviewer,
+commit, publication, merge, live AWS/IdP/IAM/secrets/operator-database/deployment/production or
+later-sprint work occurred during these gates. Preserve all branches/worktrees, parent skills,
+backups, dependency bytes and failed receipts. Verification guidance keeps execution, source,
+identity and cleanup proof tied together; documentation guidance preserves failures and scope.

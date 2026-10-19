@@ -3,7 +3,7 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-16 UTC
+Last verified: 2026-10-19 UTC
 Current accepted implementation baseline: `main` at
 `f97cf7bb44a3695e514ef9aaf64dedb70a463cdc` ([PR #71](https://github.com/jnc247s/cloud-security-automation/pull/71);
 complete exact-main [CI 38833846226](https://github.com/jnc247s/cloud-security-automation/actions/runs/38833846226)
@@ -83,6 +83,17 @@ and Firefox. The complete adverse matrix and whole-slice gates remain; no partia
 The 8D2 browser story confirms manual request/history admission, not installed-worker rescan
 or a VERIFIED verdict. No worker launch, ordinary Start scan, live/provider/production or
 later-sprint operation is authorized by this acceptance.
+
+The first 8D3 candidate `c48d5cc6` passed exact-commit independent review, but both first-attempt
+candidate CI runs failed the same new HTTP fixture's startup: 4,599 passed, one failed. The
+committed source-only snapshot reproduces that failure without built dashboard assets. A bounded
+test-only repair gives the explicit cross-issuer API fixture fresh temporary placeholder assets;
+native browser acceptance still requires the genuine bundle. The repaired source now passes
+4,615 backend cases/185 files, including all 784 PostgreSQL cases/35 files, 295 frontend cases,
+all 170 browser journeys and exact-image/default-off checks. Strict identity/source/cleanup
+audits pass; the original 4,600 case identities are retained with 15 new fixture guards.
+Corrected-source independent review and new-head delivery remain required. PR #72 is unmerged;
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and Sprint 9+ unstarted.
 
 The following 8D2 local checkpoint retains its original predictions and pending gates;
 the accepted status above supersedes those states, not their failure history.

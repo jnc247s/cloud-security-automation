@@ -23,6 +23,7 @@ from tests.dashboard_integrated_bootstrap import (
     identity_issuer,
     require_test_environment,
     server_database,
+    server_static_assets,
 )
 from tests.dashboard_integrated_execution_expiry import (
     CommittedExecutionExpiry,
@@ -357,15 +358,19 @@ def main():
         source = os.environ["DASHBOARD_INTEGRATED_SOURCE"]
         scenario = reader_scenario(os.environ.get("DASHBOARD_INTEGRATED_SCENARIO", "verified"))
         identity_phase = os.environ.get("DASHBOARD_INTEGRATED_IDENTITY_PHASE", "initial")
+        static_mode = os.environ.get("DASHBOARD_INTEGRATED_STATIC_MODE", "browser")
         identity_issuer(identity_phase, scenario.name)
         database = server_database(os.environ["DATABASE_URL"], instance)
-        configure(
-            database.render_as_string(hide_password=False),
-            secret=secrets.token_urlsafe(32),
-            identity_phase=identity_phase,
-            scenario=scenario.name,
-        )
-        serve(instance, source, scenario.name, identity_phase=identity_phase)
+        with server_static_assets(instance, static_mode, scenario.name) as static:
+            configure(
+                database.render_as_string(hide_password=False),
+                secret=secrets.token_urlsafe(32),
+                identity_phase=identity_phase,
+                scenario=scenario.name,
+            )
+            if static is not None:
+                os.environ["DASHBOARD_STATIC_DIR"] = str(static)
+            serve(instance, source, scenario.name, identity_phase=identity_phase)
         return 0
     except Exception:
         # No raw SQL, credentials, tokens, HTTP payloads or provider exception body.

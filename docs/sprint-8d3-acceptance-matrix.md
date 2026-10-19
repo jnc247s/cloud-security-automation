@@ -98,3 +98,50 @@ acceptance and required 8E remain; these local results do not accept 8D3 or Spri
 6. Preserve unrelated skills, branches/worktrees and unsuccessful receipts throughout. Code
    acceptance does not authorize live AWS/IdP/IAM/secrets/operator-database/deployment/production
    operations; none is needed to claim offline Sprint 8 code acceptance.
+
+## First candidate CI and test fixture repair
+
+Exact-commit independent review passed at `c48d5cc6`, but both first-attempt candidate CI runs
+failed the cross-issuer HTTP fixture before server readiness: 4,599 passed, one failed, with
+19 existing SQLite warnings and one secondary cleanup warning. Frontend, browser and image
+steps did not execute. The complete raw logs remain retained; neither run accepts the slice.
+
+The committed source-only snapshot reproduces the same startup failure without `frontend/dist`
+or local Node dependencies. The HTTP test had depended on ignored assets left by local frontend
+builds, whereas CI runs backend tests first. The repair creates fresh owned temporary assets only
+for its explicit `api-only` cross-issuer mode. Native browser mode still requires the real bundle;
+there is no missing-assets fallback, production startup change or CI reordering. The placeholder
+is API-fixture setup, not browser interaction evidence.
+
+All 89 bootstrap/guardian guards pass, including 13 new mode/ownership/cleanup guards. The full
+signed authority-restart, installed-worker and managed-verification case passes with both server
+generations serving the explicit API placeholder. A fresh source-only snapshot also passes that
+case, with no dashboard build before or after and all 602 copied source hashes unchanged.
+These targeted results do not replace fresh complete backend/PostgreSQL/frontend/browser/image
+validation, corrected-tree review, new-head CI, guarded merge, exact-main audit or required 8E.
+
+Two further cleanup-error cases bring the final bootstrap/guardian set to 91, all passing in
+1.48s. Cleanup-only errors fail; secondary cleanup cannot mask the primary. Invalid-mode guards
+also prove no directory creation. Fresh complete corrected-source validation remains required.
+
+## Corrected candidate local validation
+
+The repaired source passed all 4,615 backend cases/185 files in 4513.66s, including all 784
+PostgreSQL cases/35 files, with no failures, errors or skips. Every raw collection/JUnit identity
+matches; the original 4,600 cases remain with 15 new fixture guards. The 22 warnings are the
+19 existing SQLite and three JUnit-property warnings. All 602 source hashes remained unchanged.
+
+All 90 retained and 80 integrated browser journeys pass on that same freeze: 85 per project,
+one worker and zero retries/skips. Independent audits match project, file, line, column and full
+title; every integrated journey has its own authority/source/storage/verdict proof and owned
+cleanup. The API placeholder is not browser evidence. All 295 frontend cases/13 files, typecheck,
+lint, build, 433 security/configuration/owner checks, Ruff/507-file formatting and whitespace pass.
+Fresh exact-image checks cover 214 packaged hashes, non-root startup, health/readiness, migration
+0010, bearer/default-off guards and production refusal of development authentication. Compose
+checks started no services; no operator database was used. Owned resources are cleaned up and
+the pre-existing stopped database is preserved.
+
+Earlier 4,600-case receipts describe the original candidate, not this repaired freeze. Both failed
+first-attempt CI runs remain failed history. Corrected-source independent review, new-head push/
+PR primary audits, guarded merge, complete exact-main acceptance and required 8E remain pending.
+8D3/8D/Sprint 8 remain IN PROGRESS; these local results do not authorize live operations.

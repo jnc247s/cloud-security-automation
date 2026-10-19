@@ -112,6 +112,118 @@ def test_configure_discards_inherited_write_and_identity_settings(monkeypatch):
     assert bootstrap.os.environ["REMEDIATION_VERIFICATION_ENABLED"] == "false"
 
 
+def test_browser_static_mode_never_creates_a_placeholder_or_substitutes_the_bundle(monkeypatch):
+    monkeypatch.setenv("DASHBOARD_BROWSER_TEST", "1")
+
+    def forbidden(**_kwargs):
+        pytest.fail("Native browser acceptance must use its genuine built dashboard")
+
+    monkeypatch.setattr(bootstrap, "TemporaryDirectory", forbidden, raising=False)
+    with bootstrap.server_static_assets(str(uuid4()), "browser", "cross-issuer") as static:
+        assert static is None
+
+
+@pytest.mark.parametrize("exceptional", [False, True])
+def test_api_only_assets_are_fresh_owned_and_cleaned_without_a_browser_build(
+    monkeypatch, tmp_path, exceptional
+):
+    from tempfile import TemporaryDirectory
+
+    monkeypatch.setenv("DASHBOARD_BROWSER_TEST", "1")
+    monkeypatch.setattr(
+        bootstrap,
+        "TemporaryDirectory",
+        lambda **kwargs: TemporaryDirectory(dir=tmp_path, **kwargs),
+        raising=False,
+    )
+    original = RuntimeError("Synthetic API-only test failure")
+    retained = None
+    try:
+        with bootstrap.server_static_assets(str(uuid4()), "api-only", "cross-issuer") as static:
+            retained = static
+            assert static.parent.resolve() == tmp_path.resolve()
+            assert static.resolve() != (bootstrap.ROOT / "frontend/dist").resolve()
+            assert (static / "assets").is_dir()
+            assert (static / "index.html").read_text(encoding="utf-8") == (
+                "<!doctype html><title>Integrated API-only test assets</title>"
+            )
+            assert sorted(path.name for path in static.iterdir()) == ["assets", "index.html"]
+            if exceptional:
+                raise original
+    except RuntimeError as error:
+        assert exceptional and error is original
+    assert retained is not None and not retained.exists()
+
+
+@pytest.mark.parametrize("mode", [None, True, "", "API-ONLY", "api-only ", "arbitrary/path"])
+def test_static_mode_rejects_unknown_or_untyped_values_before_creating_assets(monkeypatch, mode):
+    monkeypatch.setenv("DASHBOARD_BROWSER_TEST", "1")
+
+    def forbidden(**_kwargs):
+        pytest.fail("Unknown mode cannot create temporary assets")
+
+    monkeypatch.setattr(bootstrap, "TemporaryDirectory", forbidden)
+    with pytest.raises(ValueError, match="Invalid integrated static mode"):
+        with bootstrap.server_static_assets(str(uuid4()), mode, "cross-issuer"):
+            pytest.fail("Unknown mode must not create a fixture")
+
+
+@pytest.mark.parametrize("scenario", ["verified", "in-flight", "cross-issuer "])
+def test_api_only_assets_are_not_available_to_native_browser_scenarios(monkeypatch, scenario):
+    monkeypatch.setenv("DASHBOARD_BROWSER_TEST", "1")
+
+    def forbidden(**_kwargs):
+        pytest.fail("Unapproved scenario cannot create temporary assets")
+
+    monkeypatch.setattr(bootstrap, "TemporaryDirectory", forbidden)
+    with pytest.raises(ValueError, match="Invalid integrated static mode"):
+        with bootstrap.server_static_assets(str(uuid4()), "api-only", scenario):
+            pytest.fail("Only the explicit cross-issuer API test may use placeholders")
+
+
+def test_api_only_assets_require_explicit_test_mode_before_creating_any_directory(monkeypatch):
+    monkeypatch.delenv("DASHBOARD_BROWSER_TEST", raising=False)
+
+    def forbidden(**_kwargs):
+        pytest.fail("No temporary assets outside explicit test mode")
+
+    monkeypatch.setattr(bootstrap, "TemporaryDirectory", forbidden)
+    with pytest.raises(ValueError, match="explicit browser-test mode"):
+        with bootstrap.server_static_assets(str(uuid4()), "api-only", "cross-issuer"):
+            pytest.fail("No implicit test mode")
+
+
+@pytest.mark.parametrize("primary_failure", [False, True])
+def test_api_asset_cleanup_failure_cannot_mask_the_primary_or_claim_success(
+    monkeypatch, tmp_path, primary_failure
+):
+    from tempfile import TemporaryDirectory
+
+    monkeypatch.setenv("DASHBOARD_BROWSER_TEST", "1")
+    owned = TemporaryDirectory(dir=tmp_path, prefix="owned-cleanup-")
+    cleanup, calls = owned.cleanup, []
+
+    def failed_cleanup():
+        calls.append(True)
+        cleanup()
+        raise RuntimeError("Synthetic asset cleanup failure")
+
+    owned.cleanup = failed_cleanup
+    monkeypatch.setattr(bootstrap, "TemporaryDirectory", lambda **_kwargs: owned)
+    if primary_failure:
+        original = ValueError("Synthetic primary failure")
+        with pytest.warns(UserWarning, match="Secondary owned process cleanup failure"):
+            with pytest.raises(ValueError) as caught:
+                with bootstrap.server_static_assets(str(uuid4()), "api-only", "cross-issuer"):
+                    raise original
+        assert caught.value is original
+    else:
+        with pytest.raises(RuntimeError, match="Synthetic asset cleanup failure"):
+            with bootstrap.server_static_assets(str(uuid4()), "api-only", "cross-issuer"):
+                pass
+    assert calls == [True] and not (tmp_path / owned.name).exists()
+
+
 @pytest.mark.parametrize("container", [False, True])
 @pytest.mark.parametrize(
     "case", ["driver", "host", "user", "password", "database", "port", "schema", "query"]
