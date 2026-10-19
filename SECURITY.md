@@ -1,10 +1,11 @@
 # Security policy and engineering boundaries
 
 This document defines permanent repository security rules for accepted Sprints 0--7,
-Sprint 8A/8B, default-off 8C and 8D1 READ history. The accepted implementation
-`main` baseline is `d6a37658f2d34f94d26a475d91b95ef7a511d940` (PR #70;
+Sprint 8A/8B, default-off 8C, 8D1 READ history and separately default-off 8D2 manual workflow.
+The accepted implementation `main` baseline is
+`f97cf7bb44a3695e514ef9aaf64dedb70a463cdc` (PR #71;
 exact-commit REVIEW_PASS, both first-attempt candidate primary audits and complete exact-main CI
-38794113567 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
+38833846226 passed). Installed-process worker tests remain based on `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 PR #59).
 Accepted 8B1 database admission and disabled/undeployed 8B2 worker code grant no deployment or
 live AWS execution authority.
@@ -585,10 +586,10 @@ ID/policy bindings prevent misleading display, not authorization or independent 
 proof. Current validity uses server timestamps/reasons, never browser time or approval alone.
 Quarantine, admission/ACK and verification/finding/technical status stay separate. No browser
 mutation, worker launch, AWS/DB shortcut, new role, configuration flag or bootstrap identity hint
-is implemented in 8D1; the separately approved 8D2 boundary still requires its implementation and
-acceptance gates. Existing trust-domain/process/physical-isolation and live-operation limits apply.
+is implemented in 8D1; the separately accepted 8D2 boundary is described below.
+Existing trust-domain/process/physical-isolation and live-operation limits apply.
 
-The local, unaccepted 8D2 server candidate independently gates preparation/submission behind
+Accepted 8D2 independently gates preparation/submission behind
 `DASHBOARD_REMEDIATION_ENABLED=false`. True requires the enabled OIDC dashboard, not development
 authentication. Fresh verified principal/capabilities replace cached role hints as the write
 check; the bearer API authorizes again. Browser-selected URLs/methods/keys/credentials/scope,
@@ -603,15 +604,16 @@ verification submission-failure IDs may already name an accepted attempt, never 
 verdict. Unknown forwarded effects remain unconfirmed; a later denial/expiry is not cancellation.
 Session loss clears coordination and private responses, requiring manual history reconciliation.
 Scanner credentials, separate worker authority, production boundaries and migration 0010 are
-unchanged. The local UI now requires guarded issuer/feature/session hints, closed response/
+unchanged. The UI requires guarded issuer/feature/session hints, closed response/
 immutable bindings and explicit review/confirmation. Missing hints preserve READ-only behavior;
 unknown fields/scalars/states cannot authorize or imply execution success. No Web Storage,
 provider token, browser-selected key or automatic submission is added. Lost responses keep
 browser uncertainty separate from last server state/attempt counts. Session 401/logout clears
 private data and late results cannot restore it. A public reconciliation warning survives sign-out.
 The local 90-journey signed browser suite passed, including three distinct verified humans and
-same-session recovery without automatic mutation. Whole-slice acceptance remains pending; the
-8D1 receipts do not accept this new boundary or authorize live execution.
+same-session recovery without automatic mutation. Full 8D2 review/delivery gates passed through
+PR #71 and complete exact-main CI 38833846226. This accepts default-off code, not live execution
+or deployed physical isolation. Integrated installed-worker/managed-reader UI proof remains 8D3.
 
 Writing code or configuration never authorizes execution against production. Explicit human
 authorization is required for production deployment, Terraform apply, destructive AWS action,

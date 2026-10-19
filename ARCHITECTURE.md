@@ -1,9 +1,10 @@
 # Architecture
 
-This document describes accepted Sprints 0--7, Sprint 8A/8B, default-off 8C verification and 8D1 READ history.
+This document describes accepted Sprints 0--7, Sprint 8A/8B, default-off 8C verification,
+8D1 READ history and separately default-off 8D2 manual workflow.
 The accepted implementation baseline is `main` commit
-`d6a37658f2d34f94d26a475d91b95ef7a511d940` (PR #70; exact-commit independent REVIEW_PASS,
-both first-attempt candidate primary audits and complete exact-main CI 38794113567 passed).
+`f97cf7bb44a3695e514ef9aaf64dedb70a463cdc` (PR #71; exact-commit independent REVIEW_PASS,
+both first-attempt candidate primary audits and complete exact-main CI 38833846226 passed).
 Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Worker code is separate, disabled and undeployed; acceptance grants no live-operation authority.
@@ -773,7 +774,7 @@ clearing/focus return and stable controls above the changing list. No schema/def
 worker, platform, dependencies or browser writes change. All 8D1 acceptance gates passed;
 approved 8D2 preparation/confirmation/recovery is not implemented by this READ-only slice.
 
-The local 8D2 candidate adds an independent default-off `DASHBOARD_REMEDIATION_ENABLED` boundary
+Accepted 8D2 adds an independent default-off `DASHBOARD_REMEDIATION_ENABLED` boundary
 within this same process. Enabled configuration requires the enabled OIDC dashboard. Closed
 typed prepare/submit routes create a server UUID and frozen body/actor pair, then explicitly
 re-enter one of five existing bearer mutations. Fresh verified identity/capabilities, exact
@@ -786,7 +787,7 @@ and existing-session deadline. In-flight claims prevent concurrent dispatch; exp
 preserve the same actor/key/body. Trusted references are confirmed through bound READ history,
 not mutable blockers/phase/receipt equality. Uncertain forwarded work stays unconfirmed after
 expiry; logout/process loss ends coordination, not prior effects. No token/raw response/domain
-grant is stored in an operation, and no durable BFF ledger is added. The local React candidate
+grant is stored in an operation, and no durable BFF ledger is added. The accepted React workflow
 now adds closed runtime-validated clients, session-level recovery and all five manual action
 forms. Mutations occur in explicit event handlers only, never effects/reload. Missing opt-in/
 issuer metadata keeps legacy READ behavior; changed sessions unmount private coordination.
@@ -794,8 +795,8 @@ Prepared IDs, immutable body/deadline/actor, risk and digests are reviewed befor
 confirmation. Unknown outcomes retain their original key; missing/regressed recovery cannot
 enable replacement work. Independent technical/finding/approval/execution/verification views
 remain. All 90 signed browser journeys passed, including isolated three-human BFF/bearer/API/
-PostgreSQL workflows; installed-worker/managed-reader UI acceptance remains 8D3. Full 8D2 slice
-acceptance is still pending; see
+PostgreSQL workflows; installed-worker/managed-reader UI acceptance remains 8D3. Full 8D2
+review/delivery gates passed through PR #71 and complete exact-main CI 38833846226; see
 [8D2 preflight](docs/sprint-8d2-preflight.md).
 
 Local Compose starts PostgreSQL 16, runs `alembic upgrade head` as a one-shot service, then starts
@@ -818,8 +819,8 @@ workload-role configuration remain deployment responsibilities.
   Production setup remains unimplemented.
 - No Terraform deployment or AI runtime. Accepted 8A/B1 store human proposal/approval/admission
   authority; accepted 8B2 adds separate default-off isolated worker code, not a deployed service.
-  Accepted 8C1 adds default-off linked exact-policy verification. No public worker launch or
-  accepted remediation dashboard mutation exists. The local 8D2 candidate above is unaccepted.
+  Accepted 8C1 adds default-off linked exact-policy verification. Accepted 8D2 adds separately
+  default-off typed dashboard mutations, not a public worker launcher or ordinary scan-start UI.
   Code acceptance grants no live AWS/IAM/secret/production authority.
 
 <a name="approved-8c1-linked-verification-candidate"></a>

@@ -487,17 +487,26 @@ def test_accepted_5f_and_5g_closure_preserve_sprint6_boundary() -> None:
     assert "**8D1 is COMPLETE**" in roadmap
     assert "| 8D1 | READ remediation history and bounded scan navigation | COMPLETE |" in sprint8
     assert (
-        "| 8D2 | Default-off manual preparation, confirmation and session recovery | IN PROGRESS |"
+        "| 8D2 | Default-off manual preparation, confirmation and session recovery | COMPLETE |"
         in sprint8
     )
     assert (
         "| 8D3 | Integrated adverse UI/installed-worker/read-only verification acceptance | "
-        "PLANNED |" in sprint8
+        "IN PROGRESS |" in sprint8
     )
     assert "### Accepted 8D1 history and navigation 2026-10-15" in sprint8
     assert "8D1 is COMPLETE" in readme_status
     assert "`d6a37658f2d34f94d26a475d91b95ef7a511d940`" in roadmap
     assert "CI 38794113567" in roadmap
+    assert "**8D2 is COMPLETE**" in roadmap
+    assert "8D2 is COMPLETE" in readme_status
+    assert "### Accepted 8D2 manual workflow 2026-10-16" in sprint8
+    assert "`f97cf7bb44a3695e514ef9aaf64dedb70a463cdc`" in roadmap
+    assert "CI 38833846226" in roadmap
+    assert "38827126839" in sprint8 and "38827142770" in sprint8
+    assert "**8D3 is IN PROGRESS**" in roadmap
+    assert "8D3 is IN PROGRESS" in readme_status
+    assert (ROOT / "docs/sprint-8d3-preflight.md").is_file()
     assert "Ordinary Start scan remains excluded" in sprint8
     assert (
         "| 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |" in sprint8

@@ -186,7 +186,7 @@ cancellation, proposal withdrawal, AWS remediation dispatch or arbitrary AWS-cal
 The scoped manual linked-verification rescan is described below; it does not retry an AWS write.
 `AuditService` is an internal service boundary only. Accepted 8D1 below adds six fixed
 remediation-history GETs; its generic `/dashboard/api` adapter never proxies the POST operations
-above. The separately opt-in 8D2 candidate below adds typed preparation/submit routes that
+above. Separately accepted opt-in 8D2 below adds typed preparation/submit routes that
 re-enter only the five remediation POSTs listed above. It adds no generic mutation proxy,
 ordinary browser scan POST or worker launcher. Dashboard cookies never authenticate `/api/v1`.
 
@@ -779,12 +779,15 @@ must not render success. Historical approval, current blockers, v1 human/v2 work
 reservation, verification verdict, technical result and current finding disposition stay separate.
 These filters and client bindings do not add tenant isolation. Details remain potentially large;
 bounded display is not a network-payload bound. Every browser mutation/worker-launch/scan-start
-path remains unavailable in accepted 8D1; the separate local 8D2 candidate follows below.
+path remains unavailable in accepted 8D1; the separately accepted 8D2 boundary follows below.
 
-### Sprint 8D2 preparation boundary local candidate
+<a name="sprint-8d2-preparation-boundary-local-candidate"></a>
+### Sprint 8D2 preparation boundary
 
-This local server/UI candidate is not accepted 8D2. All 90 signed browser journeys and complete
-4,007-case local regression passed; independent review and full slice delivery gates remain.
+Accepted 8D2 passed independent review, both complete candidate primary audits, ordinary guarded
+merge through PR #71 and complete exact-main CI 38833846226. Every CI run passed 4,007 backend
+cases (714 PostgreSQL), 289 frontend cases, all 90 browser journeys and all 18 job steps without
+skips/retries. Installed-worker/managed-reader UI acceptance remains 8D3.
 `DASHBOARD_REMEDIATION_ENABLED` defaults false and requires the enabled OIDC dashboard when true.
 False installs none of these routes. Backend admission/verification flags and scopes remain
 independent; no worker launch or ordinary browser scan POST is added. `/api/v1` stays unchanged.
@@ -793,7 +796,7 @@ Authenticated `GET /dashboard/session` now adds verified non-secret `issuer` and
 `features: {"remediation": boolean}`. Subject/roles also come from freshly verified claims.
 These are hints, not authority. Unauthenticated bootstrap adds neither field. Existing clients
 can ignore the additive metadata; new clients must stay READ-only when required hints are absent.
-The local client validates provided hint types, requires both opt-in and verified issuer plus
+The client validates provided hint types, requires both opt-in and verified issuer plus
 bound session metadata for write affordances, and keeps the existing login/logout adapter closed.
 Preparation/submission/recovery use dedicated fixed clients, never a generic mutation path.
 

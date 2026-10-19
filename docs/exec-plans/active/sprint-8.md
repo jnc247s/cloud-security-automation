@@ -26,8 +26,8 @@ workflow, but never implicitly approves architecture/design decisions or live op
 | 8C2 | Integrated fault/restart, policy and historical-scope acceptance | COMPLETE |
 | 8D | Authenticated dashboard workflow | IN PROGRESS |
 | 8D1 | READ remediation history and bounded scan navigation | COMPLETE |
-| 8D2 | Default-off manual preparation, confirmation and session recovery | IN PROGRESS |
-| 8D3 | Integrated adverse UI/installed-worker/read-only verification acceptance | PLANNED |
+| 8D2 | Default-off manual preparation, confirmation and session recovery | COMPLETE |
+| 8D3 | Integrated adverse UI/installed-worker/read-only verification acceptance | IN PROGRESS |
 | 8E | Whole-sprint security/compatibility acceptance and closeout | PLANNED |
 
 Only one slice advances at a time after required review/publication/merge and green exact
@@ -4361,3 +4361,2556 @@ database/directories were removed; primary review logs were retained. The origin
 and first browser failure/qualified unknown secondary cause remain historical. Corrected-head
 independent REVIEW_PASS, both complete candidate primary audits, guarded merge and complete
 exact-main audit remain required. No publication, live operation or 8D3/8E implementation occurred.
+
+### Accepted 8D2 manual workflow 2026-10-16
+
+**8D2 is COMPLETE** through [PR #71](https://github.com/jnc247s/cloud-security-automation/pull/71)
+at `f97cf7bb44a3695e514ef9aaf64dedb70a463cdc`. This supersedes earlier pending acceptance
+checkpoints, not their original predictions, failed runs or qualified unknown causes.
+8D/Sprint 8 remain IN PROGRESS; 8D3 and 8E remain PLANNED and required for the full goal.
+
+Corrected-head independent **REVIEW_PASS** covers
+`b61dfa8198e85b1d0a5632e7a916406d38970d1b`, tree
+`07822310fe13673ff7e3dc0f20c0851adcb06c55`. The original LOW API-overview finding at `653e0e9`
+is independently closed, with no remaining findings. Only two documentation files changed in
+the correction; all other 557 tracked files remained unchanged. Follow-up independently passed
+104 owner contracts in 0.77s, Ruff lint/467-file formatting and committed whitespace. The earlier
+347-case/18-PostgreSQL execution and 289-case frontend/build validation, plus complete local
+backend/browser audits, carry forward; the complete suite/image were not independently rerun.
+
+All three first-attempt complete primary audits passed:
+
+| Run | Backend duration | Actual checkout |
+| --- | --- | --- |
+| [Push 38827126839](https://github.com/jnc247s/cloud-security-automation/actions/runs/38827126839), job 116737070278 | 2694.02s | Reviewed feature `b61dfa8` |
+| [PR 38827142770](https://github.com/jnc247s/cloud-security-automation/actions/runs/38827142770), job 116737119308 | 3831.07s | Synthetic merge `555502dc`, exact D1/feature parents |
+| [Exact main 38833846226](https://github.com/jnc247s/cloud-security-automation/actions/runs/38833846226), job 116758401960 | 3273.11s | Merged `f97cf7bb`, exact D1/feature parents |
+
+Every run passed all **4,007 backend cases/169 files**, including **714 PostgreSQL cases/34
+files** without skips; **289 frontend cases/13 files**, typecheck/lint/build; **90 unique browser
+journeys**, 45 per project with one worker and zero retries; and all **18 quality/image/cleanup
+steps**. Complete per-file/backend and exact browser identities were audited against current
+collection, not merely green check summaries. Backend warning inventories contain only the
+same 19 existing SQLite datetime-adapter warnings. The three extra local JUnit-report warnings
+remain a qualified local instrumentation difference, not suppression or failed CI.
+
+The ordinary standing-authorized merge used an expected-feature-head guard, without force,
+administrative bypass or branch deletion. It preserves the exact reviewed tree and parents
+`[d6a37658f2d34f94d26a475d91b95ef7a511d940, b61dfa8198e85b1d0a5632e7a916406d38970d1b]`.
+Main primary SHA-256 is `9178a835800df77b862521df9addc3d581b3e0e8e2fb8e4f154d04937e07d50b`.
+A local status observer encountered a TLS timeout; direct API reconciliation confirmed the
+same external job remained live. Reconnecting only the observer did not rerun CI or tests.
+
+The accepted slice adds separately default-off typed manual preparation/confirmation/recovery,
+not a generic mutation proxy, ordinary browser Start scan or worker launcher. Existing domain
+API bodies/enums, services, role map, ORM, migration 0010, scanner read-only credentials and
+isolated worker remain unchanged. Finding, technical, approval, execution and verification
+lifecycles stay separate. The native 8D2 verification story proves request/history admission,
+not an installed-worker rescan or VERIFIED receipt; that integrated UI proof remains 8D3.
+
+After acceptance, clean local main was normally fast-forwarded to the audited merge and scoped
+`codex/sprint-8d3-preflight` was created. All 79 predecessor branches, three worktrees and three
+unrelated parent skills remain preserved; the new branch is the sole branch addition. Current
+owner/status-contract reconciliation precedes the separate 8D3 preflight. No 8D3 runtime/test
+implementation, live AWS/IdP/IAM/secret/operator-database/deployment/production or Sprint 9+
+operation has started. The full goal remains ACTIVE; later design choices still require approval.
+
+### Local 8D2 owner reconciliation 2026-10-16
+
+On `codex/sprint-8d3-preflight`, 12 current-owner Markdown files and the stage-specific progress
+contract reconcile accepted 8D2 at `f97cf7bb`. Original predictions, failed receipts and historical
+baseline links remain intact, including preserved heading anchors. No runtime, API, schema,
+dependency, credentials or enabled configuration changes accompany this preparation.
+
+The first targeted selection passed 283 cases and failed four in 1.59s: the three security/
+architecture owner openings retained the old baseline, and the roadmap lost the full historical
+8D1 merge ID when its current baseline changed. Correcting those passages exposed the next
+historical guard: 286 passed/one failed in 1.13s because the 8D1 CI ID also needed retaining in
+its historical receipt. No assertion was removed or weakened. After restoring that reference,
+**287 passed in 0.77s**, without warnings/skips; Ruff lint, **467-file** formatting and whitespace
+passed. Both failed receipts are retained. These are owner-preparation checks, not a new full
+regression or 8D3 acceptance claim.
+
+The documentation workflow kept current accepted scope distinct from deployment/live authority
+and preserved historical predictions and meaningful permalinks. The full-story verification
+workflow identifies the remaining browser-to-installed-worker-to-managed-rescan proof; the
+accepted 8D2 native journey stops at request admission. Separate 8D3 preflight and the complete
+adverse/installed-worker/managed-reader UI matrix remain required, followed by 8E whole-sprint
+closeout. No reviewer, commit, publication, live-provider/production or later-sprint work occurred
+in this owner-reconciliation unit. The full goal remains ACTIVE.
+
+### 8D3 preflight and accepted-design entry 2026-10-16
+
+The [scoped preflight](../../sprint-8d3-preflight.md) maps the UI/BFF/bearer/owned-database/
+installed-worker/managed-reader contracts and their current coverage gaps. No new product or
+security design decision is required within the user-approved D1--D3 package and standing
+routine workflow. 8D3 is IN PROGRESS; 8E remains PLANNED and the full Sprint 8 goal ACTIVE.
+
+Approved implementation predictions retain the complete four-work-unit matrix in that preflight:
+owned parent coordinator plus genuine native installed-worker/managed-rescan path; full adverse
+authority/replay/expiry/session/response-loss/reload/capacity/race matrix; verdict/history and
+keyboard/mobile/default-off/retained compatibility; then every local/review/delivery/exact-main
+gate. The first piece is strict stdlib-only private control parsing, not authority or a worker
+launcher. Before any effect, the future coordinator must independently bind the target to its
+live owned schema/source and signed durable grant. Native CI and the local Linux-browser adapter
+must preserve the same restricted parent ownership without a Docker socket, nested daemon or
+generic command endpoint in the browser/API. Parser tests alone do not complete the first unit.
+
+No runtime/API/role/enum/schema/migration/credential/default change is planned. Scanner access
+stays read-only. The managed scan must use real submit/collect/rule/persist/receipt boundaries;
+normal sufficient later evidence may resolve a current finding without rewriting immutable
+original technical history. New product semantics or broader Docker/network/credential authority
+would require stopping for a decision. No live-provider/production or Sprint 9+ work is authorized.
+
+### Local 8D3 private control guards 2026-10-16 not accepted
+
+The first test-only piece adds a stdlib-only parser for bounded private test-parent messages:
+RUN_WORKER, RELEASE_READER and STOP, with exact canonical UUID4 instance/request/target bindings,
+closed fields/version/operations and a 2,048-byte UTF-8 budget. Duplicate keys, nonfinite JSON,
+invalid Unicode, coercions, unknown commands and arbitrary argv/URL/environment/credential
+fields fail with one sanitized error. Parsed values are immutable. Parsing grants no authority
+and performs no I/O; the future owning coordinator must still validate the live owned schema,
+source and genuine committed human grant before any effect.
+
+All 48 new pure guards passed in 0.12s. Ruff then caught one overlong new test declaration;
+normal formatting corrected it without changing assertions. The expanded isolated selection
+passed **336 cases in 0.89s**, without warnings/skips, including all 48 new guards and 105 owner
+contracts (the new preflight adds one Markdown-link case). Ruff lint, **470-file** formatting
+and whitespace passed. Parameter identities use fixed canonical test UUIDs, not collection-time
+random UUID labels. The complete primary/JUnit receipt is retained.
+
+This is not the installed-worker/managed-reader story or completion of the first work unit.
+The owning parent process, independent durable-target validation, duplicate/late result fencing,
+native/container adapters, complete signed browser path and full adverse/history/accessibility
+matrix remain. No application/frontend/runtime/configuration/schema/credential behavior changed.
+Full regression, PostgreSQL/browser/image proof, independent review and every delivery gate remain
+required for the complete 8D3 slice. The full goal is ACTIVE; 8E remains required.
+
+### Local 8D3 owning coordinator integration 2026-10-16 not accepted
+
+The test-parent coordinator independently binds its live labelled runtime/schema and immutable
+source IDs to execution READ history and the three signed human audit pairs. Control request IDs
+must match the durable upstream operation keys. SQL reads finish before the existing restricted
+installed worker or managed-reader gate runs. The coordinator creates no human authority, scan
+or receipt; the real managed executor owns submit/collection/assessment/persistence. Its bounded
+private fence prevents duplicate claims, replacement targets and late-result restoration, keeps
+unknown effects unconfirmed, and permits shutdown without a capacity slot or cancellation claim.
+Only fixed diagnostic stages/error classes are exposed; raw provider/database errors are not.
+
+Validation history is retained:
+
+- The pure fencing/configuration/owner selection passed 351 cases in 0.86s; Ruff then caught a
+  101-character new comment. Normal wrapping corrected it, without an assertion change.
+- First integration collection stopped in 0.56s because two new test-only imports incorrectly
+  requested AssessmentResult from persistence enums. Both now use the existing assessment model;
+  no enum, schema or production module changed. The owned outer database was removed.
+- The first integrated selection passed 63 pure cases and failed its first PostgreSQL case in
+  38.39s. Fixed sanitized stage diagnostics located installed dispatch; isolated repeats failed
+  in 31.98s and 9.33s. The local wrapper used the same directory for OS TEMP and pytest basetemp.
+  An independent owned probe failed with that shared layout (0.47s), showing pytest removed the
+  module-fixture OS temporary directory, and passed with separate directories (0.23s). Separating
+  only those owned locations corrected setup without changing the accepted worker/runtime guards.
+- The isolated signed-API/installed-worker/managed-reader case then passed in 16.22s. The complete
+  new selection passed **85 cases in 109.77s**, including **22 PostgreSQL cases**, without warnings
+  or skips. JUnit confirms 85 unique identities and no failures/errors/skips. All **564 source
+  paths/hashes**, branch/head and owned cleanup passed. Complete primary SHA-256 is
+  `3ea68d5ef79c7feb85c806bc80ca1f0829cfb8882fcc7e91d9c73e6d75f372ce`.
+
+The positive case proves one installed SDK write and intent, a genuine managed scan/sealed
+VERIFIED receipt, unchanged original FAIL assessment/execution history and normal later finding
+resolution. Negative cases reject every source ID, wrong operation key/issuer and unowned URLs
+before child dispatch; a deliberately lost reply after a real worker ACK remains sticky and
+never resends. Reader release requires the exact accepted verification link/key. No guard,
+capability, assertion, provider boundary or timeout was weakened to obtain these passes.
+
+This remains signed API/coordinator evidence, not the required native three-human UI story.
+The owning server process, native/container control adapters, browser/installed-worker/managed-
+reader journey and complete adverse/history/keyboard/mobile matrix remain, along with whole-
+slice regression/image/review/delivery/exact-main gates. The environment/database guidance kept
+credentials server-side and SQL transactions short; no operator configuration, production
+credentials, app runtime, migration or later-sprint behavior changed. The full goal remains ACTIVE.
+
+The expanded coordinator selection passed 373 cases in 111.10s. Three additional negative
+settlement tests then failed before a narrow fence correction: worker commands could be settled
+with a reader result, and reader commands with a worker result. Settlement now requires the
+success state belonging to the original command; STOP is never work. All three assertions are
+retained. The strengthened isolated selection passed 354 cases in 0.86s, then the expanded
+installed-worker/PostgreSQL selection passed **376 cases in 106.23s**, including **22 PostgreSQL
+cases**, without warnings or skips. Independent JUnit inspection confirms 376 unique identities
+and no failures/errors/skips. All 564 frozen source paths/hashes and owned cleanup passed;
+Ruff lint, 472-file formatting and whitespace checks passed after the run. A bare Windows Python
+alias was inaccessible during receipt inspection; the repository's explicit virtual-environment
+interpreter completed those quality checks. No test rerun or application change was needed.
+
+Next is the actual owning guardian/server and native browser adapter. The signed API tests above
+are not relabelled native UI acceptance, and the full 8D3/8E gates remain outstanding.
+
+### Local 8D3 genuine native path 2026-10-16 not accepted
+
+The separate test-only guardian now owns the fresh labelled runtime/schema, full retained FAIL
+source and installed child. Its server-only child uses genuine signed OIDC/PKCE, BFF/bearer
+authorization and the actual managed executor/collector/rules/persistence/receipt path. It seeds
+no human grant or receipt. The browser manually prepares, reviews and confirms proposal,
+independent approval, third-person admission and linked verification. Parent control binds those
+actual operation/execution/verification UUIDs to committed history. One installed synthetic SDK
+write and intent precede normal ACK; only the accepted reader gate is released. Independent
+parent proof checks the sealed storage digests/audits, immutable original FAIL/execution history
+and legitimate later finding resolution. The browser renders pending and VERIFIED/PASS separately
+from ACK, checks no unexpected/automatic POST or WebStorage, rejects ordinary scan POST and clears
+private panels on logout. No production application, frontend component, migration or default changed.
+
+Native Windows Chromium passed the complete story in 16.9s (48.5s including setup), then again
+in 14.0s. Windows Firefox failed at browser launch with `spawn UNKNOWN`, before the test body;
+that platform cause remains unconfirmed. This is not a browser acceptance pass or waiver.
+The planned Linux adapter then proved the identical complete path in both pinned projects:
+Chromium **10.9s / 22.2s including setup**, Firefox **12.5s / 24.4s including setup**, each with
+one worker, zero retries/skips. All **577 frozen source paths/hashes** matched; source/tool/nonroot
+proof, parent storage proof and exact browser/worker/schema/tmpfs-database/network cleanup passed.
+The accepted 90 baseline journeys are unchanged but still require a current whole-suite run.
+
+The Linux adapter retains the accepted local browser's owned PG network-namespace pattern;
+installed workers remain on their separate internal-only network. Docker stays in the owning
+parent. No socket, endpoint, host credentials, write-role configuration or arbitrary-command
+broker reaches browser/API/scanner. Its only bind mount is a nonroot read-only directory of
+bounded immutable UUID-bound control replies. Reader permission and actual gate acknowledgment
+are distinct; the parent does not settle RELEASE_READER until the child acknowledges that gate.
+Duplicate/mismatched/late work remains fenced. The server independently reads the exact guardian
+schema marker before application startup. SQL sessions close before IPC/provider work.
+
+Failed setup/diagnostic history remains:
+
+- The first native attempt could not access the sandboxed local Docker pipe; no browser ran.
+- The first unrestricted native attempt stopped during startup; its local output relay also
+  failed on CP1252 rendering of the test title. UTF-8 logging now retains output before relaying
+  it and cleans the exact returned process on relay failure. A separate new unit test reproduced
+  rejection of Windows CRLF readiness metadata (one failed/seven passed); normalization corrected
+  that transport defect, with all eight assertions retained. This does not invent a complete
+  diagnosis from the truncated initial browser output. Owned resources were checked absent.
+- An unconfigured unit invocation hit the sandbox's default temporary-directory restriction
+  (46 passed/five setup errors); explicit owned basetemp corrected the test location. Four atomic
+  hard-link tests then hit sandbox access denial (63 passed/four failed); the unchanged 67 cases
+  passed outside that sandbox in 0.26s. No fallback or assertion weakening was added.
+- The first Linux trial failed closed on namespace identity before browser work. A fresh owned
+  probe showed Docker records `container:<exact owned database ID>`, not its name; image/source/
+  user/capability/security/read-only-mount checks matched. The guard now independently validates
+  that live labelled database and accepts only its exact name or resolved ID. All 68 adapter
+  guards passed in 0.26s. Foreign namespaces remain denied; diagnostic resources were removed.
+
+Ruff lint, 483-file formatting, whitespace and browser type checks passed before the final image
+freeze; its fresh build passed pinned type/build checks. The documentation workflow records
+this as local evidence, not 8D3 acceptance. Full adverse authority/recovery/verdict/history/
+keyboard/mobile coverage, complete regression/all PostgreSQL, frontend/all retained browsers,
+Compose/image/startup, independent review and every delivery/exact-main gate remain required.
+8E and the full Sprint 8 goal remain ACTIVE requirements. No reviewer, commit, push, PR, live
+provider/production operation or later-sprint work occurred in this work unit.
+
+The post-documentation expanded selection passed **444 cases in 108.06s**, including all 22
+new PostgreSQL/coordinator cases, without warnings/skips. Independent JUnit inspection confirms
+444 unique identities and no failures/errors/skips. All 577 frozen paths/hashes, owned cleanup,
+Ruff lint, 483-file formatting and whitespace passed. Complete primary SHA-256:
+`73a28967f4cb221262e27bac6ce8a35c3ff7e0b7ae87b707090b90fecdc5256d`.
+Linux Chromium/Firefox primaries are respectively
+`841aa60accf398a4298e8a4818d7b89a0ffa456796056a5dba0776220b414b71` and
+`4dec30de424cb0af716de89cc495000cdc799bca3aeb2a012158f35cc240d37c`.
+Read-only process/container checks found no matching owned test resources left running. All
+80 branches, three worktrees and the three unrelated parent skill hashes remain unchanged;
+the D3 index is empty at `f97cf7bb`. The 31 task-owned changed paths remain uncommitted. These
+targeted results do not replace full 8D3 regression, independent review or acceptance.
+
+### Local 8D3 native verification outcomes 2026-10-16 not accepted
+
+Four closed, immutable test-parent scenarios now vary only read-only synthetic provider facts.
+Every native journey still creates its own three-person signed UI authority, runs the actual
+installed offline worker exactly once, submits the real managed scanner and reads its sealed
+receipt. Browser metadata and parent storage proof independently bind the selected scenario;
+neither a permission message nor request confirmation can substitute a verdict.
+
+| Later reader facts | Sealed verdict | Receipt technical result | Current finding |
+| --- | --- | --- | --- |
+| Enabled, unchanged KMS context | VERIFIED | PASS | RESOLVED |
+| Still disabled | NOT_VERIFIED | FAIL | OPEN |
+| Enabled, unexpected KMS context | INCONCLUSIVE | PASS | RESOLVED normally |
+| KMS collection denied | INCONCLUSIVE | No decisive receipt evidence; stored EC2-004 assessment is PASS | OPEN |
+
+All eight native journeys passed, four each in Chromium and Firefox, with one worker, no retries
+or skipped steps and original testcase budgets. Independent parent proof checks receipt storage,
+reason/lifecycle, actual later assessment and finding status, while preserving the original FAIL
+and execution history. Browser assertions check the actual rendered verdict, classification,
+scan lifecycle and technical result separately from ACK. All 579 frozen source paths/hashes and
+exact owned cleanup passed. Complete eight-journey primary SHA-256:
+`8f8d9cd6bce54533dc290b851686af1b82c05bfff5df0810816577c7a29f11f7`.
+The isolated NOT_VERIFIED Chromium journey also passed before the complete matrix. Fourteen new
+closed-scenario guards passed in 0.09s; the full 148 pure protocol/ownership/scenario guards passed
+in 0.35s. Ruff lint/485-file formatting, whitespace, TypeScript and browser ESLint passed. Fresh
+browser collection contains 98 journeys: all 90 accepted cases plus eight integrated cases;
+collection alone does not claim those 90 were re-executed.
+
+After that frozen matrix completed, additional native assertions were added for VIEWER denial,
+ADMIN self-approval denial without service bypass, lost browser reply after genuine commit,
+original-key GET-only reload recovery, keyboard review/confirmation, mobile layout/focus return
+and escaped hostile reasons. They passed type/lint checks but their browser validation is still
+pending at this checkpoint. The browser-loss test deliberately loses only the browser reply;
+it must not be described as an upstream BFF timeout or an explicit BFF UNCONFIRMED retry.
+
+Production code, accepted authority/recovery semantics, schemas, migration 0010, scanner and write
+identities are unchanged. Full remaining adverse/history/attempt/quarantine/session/capacity
+coverage and all whole-slice regression/review/delivery/exact-main gates remain required. 8D3
+and Sprint 8 remain IN PROGRESS, 8E PLANNED, with no later-sprint or live-provider operation.
+
+### Local 8D3 native roles recovery and mobile 2026-10-16 not accepted
+
+The enhanced VERIFIED case now signs in all four roles. VIEWER can read but receives the real
+capability denial for preparation. ADMIN creates an additional proposal, sees no self-approval
+affordance, and cannot bypass the real service through direct BFF confirmation: coordination is
+UNCONFIRMED and immutable proposal history retains no decision. The actual installed worker
+still uses only the separate ANALYST proposal, APPROVER decision and third-person ADMIN grant.
+Losing that proposer's browser reply after a genuine commit produces browser uncertainty; GET-only
+reload recovers the original confirmed operation/result without a replacement key or extra POST.
+
+The enhanced incomplete-scan case uses mobile viewports, keyboard preparation/review/confirmation,
+focus checks, escaped hostile reason text, no executed image/dialog and no page-width overflow.
+Back navigation returns focus to exact scan selection and clears remediation history. Every case
+retains actual worker/scan/storage proof, independent status labels, no WebStorage, ordinary scan
+POST denial, logout clearing and original immutable FAIL history.
+
+Both enhanced cases passed in both pinned browsers on 579 frozen source paths/hashes, with one
+worker, zero retries/skips, original budgets and exact owned cleanup:
+
+| Journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Four roles and post-commit browser loss, then VERIFIED | 12.4s / 23.3s | 15.3s / 26.9s |
+| Mobile keyboard and hostile text, then INCONCLUSIVE partial scan | 9.8s / 20.6s | 13.3s / 24.6s |
+
+The first enhanced trial failed before worker dispatch, but its parent demanded a completed
+receipt during teardown and masked the browser assertion. Four new teardown regression tests
+failed before implementation (20 existing cases passed), then all 152 pure guards passed in
+0.36s. Ruff identified an unbound loop variable in the new immediate callback; explicit binding
+corrected it and lint passed. Closed coordination and successful storage proof now use separate
+bounded immutable owner/key-bound reply files. On failed proof the parent still fails acceptance,
+but permits the browser to report its original assertion. A CLOSED reply never prints VERIFIED
+without the independent proof marker. No assertion, authentication check or production path changed.
+
+The diagnostic enhanced trial then retained its original 403 on Playwright's replayed confirmation
+before commit. The corrected replay preserves original headers and exact same-origin metadata;
+the passing Chromium trace independently showed intercepted origin/CSRF/context present but
+`Sec-Fetch-Site` absent. Firefox supplied all four. Real application origin/fetch-site/CSRF and
+bearer checks remain intact; the test requires an actual 200/CONFIRMED before losing the reply,
+and never turns a rejected response into a fake commit. Original failed trials remain retained.
+
+This completes these local native assertions, not the full adverse matrix or 8D3 acceptance.
+Remaining attempt/quarantine/session/expiry/capacity/recovery coverage and complete regression,
+all retained browsers, independent review and delivery/exact-main gates still govern 8D3/8E.
+Production interfaces, migration 0010, scanner credentials and worker semantics remain unchanged.
+
+The expanded post-receipt backend selection passed **462 cases in 112.03s**, including all 22
+new PostgreSQL/coordinator cases, without warnings/skips. Independent JUnit inspection confirms
+462 unique identities and no failures/errors/skips; all 579 frozen paths/hashes and owned cleanup
+passed. Primary SHA-256 is
+`2578fb20ecf992dcaa8f0f75eff0d0448ab2408107668650caefbd4852d3e2b1`.
+Ruff lint, 485-file formatting and whitespace passed after the run.
+
+Pinned frontend validation passed 148 focused cases/five files, all 289 cases/13 files, complete
+type/lint/build and whitespace. Its first legacy-shell wrapper produced no valid test receipt
+because ordinary pnpm stderr was treated as a shell error; the corrected current-PowerShell
+wrapper uses the five existing focused files and requires every actual exit code. No application
+change, skip, suppression or dependency fallback was introduced. Read-only checks found no
+matching owned test containers or child processes left. All 80 branches, three worktrees and
+unrelated parent skill hashes remain; 33 task-owned paths are uncommitted with an empty index.
+Full backend regression/all PostgreSQL, the current complete browser suite and remaining 8D3
+matrix/review/delivery gates are still outstanding, not replaced by this targeted receipt.
+
+### Local 8D3 upstream retry and private clearing 2026-10-16 not accepted
+
+A closed test-only upstream response-loss gate now forwards the real BFF bearer POST unchanged,
+then independently reads its committed proposal, idempotency ledger and human audit before
+raising a synthetic ReadTimeout once. Only the fixed in-process proposal API is eligible;
+rejections are returned unchanged. The native uncertain-submit scenario observes UNCONFIRMED
+with one dispatch and no confirmed reference, reloads with GET only, reviews the same frozen
+operation again and explicitly retries its original UUID/body/actor. It confirms the one existing
+proposal at dispatch attempt two; subsequent confirmed submissions do not forward again.
+Independent PostgreSQL snapshots prove replay adds no domain rows. The full native journey then
+uses the genuine three-person grant, one installed SDK write/intent and a managed VERIFIED scan.
+Neither response loss nor retry renews a grant, creates a replacement key or launches a worker.
+
+The enhanced four-role case now recovers an actual UNCONFIRMED ADMIN self-decision in two tabs.
+It holds a successful coordination response and the logout request. Both tabs clear private
+operations and retain the non-cancellation warning before logout reaches the server; releasing
+the late coordination response cannot restore a card or cause a mutation. Real logout completes
+with 204 and the old context is rejected with 401. A separate native session-loss check uses the
+existing authenticated logout API outside the page's handlers, proves the card remains until
+the page observes a genuine coordination 401, then verifies private clearing and old-context
+rejection. No application endpoint or fake 401 is added. This proves server session revocation,
+not elapsed-clock expiry or an application-process restart.
+
+Both paths passed in Chromium and Firefox, one worker/zero retries/skips, original testcase
+budgets, 581 frozen source paths/hashes and exact owned cleanup:
+
+| Enhanced journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Four roles, browser reply loss and cross-tab late-response logout | 13.2s / 24.4s | 15.6s / 27.4s |
+| Upstream commit/reply loss, reviewed same-key retry and real 401 clearing | 12.3s / 24.7s | 14.1s / 25.9s |
+
+The isolated upstream-retry native journey passed in both projects before its 401 enhancement.
+The genuine signed-API/PostgreSQL selection passed 26 cases in 7.48s, including the new real
+commit/replay case, with source freeze and owned cleanup. Pure transport guards cover text and
+the BFF's actual UTF-8 bytes, unchanged body/key replay, rejection passthrough and non-coercive
+body limits; the fault never fabricates a committed response or bypasses authentication.
+
+Failure history remains qualified. Two captured sandboxed unit invocations produced no valid
+terminal result; only positively identified owned test processes were stopped/interrupted.
+Bounded coroutine waits and an uncaptured, fail-on-stall diagnostic run outside that sandbox
+then passed all 21 initial guards in 0.10s. The earlier stall's cause remains unconfirmed.
+The first signed PostgreSQL selection passed 21 guards but failed its new case in 12.64s because
+the test gate required text while the actual BFF forwards UTF-8 bytes. The helper now accepts
+only bounded text/bytes and forwards the original representation; the actual API, assertions,
+body, key, authorization and persistence behavior are unchanged. That failed receipt is retained.
+
+All changes remain test-only within the approved design. Scanner credentials, separate worker
+identity, migration 0010 and production interfaces/defaults are unchanged. Remaining attempt/
+quarantine/expiry/process/capacity/adverse coverage and full regression/browser/review/delivery/
+exact-main gates still govern 8D3; 8E remains PLANNED and Sprint 8 incomplete. No later sprint,
+live-provider, operator-database, IAM/secret, deployment or production operation occurred.
+
+The expanded post-change selection passed **474 cases in 123.77s**, including all 23
+PostgreSQL/coordinator cases, without failures, errors, warnings or skips. Independent JUnit
+inspection confirms 474 cases; the frozen 581 source paths/hashes and owned cleanup passed.
+Primary log SHA-256 is
+`e008d25aa8711326c7cf052bc09b4280055e8cb9f147431106d85908d1f2e0e7`.
+Ruff lint, 487-file formatting and whitespace checks passed. Pinned frontend validation passed
+148 focused cases/five files and all 289 cases/13 files, with complete type/lint/build checks.
+The enhanced native primary logs have SHA-256
+`cab3a47c41c4dbb542e52d0718475333395a47901be4295466e4a5c8b74ac8a6` (cross-tab clearing)
+and `fddcf1c63e60ad2bf1cbe9cf3ac11771409f4e138385105340df9a6ae4c6be77` (upstream retry/401).
+
+Collection identifies 100 unique current browser cases, 50 per project: the accepted 90 plus
+ten integrated cases. This is collection evidence, not a claim that the full current suite ran.
+Final read-only checks found no matching owned test containers or child processes left.
+All 80 branches, three worktrees and unrelated parent skill hashes remain preserved; 35 task-owned
+paths are uncommitted with an empty index. These local receipts do not close 8D3, 8D or Sprint 8.
+
+### Local 8D3 verification attempt limits not accepted
+
+On 2026-10-16 the closed test-parent attempt-limit scenario produced three sequential actual
+managed scans from the native signed three-human workflow and the installed worker. Every
+attempt requires a new explicit preparation, frozen UUID, review and confirmation. The active
+scan suppresses another preparation; three accepted attempts exhaust the affordance. Separate
+authenticated sessions also explicitly submit extra requests through the genuine BFF while
+active and after exhaustion. Their unconfirmed coordination cannot imply no prior effect;
+immutable verification history and the actual submission counter remain unchanged.
+
+The test-only server gate now validates exact sequential submit/provider pairs, distinct scan
+and verification IDs, common execution/baseline, sealed predecessors and the one current pending
+attempt. The ordinary scenarios remain limited to one attempt. No SQL session spans the gate
+wait or provider work; the gate only releases an already accepted managed scan. Independent
+parent proof validates each actual receipt, paired audit and later FAIL assessment, current
+OPEN finding, unchanged original FAIL/authority/worker history, and exactly one SDK write/intent.
+No receipt or authority is seeded, private scan execution called, or automatic retry introduced.
+
+The native preparation helper now binds its card to the actual successful response UUID, rather
+than an ambiguous kind-only locator when several confirmed verification cards are retained.
+The original enhanced four-role, browser-loss and cross-tab-clearing journey also passed against
+the updated single-attempt gate. Both paths passed in each pinned browser on 581 frozen source
+paths/hashes, with one worker, zero retries/skips, original budgets and exact owned cleanup:
+
+| Journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Three explicit attempts and denied active/fourth requests | 21.1s / 33.9s | 25.1s / 38.6s |
+| Existing enhanced roles and cross-tab clearing then VERIFIED | 14.0s / 25.1s | 16.1s / 27.6s |
+
+The expanded selection passed **494 cases in 150.25s**, including 24 PostgreSQL/coordinator
+cases, without warnings/skips. Independent JUnit inspection confirms 494 unique cases and no
+failures/errors/skips; all source hashes and owned cleanup passed. The new signed API/installed
+worker case checks each active rejection and the fourth rejection's exact conflict code and
+unchanged database, every predecessor receipt's immutable READ value, three distinct real scan
+submissions and the complete independent parent proof. Primary log SHA-256 is
+`d18e167a84820021fd09c819ae861a12fdcbf69ec4f7bdbe062854d0328d0639`.
+Native primary hashes are
+`effe1fadd7a6ad0c20b367425d715b2ffd5485565c738bf8b0f3ac501993554e` (attempt limits) and
+`c6579d8836150649435be62f2e44a8db084c73fa1b9381190a3fb48c182b8c56` (enhanced verified).
+
+The failed-first guard selection reported 24 failures/ten passes in 1.05s before the new scenario
+field/helper existed. After implementation all 34 guards passed in 0.12s. The guards reject
+missing/reordered/extra provider boundaries, substituted or duplicate identities, unsealed
+predecessors, a sealed current attempt, ordinal gaps, a fourth attempt, the one-attempt scenario
+overflow and coercive limits. Ruff identified two imports made unused by receipt-wait extraction;
+they were removed, without suppression or assertion changes. Lint, 487-file formatting and
+whitespace passed. Frontend validation passed 148 focused cases/five files, all 289 cases/13 files,
+type/lint/build. Collection now proves 102 unique current browser cases, 51/project: the accepted
+90 plus 12 integrated cases. This is not full 102-case execution.
+
+Final read-only Docker/process checks found no matching owned test containers, networks or
+children. The sandbox initially denied the process inventory; the separately authorized
+read-only inventory then returned zero matching processes. No process was stopped. All 80
+branches, three worktrees, preserved Docker socket backup and unrelated parent skill hashes
+remain unchanged; 35 task-owned paths are uncommitted with an empty index.
+
+All implementation in this work unit is test-only. Production API/worker/scanner/frontend,
+credentials/defaults and migration 0010 are unchanged. Quarantine/late acknowledgment and
+remaining adverse authority/expiry/process/capacity/race/history coverage, full regression/all
+PostgreSQL/all current browsers, independent review, delivery/exact-main and 8E remain required.
+8D3/8D/Sprint 8 remain IN PROGRESS; no later-sprint, live AWS/IdP/IAM/secret/operator-database,
+deployment or production operation occurred.
+
+### Local 8D3 quarantine and late acknowledgment not accepted
+
+On 2026-10-16 two additional closed test-parent scenarios exercised genuine installed-worker
+quarantine from the native signed three-human workflow. The timeout case preserves uncertain
+effect and failed observation. The late-ack case uses a bounded test-only transport fault:
+after independent committed-intent proof, the existing quarantine service commits before the
+synthetic original successful SDK response returns. The unmodified installed worker then records
+its actual ACKNOWLEDGED event and true readback while every later phase remains QUARANTINED.
+This models the defined interleaving; it is not proof of a physically concurrent second worker.
+
+No human authority, event, receipt or assessment is inserted by the fault. It uses the worker's
+one already validated engine, fixed synthetic scope and genuine existing service; its short SQL
+transaction closes before returning the reply. No production service/clock is patched, new
+credential/endpoint supplied, SDK retry enabled or deployed AWS request made. The worker still
+has exactly one SDK/wire enable invocation and one independently observed intent.
+
+Private test replies now distinguish WORKER_QUARANTINED from WORKER_ACKNOWLEDGED; the fixed
+parent-selected scenario binds the native expectation. Reader-release replies cannot use either
+worker result, and neither result is a verification verdict. An additional parent-side
+once-dispatched fence remains sticky even after lost dispatch/report/proof, including alternate
+target IDs. Bad binding checks still precede dispatch. The test parent's final proof separately
+checks actual quarantine/held reservation, exact immutable v1/v2 event order and paired audits,
+unchanged original FAIL/finding OPEN, zero verification requests/receipts and only the original
+scan. It never fabricates VERIFIED or treats a closed control channel as storage proof.
+
+Both native cases show the actual quarantine warning, held reservation, no verification form
+and no verification entry. An explicit authenticated BFF verification probe remains unconfirmed
+without a result and creates no request/scan. Exact same private-control replay cannot relaunch
+the worker or alter its retained history. The normal enhanced four-role/browser-loss/cross-tab
+VERIFIED journey also passed against the changed harness.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Timeout and retained quarantine | 8.6s / 21.0s | 9.9s / 21.9s |
+| Actual late acknowledgment and true readback, quarantine retained | 8.8s / 21.4s | 10.3s / 23.7s |
+| Existing enhanced normal acknowledgment then VERIFIED | 13.6s / 24.8s | 17.8s / 29.5s |
+
+All successful native receipts froze 581 source paths/hashes, used one worker, zero retries/skips,
+original budgets, fresh owned database/schema per case and independent proof plus owned cleanup.
+Primary log hashes are
+`65e6dc634f971f8f69bb6625c3532658257b3c86f584a13d3790430e9c5d09d8` (timeout quarantine),
+`58f98703e48b3ad15a701499f7ff77b6cf12d4208692631d8c5fe0fe1c9ae375` (late acknowledgment) and
+`94c1e4010002d096a33de649b8fceaebc9c326adeb68d2505eaae04195e24143` (normal verified).
+
+The fresh expanded backend selection passed **625 cases in 149.14s**, including all 26
+PostgreSQL/coordinator cases, without warnings/skips. Independent JUnit inspection confirms 625
+unique cases and no failures/errors/skips; source hashes and exact owned cleanup passed.
+This includes installed quarantine/late-ack rejection with the actual 409 ineligible code and
+unchanged database, plus the existing worker-process ownership/report guards. Primary SHA-256 is
+`1326819182d4f8c143b97f20e76bbff6f6b3d595f20a6d34ee3ede6919355eef`.
+The failed-first pure selection had 16 failures/95 passes in 1.60s before new scenario fields,
+fault helper and quarantine settlement existed; the corrected selection passed all 111 in 0.62s.
+Frontend validation passed 148 focused cases/five files, all 289 cases/13 files and type/lint/build.
+Ruff lint, 487-file formatting and whitespace passed. Current collection has 106 unique cases,
+53/project: the accepted 90 plus 16 integrated cases. This is not full 106-case execution.
+
+Incomplete and failed receipts remain historical. An earlier expanded run lost its process
+handle without a final result/cleanup record, and an earlier late-ack Chromium container recorded
+a fixture-channel failure before installed-result confirmation; its relay log stopped earlier
+still. The cause is unconfirmed. Read-only reconciliation later found both exact process handles
+missing, no matching native processes, four stopped owned containers and two owned internal
+networks. Both disposable PostgreSQL containers had exited with 255. No old run was restarted on
+an observation timeout or counted as passed. Diagnostics were archived before exact-ID/image/
+label/mount/state checks authorized removal of only those four stopped test containers and two
+empty owned networks. No host file, mounted source, image, unrelated container or default bridge
+was removed; the disposable synthetic tmpfs databases are not recoverable from that cleanup.
+One cleanup guard first rejected PowerShell's null placeholder for an empty JSON membership
+object, before any removal. Independently confirmed empty membership led to a correct property
+enumeration fix, retaining every real membership/ownership check. Fresh resources and separate
+receipts then produced the successful validation above; those passes do not diagnose old failures.
+
+Final read-only audits found zero matching test children and no matching owned test containers
+or networks. All 80 branches, three worktrees, preserved Docker socket backup and unrelated parent
+skill hashes remain unchanged. There are 36 task-owned changed/untracked paths and an empty index;
+the only additional tracked helper change is the mounted test transport, not packaged application
+code. Production interfaces, frontend sources, scanner/write credentials, defaults, worker
+implementation and migration 0010 are unchanged.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. The remaining named adverse authority, staleness,
+governance, expiry/capability, session/process, recovery, capacity/race and history requirements
+still need exact-scope acceptance evidence, followed by full backend/all PostgreSQL/all current
+browsers/runtime/security gates, independent review, delivery/exact-main and 8E. No later sprint,
+live AWS/IdP/IAM/secret/operator-database, deployment or production operation occurred.
+
+### Local 8D3 recovery and evidence audit not accepted
+
+On 2026-10-16 the [acceptance evidence matrix](../../sprint-8d3-acceptance-matrix.md) mapped every
+named preflight requirement to its inspected unit/API/PostgreSQL/native evidence and remaining
+scope. Accepted predecessor tests are distinguished from current native results. Open authority,
+staleness/governance/expiry/capability, session/process, server-in-flight, exact native 16/256
+capacity and compatibility requirements remain; the matrix does not narrow approved scope or
+replace whole-slice gates.
+
+The closed recovery-guards scenario now exercises the native signed browser through the genuine
+BFF and full installed-worker/managed-reader/sealed VERIFIED path. An actual initial empty
+coordination GET is delayed until manual refresh and a new real prepared operation exist; its
+late response cannot erase that card. A subsequent genuine authenticated GET is altered only
+in that browser's transport: first omitting the existing operation, then changing its frozen
+reason, then regressing a genuinely CONFIRMED result to well-formed PREPARED/zero attempts/null
+result. Each fault preserves the trusted card/reference and actual backend snapshot, disables
+new preparation and requires manual GET recovery of the same UUID/body/actor/deadline.
+
+Replacement reasons are valid and nonblank before failure, so disabled controls cannot pass
+solely because a form is empty. A direct native preparation click after valid recovery is also
+denied locally while the original intent is unresolved, without allocating another key or POST.
+The confirmed reference cannot regress or regain a submit checkbox. No server authority, API
+result, audit, stored coordination or production response is changed by these browser-only GET
+faults; rejected authentication would fail before any synthetic successful response.
+
+The same native case double-clicks the reviewed submit control, holds its genuine successful
+browser reply and repeats native form submission while busy. It observes exactly one POST and
+one dispatch under the original UUID, with unchanged frozen input and attempts equal to one.
+The BFF is already CONFIRMED while the browser reply is held. This proves the browser busy-state
+guard, not server IN_FLIGHT; actual native server-in-flight overlap stays open in the matrix.
+The final actual three-human grant, one installed SDK write/intent, one managed scan and sealed
+receipt retain independent source/history/audit/finding proof, no Web Storage, logout clearing
+and ordinary scan POST denial.
+
+The initial recovery version passed in both projects before stronger immutable-input/confirmed-
+state assertions were added. The strengthened complete journey passed Chromium in 12.3s body/
+23.4s with setup and Firefox in 14.7s/26.4s, on 582 frozen source paths/hashes, one worker, zero
+retries/skips, original budgets and exact owned cleanup. Primary SHA-256 is
+`00b97fb64466a3c8d00fe22d03889e47b846aa58bac8dd03a6356a0f2a6eada6`.
+These local claims do not assert all adverse combinations or full current-browser execution.
+
+The new closed scenario expectation first failed before implementation (one failure/43 passes,
+1.02s), then all 44 scenario guards passed in 0.38s. Initial expanded validation passed 627 cases
+in 155.02s. After strengthening, fresh expanded validation passed **627 cases in 146.21s**,
+including all 26 PostgreSQL/coordinator cases, without warnings/skips. Independent JUnit audit
+confirms 627 unique cases and no failures/errors/skips; all 582 source hashes and owned cleanup
+passed. Primary SHA-256 is
+`65c4a2177983277e59cc8589632763ba2172f2c3953b755ebe62dc9856fa1357`.
+Pinned frontend validation passed 148 focused cases/five files, all 289 cases/13 files and complete
+type/lint/build. Ruff lint, 488-file formatting, whitespace and every matrix local link passed.
+Current collection is 108 unique browser cases, 54/project: the accepted 90 plus 18 integrated
+cases; collection alone is not execution.
+
+Final read-only Docker/process audits found no matching owned test children, containers or
+networks. All 80 branches, three worktrees, preserved Docker socket backup and unrelated parent
+skill hashes remain unchanged. The branch remains codex/sprint-8d3-preflight at f97cf7bb with
+37 task-owned changed/untracked paths and an empty index. All new implementation remains
+test-only; production application/frontend/worker interfaces, credentials/defaults and migration
+0010 are unchanged. No review, commit, push, PR, merge, live provider/operator-database/production
+or later-sprint operation occurred. 8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED; the complete
+matrix, regression/runtime/security, independent-review, delivery/exact-main and 8E gates remain.
+
+### Local 8D3 exact capacity acceptance not accepted
+
+On 2026-10-16 two additional test-only native scenarios exercised the unchanged 16-operation
+per-session and 256-operation global limits independently. Each owner uses genuine controlled
+signed OIDC and actual authenticated BFF preparation, not an injected session, reduced quota or
+database authority seed. The global cohort creates 16 owned sessions with 16 operations each;
+the foreground native proposer has no records, so its rejection is independently global. The
+session case fills the foreground proposer's 16 slots without reaching the global limit.
+
+These are real ephemeral coordination records with random nonexistent finding/occurrence IDs,
+not domain proposals or grants. Each owner explicitly submits one request; genuine service
+rejection leaves it UNCONFIRMED with one attempt and no result. The remaining 15 stay PREPARED.
+Every retained key, frozen input, actor, deadline, state, attempt and result is checked unchanged.
+Same verified identity in a different real session cannot read another owner's record (404).
+Native preparation at either full limit returns 503, displays the existing error/recovery state,
+retains all private cards and disables valid nonblank replacement input. Another authenticated
+request from that exact foreground session independently checks the exact sanitized 503 body.
+No private parent command or persistent authority is created to populate capacity.
+
+The session journey performs genuine native logout, checks the public non-cancellation warning
+while signed out, proves the old opaque session cookie/context now receives 401 and signs in
+again through OIDC without restoring private cards. The global journey logs out one background
+owner, proves old-cookie rejection and all 240 surviving records unchanged, then requires manual
+foreground GET recovery; it does not automatically retry a write. Surviving owners are checked
+again before final owned logout. Copied cookies exist only in owned in-memory request contexts,
+never Web Storage, logs or receipt files. Cohort cleanup preserves primary failures and the
+existing server/worker/storage teardown remains mandatory.
+
+Both scenarios then complete the genuine native three-human proposal/approval/admission, one
+installed SDK write and independently observed intent, one managed read-only scan and sealed
+VERIFIED receipt. The parent independently proves exactly one domain proposal and CREATE ledger,
+full human audit/source binding, immutable original FAIL and normal finding handling. Thus
+cohort preparation or uncertainty is not misreported as authority. Existing console/dialog,
+Web Storage, logout and ordinary scan POST-denial assertions remain. Native EXPIRED-record
+retention is still open with elapsed-clock coverage in the
+[acceptance matrix](../../sprint-8d3-acceptance-matrix.md).
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Exact 16/session, retained uncertainty, logout and new session | 11.1s / 22.0s | 14.7s / 26.6s |
+| Exact 256/global, retained cohort, owner logout and manual recovery | 11.9s / 23.8s | 13.4s / 26.1s |
+
+Successful native receipts froze 583 source paths/hashes, used one worker, zero retries/skips,
+original budgets and a fresh owned runtime/schema per case. Both browsers emitted independent
+VERIFIED storage proof and owned cleanup for each case. Primary SHA-256 values are
+`665b6b5ca03dfed689b55494ad085dbb7934ae46e3d2ba5b503cb0294fb5a699` (session capacity) and
+`c991a8ae72c7fa13c08bc4a3e04185565f3873e18e576d243b3247bcace1e81a` (global capacity).
+
+Two failed native receipts remain historical. In the first, Chromium observed the actual native
+503 but timed out at 30.0s while separately reading that response body, before worker dispatch.
+Why that body observation never completed is unconfirmed; a later pass does not diagnose it.
+The production client rejects unexpected status without decoding the error body. Test repair
+retains native 503/error/disabled-state assertions and checks the exact sanitized body through
+the same session's real authenticated API request instead. It changes no production response
+handling, authentication, quota, timeout, retry or isolation. The second run passed quota,
+retention, logout, old-cookie rejection and relogin, then failed in 1.8s because an unscoped
+warning locator matched two legitimate public/private notices. The repair checks the public
+notice while signed out and scopes the private notice to its workflow region after sign-in;
+neither assertion was removed or replaced with a first-match shortcut. Both failures retained
+their original errors and exact owned cleanup. Safe fixed sign-in stage breadcrumbs disclose
+no authorization URL, token or cookie.
+
+The closed scenario selection first reported two failures/44 passes in 1.00s before the two new
+scenario definitions existed, then all 46 passed in 0.37s. Earlier expanded runs passed 629 cases
+in 146.70s and 143.85s. Final expanded validation passed **629 cases in 140.41s**, including all
+26 PostgreSQL/coordinator cases, with no failures/errors/skips in an independent 629-unique-case
+JUnit audit. All 583 source hashes and owned database cleanup passed; primary SHA-256 is
+`356e31ff894b59e2ae0ab764fea96ce7e88ee5afb14cfbefdcba08a75e6c4d60`.
+This selected run does not replace full backend or all-PostgreSQL regression.
+
+Pinned frontend receipts show 148 focused cases/five files in 4.62s, all 289 cases/13 files in
+9.70s and completed type/lint/build checks. The terminal frontend process handle was no longer
+available at final reconciliation; all five original logs were retained, build completed and
+the read-only process inventory found no matching child. It was not restarted or substituted
+for a final whole-slice primary exit receipt. Earlier frontend runs also passed all checks.
+Ruff lint, 488-file formatting and whitespace passed. Current browser collection contains 112
+unique cases, 56/project: the accepted 90 plus 22 integrated cases. Collection is not full
+112-case execution.
+
+Final read-only Docker/process audits found no matching owned children, containers or networks.
+All 80 branches, three worktrees, preserved Docker socket backup and unrelated parent skill
+hashes remain unchanged. The branch stays codex/sprint-8d3-preflight at f97cf7bb with 38
+task-owned changed/untracked paths and an empty index. No production application/frontend/worker
+interface, scanner/write credential, default or migration 0010 changed. The documentation skill
+keeps these results provisional and preserves the original preflight predictions; these appended
+receipt edits make the previous source-frozen image historical and require a fresh freeze/build
+before another native run.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Remaining matrix rows, including expired-record
+retention, authority/staleness/governance/capability, session/process loss, actual server-IN_FLIGHT
+overlap and compatibility, still require exact-scope acceptance evidence. Full regression,
+runtime/security, existing independent review, delivery/exact-main and 8E remain required. No
+reviewer, commit, push, PR, merge, live AWS/IdP/IAM/secret/operator-database/deployment/production
+or later-sprint operation occurred in this work unit.
+
+### Local 8D3 server overlap not accepted
+
+On 2026-10-16 a separate native in-flight scenario covered actual server overlap rather than
+holding an already CONFIRMED browser reply. Its test-only transport forwards the unchanged signed
+proposal request to the genuine bearer service, independently proves the committed proposal,
+CREATE ledger and human audit, closes the SQL connection and holds that actual 201 reply before
+BFF settlement. The existing 15-second BFF dispatch deadline remains unchanged.
+
+A read-through ASGI observer watches only the fixed same-key BFF submit path. It forwards the
+real authenticated response unchanged and releases the held reply only after a genuine 200
+IN_FLIGHT snapshot matches the exact key, input, verified issuer/subject, first attempt and null
+result, with exactly one upstream dispatch. It accepts no command, credentials or authority.
+Wrong actor/input/key/path/state/status, coercive attempts, results and extra fields cannot
+release it. The isolated server also requires completed gate proof during teardown. No new
+production endpoint, configuration flag, retry, clock or authentication override was added.
+
+The existing test-only fixture metadata now has nine closed fields. Its additional fixed reply-
+gate stage is non-authorizing observation, not remediation status or a release command; initial
+metadata must be WAITING for this scenario and DISABLED otherwise. The native test explicitly
+waits for HELD before creating overlap and for RETURNED afterward. A second native tab recovers
+the real IN_FLIGHT card, with one attempt/null result and no submit checkbox/button; the first
+tab remains busy. An explicit authenticated original-key concurrent request returns that exact
+snapshot. Both tabs then recover the original CONFIRMED reference by response/manual GET, with
+the same frozen actor/input/deadline and still one attempt. Mount/recovery causes no page write.
+
+The journey continues through genuine three-human authority, one installed SDK write/intent,
+one managed read-only scan and a sealed VERIFIED receipt. Final independent PostgreSQL proof
+also requires exactly one proposal/CREATE ledger, immutable source FAIL and normal finding
+handling. The existing normal four-role/browser-loss/cross-tab journey and upstream commit-loss/
+explicit same-key retry journey passed again because they share the transport/metadata helpers.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Actual server IN_FLIGHT overlap, then VERIFIED | 13.9s / 25.1s | 13.6s / 25.4s |
+| Existing upstream loss and explicit original-key retry | 11.7s / 22.9s | 14.5s / 26.3s |
+| Existing enhanced normal acknowledgment and VERIFIED | 14.7s / 25.7s | 16.9s / 28.7s |
+
+All six successful native cases used the same 583 frozen source paths/hashes, one worker, zero
+retries/skips, original budgets, fresh owned runtime/schema per case, independent storage proof
+and exact owned cleanup. Primary SHA-256 values are
+`5003511082ae884e278e94545e0c9505e7d7b461f13b3f4c8eb79ef9c8e563c6` (server overlap),
+`a09debfe01b3c5200387de178b532b64ebbdaf0b141c74ab0ab367f32eb23b42` (upstream loss) and
+`e5d02f769f6f8aa8acf1f956a3063bf131794d0389b285221bc9b95d6110b4d2` (normal verified).
+
+The first native overlap run remains failed and historical: Chromium observed real IN_FLIGHT
+recovery and duplicate rejection, then timed out waiting five seconds for CONFIRMED after the
+first response. It stopped before worker dispatch, and the fixture retained its original error
+alongside the secondary incomplete-persistence-proof failure. That version did not observe
+whether the post-commit gate was active before the duplicate. Its exact failure cause is
+unconfirmed. The strengthened sequence observes actual gate stages and independently checks
+the settled server state before UI confirmation; later passes do not diagnose the earlier run.
+No assertion, production timeout, isolation or authentication boundary was weakened.
+
+The isolated guard selection passed 68 cases in 0.47s and, after stage observations, 68 in 0.48s.
+An earlier sandboxed wrapper terminated at its existing five-second diagnostic bound in Python's
+event-loop socket-pair setup, before assertions. The same isolated guards passed with scoped
+loopback access. An initial unwrapped invocation produced no result and was explicitly
+interrupted before being replaced by the isolated wrapper; it is not a red/green test receipt.
+One test-only overlong string was split without changing its value or suppressing lint.
+
+Earlier expanded runs passed 642 cases in 146.97s and 139.54s. Final expanded validation passed
+**642 cases in 148.82s**, including all 27 PostgreSQL/coordinator cases. Independent JUnit audit
+confirms 642 unique cases and zero failures/errors/skips. Source hashes and owned disposable
+database cleanup passed; primary SHA-256 is
+`d26b7c12e9f7eb0f2fc30fc769bdbfa956ae8cf0e38a41570280c6786d547a8d`.
+The new signed database case uses the real commit proof and verifies unchanged durable storage,
+no second dispatch, one-attempt confirmation/replay and no scanner submission. This selected
+validation does not replace full backend/all-PostgreSQL regression.
+
+Final pinned frontend validation exited zero: 148 focused cases/five files in 3.01s, all 289
+cases/13 files in 5.76s and type/lint/build. Ruff lint, 488-file formatting and whitespace passed.
+Fresh collection proves 114 unique browser identities, 57/project: the accepted 90 plus 24
+integrated cases, one worker/zero retries. Collection is not full 114-case execution.
+
+Final read-only Docker/process audits found no matching owned children, containers or networks,
+including after the failed native run. All 80 branches, three worktrees, preserved Docker socket
+backup and unrelated parent skill hashes remain unchanged. The branch remains
+codex/sprint-8d3-preflight at f97cf7bb with 38 task-owned changed/untracked paths and an empty
+index. All implementation is test-only; production application/frontend/worker interfaces,
+credentials/defaults and migration 0010 are unchanged. The documentation workflow preserves
+provisional scope and original predictions. Receipt edits make the frozen test image historical;
+another native run requires a fresh freeze/build.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. The remaining
+[acceptance matrix](../../sprint-8d3-acceptance-matrix.md) includes authority/staleness/governance,
+elapsed-clock expiry and EXPIRED capacity retention, fresh capability loss, session/process loss,
+conflicts and compatibility. Full regression/runtime/security, existing independent review,
+delivery/exact-main and required 8E remain outstanding. No review, commit, push, PR, merge, new
+agent, live AWS/IdP/IAM/secret/operator-database/deployment/production or later-sprint operation
+occurred in this work unit.
+
+### Local 8D3 signed capability loss not accepted
+
+On 2026-10-16 the native capability-loss scenario reproduced the accepted API test's newly signed
+token boundary. Only after genuine signed proposal commit and independent proposal/CREATE-ledger/
+human-audit proof does a closed test helper locate that exact in-flight operation's owning
+session. It verifies the original issuer-signed ANALYST access token, then replaces only its
+role claim with VIEWER and signs with the same controlled issuer key. Issuer, subject, audience,
+issue/expiry times, session/CSRF/context and frozen operation remain unchanged; no lifetime is
+renewed. Wrong key/state/actor/role/signature fails before mutation. Short store locks validate
+ownership and compare unchanged references; signature work occurs outside them and no SQL
+transaction remains open. Actual production JWT validation, BFF and bearer authorization are
+unchanged. This models signed-token replacement, not live IdP group introspection, revocation
+of every existing token or a production token-refresh feature.
+
+The helper deliberately leaves an untrusted cached server ADMIN hint against the actual signed
+VIEWER token. Separately, one genuine authenticated browser session GET is altered only in that
+browser's reply to display a cached ADMIN hint; the underlying signed proposer remains ANALYST
+for the original commit/audit. The route override is then removed. The first real upstream reply
+is lost after commit, preserving UNCONFIRMED/one attempt/null result. Native explicit review and
+original-key retry receives genuine 403 despite the hints. The original card, actor, input,
+deadline, attempts and null reference remain unchanged; fresh session GET reports VIEWER and
+manual coordination recovery cannot turn the denial into cancellation or a replacement grant.
+
+The browser manually refreshes immutable remediation history and finds the actual sole prior
+proposal, whose audited proposer role remains ANALYST. Reload obtains genuine VIEWER hints,
+retains the uncertain card and disables its retry controls without another POST. Distinct
+approver and requester still create their real grants and complete the installed worker, one
+SDK write/intent, managed read-only scan and sealed VERIFIED receipt. This does not falsely
+confirm the proposer's uncertain coordination. Independent parent proof retains the sole
+proposal/CREATE ledger, immutable original FAIL, normal finding lifecycle and separate verdict.
+No write role is restored to the proposer and no authority is seeded behind the UI.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Signed capability loss, denied retry, retained commit and VERIFIED | 11.5s / 22.9s | 13.9s / 26.0s |
+| Existing upstream loss and explicit original-key retry | 11.7s / 22.9s | 13.9s / 25.7s |
+| Existing enhanced normal acknowledgment and VERIFIED | 13.8s / 24.9s | 16.7s / 28.6s |
+
+All six native cases exited zero on 584 frozen source paths/hashes, with one worker, zero
+retries/skips, original budgets, fresh owned runtime/schema per case, independent persistence
+proof and exact owned cleanup. Primary SHA-256 values are
+`3f348aa7a5d6492d0169bcb763f7499f63bea3d4fad8510ed7a68fe9400743a6` (capability loss),
+`ce77043e617e039a27160b0f56c02c1d784a92c38eaf074da821c204a61e6ddd` (upstream loss) and
+`f3759e0bbe09183480f6e6d224621518821e4bc8ba5896edc40734d09d5c8c86` (normal verified).
+
+The added guard selection first reported seven failures/68 passes in 0.89s before the signed
+narrowing helper/scenario existed, then all 75 passed in 0.73s. Final expanded validation passed
+**650 cases in 150.54s**, including all 28 PostgreSQL/coordinator cases. Independent JUnit audit
+confirms 650 unique cases and zero failures/errors/skips. All 584 source hashes and owned
+disposable database cleanup passed; primary SHA-256 is
+`86608780331e28a5ae1e7028abbca1125c4874734404f9cd0d046708998277e9`.
+The new signed database case independently proves cached ADMIN versus actual VIEWER, exact 403,
+unchanged uncertain operation/list and durable storage, denied replacement preparation, sole
+retained ANALYST proposal, one forward and no scanner submission. This selected run does not
+replace full backend/all-PostgreSQL regression. Import ordering and overlong test literals were
+corrected without suppression, changed values or weakened assertions. There was no failed native
+run in this work unit; earlier historical failures remain preserved.
+
+Final pinned frontend validation exited zero: 148 focused cases/five files in 2.93s, all 289
+cases/13 files in 5.67s and complete type/lint/build. Ruff lint, 489-file formatting and whitespace
+passed. Fresh collection proves 116 unique browser identities, 58/project: the accepted 90 plus
+26 integrated cases, one worker/zero retries. Collection is not full 116-case execution.
+
+Final read-only Docker/process checks found no matching owned children, containers or networks.
+All 80 branches, three worktrees, preserved Docker socket backup and unrelated parent skill
+hashes remain unchanged. The branch remains codex/sprint-8d3-preflight at f97cf7bb with 39
+task-owned changed/untracked paths and an empty index. All implementation is test-only;
+production application/frontend/worker interfaces, scanner/write credentials, defaults and
+migration 0010 are unchanged. The documentation workflow preserves provisional scope and
+original predictions. Receipt edits make the frozen image historical; future native runs need
+a fresh freeze/build.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Remaining
+[matrix](../../sprint-8d3-acceptance-matrix.md) scope includes full issuer/subject substitution,
+staleness/newer/equal evidence, governance/revocation, elapsed-clock expiry and EXPIRED capacity
+retention, session/process loss, conflicting references and compatibility. Full regression,
+runtime/security, existing independent review, delivery/exact-main and required 8E remain
+outstanding. No review, commit, push, PR, merge, new agent, live AWS/IdP/IAM/secret/operator-
+database/deployment/production or later-sprint operation occurred in this work unit.
+
+### Local 8D3 preparation expiry and runtime validation not accepted
+
+On 2026-10-16 through 2026-10-17 UTC, test-only preparation-expiry stories extended the exact
+capacity cases without changing product lifetimes or quotas. The closed clock is installed only
+on the owned SessionStore. It advances once by 301 seconds after a genuine signed proposal
+commit and independent proposal, CREATE-ledger and human-audit proof, immediately before the
+existing reply-loss transport fails. It requires the exact owned in-flight proposer operation,
+one attempt/null result, unchanged 300-second deadlines and a fully populated 16- or 256-record
+store. It changes no deadline, state, SQL authority, domain/JWT/global clock or persisted result;
+ordinary store access expires PREPARED records. Short store/clock locks hold no SQL transaction.
+The controlled issuer chooses an initial one-hour access token only for these scenarios, so
+authentication remains live across preparation expiry; no existing token or session is renewed.
+
+The session story retains 15 EXPIRED records and the genuine UNCONFIRMED proposal operation.
+The global story uses 255 real signed background preparations plus the foreground native one,
+not a reduced quota. Every frozen key, input, actor, deadline, attempt and result is checked.
+Real API preparation returns 503 before and after expiry; native expired cards cannot submit.
+Explicit original-key retry returns genuine 409 without another bearer dispatch or replacement.
+Manual immutable history finds the sole committed proposal and reload retains uncertainty.
+At global capacity a distinct native approver also receives 503. Only genuine background owner
+logout frees its 15 slots; old context receives 401, the other 240 remain unchanged and manual
+GET recovery precedes approval. The subsequent three-human grant, installed SDK write/intent,
+managed read-only scan and sealed receipt do not falsely confirm the proposer's uncertain card.
+Proposal/execution and idle/token expiry remain separate open matrix requirements.
+
+#### Bounded test harness repairs
+
+A retained Firefox case failed on native assessment navigation. The test now settles initial
+history loading, asserts the exact UUID input/selected URL, waits for the actual scan and posture
+200 responses, then requires the exact assessment to be visible before the original pointer
+click. No application navigation, assertion, timeout, retry or keyboard bypass changed. The
+original failure's cause remains unconfirmed.
+
+Later installed-dispatch failures exposed an attached report that was missing or malformed,
+without establishing why it was lost or whether an SDK effect occurred. Before the shared test
+runtime repair, callers and guards for worker, reader and packaged API startup were inspected.
+The runtime now captures the created container's exact ID after its existing security inspection,
+requires the same stopped/exited ID and matching CLI/container exit status, revalidates ownership
+and reads that container's retained stdout/stderr. Docker documents batch retrieval of retained
+container output through [container logs](https://docs.docker.com/reference/cli/docker/container/logs/);
+that behavior does not diagnose these failures. A retained JSON object is mandatory; nonempty
+attached output must agree, either stderr fails closed, and all original source, UID, security,
+SDK-wire-lock, intent, configuration and exit validators still run. Missing/conflicting reports
+fail; there is no SDK retry, manufactured result, relaxed proof or production logging change.
+Unavailable retained logs fail this test harness rather than fall back to an unverified report.
+
+Pure report guards first failed eight cases before the decoder existed, then passed all 203;
+the final closed diagnostic selection passed 206. A real PostgreSQL/installed positive case now
+deliberately drops only completed attach stdout. Its actual container log, source, terminal state,
+one SDK intent/write and managed receipt remain independently required. The broader regression
+also covers existing ACK/NO_WRITE histories, packaged API default-off startup and separate
+installed read-only scanner PASS/FAIL. Fixed diagnostic labels were added to unchanged rejection
+predicates; unknown exception text and raw child output remain redacted. Production app,
+frontend source, standalone worker, API/persistence contracts, defaults and migration 0010 are
+unchanged. This shared test-runtime change remains subject to whole-slice independent review.
+
+#### Failed native runs remain historical
+
+| Receipt | Exact limitation |
+| --- | --- |
+| Linux v21 | Both new expiry stories passed both browsers; retained capacity-session Firefox later failed at native Open assessment after proposal/approval, before worker. Capacity-global was not run in that failed selection. |
+| Linux v22 | Retained capacity cases and expiry-session passed both browsers; expiry-global Chromium passed, Firefox failed at installed dispatch with only generic RUNTIME classification. |
+| Linux v23 | Focused Firefox expiry-global passed; the next retained capacity-session selection failed in Firefox with RUNTIME_REPORT, identifying missing/malformed attached JSON, not its cause or absence of effect. |
+| Linux v24 | After mandatory retained-report repair, capacity-session Chromium passed; Firefox rejected an installed proof with generic RUNTIME. Later cases were not run. |
+| Linux v25 | Serial run without heavy backend overlap passed both retained capacity cases and expiry-session in both browsers, plus expiry-global Chromium. Last Firefox expiry-global completed installed worker/ACK history, then its request context closed before the next session GET; secondary cleanup failure preserved the original error. No managed scan/receipt was proved for that failed case. |
+| Linux v26 | Fresh diagnostic image passed expiry-global Chromium in 11.9s body/24.3s with setup. The Node test worker for Firefox exited with SIGSEGV before the scenario body (0ms), at parent SOURCE. Other cases were not run; primary exit was one. |
+
+All these failures retain their original receipts and unchanged-source outcomes. Heavy-test
+contention was only a hypothesis: serial scheduling did not establish a full pass or a diagnosis.
+V25's earlier seven passes do not override its failed final case; v26's startup signal does not
+explain previous navigation, report or context failures. Closed browser lifecycle diagnostics
+now distinguish disconnect/context close/page close/page crash during the body and assert zero
+unexpected events on success; intentional cleanup alone disables them. Timeouts, zero retries,
+one worker, source binding and original assertions remain intact. A bounded read-only Docker
+event check found no retained matching OOM event, not proof that no child was killed. Ten pure
+Node child starts in the exact non-root, offline v26 image passed without output/errors; this
+does not reproduce Playwright or diagnose its SIGSEGV. Further runtime diagnosis and a successful
+final browser recheck remain required; no pin, launch security or product behavior was changed.
+
+#### Current local validation and remaining gates
+
+The new expiry guards first reported eight failures/75 passes before implementation, then all
+83 passed. Final expanded backend validation passed **691 cases in 253.61s**, including 30
+coordinator PostgreSQL cases and ten existing installed worker/API/reader cases, **40 PostgreSQL
+cases total**, without warnings/skips. Independent JUnit audit confirms 691 unique cases and
+zero failures/errors/skips. Primary exit was zero, all 585 source hashes matched and this run's
+owned disposable tmpfs database was removed. Primary SHA-256 is
+`6bae7adac41bec004eaf273c86a0d6b0b16d4af716931b4db0c2b221a29d4a02`.
+Earlier qualified selected backend runs passed 659, 668, 678 and 688 cases; none substitutes for
+this final selection or complete backend/all-PostgreSQL regression.
+
+Fresh pinned frontend validation exited zero: 148 focused cases/five files in 4.57s, all 289
+cases/13 files in 8.96s, type/lint/build and whitespace. Ruff lint and 490-file formatting passed.
+Fresh collection proves 120 unique browser identities, 60/project: 90 retained plus 30 integrated,
+one worker/zero retries. Collection is not execution. Both v25 and v26 froze 585 source paths;
+v26 includes the diagnostic addition and exited one with unchanged source. Its failed primary
+SHA-256 is `b90927980baf1e1aa32f873416fc3ae219a06c10776d7052afed62dc5e140154`.
+Receipt edits after terminal runs make these frozen images historical.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE. The
+[matrix](../../sprint-8d3-acceptance-matrix.md) preserves unresolved final native/runtime gates,
+proposal/execution/session expiry, full actor substitution, stale/newer/equal evidence,
+governance/revocation, conflicting references, process loss and compatibility. Complete
+regression/runtime/security, existing independent review, scoped delivery, exact-head CI/guarded
+merge/exact-main and required 8E remain outstanding. No reviewer, commit, push, PR, merge, new
+agent, live provider, operator-database, IAM/secret/deployment/production or later-sprint operation
+occurred. The branch remains codex/sprint-8d3-preflight at f97cf7bb with 42 task-owned paths and
+an empty index. Final read-only audits found zero matching owned worker/browser/diagnostic
+containers, networks or child processes. All 80 branches, three worktrees, parent skill hashes
+and the preserved socket backup remain in place. An older exited disposable-test container
+without a matching ownership receipt was inspected only for safe labels/timestamps and preserved,
+not adopted or removed. After the receipt edits, all 17 documentation/status contracts passed
+in 0.17s; the final source audit permits only the two intended owner-document hash changes.
+
+### Local 8D3 runtime diagnosis and selected expiry recheck not accepted
+
+On 2026-10-17 UTC the first failing boundary remained the v26 Node test-worker SIGSEGV before
+the Firefox scenario body. Bounded, read-only Docker VM diagnostics found three earlier Python
+general-protection faults in libpython3.12, without enough retained ownership/PID evidence to
+attribute them to particular test cases. No matching Node kernel entry or recent host hardware
+error event was found; neither absence proves runtime or hardware health. These observations
+do not diagnose v21--v26. No Docker/WSL restart, host setting, dependency pin or launch security
+change was made. No JavaScript SIGSEGV recovery handler was added: the
+[Node 24 signal contract](https://nodejs.org/docs/latest-v24.x/api/process.html#signal-events)
+warns that a native fault leaves the process unsafe for JavaScript listeners.
+
+A separate credential-free diagnostic in the exact v26 non-root offline image passed three
+cases in 4.1s: pinned Playwright worker startup, 16 private HTTP contexts completing 256 loopback
+JSON requests, and three native Firefox contexts. It imported no application, called no application service,
+read no operator data and created no cloud/database authority. Its read-only diagnostic mount,
+network-none policy, unchanged Firefox preference and exact owned cleanup stayed intact. Passing
+this smaller diagnostic does not establish application acceptance or explain the original crash.
+
+The only new unignored implementation change in this work unit adds fixed startup markers to
+the lazy integrated fixture: start, child started/ready, metadata validated, capacity setup
+begin/ready and body ready. They reveal no URLs, tokens, raw child output or private control
+frames and do not run during test collection. Existing browser lifecycle assertions, genuine
+authentication, authority checks, timings, one worker and zero retries remain unchanged.
+
+The fresh v27 run first exercised Firefox expiry-global with the new observability, then each
+of the remaining seven unique case/project pairs once, serially and without a heavy backend run
+alongside it. **All eight cases passed** with source/image binding, actual signed UI authority,
+one installed SDK write/intent and one managed scan/sealed VERIFIED receipt per case. Five
+primary invocations exited zero; independent audit confirms eight distinct storage-proof markers,
+all five successful unchanged-source outcomes and 585 frozen source paths. Each case used a fresh
+owned runtime/schema and completed cleanup. This closes the selected preparation-expiry/capacity
+recheck, not the full 120-browser suite, remaining matrix, Sprint 8D3 or Sprint 8.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Global preparation expiry and retained uncertainty | 11.4s / 23.6s | 14.8s / 27.8s |
+| Session preparation expiry and retained uncertainty | 11.2s / 22.1s | 14.8s / 26.2s |
+| Retained exact 16/session capacity | 11.3s / 22.3s | 14.3s / 25.8s |
+| Retained exact 256/global capacity | 10.5s / 22.6s | 13.0s / 25.4s |
+
+The v27 primary audit binds all five primary-log SHA-256 values; its own SHA-256 is
+`e5c783b59fa0f1fd69f7285a9c4ebf67b6b6ba9980d7ad8f3c968acf9173ef5a`.
+The earlier failed receipts, including the startup SIGSEGV, remain historical with unconfirmed
+causes. New marker timing and later passes are not asserted to repair or diagnose those faults.
+
+Fresh pinned frontend validation exited zero: 148 focused cases/five files in 4.52s, all 289
+cases/13 files in 8.89s and complete type/lint/build. Fresh collection again proves 120 unique
+identities, 60/project, comprising the retained 90 and 30 integrated cases; collection is not
+execution. Ruff lint/490-file formatting and whitespace passed. The preceding 691-case/40-PG
+selected backend receipt was not rerun: independent hash comparison confirms every Python file
+unchanged, with only the test-fixture TypeScript and two owner documents differing from that
+freeze. It remains qualified selected evidence, not complete final-tree regression.
+
+Final read-only inventories found zero matching owned worker/browser/diagnostic containers,
+networks or host child processes. The older unmatched exited validation container remains
+preserved. The branch stays codex/sprint-8d3-preflight at f97cf7bb, with 42 task-owned paths,
+an empty index, 80 branches, three existing worktrees, unchanged parent skills and preserved
+socket backup. Documentation edits follow terminal runs and make the v27 image historical.
+The documentation workflow keeps this selected success separate from acceptance and retains
+original predictions and failed receipts. No reviewer, commit, push, PR, merge, new agent,
+operator-database/live-provider/IAM/secret/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Next bounded work addresses native
+proposal/execution expiry; idle/token expiry and the remaining issuer/staleness/governance/
+revocation/conflict/process-loss/compatibility matrix stay open. Complete backend/all-PostgreSQL,
+frontend/all-browser, Compose/image/startup/default-off/security/cleanup, existing independent
+review, scoped delivery/exact-head CI/guarded merge/exact-main and required 8E still govern
+completion of the full goal. No Sprint 9+ work is started. After the receipt edits, all 17
+documentation/status contracts passed in 0.15s; the final audit checks only two owner-document
+hash changes against the v27 freeze and preserves the complete source set.
+
+### Local 8D3 elapsed proposal expiry not accepted
+
+On 2026-10-17 UTC the next bounded test-only unit exercised the accepted 24-hour proposal
+lifetime independently of preparation and session/token expiry. Contracts, route/service callers,
+clock seams, native forms, owned coordinator, source/audit/storage proofs and existing rejection/
+replay tests were inspected first. No product/security design or authority change was needed.
+
+The closed helper requires explicit browser-test mode and installs only the remediation service's
+UTC clock in the already-owned server. Its initial time is ordinary wall time; after actual
+signed proposal commit and independent proposal/CREATE-ledger/human-audit proof it advances once
+by 86,401 seconds and loses that first reply. It does not patch global/JWT/session/inventory time,
+alter persisted deadlines or renew tokens. Short store/clock locks validate the exact in-flight
+proposer/key/kind/role/attempt, with no SQL or network work held across them. Context exit restores
+the original clock namespace; a subprocess guard proves importing the helper loads no application
+configuration. Existing production-like signed PostgreSQL authentication remains unchanged.
+
+Native explicit review and original-key retry confirms the same retained proposal, frozen input,
+actor and preparation deadline at attempt two, not new or renewed proposal authority. Real READs
+report PROPOSED/EXPIRED and the original 24-hour content. Distinct APPROVER and ADMIN pages disable
+approval and offer no execution admission. Rejection remains available when a valid reason is
+entered, without submission in this story. A separate genuine signed approver BFF preparation/
+submission leaves an UNCONFIRMED card with one attempt/null result; manual GET recovery retains
+it. Independent reads prove no approval was created. Session authentication stays live, showing
+that this is proposal expiry rather than token or preparation expiry.
+
+The closed proposal-only scenario denies both private worker and reader commands before dispatch.
+Its strict independent proof captures the whole initial owned database, then permits exactly
+one original proposal, normalized CREATE ledger and paired human proposal audit. It revalidates
+all retained source IDs, content/request digests and actor/role/capability/audit metadata. Every
+other persisted value—including decisions, execution/intent/reservations, verification/scans,
+original FAIL, finding and evidence history—must remain unchanged; READ proof cannot write.
+This new branch does not weaken or reuse the quarantine proof. Private NO_EXECUTION is not a new
+API phase/verdict or evidence that expiry cancels an already admitted effect. A signed PostgreSQL
+negative case appends a legitimately allowed REJECT, then requires this stricter no-decision
+story proof to reject that changed history. No authority is seeded behind the UI.
+
+The new transport/clock guards first failed 12 cases with 83 passes in 1.22s before implementation,
+then passed 95 in 0.77s. An earlier sandboxed attempt stopped in an existing Windows socketpair
+setup under the unchanged five-second diagnostic guard; its cause remains unconfirmed. It was
+preserved separately, and scoped local-socket validation completed without changing that bound.
+The first signed database attempt subsequently exposed a new-helper assumption that preparations
+always have a full 300 seconds. The accepted BFF clips them to session/token expiry. A new clipped-
+deadline guard reproduced that error (one failure/95 passes, 1.13s); only the helper was corrected
+to validate the existing minimum deadline and still-live preparation. Product lifetimes and
+assertions were not relaxed. Final focused guards passed 99 cases in 0.82s and all 24 bootstrap
+guards passed in 0.28s. Initial database failure and the corrected two-case 11.54s pass remain
+historical; the final expanded run below includes all new cases after complete wiring.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Proposal expiry, retained replay, denied approval and no execution/scan | 3.1s / 14.6s | 5.3s / 17.4s |
+| Retained normal installed worker, managed scan and VERIFIED | 13.2s / 23.2s | 15.9s / 27.3s |
+| Retained installed quarantine and no verification | 7.5s / 18.4s | 9.8s / 21.3s |
+
+All six unique v28 cases passed, once per project/case, serially with one worker, zero retries/
+skips, unchanged budgets, 586 frozen source paths and a fresh owned runtime/schema per case.
+The parent independently emitted two NO_EXECUTION, two VERIFIED and two NO_VERIFICATION proofs;
+all three primary invocations/outcomes exited zero with source unchanged and cleanup completed.
+The primary audit binds each log hash; its SHA-256 is
+`14ad29ed0d9234d0327988652b5bf9f4339ab51d868907029c39d174c25bf3ae`.
+Ordinary scan POST denial, console/dialog/lifecycle checks, no Web Storage and native logout/
+private clearing/non-cancellation notices remain in the new case. Earlier failed native causes
+remain unconfirmed; these passes do not diagnose them.
+
+Fresh expanded validation passed **710 cases in 253.38s**, including all 32 coordinator PostgreSQL
+cases and ten retained installed worker/API/reader cases, **42 PostgreSQL cases total**, without
+warnings/skips. Independent JUnit audit confirms 710 unique cases and zero failures/errors/skips.
+Primary exit was zero, all 586 source hashes matched and the owned disposable tmpfs database was
+removed. Primary SHA-256 is
+`9e4417c3e84b76c4de4521537bf553e27254f23a34d0e4e304b57a780576bc81`.
+This remains a selected run, not complete backend/all-PostgreSQL regression.
+
+Final pinned frontend validation exited zero: 148 focused cases/five files in 4.58s, all 289
+cases/13 files in 9.21s, type/lint/build and whitespace. Ruff lint/491-file formatting passed.
+Fresh collection proves 122 unique browser identities, 61/project: retained 90 plus 32 integrated.
+Collection is not full 122-case execution. No production application/frontend/worker, API/schema,
+default, scanner-credential or migration 0010 change was introduced; the source-binding extraction
+preserves its predicates and existing callers. The documentation workflow records qualified
+evidence rather than accepting a partial unit. Receipt edits after terminal runs make v28 historical.
+
+Final read-only Docker/CIM inventories found no matching owned worker/browser/diagnostic
+containers, networks or child processes. The older unmatched exited validation database remains
+preserved, not adopted. The branch stays codex/sprint-8d3-preflight at f97cf7bb, with 43 task-owned
+paths and an empty index; existing 80 branches, three worktrees, parent skills and socket backup
+remain in place. No reviewer, commit, push, PR, merge, new agent, live AWS/IdP/IAM/secret/operator-
+database/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Native execution and idle/token expiry,
+issuer substitution, stale/newer/equal evidence, governance/revocation, conflicting references,
+process loss and compatibility stay open in the matrix. Complete regression/runtime/security/
+all-browser validation, existing independent review, scoped delivery/exact-head CI/guarded merge/
+exact-main and required 8E remain necessary. The full goal is ACTIVE, not complete.
+
+### Local 8D3 elapsed execution expiry not accepted
+
+On 2026-10-17 UTC, the next bounded test-only unit exercised five-minute execution-grant expiry
+before worker intent. Existing service, worker, API, source factory, signed BFF, coordination,
+storage, audit and browser callers were inspected first. READ derives EXECUTION_EXPIRED without
+mutating QUEUED history; the existing worker records NO_WRITE, not an admission EXPIRED event,
+when it encounters that blocker before intent. No product or security design change was needed.
+
+The closed source helper calls the unchanged full-scope collector/assessment/persistence factory
+with its factory clock six hundred seconds earlier, before initial persistence. It never edits
+retained source timestamps. Only the server's remediation-service clock starts 301 seconds behind
+real UTC. Actual signed proposer, distinct approver and third requester create the original
+proposal, approval and five-minute execution grant. A fixed ASGI transport observer independently
+re-reads the committed grant and three paired human audits, closes its SQL sessions, then restores
+that service clock to real UTC before returning the genuine admission response. Short store/clock
+guards require the exact in-flight requester/key/kind/role/attempt and the accepted clipped
+preparation deadline. No global/JWT/session/installed-worker clock, token lifetime, persisted
+deadline, production setting or public route is changed. This controlled elapsed-time fixture
+is not a production clock-skew feature or token-expiry proof.
+
+The owning parent accepts only its exact expired QUEUED grant and immutable source/human bindings.
+The unchanged installed entrypoint uses real UTC and an empty synthetic transport script. It
+returns NO_WRITE before metadata credentials, SDK reads/writes, claim or intent; only the paired
+NO_WRITE event/audit and validated no-intent reservation release may change. The independent
+whole-database proof retains every source, finding, proposal, decision, ledger and execution-content
+value, rejects altered source/report proof, and forbids scans/verification. This is a separate
+strict proof, not reuse or relaxation of proposal-only or post-intent quarantine proof.
+
+The signed PostgreSQL story also launches a second real installed process against the same
+terminal grant, proving zero credential/SDK work and no durable change. Cached BFF replay and a
+genuine original-key bearer admission replay preserve content/deadline/history; enabled verification
+rejects NO_WRITE without a scan. Native cases render QUEUED with expiry, then NO_WRITE and released
+reservation, preserve original proposal content, deny linked verification, replay only the fenced
+private parent result, and retain console/dialog/lifecycle/storage, ordinary-scan denial and logout
+clearing/non-cancellation assertions. WORKER_NO_WRITE is a closed private test reply, not a new
+application enum, public command or cancellation verdict; reader/stop substitution is rejected.
+
+The initial thirteen clock/source guards failed before implementation, then passed. The first
+signed database run failed because its new verification-denial check encountered the fixture's
+default-off flag (503), not the intended phase denial. Only the isolated test configuration was
+enabled. The next run reached the final empty-claim assertion and exposed a new-test list/tuple
+shape error; the assertion now requires the existing empty tuple. The corrected signed/installed
+case passed in 21.55s. Original failed receipts remain separate and neither was a product repair.
+
+The first native Chromium attempt stopped at parent INSTALLED_REPORT without completed browser
+proof. Inspection found that the closed mailbox still rejected the new private NO_WRITE reply.
+An initial sandboxed guard run had eight filesystem-permission failures/193 passes because atomic
+hard-link publication was not permitted. With scoped local filesystem permission, the guard
+independently reproduced exactly one reply failure/200 passes. Only that test validator was
+extended; final guards passed 203 cases in 0.97s, including reader/stop denial and all prior reply
+bindings. No timeout, security predicate, assertion, browser retry or production behavior was
+weakened. Earlier unrelated runtime failures and their unknown causes remain historical.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Elapsed execution grant and installed NO_WRITE without verification | 8.3s / 19.6s | 11.5s / 23.9s |
+| Retained normal installed worker, managed scan and VERIFIED | 14.4s / 25.3s | 15.8s / 27.4s |
+| Retained installed quarantine and no verification | 7.4s / 18.3s | 9.5s / 21.0s |
+| Retained expired proposal, original-key replay and no execution | 3.0s / 14.1s | 5.1s / 16.7s |
+
+All eight unique cases passed once per project/case in the fresh v30 image, serially with one
+worker, zero retries/skips, unchanged budgets and 588 frozen source paths. Every primary invocation
+exited zero with source unchanged, the exact independent outcome proof and owned cleanup.
+The native primary audit binds all four log hashes; its SHA-256 is
+`0a0adce738b4785f93cfd6fe9b227b6bfde19c87aac1742a0a6d6a37acc43b12`.
+
+Fresh expanded validation passed **731 cases in 265.66s**, including all 33 coordinator PostgreSQL
+cases and ten retained installed worker/API/reader cases: **43 PostgreSQL cases**, zero skips,
+warnings, failures or errors. Independent JUnit audit confirms 731 unique cases. Primary exit was
+zero, all 588 source hashes matched and the owned disposable tmpfs database was removed.
+Primary SHA-256 is `326cc3328f65d89db5c57238229cbb59485a335747d2b2e138489902976c03c0`.
+This selected run is not complete backend/all-PostgreSQL regression.
+
+Pinned frontend type/lint/build passed, with 148 focused cases/five files in 4.89s and all 289
+cases/13 files in 9.00s. Ruff lint/493-file formatting and whitespace passed. Fresh collection has
+124 unique browser identities, 62/project: retained 90 plus 34 integrated. Collection is not full
+124-case execution. Production application/frontend/worker, API/schema/defaults, scanner read-only
+credentials, separate lifecycles and migration 0010 remain unchanged. Receipt edits after terminal
+runs make the v30 image historical. The documentation workflow retains qualified evidence and
+remaining gates rather than accepting a partial unit.
+
+Final read-only Docker/CIM inventory found no matching owned test containers, networks or child
+processes; the older unmatched exited validation database was preserved, not adopted or deleted.
+The scoped branch remains codex/sprint-8d3-preflight at f97cf7bb, with 45 task-owned paths and an
+empty index. Existing 80 branches, three worktrees, parent skills and socket backup remain.
+No reviewer, commit, push, PR, merge, new agent, live AWS/IdP/IAM/secret/operator-database/deployment/
+production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Next work covers native idle/token expiry;
+issuer substitution, newer/equal stale evidence, governance/revocation, conflicting references,
+process loss, compatibility and the remaining matrix stay required. Full regression/all PostgreSQL,
+all native browsers, runtime/security/cleanup, existing independent review, scoped delivery,
+both exact-head candidate CI audits, ordinary guarded merge, exact-main audit and required 8E
+remain mandatory. The full Sprint 8 goal is ACTIVE and incomplete.
+
+### Local execution expiry final source recheck
+
+The final quality check found one 101-character line introduced by the mailbox reply repair.
+Only automatic formatting of that test validator was required. Ruff lint and all 493 formatting
+checks then passed. The earlier v30 native/v38 expanded passes remain historical receipts; fresh
+native and expanded runs below bind the final formatted test source rather than reusing their
+hashes. No timeout, test selection, retry, security or product behavior changed.
+
+Fresh v31 native validation passed all eight unique selected cases with the same independent
+proofs, one worker, zero retries/skips, original budgets, 588 unchanged source paths and owned
+cleanup. Its primary audit binds all four logs with SHA-256
+`44984c68ab87664eb3acb64e907d2a6541cd15ea54f3e70d974fd37bb87ad69d`.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Execution expiry and installed NO_WRITE | 7.8s / 19.3s | 9.3s / 21.3s |
+| Normal installed worker and VERIFIED | 12.6s / 23.6s | 15.7s / 27.1s |
+| Quarantine without verification | 7.5s / 18.4s | 9.4s / 20.8s |
+| Proposal expiry without execution | 3.1s / 14.1s | 5.1s / 16.7s |
+
+Fresh expanded v39 validation passed **731 cases in 264.95s**, including all 33 coordinator and
+ten retained installed worker/API/reader PostgreSQL cases: **43 PostgreSQL cases**. Independent
+JUnit audit confirms 731 unique cases and zero failures/errors/skips; no warnings occurred.
+Primary exit was zero, all 588 source hashes matched and the owned disposable tmpfs database was
+removed. Primary SHA-256 is
+`cdee00784f4138844912c092aadc43e2f565197855bcce27996fd0975e306f7f`.
+Frontend and collection sources are unchanged from the 289-case and 124-identity receipts above.
+
+These are still selected local checks, not full backend/all-PostgreSQL/all-124-browser execution
+or acceptance. Only two owner-document receipt edits follow the terminal runs; subsequent
+Ruff/493-file formatting, documentation contracts and final source/preservation audit validate
+that boundary. The v31 image becomes historical after those receipt edits. The remaining matrix,
+whole-slice gates, 8D acceptance and required 8E still govern the ACTIVE full Sprint 8 goal;
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. No later sprint or live operation was started.
+
+### Local 8D3 idle and token expiry not accepted
+
+On 2026-10-17 UTC the next test-only unit separated elapsed session idle expiry from actual JWT
+expiry. Store, BFF, bearer verifier, OIDC exchange, UI expiry timers/private clearing, source,
+ledger/audit and existing lifecycle callers/tests were inspected first. The approved adverse
+matrix covers both; no product/security architecture or new authority was needed.
+
+Both stories submit a genuine signed proposal and independently prove its committed CREATE
+ledger and paired human audit before losing the upstream reply. The idle fixture gives only its
+first proposer token an initial one-hour lifetime, then advances only its owned SessionStore
+clock by 901 seconds. Ordinary store get expires that session and coordination; no revoke, row,
+token, deadline or authentication override performs the expiry. Test time returns to normal only
+after deletion, and a guard proves deleted session IDs cannot revive. This separates the idle
+limit from still-future token/absolute deadlines. The BFF returns a genuine 401 when settlement
+finds the expired session; the original proposal remains committed.
+
+The token story gives only its first proposer access token an initial ten-second lifetime.
+It records UNCONFIRMED/one-attempt/null-result coordination, then that signed JWT expires on real
+wall time. The unchanged browser timer clears private state before its session recheck. Old-context
+reads fail, and the genuine bearer API independently rejects the old token. There is no global,
+JWT-library, browser or domain-clock patch, shortened production lifetime, forced logout, token
+rewrite or timeout increase. A fresh explicit Code/PKCE login receives a new ordinary token;
+the old token is never renewed. Idle's old bearer still reads, while token-expiry's old bearer
+returns 401, independently distinguishing the causes.
+
+Both native stories sign in again with the same verified issuer/subject, observe empty new-session
+coordination and old-key 404, then manually find the same sole valid PROPOSED proposal. Distinct
+APPROVER and ADMIN sessions read the identical immutable content/digest without decisions or
+execution. The shared no-execution proof retains all original source/finding/evidence rows and
+permits exactly the original proposal/CREATE-ledger/human audit. Its closed mode selection keeps
+the older proposal-expiry proof's EXPIRED predicate unchanged, while these two require no proposal
+blockers. Neither worker nor reader dispatch is allowed. Session-expiry assertions run before
+teardown clear so cleanup cannot fabricate success; finally still closes owned resources.
+
+New guards first failed thirteen missing-helper cases in 1.13s, then passed all thirteen in 0.42s.
+They cover wrong key/state/actor/role/kind/clock, token-before-idle, repeated expiry, unchanged
+deadlines, no resurrection, exact test mode and first-token-only initial lifetimes. A subprocess
+guard proves importing the helper loads no application configuration. Both signed PostgreSQL
+cases passed on their first run in 26.58s, including real bearer differentiation, fresh login,
+old-key denial, whole-database immutability and no scan. No new native failure occurred; earlier
+failed receipts and unconfirmed runtime causes remain preserved.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Idle expiry, private clearing and fresh-login manual history | 3.8s / 15.4s | 6.2s / 18.1s |
+| Natural token expiry, private clearing and fresh-login manual history | 12.5s / 23.7s | 14.7s / 26.3s |
+| Retained installed worker, managed scan and VERIFIED | 13.1s / 24.0s | 15.6s / 27.0s |
+| Retained expired proposal and no execution | 3.2s / 14.3s | 5.2s / 16.8s |
+
+Fresh v32 native validation passed all eight unique selected cases, once per project/case, with
+one worker, zero retries/skips, unchanged budgets, 590 frozen source paths, independent outcome
+proofs and owned cleanup. All four primary invocations exited zero with source unchanged. The
+primary audit binds their log hashes with SHA-256
+`2dab03a8fba4d082ec45c3f0ae13ed7162bde67edca3e30a76526dbe4cdbfe51`.
+
+Fresh expanded validation passed **751 cases in 279.70s**, including all 35 coordinator PostgreSQL
+cases and ten retained installed worker/API/reader cases: **45 PostgreSQL cases**, zero failures,
+errors, warnings or skips. Independent JUnit audit confirms 751 unique cases. Primary exit was
+zero, all 590 source hashes matched and the owned disposable tmpfs database was removed.
+Primary SHA-256 is `114e93cf4e6c3e3fcc3c160f10c91f48f1dcf9da1cf2cea98bb768f216e39e61`.
+This is selected regression, not complete backend/all PostgreSQL.
+
+Pinned frontend type/lint/build passed: 148 focused cases/five files in 5.52s and all 289 cases/
+13 files in 9.27s. Ruff lint/495-file formatting and whitespace passed before the source freeze.
+Current collection has 128 unique browser identities, 64/project: retained 90 plus 38 integrated.
+Collection is not full 128-case execution. Native console/dialog/lifecycle, Web Storage denial,
+ordinary scan POST denial, explicit POST counts, logout/private clearing and the public non-
+cancellation notice remain checked. The documentation workflow keeps this qualified local
+evidence distinct from whole-slice acceptance. Only two owner-document receipt edits follow the
+terminal validations; the v32 image is historical after those edits.
+
+Production application/frontend/worker, API/schema/defaults, migration 0010, scanner read-only
+credentials and separate lifecycles are unchanged. Final read-only Docker/CIM inventory found no
+matching owned test containers, networks or host children; the older unmatched exited validation
+database was preserved, not adopted or deleted. The scoped branch remains codex/sprint-8d3-preflight
+at f97cf7bb with 47 task-owned paths and an empty index. Existing 80 branches, three worktrees,
+parent skills and socket backup remain. No reviewer, commit, push, PR, merge, new agent, live
+AWS/IdP/IAM/secret/operator-database/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Next work addresses full issuer/subject
+replacement and cross-issuer proof; stale newer/equal evidence, governance/revocation intent
+cutoff, conflicting/substituted references, real process loss/manual history, compatibility and
+the remaining matrix stay required. Full backend/all PostgreSQL/frontend/all browsers/Compose/
+image/startup/security/cleanup, existing independent review, scoped delivery, both exact-head
+candidate CI audits, ordinary guarded merge, complete exact-main audit, 8D acceptance and required
+8E remain mandatory. The full Sprint 8 goal is ACTIVE and incomplete.
+
+### Local cross issuer identity and owned process loss
+
+On 2026-10-17 UTC the next approved test-only work unit added positive verified cross-issuer
+identity proof and actual loss of process-local coordination. 8D3 remains unaccepted. Each child
+still trusts one configured issuer: the first owned process trusts fixed loopback issuer A;
+only after its exact retained handle exits zero does a distinct owned process start with fixed
+issuer B on the same controlled ports and database. This is graceful process replacement, not
+an abrupt-crash claim or production multi-issuer authentication. Original preflight predictions
+and failed receipts remain historical.
+
+The native ANALYST/proposer under A genuinely commits a proposal before its reply is lost.
+The parent independently binds the original proposal UUID and CREATE key to the exact retained
+source, full actor, content digest, request ledger and paired audit. All other database rows and
+prior audits must be unchanged before restart. The closed private RESTART_AUTHORITY operation
+accepts no arbitrary command, URL, environment or scope. No SQL session/store lock spans child
+shutdown/startup. Once dispatch is attempted it is sticky; duplicate/late messages cannot launch
+another child, and ambiguous lifecycle outcomes are not blindly retried. Exact old/new handles,
+source ownership and whole-database equality are checked again. No Docker access moves into
+the browser/API child, and the parent reply always keeps effects_canceled false.
+
+The real old browser context returns 401 and the UI clears private state. Fresh explicit issuer B
+Code/PKCE login as ADMIN/proposer has empty new-session coordination, old-key 404 and stale-context
+denial, but manually reads the same immutable issuer A proposal/content/digest. B APPROVER/proposer
+can approve because its full issuer/subject pair differs from A/proposer. B ADMIN/proposer cannot
+request execution because it is the approver's same pair; both native disabled controls and an
+actual signed BFF submit denial leave no execution. A third pair, B ADMIN/requester, legitimately
+admits. The separate installed worker, managed reader and sealed VERIFIED receipt then complete
+the full genuine path, retaining exact A/B/B actor/audit expectations. The original FAIL/source
+remain immutable; only normal later scan policy resolves the current finding. Three verified
+pairs are not proof of three distinct physical people; that remains an IdP-governance assumption.
+
+The shared test-only history checker gained optional explicit full-pair expectations. Its default
+retains the original single-issuer subjects, roles, capabilities, request digests, worker service
+attribution, audit and source predicates. The initial search found thirteen matches including
+the definition: there were twelve original call sites, not thirteen callers. The mixed-issuer
+PostgreSQL test proves the unchanged default rejects that mixed history and the fixed explicit
+expectations pass. Retained HTTP-worker fault journeys additionally exercise the default.
+
+New phase and protocol guards first failed before implementation. Four transport-framing guards
+then reproduced acceptance of missing line endings/multiple lines/oversized messages; fail-fast
+validation now rejects those before writing without changing valid bytes. Pure integrated guards
+passed 392 cases in 1.59s. The first signed PostgreSQL run failed on a test wire helper using the
+wrong restart target field; the second reached installed acknowledgment but failed because its
+test reader callback omitted a newline. Both primary failures and the second cleanup warning are
+retained. Closed target mapping, callback framing and the reproduced transport guard were repaired
+without relaxing timeouts or assertions. A fresh signed PostgreSQL journey passed in 21.38s before
+the final expanded run below. The first failed local receipt also contained transient synthetic
+OAuth query values from parent HTTP logging; it remains ignored and excluded from publication.
+The parent now installs the existing identity-log filter before real HTTP calls. No live provider
+or production credential was involved.
+
+Fresh native validation passed all eight unique selected cases, once per case/project, with
+one worker, zero retries/skips, unchanged budgets, 591 frozen source paths, independent outcome
+proofs and owned cleanup. All four primary invocations exited zero with unchanged source.
+The primary audit binds their log hashes with SHA-256
+`3ab1fbfc2dfa07e61b11eaafb47edd0fac547aa8d2c2624dde8c3ebc83c1073b`.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Cross issuer identity and owned process restart through VERIFIED | 14.8s / 26.2s | 16.9s / 28.9s |
+| Retained installed worker, managed scan and VERIFIED | 12.6s / 23.6s | 15.5s / 27.1s |
+| Retained proposal expiry without execution | 3.1s / 14.2s | 5.1s / 16.7s |
+| Retained idle expiry and manual history | 3.8s / 14.9s | 6.1s / 17.7s |
+
+Fresh expanded validation passed **835 cases in 554.78s**, including all 36 coordinator PostgreSQL
+cases, ten retained installed worker/API/reader cases, seven HTTP-worker histories and thirty
+signed worker fault/recovery/lock-race cases: **83 PostgreSQL cases**. Independent JUnit audit
+confirms 835 unique cases and zero failures/errors/warnings/skips. Primary exit was zero, all
+591 source hashes matched and the owned disposable tmpfs database was removed. Primary SHA-256
+is `eddf4081d93ecd7704169fdfe363f345b0e22bc29f607ebe0752cd902c04b798`.
+This is selected regression, not complete backend/all PostgreSQL. Heavy native and PostgreSQL
+runs did not overlap.
+
+Pinned frontend type/lint/build passed: 148 focused cases/five files in 5.09s and all 289 cases/
+13 files in 9.40s. Ruff lint/496-file formatting and whitespace passed. Current collection has
+130 unique browser identities, 65/project: retained 90 plus 40 integrated. Collection is not
+full 130-case execution. Native console/dialog/lifecycle, Web Storage denial, ordinary scan POST
+denial, explicit POST counts, logout/private clearing and the non-cancellation notice remain.
+The documentation workflow qualifies local evidence without accepting a partial slice. Only
+two owner-document receipt edits follow terminal runs; the native image is historical after
+those edits.
+
+Production application/frontend/worker, API/schema/defaults, migration 0010, scanner read-only
+credentials and separate lifecycles are unchanged. Final read-only Docker/CIM inventory found no
+matching owned test containers, networks or host children; the older unmatched exited validation
+database was preserved, not adopted or deleted. The scoped branch remains codex/sprint-8d3-preflight
+at f97cf7bb with 49 task-owned paths and an empty index. Existing 80 branches, three worktrees,
+parent skills and socket backup remain. No reviewer, commit, push, PR, merge, new agent, live
+AWS/IdP/IAM/secret/operator-database/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Within-session signed subject replacement and
+untrusted-issuer rejection remain distinct open cases; rejecting an untrusted issuer is not
+positive cross-issuer proof. Newer/equal stale evidence, governance/revocation intent cutoff,
+conflicting/substituted references, compatibility and remaining matrix scope still require native
+acceptance. Full backend/all PostgreSQL/frontend/all browsers/Compose/image/startup/security/
+cleanup, existing independent review, scoped delivery, both exact-head candidate CI audits,
+ordinary guarded merge, complete exact-main audit, 8D acceptance and required 8E remain mandatory.
+The full Sprint 8 goal stays ACTIVE and incomplete; no later sprint was started.
+
+### Local signed identity substitution and session rejection
+
+On 2026-10-17 UTC the next approved test-only work unit separated within-session signed subject
+replacement from untrusted-issuer rejection. Both have local Chromium/Firefox and signed PostgreSQL
+evidence; 8D3 remains unaccepted. Production authentication still trusts one configured issuer.
+The positive verified cross-issuer/process-restart story above remains separate; rejecting an
+untrusted issuer does not establish another verified trust domain.
+
+Both new stories prepare and submit a genuine signed ANALYST/proposer proposal. Only after an
+independent committed-connection proof of its exact content, CREATE ledger and paired human audit
+does the closed test fixture replace that owned in-flight session's access token. One mode changes
+only the signed subject to replacement-subject; the other changes only issuer to a fixed untrusted
+loopback issuer. Original role/audience/token-use/time claims, cached principal pair, session and
+preparation deadlines, CSRF/context, frozen input and operation UUID remain unchanged. Signature
+verification/signing occurs outside store locks and SQL transactions. Strict test-mode, closed
+scenario, exact owner/key/kind/state/attempt/result/role/deadline and repeated-swap guards precede
+the replacement. Tokens stay in server memory and are never fixture metadata or public controls.
+
+The unchanged BFF settles the genuinely lost upstream response as UNCONFIRMED/one attempt/null
+result. A later explicit native coordination GET runs the actual verifier and session-binding
+check, returning 401 and clearing private UI. No fulfilled 401 response, forced logout, revoked
+token, authentication override, clock patch or changed timeout performs rejection. Signed
+PostgreSQL reads independently prove the original bearer still works in both modes. The replaced
+subject's bearer genuinely authenticates as a different principal and can READ, but cannot adopt
+the old BFF session. The signed untrusted issuer fails genuine bearer authentication instead.
+An old-session submit cannot forward again or create authority under the substituted identity.
+
+Fresh explicit Code/PKCE login has a new context, empty coordination and old-key 404, but manually
+reads the same sole original proposal/content/digest in the proposer, approver and requester
+sessions. Independent whole-database proof permits exactly the original proposal/CREATE-ledger/
+human audit, retaining every source, original FAIL and finding row. No decision, execution, worker
+or scan occurs. Store-rejection assertions run before teardown clear so cleanup cannot fabricate
+success; finally still closes owned resources. Original-key denial is not a no-prior-effect or
+cancellation claim, and the public non-cancellation notice survives clearing and sign-out.
+
+The initial default 212-guard pass did not select the new file and is not new guard proof. A
+broader guard run remained alive without timely output; only its exact
+independently identified owned Python child was stopped. Its interrupted nonzero result and
+partial eighteen failures remain preserved, with no pass or established stall cause claimed.
+The isolated new guards then failed eighteen missing-helper cases in 0.70s before implementation
+and passed all eighteen in 1.11s afterward. The final expanded run below also passes the complete
+loss-guard file under normal Windows test-process permissions; that does not diagnose the earlier
+stall. No valid test was deleted, skipped or weakened.
+
+The first signed PostgreSQL run failed in 13.19s because a new test incorrectly compared each
+READ's validity_checked_at as immutable. All other fields matched. The bounded test correction
+checks every other field for full equality and parses/requires a non-regressing checked-at time,
+preserving immutable content, authority and digest assertions. No application defect or product
+change is claimed. The original failed receipt/source hashes and owned database cleanup remain;
+fresh signed validation passed both cases in 11.40s, followed by the expanded run below.
+
+Fresh native validation passed all eight unique selected cases, once per case/project, with
+one worker, zero retries/skips, unchanged budgets, 591 frozen source paths, independent outcome
+proofs and owned cleanup. All four primary invocations exited zero with unchanged source. The
+primary audit binds their log hashes with SHA-256
+`92ace6b5b4b0c8dfed2fcee5a0d14c72e9fc1138aa0db07adde8b7d26c372356`.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Signed subject replacement, session rejection and manual history | 3.7s / 15.2s | 6.1s / 18.2s |
+| Signed untrusted issuer rejection and manual history | 3.6s / 14.9s | 6.2s / 17.8s |
+| Retained cross issuer restart, installed worker and VERIFIED | 14.9s / 25.8s | 16.7s / 28.1s |
+| Retained idle expiry and manual history | 3.5s / 14.6s | 6.1s / 17.6s |
+
+Fresh expanded validation passed **820 cases in 305.76s**, including all 38 coordinator PostgreSQL
+cases and ten retained installed worker/API/reader cases: **48 PostgreSQL cases**. Independent
+JUnit audit confirms 820 unique cases and zero failures/errors/warnings/skips. Primary exit was
+zero, all 591 source hashes matched and the owned disposable tmpfs database was removed. Primary
+SHA-256 is `af53ea1b4fa5db1c56f8e458ecb4d69d415ca6cad64b49018a62a244296c47f1`.
+This selected regression is not complete backend/all PostgreSQL. The prior 835-case run's extra
+37 HTTP-worker/fault cases remain historical evidence for the shared history checker, whose hash
+is unchanged in this unit. Full current-tree regression remains mandatory. Heavy native and
+PostgreSQL runs did not overlap.
+
+Pinned frontend type/lint/build passed: 148 focused cases/five files in 2.92s and all 289 cases/
+13 files in 5.67s. Ruff lint/496-file formatting and whitespace passed. Current collection has
+134 unique browser identities, 67/project: retained 90 plus 44 integrated. Collection is not full
+134-case execution. Native console/dialog/lifecycle, Web Storage denial, ordinary scan POST denial,
+exact POST counts and private clearing remain checked. These qualified local results do not
+accept the slice or change product/security architecture. Only two owner-document receipt edits
+follow terminal validations; the native image is historical after those edits.
+
+Production application/frontend/worker, API/schema/defaults, migration 0010, scanner read-only
+credentials and separate lifecycles are unchanged. Final read-only Docker/CIM inventory found no
+matching owned test containers, networks or host children; the older unmatched exited validation
+database was preserved, not adopted or deleted. The scoped branch remains codex/sprint-8d3-preflight
+at f97cf7bb with 49 task-owned paths and an empty index. Existing 80 branches, three worktrees,
+parent skills and socket backup remain. No reviewer, commit, push, PR, merge, new agent, live
+AWS/IdP/IAM/secret/operator-database/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Native newer/equal FAIL/PASS/insufficient-evidence
+staleness, governance round trips/current blockers, revocation and the intent cutoff, conflicting/
+substituted references, hint/version compatibility and remaining exact matrix scope are still
+required. Full backend/all PostgreSQL/frontend/all native browsers/Compose/image/startup/security/
+cleanup, existing independent review, scoped delivery, both exact-head candidate primary CI audits,
+ordinary expected-head guarded merge, complete exact-main audit, 8D acceptance and required 8E
+remain mandatory. The full Sprint 8 goal remains ACTIVE and incomplete; no later sprint was started.
+
+### Local stale approved authority and external governance cutoffs
+
+On 2026-10-17 UTC the next approved test-only unit added four native stories: new evidence after
+genuine approval; governance OPEN to ACKNOWLEDGED before approval; approved authority followed by
+FALSE_POSITIVE to OPEN; and an actual active in-scope finding exception. All four pass both
+browsers and signed PostgreSQL validation locally. These results supersede the preceding open
+scope for these four cases, not its historical predictions or remaining whole-slice gates.
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED.
+
+The closed parent-only CHANGE_GOVERNANCE operation accepts only the original proposal UUID and
+CREATE key. It has no arbitrary scope, arguments, URL, environment, child gate permit or Docker
+access. Existing ownership/source/fence checks remain. PROPOSED cases reuse the strict original
+authority validator unchanged. APPROVED cases separately prove one genuine APPROVE decision,
+CREATE/DECIDE ledgers, canonical actor/body/content digests, full verified proposer/approver
+pairs, paired human audit and exact whole-database deltas before effects. The added admission-
+stale mode alone uses this approved validator for the existing COLLECT_STALE operation; all
+earlier proposed-only predicates remain unchanged. Wrong keys, proposals, phases or expected
+fixture actors fail before effects and preserve every row. Dispatch stays sticky and duplicate
+replay cannot repeat a change or imply effects were canceled.
+
+The governance fixture calls the unchanged normal disposition/exception functions in short
+transactions. The round trip commits each step separately at the same actual UTC event time and
+independently proves STALE_GOVERNANCE after both commits, including the intermediate FALSE_POSITIVE
+state. Returning to OPEN cannot restore the old approval. The exception is actual, active,
+finding-scoped and time-bounded. These external changes use the accepted governance fixture actor
+string; they do not add a verified governance API or impersonate an authenticated remediation
+human. Only the exact finding status/exception and paired governance audit may change. Original
+technical FAIL, evidence, source IDs, proposal content/digest, historical phase and decisions
+remain intact. Final signed denied attempts must leave the complete captured database unchanged.
+
+The admission-stale story first creates real signed APPROVED authority, then reuses real retained-
+scope collection/rules/persistence to produce newer FAIL. Its original decision remains immutable
+while current STALE_TARGET disables admission. This remains background collection, not managed
+scan submission, an API scan or linked verification. Across all four stories the native UI shows
+current blockers separately from historical authority. Approval or admission fields/buttons are
+disabled; an explicit real signed BFF attempt settles UNCONFIRMED/one attempt/null result without
+a new decision or execution. Web Storage denial, exact native POST counts, console/dialog/lifecycle
+checks, ordinary scan POST 405, logout/private clearing and non-cancellation notices remain.
+
+New helper guards first failed 23 missing-module cases in 0.47s, then passed all 23 in 0.08s.
+Final integrated protocol/bootstrap/guardian/mailbox/runtime/scenario/staleness/governance guards
+passed **468 cases in 2.14s**. The new helper imports only stdlib/protocol code until explicit calls,
+and the new operation is rejected as a child permit. The initial signed run failed closed in
+14.19s: the new approved fixture's DECIDE ledger check omitted proposal_id from the normalized
+request digest. The unchanged production service includes that target. The bounded validator
+repair checks the full matching digest; no assertion or authority check was removed. Original
+failure/source/cleanup receipts remain. Fresh signed validation passed four positives in 22.68s,
+then **12 unique cases in 48.80s**, including eight wrong-key/proposal/phase/actor negatives.
+The actor negative is a valid product approval by another approver, rejected only by this
+fixture's exact expected-actor binding; it is not a claim that the product forbids that actor.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Newer FAIL after approval and denied admission | 5.6s / 17.3s | 7.0s / 19.1s |
+| OPEN to ACKNOWLEDGED and denied approval | 4.2s / 15.3s | 6.1s / 17.7s |
+| Approved FALSE_POSITIVE to OPEN and denied admission | 4.8s / 16.0s | 6.8s / 18.5s |
+| Active exception and denied approval | 4.7s / 15.9s | 6.0s / 17.7s |
+| Retained installed worker, managed scan and VERIFIED | 13.3s / 24.3s | 15.8s / 27.3s |
+| Retained equal-time PASS and denied approval | 5.0s / 16.2s | 6.3s / 18.0s |
+
+Fresh native validation passed **12 unique selected cases**, once per scenario/project, with one
+worker, zero retries/skips, unchanged original budgets, independent proofs, owned cleanup and
+595 unchanged frozen source paths. All six primary invocations exited zero. The audit binds all
+six primary log hashes with SHA-256
+`33197f8561a6305cd49669eaf019d121766211f5d486bc243434db4f82ef1714`.
+
+Fresh expanded validation passed **916 unique cases in 401.54s**, including all 60 coordinator
+PostgreSQL cases and ten retained installed worker/API/reader cases: **70 PostgreSQL cases**.
+Independent JUnit/primary audit confirms zero failures/errors/warnings/skips, primary exit zero,
+all 595 source hashes unchanged and owned tmpfs database removal. Primary SHA-256 is
+`a2ad1554c8be7db9949c2416baeff4e3eb4d4099409b7b9ae215c7295055cae7`.
+Native and heavy PostgreSQL runs were serial. This is selected regression, not complete backend/
+all PostgreSQL; earlier HTTP/fault evidence remains historical until complete current-tree gates.
+
+Pinned frontend type/lint/build passed, with 148 focused cases/five files in 3.16s and all 289
+cases/13 files in 5.61s. Ruff lint/500-file formatting and whitespace passed. Current browser
+collection has 154 unique identities, 77/project: 90 retained plus 64 integrated. Collection does
+not establish complete 154-case execution. Only the active-plan and matrix receipt edits follow
+the terminal runs; that image is historical after those two documentation edits.
+
+Production application/frontend/installed-worker code, API/schema/defaults, migration 0010,
+scanner read-only credentials and separate finding/technical/remediation lifecycles are unchanged.
+Final read-only Docker/CIM inspection found no matching owned test containers, networks or host
+children. The older unmatched exited/unmounted database was preserved, not adopted or deleted.
+The branch stays codex/sprint-8d3-preflight at f97cf7bb, with 53 task-owned paths and an empty index.
+Existing 80 branches, three worktrees, unrelated parent skills and socket backup remain. No
+reviewer, commit, push, PR, merge, new agent, live AWS/IdP/IAM/secrets/operator-database/deployment/
+production or later-sprint operation occurred.
+
+Revocation before/after the write-intent cutoff, conflicting/substituted references, hint/version
+compatibility and remaining exact matrix scope stay open. Full current backend/all PostgreSQL/
+frontend/all native browsers/Compose/image/startup/security/cleanup, existing independent review,
+repairs/scoped delivery, both exact-head candidate primary CI audits, ordinary expected-head
+guarded merge, complete exact-main audit, 8D acceptance and required 8E remain mandatory. The full
+Sprint 8 goal stays ACTIVE and incomplete. No later sprint was started.
+
+### Local signed revocation and installed intent cutoffs
+
+On 2026-10-17 UTC the next approved test-only unit added two native revocation stories. Both pass
+Chromium/Firefox and signed PostgreSQL validation locally. In the first, genuine three-human
+proposal/approval/admission is followed by native signed REVOKE before the installed worker starts.
+QUEUED history and its reservation remain until that real worker separately appends NO_WRITE with
+APPROVAL_REVOKED and releases the reservation. Independent proof finds no claim, credential lookup,
+intent, SDK call, managed scan or verification. A real signed BFF verification attempt remains
+UNCONFIRMED/one attempt/null result and cannot change the complete captured database.
+
+The second story first obtains real installed normal ACK, then appends native signed REVOKE.
+Historical grant, original APPROVE, ACK event bytes/hash chain and one SDK invocation remain intact;
+current approval is REVOKED and current execution blockers include APPROVAL_REVOKED. Exact private
+replay cannot relaunch the worker. A current third ADMIN explicitly requests linked verification
+under the unchanged retained-ACK contract. The genuine managed reader collects, assesses, persists
+and seals VERIFIED without renewing write authority. Original FAIL stays immutable and the finding
+follows normal later-scan handling. Revocation is not cancellation, rollback or no-effect proof;
+ACK itself is not verification and a later PASS does not prove causation or existing-volume encryption.
+
+The after-ACK native case is a subset of post-intent behavior, not a precise native in-flight
+before-SDK race. Two existing signed PostgreSQL tests were freshly run: revocation committing while
+the driver waits for a Resource lock must prevent WRITE_INTENT/dispatch; revocation at the synthetic
+ENABLE transport after committed intent must retain the acknowledged call and exact one-write
+count. These proofs remain separate from native installed-process concurrency and live-provider
+cancellation. No new test broker, control operation, public API, auth override or worker behavior
+was added to manufacture the timing.
+
+The new parent helper is stdlib-only on import, requires its live owned test parent before SQL,
+and reads actual authority created through signed BFF/bearer services. It binds original CREATE/
+DECIDE and new REVOKE ledgers to canonical full actor/body digests, exact proposal/approval references,
+decision timing and the existing strict full-human/service audit/hash-chain verifier. Pre-intent
+proof permits only the exact authority/admission and subsequent NO_WRITE deltas, preserving every
+other database value. Post-ACK proof privately accounts for only the validated append-only REVOKE
+decision, ledger and paired human audit before applying the unchanged scan-history proof. This
+comparison snapshot is never persisted and cannot rewrite grant, events, evidence or authority.
+Short READ sessions close before installed-worker, SDK or managed-reader I/O.
+
+Nineteen missing-helper guards first failed in 0.45s, then all passed in 0.07s. The first signed run
+passed pre-intent behavior but failed the new after-ACK polling adapter in 37.95s because it supplied
+engine/issuer to a helper requiring a client and signed READ headers. The bounded adapter repair
+uses the actual client and a genuinely verified signed reader; no production defect or auth bypass
+is claimed. The next run again passed pre-intent behavior but failed in 33.64s after a genuine
+VERIFIED receipt because its private comparison appended random-UUID rows in insertion rather
+than database primary-key order. Six deterministic ordering guards now prove JSON-bearing rows
+need no hashing, preserve database order and reject missing, duplicate or extra authority rows.
+An initial guard edit had a collection syntax error; it was corrected before the six expected
+missing-function failures, and all original receipts remain. All 25 focused guards pass in 0.07s;
+final integrated guards pass **496 cases in 2.16s**. No assertion, verifier, budget, retry or isolation
+boundary was weakened. Fresh signed validation passes **eight unique cases in 64.63s**: two positive
+stories, four missing-revocation/expected-actor negatives and the two precise PostgreSQL races.
+The actor negative is a valid product REVOKE by another APPROVE principal, rejected only by the
+fixture's exact expected-human binding; the accepted any-APPROVE revocation policy is unchanged.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Signed revocation before installed intent and NO_WRITE | 8.7s / 21.0s | 11.0s / 23.7s |
+| Installed ACK then signed revocation and read-only VERIFIED | 12.6s / 24.7s | 15.7s / 28.3s |
+| Retained normal installed worker, managed scan and VERIFIED | 12.5s / 23.5s | 15.8s / 27.3s |
+| Retained expired execution and installed NO_WRITE | 7.9s / 19.0s | 9.1s / 20.7s |
+
+Fresh native validation passes **eight unique selected cases**, once per scenario/project, with
+one worker, zero retries/skips, original unchanged budgets, independent persistence proofs, owned
+cleanup and 597 unchanged frozen source paths. All four primary invocations exit zero; their
+log-hash audit has SHA-256
+`070ba31974b7335936ec86d20d8fbb79ecfc403e7a96d72313e54ede8ed3b9d9`.
+Native exact POST counts now include genuine REVOKE as the fifth operation kind. Web Storage,
+console/dialog/lifecycle, private clearing, non-cancellation notices and ordinary scan POST 405
+assertions remain. The separate real installed restart in signed PostgreSQL also proves retained
+NO_WRITE cannot dispatch or append another event.
+
+Fresh expanded validation passes **952 unique cases in 457.29s**, including **78 PostgreSQL cases**:
+all 66 coordinator cases, eight installed worker/API cases, two installed reader cases and both
+precise revocation races. Independent primary/JUnit audit confirms zero failures/errors/warnings/
+skips, primary exit zero, all 597 source hashes unchanged and owned disposable tmpfs database
+removal. Primary SHA-256 is
+`c10eaf9436f6d7bc44957d8b966d6dcbcec7288619c5fda24c556933103e33f7`.
+Native and heavy PostgreSQL runs were serial. This is selected regression, not complete backend/
+all PostgreSQL or a substitute for earlier historical HTTP/fault checks on the final tree.
+
+Pinned frontend type/lint/build passes: 148 focused cases/five files in 2.97s and all 289 cases/
+13 files in 5.59s. Ruff lint/502-file formatting and whitespace pass. Collection has 158 unique
+browser identities, 79/project: 90 retained plus 68 integrated. Eight selected executions do not
+establish all 158-case execution. Only the active-plan and acceptance-matrix receipt edits follow
+terminal validation, making the image historical after those two owner-document edits.
+
+Production application/frontend/installed-worker code, API/schema/defaults, migration 0010,
+scanner read-only credentials and separate finding/technical/remediation lifecycles remain
+unchanged. Final read-only Docker/CIM inspection finds no matching owned containers, networks or
+host children; the older unmatched exited/unmounted database is preserved, not adopted or deleted.
+The branch remains codex/sprint-8d3-preflight at f97cf7bb with 55 task-owned paths and an empty
+index. All 80 branches, three worktrees, unrelated parent skills and socket backup remain. No
+reviewer, commit, push, PR, merge, new agent, live AWS/IdP/IAM/secrets/operator-database/deployment/
+production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Conflicting/substituted references, hint/version
+compatibility and exact unavailable-provenance/equal-time verification scope still need explicit
+matrix reconciliation. Full current backend/all PostgreSQL/frontend/all native browsers/Compose/
+image/startup/default-off/security/cleanup, existing independent review, repairs/scoped delivery,
+both exact-head candidate primary CI audits, ordinary expected-head guarded merge, complete
+exact-main audit, 8D acceptance and required 8E remain mandatory. The full Sprint 8 goal stays
+ACTIVE and incomplete. No later sprint was started.
+
+### Local collected evidence staleness and approval cutoff
+
+On 2026-10-17 UTC the next approved test-only unit added six native approval-cutoff stories:
+newer and ambiguous equal-time observations, each yielding FAIL, PASS or INSUFFICIENT_EVIDENCE.
+All six pass Chromium/Firefox and signed PostgreSQL validation locally; 8D3 remains unaccepted.
+Native stale-after-approval admission behavior remains open rather than being inferred from
+these approval stories or accepted domain/worker guards.
+
+A new closed private COLLECT_STALE operation binds the original UI-created proposal UUID and
+CREATE key. The owning parent independently checks its live runtime/schema, all eight retained
+source IDs, sole proposal/request, verified proposer/roles/capability, canonical content/request
+digests, paired human audit and the complete pre-effect database delta. Parser acceptance alone
+cannot authorize collection. Wrong proposal/key tests fail before collection and leave all rows
+unchanged. Dispatch is sticky, duplicate replay cannot repeat collection, and the reply never
+claims effects were canceled. No arbitrary command, URL, environment, policy or SDK arguments
+are accepted; this operation has no browser/API child gate permit or Docker access.
+
+The parent reuses the full-scope fixture's real InventoryService collection, unchanged RuleEngine
+and strict persist_scan_result path with exact retained profile/catalog/services. Only its one
+collection clock supplies the chosen observation time before collection. New scan start/completion
+times enclose that observation; no existing time, assessment, evidence or history is rewritten.
+Fixed offline facts determine false/true encryption or a real synthetic AccessDenied collection
+failure, not seeded assessment statuses. This is a background collection/rules/persistence
+fixture, not managed submit, a scan API request, linked verification or new browser Start scan.
+The retained positive journey separately proves the genuine installed worker and managed reader.
+
+The parent proves every original immutable row, remediation row and stable Resource identity
+survives collection, then captures the entire resulting database privately. Final reads and the
+signed denied approval must leave that complete state identical. Exactly two scan identities,
+retained policy/scope, equal or one-second-newer observation time, actual target assessment and
+normal current finding handling are checked independently. Every variant derives STALE_TARGET
+without changing historical PROPOSED, content, digest or original FAIL. Newer complete PASS may
+normally resolve the finding; equal-time PASS retains the FAIL tie and OPEN finding. Incomplete
+required encryption evidence produces PARTIAL/INSUFFICIENT_EVIDENCE and never PASS. Other current
+blockers, including normal governance changes, remain visible rather than being suppressed.
+
+Native UI refresh shows the original immutable proposal with stale blockers in three genuinely
+signed sessions. Approval reason and submit controls are disabled. A separate explicit signed
+BFF preparation/submission settles UNCONFIRMED/one attempt/null result, and independent storage
+proves no decision, execution, worker or linked verification was created. Original-key/identity/
+deadline and non-cancellation contracts remain; an existing committed proposal is not erased.
+Console/dialog/lifecycle, exact POST counts, Web Storage denial, logout/private clearing and
+ordinary browser scan POST 405 remain asserted.
+
+New case/ownership guards first failed all 24 missing-helper cases in 0.47s, then passed 24 in
+0.08s and 28 in 0.09s with reply/fence tests. Final integrated runtime/bootstrap/protocol/guardian/
+mailbox/scenario/staleness guards passed 434 cases in 1.78s. The new helper's import is proved
+stdlib-only until explicit calls. No SQL/store lock spans fact collection, and persistence owns
+its short transaction after collection/rules complete.
+
+The first signed run failed in 14.04s after successful collection/staleness proof because the new
+test tried another login without first leaving its authenticated session and preparing a fresh
+anonymous login context. A real logout followed by normal login repairs only that fixture
+transition; no cookie/CSRF/authentication bypass or product fix is claimed. Fresh six-case signed
+validation passed in 30.67s, then all ten positive/reference-negative cases passed in 49.76s.
+Original failed receipts and exact source hashes remain, and each owned tmpfs database was removed.
+
+The first native run reached stale authority but timed out at the unchanged 30-second body budget
+because the new test attempted to fill the correctly disabled approval textarea. Its original
+failure, secondary page-cleanup warning and PAGE_CLOSED marker are preserved. The bounded test
+repair asserts that textarea is disabled, retaining the disabled button, genuine BFF attempt and
+all storage/security assertions. No timeout, retry, isolation, assertion or test selection was
+weakened. The fresh current-source native run below passes all fourteen selected cases.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Newer FAIL and denied approval | 4.8s / 16.0s | 6.4s / 18.3s |
+| Newer PASS and denied approval | 4.4s / 15.5s | 6.3s / 17.9s |
+| Newer insufficient evidence and denied approval | 4.5s / 15.6s | 6.4s / 18.1s |
+| Equal-time FAIL and denied approval | 4.6s / 15.7s | 6.5s / 18.2s |
+| Equal-time PASS and denied approval | 4.4s / 15.4s | 6.3s / 17.9s |
+| Equal-time insufficient evidence and denied approval | 4.9s / 16.0s | 6.5s / 18.1s |
+| Retained installed worker, managed scan and VERIFIED | 13.3s / 24.3s | 15.7s / 27.1s |
+
+Fresh native validation passed fourteen unique selected cases, once per case/project, with one
+worker, zero retries/skips, original budgets, 593 unchanged frozen source paths, independent
+outcome proofs and owned cleanup. All seven primary invocations exited zero. The primary audit
+binds all seven log hashes with SHA-256
+`f4f8c3f1dc3deca1e3af7efac119b0b8caeb980d866776bbe27b3c4fd4ab8f09`.
+
+Fresh expanded validation passed **870 cases in 352.28s**, including all 48 coordinator PostgreSQL
+cases and ten retained installed worker/API/reader cases: **58 PostgreSQL cases**. Independent
+JUnit audit confirms 870 unique cases and zero failures/errors/warnings/skips. Primary exit was
+zero, all 593 source hashes matched and the owned disposable tmpfs database was removed. Primary
+SHA-256 is `f2f176e85df56d59e8e8ca2029640cb18ba2f73925c910689c629fa4c8dc222f`.
+This is selected regression, not complete backend/all PostgreSQL. Native and heavy PostgreSQL runs
+did not overlap. Earlier HTTP/fault and other local receipts remain historical, not substitutes
+for required complete current-tree regression.
+
+Pinned frontend type/lint/build passed: 148 focused cases/five files in 3.03s and all 289 cases/
+13 files in 6.00s. Ruff lint/498-file formatting and whitespace passed. Current collection has
+146 unique browser identities, 73/project: retained 90 plus 56 integrated. Collection is not full
+146-case execution. Only two owner-document receipt edits follow terminal runs; the native image
+is historical after those edits. These qualified results do not accept a partial slice.
+
+Production application/frontend/worker, API/schema/defaults, migration 0010, scanner read-only
+credentials and separate lifecycles are unchanged. Final read-only Docker/CIM inventory found no
+matching owned test containers, networks or host children; the older unmatched exited validation
+database was preserved, not adopted or deleted. The scoped branch remains codex/sprint-8d3-preflight
+at f97cf7bb with 51 task-owned paths and an empty index. Existing 80 branches, three worktrees,
+parent skills and socket backup remain. No reviewer, commit, push, PR, merge, new agent, live
+AWS/IdP/IAM/secret/operator-database/deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Native stale-after-approval admission, governance
+changes/round trips/current exception blockers, revocation and the intent cutoff, conflicting or
+substituted references, hint/version compatibility and remaining exact matrix scope stay open.
+Full backend/all PostgreSQL/frontend/all native browsers/Compose/image/startup/security/cleanup,
+existing independent review, scoped delivery, both exact-head candidate primary CI audits,
+ordinary expected-head guarded merge, complete exact-main audit, 8D acceptance and required 8E
+remain mandatory. The full Sprint 8 goal remains ACTIVE and incomplete; no later sprint was started.
+
+### Current local checkpoint after revocation validation
+
+The preceding staleness checkpoint retains its original predictions and open-item list. The later
+[governance evidence](#local-stale-approved-authority-and-external-governance-cutoffs) and
+[revocation evidence](#local-signed-revocation-and-installed-intent-cutoffs), although located above
+that historical section, supersede its pending local stale-after-approval, governance and revocation
+claims only. The [acceptance matrix](../../sprint-8d3-acceptance-matrix.md) records the current exact
+coverage and its native-versus-PostgreSQL timing limits.
+
+The latest local revocation validation is 952 selected backend cases including 78 PostgreSQL,
+eight selected native Chromium/Firefox cases, 289 frontend cases, 496 integrated guards and
+passing documentation/quality/preservation checks. None is whole-slice acceptance. Conflicting/
+substituted references, hint/version compatibility and exact unavailable-provenance/equal-time
+verification scope still require reconciliation, followed by every full current-tree gate,
+independent review/delivery, exact candidate/main CI audit, 8D acceptance and required 8E.
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE/incomplete. No later sprint,
+reviewer/publication/merge or live/provider/production operation starts at this checkpoint.
+
+### Local untrusted reference and conflicting input validation
+
+On 2026-10-17 UTC the next approved test-only unit added two native reference-substitution stories.
+Both pass Chromium/Firefox and signed PostgreSQL validation locally, superseding the preceding
+pending local reference/conflict claims without changing historical predictions or 8D3 acceptance.
+The real signed proposal commits first. Its reply, or its genuine authorized confirmation READ,
+is then replaced only at the test transport boundary by a schema-valid view with a different fixed
+proposal UUID and recomputed canonical digest. No stored row is changed.
+
+The fixture first independently proves the sole committed proposal, full verified proposer,
+canonical content, original CREATE ledger/key and paired human audit. Original body/key/token
+forward unchanged. A substituted reply triggers an actual authorized READ of the nonexistent UUID
+returning 404; a substituted confirmation READ conflicts with the genuine reply. Both settle the
+real BFF operation UNCONFIRMED/one attempt/null result without exposing the untrusted UUID or raw
+upstream body as a confirmed reference. This proves rejection of a schema-valid nonexistent UUID,
+not substitution of another real persisted proposal or a fake failure replacing authentication.
+
+Native explicit replacement submit body/key and caller-selected preparation key receive closed-
+input 422 without incrementing attempts or forwarding again. Separately, a real signed bearer
+request with the original actor/key and changed normalized reason receives API 409
+remediation_idempotency_conflict and preserves the complete captured database. BFF 422 and bearer
+409 remain distinct contracts. Reload performs GET-only recovery; explicit fresh review/retry
+retains the original UUID/body/actor/deadlines and confirms the sole original proposal on attempt
+two. No grant is renewed and cached repeat cannot forward again. Both native stories then complete
+distinct approval/admission, genuine installed execution and normal managed read-only collection/
+assessment/persistence/sealed VERIFIED. Original FAIL and pre-reader immutable history remain.
+
+The helper is stdlib-only on import, requires isolated test mode and rejects nested installation.
+Fault selection is two fixed stages and one fixed UUID, never arbitrary route/scope/credentials/
+commands. Fixed in-process ASGI paths, string/bytes size and canonical v4-key guards precede
+forwarding. Private completion requires one substitution, zero claimed response losses, two same-
+key/body forwards and two expected real confirmation READs. The existing nine-field fixture
+metadata remains compatible; an altered reply is not mislabeled as timeout/loss. SQL proof sessions
+close before transport I/O. The old loss fixture is unchanged and its retained native uncertainty
+story passes through the renamed generic UI recovery helper.
+
+Fourteen missing-helper guards failed in 0.42s, then passed in 0.07s. Additional private transport
+guards exposed three inconsistent key-error types/messages in 0.55s; explicit type/canonical parsing
+now rejects them with a closed sanitized error before forwarding. All 23 focused guards pass in
+0.08s and final integrated guards pass **522 cases in 2.38s**, including stdlib import isolation.
+The first signed run failed in 8.53s because its new direct bearer conflict request omitted action
+fields normally enriched by the BFF, correctly receiving 422 before idempotency. The bounded test
+repair uses the actual frozen normalized input while retaining the required 409 assertion. No
+production defect, weakened assertion or bypass is claimed. Fresh two-case signed runs passed in
+14.87s, then 10.43s after the private transport-guard repair, with source hashes unchanged and owned
+disposable databases removed. Original failures remain preserved.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Substituted reply and original-key recovery to VERIFIED | 11.6s / 23.0s | 13.3s / 25.2s |
+| Substituted confirmation READ and original-key recovery to VERIFIED | 11.6s / 22.6s | 13.5s / 25.1s |
+| Retained genuine commit/reply loss and explicit retry to VERIFIED | 10.7s / 21.7s | 13.2s / 24.6s |
+| Retained normal installed worker, managed scan and VERIFIED | 13.3s / 24.3s | 15.7s / 27.2s |
+
+Fresh native validation passed **eight unique selected cases**, once per scenario/project, with one
+worker, zero retries/skips, original unchanged budgets, independent persistence proofs, owned
+cleanup and 599 unchanged frozen source paths. All four primary invocations exited zero. The
+log-hash audit has SHA-256
+`7feac7abcf03bfc4a11ebf6984ef62bebfc1b51b3c203858e3804a4e6f3d483b`.
+Exact POST counts, Web Storage denial, console/dialog/lifecycle, ordinary scan POST 405,
+logout/private clearing and non-cancellation notices remain asserted.
+
+Fresh expanded validation passed **980 unique cases in 464.41s**, including **80 PostgreSQL cases**:
+all 68 coordinator-file cases, eight installed worker/API cases, two installed reader cases and
+both precise revocation races. Independent primary/JUnit audit confirms zero failures/errors/
+warnings/skips, primary exit zero, all 599 source hashes unchanged and owned tmpfs database removal.
+Primary SHA-256 is `20a4718aeb510ee4402e48df6995fffa282e2997b90a6769382bbda3de2e79bc`.
+Native and heavy PostgreSQL runs were serial. This is selected regression, not complete backend/
+all PostgreSQL or a substitute for full current-tree HTTP/fault coverage.
+
+Pinned frontend type/lint/build passed: 148 focused cases/five files in 2.99s and all 289 cases/
+13 files in 5.66s. Ruff lint/504-file formatting and whitespace passed. Collection has 162 unique
+browser identities, 81/project: 90 retained plus 72 integrated. Collection does not establish all
+162-case execution. Only active-plan and matrix receipts follow terminal validation, making the
+image historical after those two owner-document changes.
+
+Production application/frontend/installed-worker code, API/schema/defaults, migration 0010,
+scanner read-only credentials and separate finding/technical/remediation lifecycles are unchanged.
+Final read-only Docker/CIM inspection found no matching owned containers, networks or host children.
+The older unmatched exited/unmounted database was preserved, not adopted or deleted. The branch
+stays codex/sprint-8d3-preflight at f97cf7bb with 57 task-owned paths and an empty index. Existing
+80 branches, three worktrees, unrelated parent skills and socket backup remain. No reviewer,
+commit, push, PR, merge, new agent, live AWS/IdP/IAM/secrets/operator-database/deployment/production
+or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE/incomplete. Missing/disabled
+hints, unsupported history versions and exact unavailable-provenance/equal-time verification scope
+remain to be reconciled before every full current-tree backend/all PostgreSQL/frontend/all native
+browser/Compose/image/startup/default-off/security/cleanup gate. Existing independent review,
+repairs/scoped delivery, both exact-head candidate primary CI audits, ordinary expected-head
+guarded merge, complete exact-main audit, 8D acceptance and required 8E remain mandatory. No later
+sprint was started. The preceding local checkpoints and failed receipts remain historical.
+
+### Local UI hint and history version compatibility
+
+On 2026-10-18 the next approved test-only unit passed native hint/version compatibility in
+Chromium and Firefox. This supersedes the preceding pending local hint/version claims, not
+their original predictions, failed receipts or whole-slice gates. 8D3 remains unaccepted.
+
+After a genuine signed proposal commits, the feature-hints story alters only the browser's
+authenticated session GET reply: first `features.remediation=false`, then absent features.
+Issuer, subject, roles, cookies, context, credentials and server configuration are not replaced.
+The console becomes READ-only, hides manual forms and still reads the exact scan/proposal.
+Restoring the genuine session and manually refreshing coordination retains the sole original
+operation UUID, frozen body/actor/deadlines, CONFIRMED result and one attempt. No automatic POST,
+replacement key, renewed grant, Web Storage or cancellation inference is introduced. These UI
+hints are not server authorization; both real enabled/default-off API flag cases pass separately.
+
+The history-versions story alters only already-authenticated browser detail replies: proposal
+schema 9.0.0, a genuine v2 worker event to unsupported 3.0.0, and a genuine sealed receipt to
+schema 9.0.0. Each yields the safe unsupported-response error without a trusted detail status.
+Unsupported proposal details expose no approval/admission action, and unsupported execution
+details expose no linked-verification action. A rejected receipt detail does not invalidate an
+independently valid ACK/history list: the accepted three-attempt policy still permits another
+explicit read-only request. No product semantics or stored version is changed. Explicit
+close/reopen performs a genuine GET and restores supported history. Both stories then complete
+distinct approval/admission, the actual installed worker, normal managed read-only collection/
+assessment/persistence and sealed VERIFIED. Independent parent proof retains the original FAIL,
+source, immutable history and sole proposal/CREATE ledger.
+
+The first guard run showed 15 failure markers and stalled; only its revalidated owning Python
+process pair was stopped. Its stall cause remains unconfirmed. First-failure diagnostics then
+proved an unchanged mailbox atomic-link operation was denied by the Windows sandbox:
+one failed and 290 passed in 4.19s. With scoped atomic-filesystem permission, all 524 guards
+passed without code or assertion changes. Final current guards pass **524 in 2.49s**.
+Initial Ruff long-line/format failures were repaired mechanically; lint, 504-file format and
+whitespace checks pass. Original partial/failed logs remain preserved.
+
+The first native hint case failed at the original 30-second budget while waiting for fresh
+detail/posture reads after reselecting the already selected scan. The bounded fixture repair
+uses existing Back to scan selection, checks focus, then opens that exact scan. This does not
+claim a runtime navigation fix. Code inspection identifies a possible report-clear/no-new-effect
+case on repeated same-ID selection; focused independent regression/repair analysis remains
+required before closing navigation coverage. Original timeout and secondary cleanup/lifecycle
+warnings remain, with 599 source hashes unchanged and owned resources removed.
+
+Two fresh image builds subsequently failed before browser execution with compiler SIGSEGV 139.
+The selected regression also stopped at its first installed Docker image setup: 361 passed,
+one error in 9.22s, unchanged source and owned database removed. That sanitized setup error's
+precise cause is unconfirmed. Read-only probes of a previously passing image reported an invalid
+character; its 627-byte Zod declaration differed by two bytes from the same-version local file.
+Node/pnpm version probes passed. A diagnostic-only JIT-disabled compiler also failed; it was
+not adopted as a workaround. With no running containers, only Docker Desktop was restarted.
+The same preserved image's dependency hash then matched the local file and its normal compiler
+passed. Fresh source-frozen validation below passed. The underlying runtime/byte-mismatch
+mechanism remains unconfirmed; no dependency, flag, isolation, timeout or retry was weakened,
+and no image or unrelated stopped database was deleted.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Disabled/missing hints and original-operation recovery to VERIFIED | 13.4s / 25.8s | 16.5s / 28.8s |
+| Unsupported proposal, worker event and receipt with genuine READ recovery | 13.5s / 26.3s | 15.3s / 27.1s |
+| Retained recovery guards, installed worker and managed VERIFIED | 13.8s / 25.0s | 15.9s / 27.6s |
+| Retained normal installed worker, managed scan and VERIFIED | 14.1s / 25.3s | 17.2s / 29.0s |
+
+Fresh native validation passed **eight unique selected cases**, once per scenario/project,
+with one worker, zero retries/skips, original budgets, independent persistence proofs, owned
+cleanup and 599 unchanged frozen source paths. All four primary invocations exited zero.
+The log-hash audit has SHA-256
+`2b2f4283c9809dcebecce37df2838b892fd956961a2b3577b0d550d97aa920c3`.
+Exact POST counts, no ordinary scan POST, console/dialog/lifecycle guards, private clearing,
+logout and Web Storage denial remain asserted. Automated authenticated recordings stay disabled.
+
+Fresh expanded regression passed **984 unique cases in 491.98s**, including **80 PostgreSQL**:
+68 coordinator, eight installed worker/API, two installed reader and both precise revocation
+races. Both actual server flag cases also passed. Independent JUnit/primary audit confirms
+zero failures/errors/warnings/skips, exit zero, 599 source hashes unchanged and owned tmpfs
+database removal. Primary SHA-256 is
+`e82c4974e0f56c9500221b8a60ba4654dd68b19313cb6de7c8c67b7d06b3379c`.
+Native and heavy PostgreSQL runs were serial. This is selected regression, not complete backend/
+all PostgreSQL. Pinned frontend type/lint/build passed: 148 focused cases/five files in 5.05s
+and all 289 cases/13 files in 9.70s. Current collection has 166 unique browser identities,
+83/project: 90 retained plus 76 integrated. Collection is not all-166 execution.
+
+Four owner-document edits follow terminal validation: this plan, the acceptance matrix and two
+operations passages. The latter reconcile stale future/unfixed wording with accepted 8D1 stable
+controls and separately default-off 8D2 manual UI while preserving historical failure uncertainty
+and pending integrated/live-operation limits. The first documentation check failed one contract
+with 16 passed in 0.77s after the edit omitted the explicit accepted-worker-code qualifier.
+Restoring that 8B2 qualifier preserves accepted code versus disabled/undeployed operation without
+changing the test. Its failed receipt remains. The native image is historical after these edits.
+Production application/frontend/installed-worker code, API/schema/defaults, migration 0010,
+scanner read-only credentials and separate finding/technical/remediation lifecycles are unchanged.
+Final read-only Docker/CIM inventory found no owned worker/browser/diagnostic containers, networks
+or host children. Unrelated stopped containers, the older unmatched database, 80 branches,
+three worktrees, parent skills and socket backup remain preserved. The branch remains
+codex/sprint-8d3-preflight at f97cf7bb with 57 task-owned paths and an empty index. No reviewer,
+new agent, commit, push, PR, merge, live AWS/IdP/IAM/secrets/operator-database/deployment/production
+or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE/incomplete. Next work
+requires focused repeated-selection triage and exact unavailable-provenance/equal-time
+verification scope, then every full current-tree backend/all PostgreSQL/frontend/all native
+browser/Compose/image/startup/default-off/security/cleanup gate, existing independent review,
+repairs/scoped delivery, both exact-head candidate primary CI audits, ordinary expected-head
+guarded merge, complete exact-main audit, 8D acceptance and required 8E. No later sprint starts.
+
+### Local repeated scan selection repair
+
+On 2026-10-18 focused triage confirmed the preceding same-selection issue and a bounded
+preservation repair passed local validation. This resolves that pending local triage item, not
+8D3 acceptance. The approved 8D3 preflight permits analysis of reproduced runtime defects;
+standing routine-workflow approval covers this repair without a new product/security design.
+
+`ScanShell.select` cleared the report and read error unconditionally, but the read effect depends
+on selected ID, revision and session context. Reselecting the unchanged ID therefore erased a
+loaded report/error without starting a replacement read, leaving Loading selected scan. The
+only application change guards those two clears with `id !== selected`. Same-ID selection
+retains the current report, error or pending read; existing explicit Refresh still owns rereads.
+Different-ID selection, URL normalization/login cleanup/history, Back/focus, context changes,
+AbortController protection, parallel requests and authorization are unchanged. No new effect,
+state layer, automatic retry/POST, public interface, schema, permission or credential is added.
+The React review kept the existing primitive effect dependencies and event-handler boundaries.
+
+Six new regressions cover UUID form/history row crossed with loaded-unavailable/error/pending
+reads. They assert normalized exact selection and other query preservation, unchanged three
+initial bound GETs, no automatic retry, completion of the original pending read and six total
+GETs only after explicit Refresh. The six predecessors remain. The first run had six failures:
+four genuine report/error regressions and two overly broad new no-alert assertions that also
+rejected the independent NIST guard. The narrow fixture deliberately lacks full NIST context;
+the corrected test explicitly preserves that unsupported-context warning while checking only
+the selected-read error. Before application repair, four failed and eight passed in 3.78s.
+After repair all 12 passed in 3.73s. A later unused mock-argument lint failure was repaired by
+using the actual options for the GET assertion, without suppressing the rule. Original failures
+remain. No valid regression, timeout, retry, isolation or security assertion was weakened.
+
+Native feature-hints now separately proves same-ID behavior before altering any session hint.
+After opening the genuinely signed proposal, both normalized UUID-form submission and the
+pressed history-row click retain proposal SHA, historical PROPOSED, exact scan and deep detail,
+with no Loading state and zero extra detail/posture GETs. This is distinct from the retained
+Back/Open helper, whose expectation of fresh reads requires a changed selection. Neither
+mechanism diagnoses unrelated earlier browser/CI failures. Original operation/POST/storage,
+private clearing, console/dialog/lifecycle, source/history and ordinary scan POST 405 guards
+remain, followed by real distinct-human admission, installed worker and managed sealed VERIFIED.
+
+| Native journey | Chromium body / with setup | Firefox body / with setup |
+| --- | --- | --- |
+| Same-scan preservation, hint recovery and managed VERIFIED | 13.7s / 25.4s | 15.8s / 28.0s |
+| Retained unsupported history versions and genuine READ recovery | 12.1s / 23.3s | 14.1s / 25.9s |
+| Retained coordination recovery guards and managed VERIFIED | 12.2s / 23.3s | 15.2s / 27.0s |
+| Retained normal installed worker and managed VERIFIED | 13.2s / 24.3s | 17.9s / 29.7s |
+
+Fresh native validation passed eight unique selected cases, once per case/project, with original
+budgets, one worker, zero retries/skips, independent persistence proofs, owned cleanup and all
+599 frozen source paths unchanged. All four primaries exited zero. The log-hash audit has
+SHA-256 `1d5a0f44992b60b193f814356e63980d2c6d06b2e0bc7c0134fd578c76f886b0`.
+
+A separate host collection failed before testing because installed Playwright `coreBundle.js`
+contained invalid syntax. Its actual 3,477,183-byte file hash differed from the passing Linux
+image, with unchanged recorded installation timestamps. This is observed dependency-byte
+inconsistency, not a diagnosis of hardware, OS, attack or application cause. The whole existing
+generated dependency directory was moved intact to an ignored task-owned backup after exact
+Windows path and no-active-project-process checks. A fresh 235-package installation used the
+unchanged lockfile, integrity verification, copy imports and a separate private store. No shared
+package files, source, manifest, lockfile or package version were replaced by a different release.
+No force, checksum update or integrity bypass was used; see the
+[frozen-install contract](https://pnpm.io/cli/install). The restored module matches the passing
+image's hash and passes syntax checking. Its original bytes/directory remain recoverable.
+
+Initial host commands then failed before tests on project-registration permission and a
+package-store layout mismatch; pnpm's attempted automatic reinstall was refused, not approved.
+Read-only diagnostics and installed pnpm 11.19 source identified the `PNPM_CONFIG_` prefix and
+the exact `enableGlobalVirtualStore` mismatch. Ignored validation helpers now match the verified
+private installation and use `verifyDepsBeforeRun=error`, retaining checks while forbidding an
+automatic install during validation. Diagnostic argument errors and failed collections remain
+preserved. No repository configuration, application default, tool version or credential changed.
+The reason for the original dependency-byte changes remains unconfirmed.
+
+Fresh restored-install frontend type/lint/build passed: 160 focused cases/six files in 21.64s
+and all 295 cases/13 files in 4.36s. Current collection passed 166 unique browser identities,
+83/project: 90 retained plus 76 integrated, one worker and zero retries. Collection is not all-
+166 execution. Integrated guards passed 524 in 2.33s; Ruff lint/504-file format/whitespace pass.
+
+Fresh expanded regression passed 984 unique cases in 507.16s, including 80 PostgreSQL:
+68 coordinator, eight installed worker/API, two installed reader and both precise revocation
+races. Both actual server flag cases passed. Independent primary/JUnit audit confirms zero
+failures/errors/warnings/skips, exit zero, 599 source hashes unchanged and owned tmpfs database
+removal. Primary SHA-256 is
+`3d81940f9cc65481a1448f102572c5cd34f4302b53b28136f3f4f08c11eca8a0`.
+This is selected regression, not complete backend/all PostgreSQL. Native, image and heavy
+PostgreSQL validation were serial; no frozen source was edited while those runs were live.
+
+Compose schema, default-off flags and loopback checks passed without starting Compose services.
+Exact application image
+`sha256:d475d9bc64e7ff021507288653a3fd471595983d863ae9899ee801abd375f7fe`
+matched 214 packaged application/migration/frontend-asset hashes. Its non-root, network-disabled,
+no-port smoke used only container-local disposable SQLite: health/readiness, migration 0010,
+five bearer-schema operations, backend/dashboard defaults off and refusal of production
+development-authentication/dashboard opt-in all passed. The named/labeled smoke auto-removed;
+no operator database or deployment was used. This is not a Compose deployment or live AWS proof.
+
+Only this plan, the acceptance matrix and dashboard operations receive post-validation owner
+edits; the validated image is historical after them. The application change is limited to the
+selection guard; backend/standalone-worker code, API/schema/defaults, migration 0010, scanner
+read-only credentials and separate finding/technical/remediation lifecycles are unchanged.
+Read-only Docker/CIM inventory found no owned worker/browser/diagnostic/image-smoke containers,
+networks or host children. Unrelated stopped containers, the older unmatched database, original
+dependency backup, 80 branches, three worktrees, parent skills and socket backup remain preserved.
+The branch stays codex/sprint-8d3-preflight at f97cf7bb with 59 task-owned paths and an empty index.
+No reviewer, new agent, commit, push, PR, merge, live AWS/IdP/IAM/secrets/operator-database/
+deployment/production or later-sprint operation occurred.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE/incomplete. Exact native
+equal-time/unavailable-provenance verification coverage remains, then every full current-tree
+backend/all PostgreSQL/frontend/all retained and new native browser/Compose/image/startup/
+default-off/security/cleanup gate, existing independent review, repairs/scoped delivery, both
+exact-head candidate primary CI audits, ordinary expected-head guarded merge, complete exact-
+main audit, 8D acceptance and required 8E. No later sprint starts; prior failed receipts and
+original predictions remain historical.
+
+### Local verification time and provenance faults
+
+On 2026-10-18 the two remaining exact native verification faults passed locally. This supersedes
+the preceding pending equal-time/provenance statements, not their predictions or failure history.
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. The accepted postcondition reader and signed
+PostgreSQL fault tests were inspected before implementing the closed test-only adapters.
+
+- `verification-equal` captures the genuine signed queued admission response and independently
+  reads the installed normal ACK, all eight original source IDs and the complete three-human
+  audit/journal binding before forwarding the fixed verification POST unchanged. Only the isolated
+  authority and inventory observation clocks are fixed to the actual ACK. Request creation and
+  new scan start equal ACK, collection remains inside that new scan, and completion uses its real
+  clock. Genuine collectors/rules produce PASS with retained evidence; the unchanged reader seals
+  INCONCLUSIVE/OBSERVATION_NOT_LATER. JWT, session, browser and installed-worker clocks stay real.
+- `verification-provenance` uses real signed authority and managed submit/provider/collect/rule/
+  persistence. After the existing exact parent/child reader binding, an engine/new-scan-scoped
+  before_flush observer changes only source_api on the sole NEW EC2-004 assessment-proof INSERT,
+  from GetEbsEncryptionByDefault to the fixed incorrect GetEbsDefaultKmsKeyId. It records every
+  column before/after and rereads the persisted values independently. This explicitly adversarial
+  incoming proof is not an UPDATE to accepted history or healthy cloud provenance. Real rule PASS
+  coexists with INCONCLUSIVE/PROVENANCE_UNAVAILABLE and no decisive receipt evidence.
+
+Both stories preserve the genuine native three-human OIDC/PKCE/BFF/bearer requests, original
+operation keys/body/actor, separately installed one-write worker, committed intent, strict managed
+submit/provider sequence, real collectors/rules and sealed receipt/audit hashes. Ordinary complete
+PASS resolves the current finding while original FAIL/source history remains immutable. The new
+helper imports only stdlib before explicit isolated installation, accepts only two fixed scenarios,
+rejects nested clock replacement and restores its hooks on teardown. No public fault operation,
+authentication override, receipt seeding, fabricated assessment, private scan _run, relaxed guard,
+expanded credential or test-budget/retry change is introduced.
+
+Local validation against the frozen 601-path tree:
+
+- Isolated guards v65: 544 passed in 2.25s; Ruff lint, 506-file format check and whitespace passed.
+  The earlier v64 stopped with 290 passed and one existing mailbox os.link WinError 5 failure;
+  scoped Windows permission resolved it without changing the test. Initial new-code lint reported
+  long lines before formatting; the formatted source passes clean lint without suppression.
+- Frontend v42: 160 focused cases/six files in 2.48s, all 295 cases/13 files in 3.39s, plus type,
+  lint, build and whitespace passed. Collection v30 contains 170 unique journeys, 85 per project:
+  all 90 predecessors plus 80 integrated cases, one worker and zero retries. Collection is not run
+  evidence for the whole suite.
+- Native v45: eight unique cases passed, both Chromium and Firefox for equal-time, provenance,
+  KMS drift and VERIFIED. Each retains its original 30-second body budget, zero retries/skips,
+  independent installed/source/history/receipt proof, unchanged source and exact owned cleanup.
+  Chromium/Firefox body times respectively: equal 11.6/13.8s; provenance 12.2/13.9s; KMS 10.5/13.9s;
+  positive control 14.3/16.5s. Both new exact native assertion markers are present twice.
+- Signed PostgreSQL v68: all ten exact cases passed in 100.04s, no failures/errors/warnings/skips.
+  Two new coordinator cases exercise these adapters and eight existing cases retain equal/older
+  observations and six incoming-proof forgeries. Older observation and target/version forgeries
+  retain their normal failed-scan handling; they are not relabelled completed native source faults.
+  The source was unchanged and only this run's owned tmpfs database was removed. This is targeted,
+  not complete backend/all-PostgreSQL regression.
+- Image v2 against native v45: 601 source paths unchanged; all 214 packaged application/migration/
+  frontend asset hashes match. Python 3.12.15/non-root health/readiness, private disposable SQLite
+  migration 0010, five bearer operations, both remediation defaults off and production refusal of
+  development-auth opt-in pass. Compose schema/default-off/loopback checks pass without starting
+  services. The exact named/labelled network-disabled, capability-dropped smoke container was
+  removed; no operator database or deployment was used. Later owner-document edits are explicit
+  post-validation differences, not a claim that this image contains those final prose bytes.
+
+This unit changes tests and their native orchestration only. The preceding ScanShell repair remains
+the sole production frontend change; backend, installed worker, API/schema/auth/defaults, migration
+0010, credentials and finding/technical/remediation lifecycle design are unchanged. The verification
+skill required complete browser-to-receipt boundaries; PostgreSQL guidance kept independent reads
+and network work outside retained transactions. Environment guidance kept operator files and hosted
+credentials out of test configuration. Documentation guidance preserved exact evidence and historical
+failures. Standing routine approval covers this accepted-design unit; no new design choice arose.
+
+The branch remains codex/sprint-8d3-preflight at f97cf7bb with 61 task-owned paths and an empty
+index. Preserve all 80 branches, three worktrees, parent skills, socket/dependency backups, older
+unmatched test database and unrelated stopped containers. No reviewer, new agent, commit, push,
+PR, merge, live AWS/IdP/IAM/secrets/operator-database/deployment/production or later sprint occurred.
+The full goal stays ACTIVE/incomplete. Next are complete current-tree backend/all PostgreSQL,
+frontend, all 170 retained/new native journeys, Compose/image/startup/default-off/security/owned
+cleanup, then the existing independent reviewer, repairs, scoped delivery, both complete exact-head
+candidate primary CI audits, ordinary expected-head guarded merge, complete exact-main audit,
+8D acceptance and required 8E. No additional adverse story or later-sprint feature is inferred.
+
+### Local full regression failure and in flight notification repair
+
+The first complete D3 regression collected 4,595 unique cases across 184 files, including all
+784 PostgreSQL cases across 35 files. It stopped with one failure, 3,614 passes and 22 known
+warnings in 4523.24s; 980 cases were unrun. The failing original
+test_committed_reply_stays_held_until_real_duplicate_inflight_response[False] exhausted its
+unchanged three-second bound while the held transport awaited another polling tick. No original
+gate-state or timing diagnostics establish why it timed out. The precise cause remains
+unconfirmed; neither the full regression nor D3 is accepted. All PostgreSQL cases had passed
+before this later unit failure, but that does not replace a complete successful regression.
+The 22 warnings are the 19 existing SQLite adapter warnings and three existing JUnit
+record_property compatibility warnings. Source hashes were unchanged, and only the owned tmpfs
+database was removed. The earlier unmatched stopped database remains preserved.
+
+Bounded observational reruns of the unchanged code passed the two original cases in 0.09s,
+their entire 63-case file in 1.25s and the 208-case security prefix in 3.35s. They do not explain
+or waive the full-run failure. Inspection did identify a separate deterministic dependency:
+the valid duplicate set a release flag, but the held task could observe it only after another
+five-millisecond polling tick. Two new same-loop/cross-thread regressions withhold only that
+tick, present a structurally valid duplicate and require direct notification within the original
+three-second bound. Against the old helper both fail, while the original 63 cases pass in 7.97s.
+This reproduces the notification dependency, not the precise original full-run timeout.
+
+Only the test transport and its unit tests change in this repair. After its independent committed
+SQL proof closes, the gate creates an event on the owning loop before publishing HELD. The
+unchanged strict path/status/schema/key/body/actor/IN_FLIGHT/one-attempt/null-result/single-dispatch
+checks alone authorize notification through call_soon_threadsafe. No transaction or lock is held
+across the wait. Cancellation clears the event and loop without manufacturing release or return.
+The original two positive cases retain their three-second bound, assert that the actual ASGI
+duplicate was accepted, and re-raise any timeout with closed gate-state diagnostics, never tokens
+or request content. The two notification tests and one cancellation test bring this file to 66
+cases. No timeout increase, retry, skip, weakened assertion or authentication shortcut is added.
+
+Local repaired-source validation:
+
+- All 66 transport unit cases passed in 1.40s; the 211-case security prefix passed in 3.04s.
+  The separate integrated guard selection passed all 544 cases in 2.37s. Ruff lint, the 506-file
+  format check and whitespace passed.
+- The genuine signed PostgreSQL overlap case passed in 8.43s. It proves the committed proposal,
+  real duplicate IN_FLIGHT response, sole bearer dispatch, same-key CONFIRMED replay, unchanged
+  storage and zero executor launches. Its 601-path source was unchanged and owned tmpfs removed.
+- Native Chromium and Firefox each passed both in-flight overlap and successful verification:
+  four unique cases, one worker, zero retries/skips, independent parent/installed-worker/managed-
+  reader/sealed-VERIFIED/storage proofs and exact owned cleanup. Body times were 11.5/13.7s for
+  overlap and 12.7/16.3s for the positive control. With setup they were 22.9/25.5s and 23.8/27.9s.
+  The primary audit confirms the exact identities, both real overlap markers, zero exits and
+  unchanged 601-path source. These selected cases do not establish all 170 browser journeys.
+
+The verification skill kept browser, signed API, persistence and receipt claims separate; the
+documentation skill preserves the failed run and limits the causal claim. Test environment
+guidance excludes operator configuration and hosted credentials. The preceding ScanShell guard
+remains the sole production frontend change. Backend/installed-worker code, API/schema/auth,
+defaults, credentials, migration 0010 and finding/technical/remediation lifecycles are unchanged.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, 8E PLANNED and the full goal ACTIVE. Next are fresh current-
+tree frontend/collection/documentation/quality checks, a complete backend/all-PostgreSQL run
+(expected 4,598 cases, subject to independent collection), all 90 retained and 80 integrated
+browser journeys, fresh Compose/image/startup/default-off/security/cleanup, existing independent
+review, scoped delivery, both exact-head candidate CI audits, guarded merge, exact-main audit,
+8D acceptance and required 8E. The branch remains codex/sprint-8d3-preflight at f97cf7bb, with
+61 task-owned paths and an empty index. All 80 branches, three worktrees, unrelated skills,
+socket/dependency backups, stopped unrelated containers and failed receipts remain preserved.
+No new agent, review, commit, publication, merge, live AWS/IdP/IAM/secrets/operator-database/
+deployment/production operation or later-sprint work occurred in this repair.
+
+### Local repeated full regression failure and import path isolation
+
+The second full D3 run collected all 4,598 cases/184 files and stopped with the same original
+held-response failure: 3,614 passed, one failed, 983 unrun and the same 22 known warnings in
+4498.17s. All 784 PostgreSQL cases/35 files were observed passing with exactly the independently
+collected identities before the unit failure. Source hashes were unchanged and owned tmpfs
+cleanup succeeded. A fresh read-only inventory found no owned worker/browser/diagnostic/smoke
+container, network or child; the older unmatched stopped database remains preserved.
+
+This disproves any claim that direct notification alone resolved the full-suite timeout. The new
+diagnostic showed RELEASED, held/released/observed true, returned false and one request: the
+duplicate was validated, but the pending original request did not return. Its JUnit case duration
+was 19.684s, versus 19.916s in the first failed full run; neither run captured internal phase timing.
+Both failed primaries remain historical and neither is accepted as complete regression.
+
+Two bounded unit-prefix probes, containing every unit file through the full transport-loss file,
+each passed all 2,570 cases with 19 existing SQLite warnings in 478.80s and 478.71s. They exclude
+API/PostgreSQL execution and do not establish whole-suite acceptance. The first measured each
+synthetic request taking about 0.69s before reaching transport, with prompt release/return.
+Profiling the original two cases in the second probe attributed about 1.690s of a 1.694s call to
+optional-module import lookup, including 14,588 filesystem stat calls. No garbage collection
+occurred during either observed case; client construction and notification were fast. A fresh
+isolated profiled pair passed in 0.08s. Profiling observed calls, not credentials or request bodies.
+
+Installed primary code explains this reproducible test-state leak. Alembic's ScriptDirectory
+configuration prepends the configured dot entry to sys.path on every call, without restoring it.
+The retained repository migration configuration intentionally supplies that entry. The HTTPX2
+ASGI transport attempts to import the absent optional sniffio module for each request, repeatedly
+searching the accumulated path. An isolated real-configuration probe grew the path from eight to
+8,008 entries; one absent-module lookup grew from about 0.0015s to 2.59--2.65s. It restored its own
+path and performed no database, application or cloud operation. Logging was not disabled.
+
+A diagnostic-only preceding pytest case then ran real migration configurations, without SQL or
+cloud access, before the two unchanged original held-response cases. With 32,768 prepends, both
+failed before observing the duplicate. Refining the workload to 24,576 prepends reproduced the
+full run's exact RELEASED/one-request/not-returned signature in both cases: the first request
+reached the gate at about 2.29s, the valid duplicate arrived at about 4.59s, and the signal executed
+after the unchanged three-second deadline had already expired. Both failed; the explicit seed
+case passed, in 11.78s total. This establishes the failure mechanism; its workload is a controlled
+reproduction, not a measurement of the original full runs' uncaptured path lengths.
+
+The bounded repair adds an autouse test fixture in [shared fixtures](../../../tests/conftest.py)
+that snapshots each test's import path and restores its exact prior contents in finally, without
+replacing the list. Real migration imports remain unchanged within the test; there is no path
+normalization, dependency installation, optional-import stub, logging/GC suppression or clock/
+deadline/retry change. [Two cleanup regressions](../../../tests/unit/test_import_path_isolation.py)
+exercise actual migration configuration and verify exact order/list identity after normal and
+exceptional exit. Existing client fixture signatures and all application/worker behavior remain.
+Standing accepted-design workflow covers this test-isolation repair; no new product design arises.
+
+Local repaired-source evidence:
+
+- The identical 24,576-configuration preceding-case reproduction now passes all three cases in
+  2.10s; both original held-response cases return in about 5.6ms and 4.8ms, with their unchanged
+  three-second bounds. The seed itself still performs all real configuration calls.
+- All 68 cleanup/transport unit cases pass in 1.32s under scoped Windows permissions. Ruff lint,
+  the 507-file format check and whitespace pass. The initial restricted runner remained live
+  without new output/CPU progress and was explicitly interrupted only after the comparison run
+  passed. Exact PID/parent/creation/argument ownership was revalidated before stopping its sole
+  pytest child. Its exit -1 and partial output are not a pass; its precise stall cause is unproven.
+- The genuine signed PostgreSQL overlap case passes in 8.29s, retaining real commit, duplicate
+  IN_FLIGHT, sole bearer dispatch, same-key recovery and unchanged storage. Its 602-path source
+  was unchanged and only its owned tmpfs database was removed.
+
+The current tree has 602 source paths, 63 task-owned changed/untracked paths and an empty index.
+The preceding ScanShell guard remains the sole production frontend change. Backend/installed-
+worker code, public interfaces, authentication/capabilities, scanner read-only credentials,
+migration 0010, defaults and separate finding/technical/remediation lifecycles are unchanged.
+Verification guidance required measured boundaries before repair; documentation guidance keeps
+the failed full runs, controlled reproduction and acceptance limits distinct.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. A fresh full regression must confirm this
+repair across every current case (expected 4,600/185 files, including all 784 PostgreSQL cases,
+subject to independent collection). All 90 retained plus 80 integrated browser journeys,
+Compose/image/startup/default-off/security/cleanup, existing independent review, scoped delivery,
+both exact-head candidate CI audits, guarded merge, exact-main audit, 8D acceptance and required
+8E remain gates. Preserve all 80 branches, three worktrees, unrelated skills, backups and failed
+receipts. No new agent/review, commit, publication, merge, live operation or later sprint began.
+
+### Local complete execution and stable case identity repair
+
+The next full primary execution passed all 4,600 cases/185 files, including all 784 PostgreSQL
+cases/35 files, in 4208.23s with the same 22 known warnings. JUnit contains no failure, error or
+skip. Both original held-response cases now pass in 0.006s each under their unchanged three-
+second bounds, and both import-path cleanup regressions pass in 0.002s each. All 602 source
+hashes were unchanged during execution and owned tmpfs cleanup succeeded. This is full-run
+functional evidence for the import-path isolation repair, not accepted whole-slice validation.
+
+The independent exact-identity audit then correctly failed. Collection and execution each have
+4,600 case-sensitive unique identities; 4,599 match exactly. The remaining existing EC2-002
+profile-input case uses str(uuid4()) as its fourth parameter without an explicit pytest ID.
+Separate processes therefore generate different UUID display IDs for that same variant.
+No successful primary audit was written, and no collection, JUnit or log was rewritten or
+normalized to make the audit pass. The first readback command continued to inspect evidence
+after Python's assertion, so its outer zero exit is not the failed auditor's exit or acceptance.
+The two earlier genuine full-test failures remain separate historical results.
+
+A bounded [test metadata repair](../../../tests/unit/rules/test_ec2.py) gives only that parameter
+the explicit display ID random-v4-uuid. It still generates the same kind of UUID-v4 string and
+executes all original invalid-allowlist and retained-catalog assertions. No input variant, test
+body, expected exception, API/domain identifier or application behavior changes. No caller uses
+the former ephemeral UUID display ID. This is within standing routine workflow, not a new
+architecture/design or validation-waiver decision.
+
+All 103 EC2-rule/import-path/transport cases pass in 2.52s, including the stable-ID case, with
+zero failures/errors/skips. Their JUnit identities exactly match the corresponding current
+independent collection. Ruff lint, 507-file formatting and whitespace pass. Two further complete
+collection-only processes independently agree on all 4,600 raw node IDs and JUnit class/name
+identities, including 784 PostgreSQL cases/35 files, without deselection. Collection equality
+does not establish execution; the exact full-regression identity gate remains required.
+
+The current tree remains 602 source paths, now with 64 task-owned changed/untracked paths and
+an empty index. This follow-up changes only the parameter label and owner evidence; no backend,
+installed worker, frontend, dependency, schema/migration, authentication, credential, authority,
+finding/technical/remediation lifecycle or security boundary changes. The previous ScanShell
+guard remains the sole production frontend change in D3. Preserve all 80 branches, three
+worktrees, unrelated skills, backups and primary receipts.
+
+8D3/8D/Sprint 8 remain IN PROGRESS and 8E PLANNED. Next are fresh current-tree owner/quality/
+frontend/collection checks, complete backend/all-PostgreSQL execution with exact raw identity
+audit, all 90 retained plus 80 integrated browser journeys, Compose/image/startup/default-off/
+security/cleanup, existing independent review, scoped delivery, both exact-head candidate CI
+audits, guarded merge, exact-main audit, 8D acceptance and required 8E. No new agent/review,
+commit, publication, merge, live operation or later-sprint work occurred. Verification guidance
+held the next gate at the identity discrepancy; documentation guidance distinguishes passing
+test execution from failed audit and pending acceptance.
+
+### Local 8D3 complete validation
+
+On 2026-10-19, the corrected tree passed the complete backend execution and independent strict
+audit: 4,600 cases/185 files, including all 784 PostgreSQL cases/35 files, in 4215.33s. There
+are no failures, errors, skips or deselected cases. Every raw case identity matches the separate
+current collection. All 602 source hashes remained unchanged, and the owned disposable tmpfs
+database was removed. The 22 warnings are the same 19 existing SQLite and three JUnit-property
+warnings. The stable UUID display label changes no generated input or assertion. The two failed
+full executions and the later passing execution with a failed identity audit remain historical;
+none is relabeled as accepted validation.
+
+The same source freeze passed all 90 retained journeys, 45 per browser, in 138.87s and all 80
+integrated journeys, 40 per browser. Each run uses one worker and zero retries, with no failures,
+errors or skips. Independent audits match every project/file/title identity to the current
+170-case collection and all source hashes to the backend freeze. Every integrated journey
+includes independent committed authority, source, installed-worker/managed-reader or precise
+no-execution proof, verdict/storage checks and owned process/database/schema/network cleanup.
+The retained 8D2 admission fixture remains admission evidence, not an installed-worker verdict.
+
+Fresh pinned frontend checks passed all 160 targeted cases in 2.67s and all 295 cases/13 files
+in 3.79s, plus typecheck, lint and build. Ruff lint/507-file formatting and owner contracts
+already passed before the freeze; post-receipt owner/quality checks remain the next local step.
+Compose schema/default-off/loopback checks passed without starting services. The exact application
+image matched all 214 packaged hashes and passed non-root Python 3.12.15 startup, health,
+readiness, migration 20261013_0010, five bearer-route guards, independent remediation defaults
+off and production refusal of development authentication. Only an owned private SQLite smoke
+database was migrated. The smoke container was removed; no operator database was used.
+
+Final read-only inspection found no matching owned worker/browser/diagnostic/smoke containers,
+networks or host children. The older unmatched stopped database remains exited and unmounted,
+without adoption or deletion. Private delivery-auditor checks passed one valid synthetic primary
+and 29 negative probes; this is not actual CI acceptance. An initial cross-gate helper comparison
+rejected uppercase versus lowercase checksum text. Independent readback found identical 602
+path sets and digest bytes; strict 64-hex parsing/byte comparison then passed without changing
+any source, raw test identity or primary record. Its failed-attempt annotation is preserved.
+
+Only this plan and the acceptance matrix change after the validated freeze. The existing
+ScanShell same-ID guard remains the sole production-code change; shared test import-path cleanup,
+notification tests and deterministic display metadata do not change backend/worker runtime,
+authentication, API/schema/migration, credentials, policy defaults or finding/technical/remediation
+lifecycles. No new architectural or design choice arose. All 80 branches, three worktrees,
+unrelated parent skills, backups and failed receipts remain preserved; the index stays empty.
+
+8D3/8D/Sprint 8 remain IN PROGRESS, with 8E PLANNED. After post-receipt checks and the exact
+two-document delta audit, reuse the existing independent reviewer, repair findings, complete
+scoped delivery, audit both complete exact-head candidate CI primaries, ordinarily merge with
+the expected-head guard and audit complete exact-main CI. Only then accept 8D and proceed to
+required 8E. No new reviewer, commit, publication, merge, live AWS/IdP/IAM/secrets/operator-database/
+deployment/production or later-sprint operation occurred during these local gates. Verification
+guidance kept identity, source and cleanup checks tied to actual execution; documentation
+guidance preserves failure history and distinguishes local validation from acceptance.

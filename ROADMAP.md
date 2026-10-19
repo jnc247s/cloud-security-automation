@@ -3,11 +3,12 @@
 `ROADMAP.md` is the canonical source of project progress. The status recorded here overrides old
 prompts, conversations, branch names, and historical planning text.
 
-Last verified: 2026-10-15 UTC
+Last verified: 2026-10-16 UTC
 Current accepted implementation baseline: `main` at
-`d6a37658f2d34f94d26a475d91b95ef7a511d940` ([PR #70](https://github.com/jnc247s/cloud-security-automation/pull/70);
-complete exact-main [CI 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567)
-passed). This includes accepted 8C verification and 8D1 READ history/navigation. The standalone write-worker code
+`f97cf7bb44a3695e514ef9aaf64dedb70a463cdc` ([PR #71](https://github.com/jnc247s/cloud-security-automation/pull/71);
+complete exact-main [CI 38833846226](https://github.com/jnc247s/cloud-security-automation/actions/runs/38833846226)
+passed). This includes accepted 8C verification, 8D1 READ history/navigation and independently
+default-off 8D2 manual preparation/confirmation/session recovery. The standalone write-worker code
 remains unchanged since `7a36ddde` (PR #59); installed-process worker-test baseline remains
 `d3380402` (PR #66). Physical deployment and live-provider validation remain unperformed.
 Sprints 0--7 and 8A are COMPLETE; **8B is COMPLETE** as offline-accepted code and tests,
@@ -65,7 +66,28 @@ implement” on 2026-10-14, approving D1--D3 and the sequential execution plan. 
 **8D1 is COMPLETE** as accepted READ history/navigation. 8D2 adds the independently opt-in typed prepare/submit
 workflow and bounded same-session recovery; 8D3 requires integrated UI acceptance. Ordinary
 browser Start scan remains excluded. The [active plan](docs/exec-plans/active/sprint-8.md#approved-8d-predictions)
-owns approved detail. **8D2 is IN PROGRESS** following its
+owns approved detail. **8D2 is COMPLETE** through PR #71 at `f97cf7bb`, following corrected-head
+independent REVIEW_PASS at `b61dfa8`, both complete first-attempt candidate primary audits,
+ordinary expected-head guarded merge and complete exact-main CI 38833846226. Reviewed tree
+`07822310fe13673ff7e3dc0f20c0851adcb06c55` and exact parents `[d6a3765, b61dfa8]` are preserved.
+Every CI run passed 4,007 backend cases/169 files, all 714 PostgreSQL cases/34 files, 289 frontend
+cases/13 files, 90 browser journeys (45 per project, one worker, zero retries/skips), all 18
+quality/image/cleanup steps and the same 19 existing SQLite warnings. The original LOW API
+overview finding is independently closed; original failures and qualified unknown causes remain.
+Migration 0010, scanner read-only credentials and separate finding/technical/remediation
+lifecycles are unchanged. **8D3 is IN PROGRESS** after its
+[scoped preflight](docs/sprint-8d3-preflight.md); 8E remains PLANNED and Sprint 8/8D IN PROGRESS.
+The first test-only work unit now has locally validated closed owning-parent guards and the
+genuine native three-human UI/installed-worker/managed-reader/sealed-receipt path in Chromium
+and Firefox. The complete adverse matrix and whole-slice gates remain; no partial unit accepts 8D3.
+The 8D2 browser story confirms manual request/history admission, not installed-worker rescan
+or a VERIFIED verdict. No worker launch, ordinary Start scan, live/provider/production or
+later-sprint operation is authorized by this acceptance.
+
+The following 8D2 local checkpoint retains its original predictions and pending gates;
+the accepted status above supersedes those states, not their failure history.
+
+**8D2 is IN PROGRESS** following its
 [scoped preflight](docs/sprint-8d2-preflight.md); 8D3 remains PLANNED. The first local work unit
 adds bounded non-authorizing coordination, default-off configuration and fixed signed adapters on
 `codex/sprint-8d2-preflight`, starting from audited clean main. Expanded server validation passed
@@ -83,7 +105,9 @@ Sprint 8 incomplete.
 
 8D1 passed corrected-head independent REVIEW_PASS at `f2a83bbaca888aa761f9578cdd72fa5ca0348a75`,
 both complete first-attempt candidate primary audits, ordinary expected-head guarded merge and
-complete exact-main audit through PR #70. Reviewed tree `f7c399635740c0e39f7cf0bd4488c6ff1c8be806`
+complete exact-main audit through PR #70 at `d6a37658f2d34f94d26a475d91b95ef7a511d940`.
+Complete exact-main [CI 38794113567](https://github.com/jnc247s/cloud-security-automation/actions/runs/38794113567) passed.
+Reviewed tree `f7c399635740c0e39f7cf0bd4488c6ff1c8be806`
 and expected parents `[599e155, f2a83bb]` are preserved. Every CI run passed all 3,812 backend
 cases/164 files, 696 PostgreSQL cases/33 files, 208 frontend cases/10 files, 88 browser journeys
 (44 per project, one worker, zero retries/skips), all 18 quality/image/cleanup steps and the same

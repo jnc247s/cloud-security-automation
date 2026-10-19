@@ -46,7 +46,9 @@ export function ScanShell({ onError, context }: { onError: (error: Error) => voi
     return () => { active = false; controller.abort(); };
   }, [selected, revision, context]);
   function select(id: string) {
-    setSelected(id); setInput(id); setReport(null); setReportError('');
+    setSelected(id); setInput(id);
+    // The same ID does not rerun the read effect; retain its result/error until Refresh.
+    if (id !== selected) { setReport(null); setReportError(''); }
     const url = new URL(window.location.href);
     if (id) url.searchParams.set('scan', id); else url.searchParams.delete('scan');
     url.searchParams.delete('login');

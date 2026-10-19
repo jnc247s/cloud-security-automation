@@ -299,7 +299,22 @@ def offline_worker_boundary(engine, monkeypatch, *, outcome, baseline_key):
             event.remove(engine, name, callback)
 
 
-def assert_history(engine, initial, current, issuer, *, revocation=None):
+def assert_history(engine, initial, current, issuer, *, revocation=None, human_identities=None):
+    identities = (
+        human_identities
+        if human_identities is not None
+        else (
+            (issuer.issuer, "proposer"),
+            (issuer.issuer, "approver"),
+            (issuer.issuer, "requester"),
+        )
+    )
+    assert type(identities) is tuple and len(identities) == 3
+    assert all(
+        type(pair) is tuple and len(pair) == 2 and all(type(v) is str and v for v in pair)
+        for pair in identities
+    )
+    assert len(set(identities)) == 3
     assert current.content == initial.content
     assert current.execution_sha256 == initial.execution_sha256
     assert current.execution_sha256 == canonical_json_sha256(
@@ -309,13 +324,13 @@ def assert_history(engine, initial, current, issuer, *, revocation=None):
     previous = None
     with Session(engine) as session:
         humans = (
-            (current.content.proposal.proposer, "proposer", "ANALYST", "PROPOSE"),
-            (current.content.approval.actor, "approver", "APPROVER", "APPROVE"),
-            (current.content.requested_by, "requester", "ADMIN", "EXECUTE"),
+            (current.content.proposal.proposer, identities[0], "ANALYST", "PROPOSE"),
+            (current.content.approval.actor, identities[1], "APPROVER", "APPROVE"),
+            (current.content.requested_by, identities[2], "ADMIN", "EXECUTE"),
         )
-        for actor, subject, role, capability in humans:
+        for actor, (actor_issuer, subject), role, capability in humans:
             assert actor.model_dump(mode="json") == {
-                "issuer": issuer.issuer,
+                "issuer": actor_issuer,
                 "subject": subject,
                 "roles": [role],
                 "capability": capability,
@@ -327,11 +342,12 @@ def assert_history(engine, initial, current, issuer, *, revocation=None):
             )
         ).all()
         assert len(authority_audits) == (2 if revocation is None else 3)
-        for actor, subject, _role, capability in humans[:2]:
+        for actor, (actor_issuer, subject), _role, capability in humans[:2]:
             audit = next(
                 audit
                 for audit in authority_audits
                 if audit.event_metadata["actor"]["subject"] == subject
+                and audit.event_metadata["actor"]["issuer"] == actor_issuer
                 and audit.event_type
                 is (
                     AuditEventType.REMEDIATION_PROPOSED
@@ -340,7 +356,7 @@ def assert_history(engine, initial, current, issuer, *, revocation=None):
                 )
             )
             assert audit.actor_type == "human"
-            assert audit.actor_id == canonical_json_sha256([issuer.issuer, subject])
+            assert audit.actor_id == canonical_json_sha256([actor_issuer, subject])
             assert audit.event_type is (
                 AuditEventType.REMEDIATION_PROPOSED
                 if capability == "PROPOSE"
@@ -368,13 +384,13 @@ def assert_history(engine, initial, current, issuer, *, revocation=None):
             audit = revoked[0]
             actor = revocation.actor.model_dump(mode="json")
             assert actor == {
-                "issuer": issuer.issuer,
-                "subject": "approver",
+                "issuer": identities[1][0],
+                "subject": identities[1][1],
                 "roles": ["APPROVER"],
                 "capability": "APPROVE",
             }
             assert audit.actor_type == "human"
-            assert audit.actor_id == canonical_json_sha256([issuer.issuer, "approver"])
+            assert audit.actor_id == canonical_json_sha256(list(identities[1]))
             assert audit.event_metadata == {
                 "schema_version": "1.0.0",
                 "actor": actor,
@@ -392,12 +408,12 @@ def assert_history(engine, initial, current, issuer, *, revocation=None):
             actor = content["actor"]
             if number == 1:
                 assert actor == {
-                    "issuer": issuer.issuer,
-                    "subject": "requester",
+                    "issuer": identities[2][0],
+                    "subject": identities[2][1],
                     "roles": ["ADMIN"],
                     "capability": "EXECUTE",
                 }
-                assert audit.actor_id == canonical_json_sha256([issuer.issuer, "requester"])
+                assert audit.actor_id == canonical_json_sha256(list(identities[2]))
             else:
                 assert actor == {"service_id": "remediation-worker", "expected_role_arn": ROLE}
                 assert audit.actor_id == canonical_json_sha256(actor)

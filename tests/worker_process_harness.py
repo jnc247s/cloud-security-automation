@@ -19,6 +19,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from urllib.parse import parse_qs
 from urllib.request import ProxyHandler, build_opener
+from uuid import UUID
 from xml.sax.saxutils import escape
 
 import boto3
@@ -69,6 +70,27 @@ class Payload(io.BytesIO):
 
 def harness_log_level(application):
     return logging.DEBUG if application == "worker" else logging.CRITICAL
+
+
+def quarantine_before_ack(engine, execution_id):
+    """Closed fault: genuine quarantine wins before the synthetic original SDK reply arrives."""
+    if type(execution_id) is not str or engine is None:
+        raise ValueError("Invalid late acknowledgment test target")
+    try:
+        identifier = UUID(execution_id)
+        if identifier.version != 4 or str(identifier) != execution_id:
+            raise ValueError
+    except ValueError:
+        raise ValueError("Invalid late acknowledgment test target") from None
+    from sqlalchemy.orm import Session
+
+    from app.remediation.worker_config import WorkerScope
+    from app.services.remediation_worker_service import RemediationWorkerService
+
+    scope = WorkerScope(enabled=True, account_id=ACCOUNT, region=REGION, role_arn=ROLE)
+    with Session(engine) as session:
+        if not RemediationWorkerService(session, scope=scope).quarantine(identifier):
+            raise ValueError("Late acknowledgment test requires committed write intent")
 
 
 def post_entrypoint_diagnostics(application):
@@ -205,8 +227,10 @@ def main():
             forbidden_settings if scenario["application"] == "worker" else api_settings
         )
         real_engine = sqlalchemy.create_engine
+        owned_engine = None
 
         def create_engine(url, *args, **kwargs):
+            nonlocal owned_engine
             proof["engine_creations"] += 1
             expected = os.environ.get("REMEDIATION_WORKER_DATABASE_URL")
             if expected is None or make_url(url) != make_url(expected):
@@ -220,7 +244,8 @@ def main():
                 or configured.database != "cloudsec_test"
             ):
                 fail("UNPLANNED_DATABASE_ENGINE")
-            return real_engine(url, *args, **kwargs)
+            owned_engine = real_engine(url, *args, **kwargs)
+            return owned_engine
 
         sqlalchemy.create_engine = create_engine
         if "app.remediation.worker" in sys.modules:
@@ -413,6 +438,14 @@ def main():
                 os._exit(47)
             if response == "timeout":
                 raise ReadTimeoutError(endpoint_url=request.url)
+            if action == ENABLE and response == "late-ack":
+                if scenario["application"] != "worker" or proof["intent_checks"] != 1:
+                    fail("INVALID_LATE_ACK_FAULT")
+                # No SQL row insertion, service replacement or transaction across reply I/O.
+                quarantine_before_ack(owned_engine, scenario["target"]["execution_id"])
+                if transactions:
+                    fail("LATE_ACK_FAULT_LEFT_TRANSACTION")
+                response = True
             code = 200
             if response in {"503", "denied"}:
                 code = 503 if response == "503" else 400
