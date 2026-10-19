@@ -116,6 +116,25 @@ def cleanup_preserving_primary(cleanup, primary=None):
             pass
 
 
+def decode_terminal_report(attached, retained):
+    """Reconcile output only after the caller proves the same owned stopped child.
+
+    Retained stdout is mandatory. Empty attached output is not proof of no work. Conflicting
+    output and either stderr fail closed; the full source/exit/SDK/intent validator still runs.
+    """
+    if attached.stderr or retained.stderr:
+        raise RuntimeError("unexpected container process stderr")
+    if attached.stdout.strip() and attached.stdout.strip() != retained.stdout.strip():
+        raise RuntimeError("owned process report transports disagree")
+    try:
+        value = json.loads(retained.stdout)
+        if type(value) is not dict:
+            raise ValueError
+    except (ValueError, TypeError):
+        raise RuntimeError("missing or malformed offline process report") from None
+    return value
+
+
 def validate_process_report(
     report, source_hashes, exit_code, expected_actions, *, application="worker"
 ):
@@ -148,11 +167,11 @@ def validate_process_report(
         "api_checks",
     }
     if not isinstance(report, dict) or set(report) != fields:
-        reject()
+        reject("FIELDS")
     if type(report["schema_version"]) is not int or report["schema_version"] != 1:
-        reject()
+        reject("SCHEMA_VERSION")
     if type(report["exit_code"]) is not int or report["exit_code"] != exit_code:
-        reject()
+        reject("EXIT_STATUS")
     outputs = {
         0: {
             "WORKER_DISABLED\n",
@@ -218,7 +237,7 @@ def validate_process_report(
         or set(source_hashes) != set(SOURCE_PATHS)
         or report["source_hashes"] != source_hashes
     ):
-        reject()
+        reject("EXECUTION_PROVENANCE")
     actions = {IDENTITY, ENCRYPTION, KEY, ENABLE}
     labels = {"factory", "metadata", "client:sts", "client:ec2", "close:sts", "close:ec2"}
     labels |= {prefix + action for prefix in ("sdk:", "wire:") for action in actions}
@@ -229,27 +248,27 @@ def validate_process_report(
             or len(value) > 128
             or any(not isinstance(item, str) or item not in allowed for item in value)
         ):
-            reject()
+            reject("TRANSPORT_FIELDS")
     if (
         report["calls"] != report["lock_probes"]
         or [value[5:] for value in report["calls"] if value.startswith("wire:")]
         != report["wire_actions"]
         or report["wire_actions"] != list(expected_actions)
     ):
-        reject()
+        reject("TRANSPORT_COUNTS")
     for field in ("enable_invocations", "intent_checks"):
         if type(report[field]) is not int or report[field] not in {0, 1}:
-            reject()
+            reject("EFFECT_COUNTERS")
     if type(report["engine_creations"]) is not int or report["engine_creations"] not in {0, 1}:
-        reject()
+        reject("ENGINE_COUNT")
     if type(report["host_file_reads"]) is not int or report["host_file_reads"] != 0:
-        reject()
+        reject("HOST_FILE_GUARD")
     reads = report["application_settings_reads"]
     if type(reads) is not int or application not in {"worker", "api"}:
-        reject()
+        reject("CONFIG_READS")
     if application == "worker":
         if reads != 0 or report["api_checks"] != {} or report["stdout"] == "API_STARTUP_VERIFIED\n":
-            reject()
+            reject("WORKER_CONFIG")
     else:
         checks = report["api_checks"]
         if (
@@ -274,7 +293,7 @@ def validate_process_report(
                 for key in ("openapi", "bearer_security", "tests_absent")
             )
         ):
-            reject()
+            reject("API_CONFIG")
     if (
         not isinstance(report["security"], dict)
         or set(report["security"]) != {"no_new_privileges", "effective_capabilities"}
@@ -282,14 +301,14 @@ def validate_process_report(
         or report["security"]["no_new_privileges"] != 1
         or report["security"]["effective_capabilities"] != "0000000000000000"
     ):
-        reject()
+        reject("SECURITY")
     if not (
         report["enable_invocations"]
         == report["intent_checks"]
         == report["wire_actions"].count(ENABLE)
         == report["calls"].count("sdk:" + ENABLE)
     ):
-        reject()
+        reject("INTENT_COUNTS")
     versions, locations = report["versions"], report["locations"]
     if not isinstance(versions, dict) or set(versions) != {"python", "boto3", "botocore"}:
         reject()
@@ -683,6 +702,7 @@ class OfflineProcessRuntime:
         from app.remediation.worker_aws import _FORBIDDEN_SOURCE_VARIABLES
         from tests.worker_process_harness import SOURCE_PATHS
 
+        self.last_report_capture = None
         self._assert_database_owned()
         if (
             not isinstance(child_url, URL)
@@ -835,32 +855,33 @@ class OfflineProcessRuntime:
         args.extend([self.image, "python", "/harness/worker.py", "/harness/scenario.json"])
         primary = None
         try:
-            self._docker(*args, env=worker_env)
+            created = self._docker(*args, env=worker_env)
             self._worker_security(name, mounts)
+            identifier = created.stdout.strip()
+            if re.fullmatch(r"[0-9a-f]{64}", identifier, flags=re.ASCII) is None:
+                raise RuntimeError("owned process container identity unavailable")
             result = self._docker("start", "--attach", name, timeout=90, check=False)
             state = json.loads(
                 self._docker(
                     "container",
                     "inspect",
                     "--format",
-                    '{"running":{{json .State.Running}},"exit_code":{{json .State.ExitCode}},'
-                    '"status":{{json .State.Status}}}',
+                    '{"id":{{json .Id}},"running":{{json .State.Running}},'
+                    '"exit_code":{{json .State.ExitCode}},"status":{{json .State.Status}}}',
                     name,
                 ).stdout
             )
             if (
-                state.get("running") is not False
+                state.get("id") != identifier
+                or state.get("running") is not False
                 or state.get("status") != "exited"
                 or type(state.get("exit_code")) is not int
                 or state["exit_code"] != result.returncode
             ):
                 raise RuntimeError("owned process terminal state mismatch")
-            if result.stderr:
-                raise RuntimeError("unexpected container process stderr")
-            try:
-                report = json.loads(result.stdout)
-            except ValueError:
-                raise RuntimeError("missing or malformed offline process report") from None
+            require_owned_labels(self.owner, name, "worker", self._labels(name, "worker"))
+            retained = self._docker("logs", identifier)
+            report = decode_terminal_report(result, retained)
             validate_process_report(
                 report,
                 document["source_hashes"],
@@ -868,6 +889,7 @@ class OfflineProcessRuntime:
                 [entry[0] for entry in document["responses"]],
                 application=application,
             )
+            self.last_report_capture = "MATCHED" if result.stdout.strip() else "RETAINED_ONLY"
             return report
         except BaseException as error:
             primary = error

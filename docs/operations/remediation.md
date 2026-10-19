@@ -335,16 +335,18 @@ acceptance does not enable a scope, create credentials, migrate an operator data
 deployed ECS/IAM/network isolation. Accepted 8D1 exposes READ history and bounded scan navigation
 through PR #70 and complete exact-main CI 38794113567; see [dashboard operation](dashboard.md).
 It introduces no browser mutations, worker launcher, schema/default/credential change or live
-scope. 8D2/8D3 manual workflow/recovery and 8E whole-sprint acceptance remain required.
+scope. Accepted 8D2 adds the separate manual workflow below; 8D3 integrated UI acceptance and
+8E whole-sprint acceptance remain required.
 
-The local 8D2 server candidate prepares and explicitly submits only the five existing bearer
+Accepted 8D2 prepares and explicitly submits only the five existing bearer
 operations, behind its own default-off dashboard flag. It does not enable backend scopes or
 start the isolated worker. Session-bound coordination is non-authorizing and temporary; request
 confirmation requires bound immutable READ references, including durable verification
 submission failures. Timeout/logout/expiry and later denied retry do not cancel prior effects.
-Session/process loss requires manual history reconciliation before any replacement. Local typed
+Session/process loss requires manual history reconciliation before any replacement. Typed
 forms/recovery are implemented with no automatic mutation. All 90 signed browser journeys passed;
 the new manual verification workflow confirms request history only, not a rescan verdict.
-Complete 4,007-case local regression passed; independent review and full delivery/acceptance
-are still pending. See the
-[dashboard candidate contract](dashboard.md).
+Complete review/delivery gates passed through PR #71 and exact-main CI 38833846226. Every CI
+run covered 4,007 backend cases (714 PostgreSQL), 289 frontend cases, all 90 browser journeys
+and all 18 quality/image/cleanup steps without skips/retries. See the
+[dashboard contract](dashboard.md).

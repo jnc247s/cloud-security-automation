@@ -6,7 +6,8 @@ record the development history. Sprint state itself is authoritative only in
 
 ## Unreleased
 
-### Sprint 8D2 local candidate
+<a name="sprint-8d2-local-candidate"></a>
+### Sprint 8D2 manual remediation workflow
 
 - Adds independently default-off typed preparation/confirmation and bounded same-session
   coordination, fresh verified issuer/feature hints and immutable READ reference confirmation.
@@ -23,7 +24,14 @@ record the development history. Sprint state itself is authoritative only in
   passed 4,007 cases/169 files, including 714 PostgreSQL cases/34 files without skips. Its 22
   warnings are 19 existing SQLite warnings plus three JUnit-report compatibility warnings from
   existing record_property tests. Ruff, Compose/image/startup/default-off and owned cleanup
-  passed. Independent review and delivery remain pending; 8D2 is not accepted.
+  passed. Accepted through [PR #71](https://github.com/jnc247s/cloud-security-automation/pull/71)
+  at `f97cf7bb`, corrected-head REVIEW_PASS at `b61dfa8`, both complete first-attempt candidate
+  audits, ordinary guarded merge and
+  [exact-main CI 38833846226](https://github.com/jnc247s/cloud-security-automation/actions/runs/38833846226).
+  Each CI run passed 4,007 backend cases (714 PostgreSQL), 289 frontend cases, all 90 browser
+  journeys and all 18 quality/image/cleanup steps without skips/retries, with 19 existing SQLite
+  warnings. The LOW API overview finding is closed; original failures remain historical.
+  Installed-worker/managed-reader UI acceptance remains 8D3; whole-sprint closeout remains 8E.
 
 <a name="sprint-8d1-remediation-history-candidate"></a>
 ### Sprint 8D1 remediation history

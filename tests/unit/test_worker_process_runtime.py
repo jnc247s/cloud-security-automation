@@ -649,3 +649,34 @@ def test_urls_require_live_owned_handle_before_being_derived(monkeypatch):
     with pytest.raises(RuntimeError, match="not owned"):
         runtime.database_url(child=True)
     lookup.assert_called_once_with()
+
+
+@pytest.mark.parametrize(
+    "attached,retained,stderr,expected",
+    [
+        ('{"proof":1}\n', '{"proof":1}\n', "", True),
+        ("", '{"proof":1}\n', "", True),
+        ("", "", "", False),
+        ('{"proof":1}', "", "", False),
+        ("{broken", '{"proof":1}\n', "", False),
+        ('{"proof":2}', '{"proof":1}', "", False),
+        ("", "{broken", "", False),
+        ("", "[]", "", False),
+        ("", '{"proof":1}', "synthetic-sensitive-stderr", False),
+    ],
+)
+def test_terminal_report_requires_retained_same_child_output_and_no_conflicting_stream(
+    attached, retained, stderr, expected
+):
+    from types import SimpleNamespace
+
+    from tests.worker_process_runtime import decode_terminal_report
+
+    primary = SimpleNamespace(stdout=attached, stderr="")
+    saved = SimpleNamespace(stdout=retained, stderr=stderr)
+    if expected:
+        assert decode_terminal_report(primary, saved) == {"proof": 1}
+    else:
+        with pytest.raises(RuntimeError) as caught:
+            decode_terminal_report(primary, saved)
+        assert "synthetic-sensitive" not in str(caught.value)

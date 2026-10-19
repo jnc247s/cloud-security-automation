@@ -117,7 +117,15 @@ def test_every_public_ipv4_location_is_decisive(location):
     assert results(instance=instance)["EC2-002"] == "FAIL"
 
 
-@pytest.mark.parametrize("value", ["i-0123456789abcdef0", "*", "not-a-uuid", str(uuid4())])
+@pytest.mark.parametrize(
+    "value",
+    [
+        "i-0123456789abcdef0",
+        "*",
+        "not-a-uuid",
+        pytest.param(str(uuid4()), id="random-v4-uuid"),
+    ],
+)
 def test_allowlist_invalid_only_for_enabled_ec2_002(value):
     catalog, _ = resolve_catalog("aws-cloud-security-controls", "0.5.0")
     with pytest.raises(ValueError, match="stable resource UUID"):

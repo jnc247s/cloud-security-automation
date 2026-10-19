@@ -25,9 +25,9 @@ return and stable selection controls above changing history. Its fresh browser/P
 full-regression, independent-review and delivery gates passed through PR #70 and exact-main CI
 38794113567. The original operator build/data/cause and earlier Firefox/navigation failures
 are not diagnosed by later passing tests. Browser
-mutations/recovery now have a local unaccepted 8D2 server/UI candidate. All 90 signed browser
-journeys and complete 4,007-case local regression passed; independent review and whole-slice
-delivery remain required. The new
+mutations/recovery are separately default-off accepted 8D2 code through PR #71 and complete
+exact-main CI 38833846226. All review/delivery gates passed; each CI run covered 4,007 backend
+cases (714 PostgreSQL), 289 frontend cases, all 90 browser journeys and all 18 job steps. The
 verification UI test confirms an accepted request, not a completed rescan or VERIFIED receipt.
 Installed-worker/managed-reader UI acceptance remains 8D3. Ordinary Start scan remains excluded. The six GETs
 retain the existing one-process, single-trust-domain/READ boundary, not tenant isolation. History
@@ -142,7 +142,7 @@ proof of quiescence/effect, with no force-clear endpoint or compensating disable
 EC2 readback proves neither causation nor key/workload usability. Durable three-poll/thirty-second
 reads remain unverified within worker history. Accepted default-off 8C1 now provides a separate
 exact-policy rescan and sealed historical verdict, with integrated 8C2 deep acceptance complete;
-8D mutation UI and whole-Sprint-8 acceptance remain pending. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
+8D3 integrated UI and whole-Sprint-8 acceptance remain pending. Native Windows Firefox launch and local scan-picker/back-navigation reports remain
 limitations, not fixes claimed by this slice. New enum/event versions require client coordination;
 new code's execution-history service requires 0009 schema and never auto-migrates. Backups, rollout,
 production PostgreSQL grants and offline/populated downgrade procedures remain separately gated.
@@ -568,9 +568,11 @@ Acceptance does not remove the following deferred capabilities or operational ri
 Sessions are process-local and lost on restart; no refresh-token retention,
 global IdP logout, account/tenant isolation or validated production Cognito tenant is provided.
 There is no production Terraform deployment, finding/exception mutation API, generic distributed
-worker, multi-account orchestration or AI runtime. Accepted 8A/B1 human authority/admission and
-accepted isolated worker code in 8B2 add no browser mutations; the worker remains disabled and
-undeployed. Accepted default-off 8C1 adds linked exact-policy verification; 8C2 deep acceptance
-is complete. Remediation UI remains later scope; deployed worker operation remains separately
-authorized. These limits do not
+worker, multi-account orchestration or AI runtime. Accepted isolated worker code in 8B2 grants
+no deployment authority; the worker remains disabled and undeployed. Accepted default-off 8C1
+adds linked exact-policy verification; 8C2 deep acceptance
+is complete. Accepted 8D1 provides READ history and navigation, and separately default-off 8D2
+provides manual preparation, confirmation and same-session recovery. Integrated installed-worker/
+managed-reader UI acceptance remains 8D3, followed by required 8E whole-sprint acceptance;
+deployed worker operation remains separately authorized. These limits do not
 make the accepted Sprint 4 implementation incomplete.

@@ -16,24 +16,25 @@ All 7A--7E states are COMPLETE and the plan is archived. Sprint 8 was NEXT at th
 it is now IN PROGRESS with accepted 8A/8B/8C backend authority, isolated worker and linked
 verification through PR #69 and complete exact-main CI 38523209002. Those backend capabilities
 remain default off where configured and grant no live-operation or deployment authority.
-The accepted baseline dashboard remains READ-only. Accepted 8D1 adds six typed remediation
+The accepted baseline investigation remains READ-only. Accepted 8D1 adds six typed remediation
 history GETs and the navigation changes below, through PR #70 and complete exact-main CI
 38794113567. The user approved D1--D3 after the separate 8D preflight. Browser mutations/recovery
-belong to the local unaccepted 8D2 candidate below. No public worker-launch route or general scan-start
+belong to separately default-off accepted 8D2 below. No public worker-launch route or general scan-start
 browser action exists.
 [ROADMAP.md](../../ROADMAP.md) owns status and the [completed plan](../exec-plans/completed/sprint-7.md)
 records authority and exact validation. Never reuse development/test identities in production.
 
 ## Configuration and startup
 
-The local 8D2 candidate adds `DASHBOARD_REMEDIATION_ENABLED=false` in Settings, the example and
+Accepted 8D2 adds `DASHBOARD_REMEDIATION_ENABLED=false` in Settings, the example and
 Compose. True requires the enabled OIDC dashboard; it does not enable backend execution or
 verification, infer account/Region scope or launch a worker. No operator configuration is
 changed by this implementation. The accepted legacy browser fixture and validation runner
-explicitly keep this new boundary off. The manual UI is locally implemented and all 90 signed
+explicitly keep this new boundary off. The manual UI is implemented and all 90 signed
 browser journeys passed. The two new flag-enabled three-human workflows use a separately owned
-test process/schema; they do not reorder accepted fixture history. Full 8D2 acceptance remains
-pending. Verification requests use a recording executor here, not the 8D3 installed-worker/
+test process/schema; they do not reorder accepted fixture history. Full 8D2 review/delivery gates
+passed through PR #71 and complete exact-main CI 38833846226. Verification requests use a
+recording executor in those native workflows, not the 8D3 installed-worker/
 managed-reader UI acceptance path.
 
 Authenticated bootstrap adds verified `issuer` and non-authorizing `features.remediation`.
@@ -45,7 +46,7 @@ reload can recover at most 16 operations; no Web Storage or raw response cache i
 or session loss requires signing in and manually checking immutable history before a replacement
 intent. An empty new-session list cannot prove the earlier request had no effect.
 
-With the independently enabled candidate, open an exact retained completed EC2-004 FAIL and
+With the independently enabled workflow, open an exact retained completed EC2-004 FAIL and
 choose **Remediation history for this finding**, then **Prepare proposal** with a reason.
 Preparation moves focus to **Manual remediation operations**; its header link also reaches
 that panel independently of the selected scan/finding. Review the frozen IDs, reason, actor,
@@ -68,7 +69,7 @@ Browser uncertainty is displayed alongside the last server coordination state, n
 invented worker phase or dispatch count. Confirmed requests refresh READ history only; verdicts,
 technical results and finding handling remain separate. Operation content stays below scan
 selection to preserve the existing stable selection controls. These instructions describe the
-local candidate, not accepted deployment or live operation authority.
+accepted default-off code, not deployment or live operation authority.
 
 Accepted 8D1 changes no configuration/default or schema. Open an exact retained assessment,
 then select **Remediation history for this finding**. EC2-004 history lists proposals for the
@@ -88,6 +89,12 @@ and page controls remain above the changing history list. Browser Back/deep link
 history offset remain intact; the latest scan is never selected automatically. An empty page
 does not prove an empty database. No saved scans returned at offset zero directs the operator
 to the existing EXECUTE-only bearer scan API, without automatically creating or retrying a scan.
+
+The local 8D3 candidate repairs repeated selection of that same scan: the UUID form and history
+row retain its current report, read error or pending read instead of clearing it without a new
+request. Use **Refresh** to deliberately reread the same scan. This adds no automatic request or
+submission and changes no URL, Back, identity or authorization contract. Whole-slice acceptance
+remains pending in the [active plan](../exec-plans/active/sprint-8.md).
 
 Defaults are unchanged: `DASHBOARD_ENABLED=false` adds no dashboard routes or session handling.
 When enabled, set these through trusted operator configuration, never browser input:
@@ -235,10 +242,11 @@ retaining credentials/evidence. A separately requested local visual check must u
 Pagination acceptance now correlates the new exact GET to its limit/offset, validates its bounded
 page, and awaits the ordered Scan history UUID list and disappearance of loading before the next
 native selection. A controlled held-response regression requires no selection or report reads
-before settlement. This is test synchronization, not a layout change: a diagnostic probe showed
-that a history response between pointer-down/up can move Open scan and lose submission. That
-user-interaction race remains unfixed and belongs in the separately scoped 8D preflight; it does
-not establish the cause of the artifact-free failed main CI recorded in the Sprint 8 plan.
+before settlement. That earlier synchronization did not change layout: a diagnostic probe showed
+that a history response between pointer-down/up could move Open scan and lose submission.
+Accepted 8D1 subsequently placed selection controls above changing history, removing that source
+of layout movement. Neither the diagnostic nor later passing tests establishes the cause of the
+artifact-free failed main CI recorded in the Sprint 8 plan.
 The held-response test uses a test-only cleanup guard: it always attempts gate/route cleanup,
 preserves the first body failure if cleanup also fails, and fails on cleanup-only errors. A
 secondary diagnostic is a fixed classification, never an exception payload; diagnostic failure

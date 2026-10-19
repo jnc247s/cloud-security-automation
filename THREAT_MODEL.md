@@ -1,9 +1,10 @@
 # Threat model
 
-Status: living model for accepted Sprints 0--7, 8A/8B, default-off 8C and 8D1 READ history
-Accepted implementation baseline: `main` commit `d6a37658f2d34f94d26a475d91b95ef7a511d940`
-(PR #70; exact-commit REVIEW_PASS and both first-attempt candidate primary audits passed)
-Last reconciled: 2026-10-15 UTC; complete exact-main CI 38794113567 passed
+Status: living model for accepted Sprints 0--7, 8A/8B, default-off 8C, 8D1 READ history
+and separately default-off 8D2 manual workflow
+Accepted implementation baseline: `main` commit `f97cf7bb44a3695e514ef9aaf64dedb70a463cdc`
+(PR #71; exact-commit REVIEW_PASS and both first-attempt candidate primary audits passed)
+Last reconciled: 2026-10-16 UTC; complete exact-main CI 38833846226 passed
 Installed-process write-worker test baseline remains `d3380402` (PR #66).
 Standalone write-worker code remains unchanged since `7a36ddde` (8B2 worker PR #59).
 Accepted 8B1 admission and separate default-off 8B2 worker code are not deployment/live authority.
@@ -15,7 +16,7 @@ remain unchanged. Exact-head independent review, both final-head CI runs, guarde
 and merged-main CI passed. Current Sprint 8 status and accepted 8A/8B scope are owned
 by ROADMAP and the active plan. The isolated worker is disabled and undeployed; linked exact-
 policy verification and 8C2 deep acceptance are offline-accepted in default-off 8C;
-dashboard mutation remains unimplemented, and residual risks remain open.
+separately default-off dashboard mutations are accepted in 8D2, and residual risks remain open.
 See the [7E evidence matrix](docs/sprint-7e-acceptance.md) for offline coverage and explicit limits.
 
 ## Scope and security objectives
@@ -370,11 +371,11 @@ displays. QUARANTINED remains unknown effect even after late ACK/readback. Curre
 server-derived alongside historical approval, not a browser grant. Bounded disclosures/rows do
 not limit upstream detail payloads, add tenancy or prove digests/physical humans. Navigation and
 native-pointer settlement passed fresh two-browser acceptance; the original operator build/data
-and earlier failures are not diagnosed by later passes. 8D2 is the separate local candidate below;
+and earlier failures are not diagnosed by later passes. 8D2 is the separate accepted boundary below;
 8D1 validation/review/delivery passed through PR #70 and exact-main CI 38794113567.
 No live provider operation is authorized.
 
-The unaccepted 8D2 server candidate introduces a separately default-off mutation threat surface.
+Accepted 8D2 introduces a separately default-off mutation threat surface.
 Fixed typed operations, fresh signed capabilities plus API reauthorization, origin/fetch-site,
 CSRF/context and closed bounded JSON/header checks constrain confused-deputy and injection risk.
 Prepared IDs bind one current session and full issuer/subject pair; cached display roles cannot
@@ -385,15 +386,16 @@ unconfirmed, and history 401 ends the session. Submission-failed verification ca
 accepted. Expiry, logout, denied retry, aborted fetch and process loss do not prove no prior
 effect. Capacity rejects rather than evicting uncertain work; session loss requires manual
 history checks. Single-process memory has no cross-process recovery or tenant isolation.
-Local guarded frontend forms/recovery are implemented. Legacy/missing hints remain READ-only;
+Guarded frontend forms/recovery are implemented. Legacy/missing hints remain READ-only;
 explicit event handlers prevent effect-driven submission/retry. Review binds fixed inputs and
 server IDs, while unresolved same-target work cannot silently acquire a replacement key.
 Generation-fenced recovery ignores old reads, and missing/regressed same-session records fail
 closed. Logout/401/unmount removes private coordination and ignores late responses, without
 claiming cancellation. Accepted request, current server state and browser uncertainty are
 separate labels. All 90 local signed browser journeys passed, including isolated three-human
-manual workflows. Installed-worker/managed-reader UI acceptance remains 8D3; full 8D2 acceptance
-gates remain pending.
+manual workflows. Full 8D2 review/delivery gates passed through PR #71 and complete exact-main
+CI 38833846226. Installed-worker/managed-reader UI acceptance remains 8D3; code acceptance does
+not prove deployed isolation, live-provider behavior or distinct physical humans.
 
 Update this model when authentication, role/capability mappings, object scope, API exposure, AWS
 permissions, collected evidence, persistence, audit, executor topology, deployment, dashboard,
